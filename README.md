@@ -310,5 +310,5 @@ NixBerry works independently of Nixon.
 
 ## License
 
-Author: Tomas Mark. NixBerry source code is available under the [MIT license](LICENSE).
+Author: Tomáš Mark. NixBerry source code is available under the [MIT license](LICENSE).
 Dependencies and external tools retain their own licenses.
