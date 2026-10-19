@@ -1,4 +1,4 @@
-"""Náhled úklidu: žádné mazání, zastavování VM ani změny GC roots."""
+"""Cleanup preview: no deletion, VM shutdown or GC root changes."""
 
 from messages import _
 
@@ -23,7 +23,7 @@ def file_size(path):
 def libvirt_inventory(spec, declared):
     command = ["virsh", "--connect", spec["uri"]]
     if spec["uri"] != "qemu:///system":
-        raise RuntimeError(_('Úklid libvirt podporuje pouze místní qemu:///system.'))
+        raise RuntimeError(_("Libvirt cleanup only supports local qemu:///system."))
     references, machines, errors = {}, [], []
 
     def collect(xml, reason):
@@ -43,18 +43,18 @@ def libvirt_inventory(spec, declared):
             known = any(t["spec"].get("uuid") == identity for t in declared)
             machines.append({"name": name, "state": state, "declared": known,
                              "classification": "protected" if state == "running" or known else "review",
-                             "note": _('Vypnutá VM nemusí být nepoužívaná; může sloužit k obnově.')})
+                             "note": _("A stopped VM is not necessarily unused; it may be needed for recovery.")})
             allocation = 0
             for disk in ET.fromstring(domain).findall("./devices/disk"):
                 if disk.get("device") != "disk":
                     continue
                 device = disk.find("target")
                 if device is None:
-                    raise ValueError(_('Disk VM nemá cíl pro dotaz na velikost.'))
+                    raise ValueError(_("The VM disk has no target for a size query."))
                 info = read(command + ["domblkinfo", name, device.get("dev")])
                 physical = re.search(r"^Physical:\s+(\d+)$", info, re.M)
                 if not physical:
-                    raise ValueError(_('Velikost disku VM nelze určit.'))
+                    raise ValueError(_("Cannot determine the VM disk size."))
                 allocation += int(physical[1])
             machines[-1]["allocatedBytes"] = allocation
         except (OSError, RuntimeError, ValueError, ET.ParseError, subprocess.SubprocessError) as error:
@@ -66,7 +66,7 @@ def libvirt_inventory(spec, declared):
             continue
         match = re.fullmatch(r"\s*(.+?)\s+(/.+?)\s*", line)
         if not match:
-            errors.append(_("Neznámý řádek seznamu svazků: {line}").format(line=line))
+            errors.append(_("Unknown volume list line: {line}").format(line=line))
             continue
         volumes.append(match[1])
     for volume in volumes:
@@ -77,14 +77,14 @@ def libvirt_inventory(spec, declared):
             for item in xml.findall(".//backingStore/path"):
                 filename = item.text
                 if not filename:
-                    raise ValueError(_('Chybí cesta podkladového obrazu.'))
+                    raise ValueError(_("The backing image path is missing."))
                 backing_path = os.path.realpath(os.path.join(os.path.dirname(path), filename))
                 references.setdefault(backing_path, []).append("backing:" + path)
             sizes = {}
             for field, output in (("capacity", "logicalBytes"), ("allocation", "allocatedBytes")):
                 element = xml.find(field)
                 if element is None or element.get("unit", "bytes") not in ("bytes", "b"):
-                    raise ValueError(_('Svazek nevrátil velikost v bajtech.'))
+                    raise ValueError(_("The volume did not report a size in bytes."))
                 sizes[output] = int(element.text)
             files.append({"path": path, "resolved": resolved, **sizes})
         except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
@@ -92,11 +92,11 @@ def libvirt_inventory(spec, declared):
     for file in files:
         file["protectedBy"] = references.get(file.pop("resolved"), [])
         file["classification"] = "protected" if file["protectedBy"] else "unknown" if errors else "review"
-    # Stejný disk může sdílet více VM; velikosti VM nejsou celková spotřeba hostitele.
+    # VMs may share disks; per-VM sizes are not total host consumption.
     for machine in machines:
         machine.setdefault("allocatedBytes", None)
     return {"machines": machines, "images": files, "errors": errors,
-            "note": _('Rozsah: všechny VM a snapshoty místního libvirt, obrazy deklarovaného poolu. Externí konzumenti mimo libvirt nemusí být zjistitelní; review není důkaz nepoužívání.')}
+            "note": _("Scope: all VMs and snapshots in local libvirt, images in the declared pool. External consumers outside libvirt may be undetectable; review does not prove disuse.")}
 
 
 def artifacts(roots):
@@ -104,8 +104,8 @@ def artifacts(roots):
     for raw in roots:
         root = Path(raw).expanduser().resolve(strict=True)
         if not root.is_dir():
-            raise RuntimeError(_('Kořen obrazů musí být adresář: {value1}').format(value1=str(root)))
-        # Odkazy se nepřecházejí; oprávnění ani cizí soubory se nemění.
+            raise RuntimeError(_("The image root must be a directory: {value1}").format(value1=str(root)))
+        # Do not follow links or change permissions or foreign files.
         def walk_error(error):
             errors.append(str(error))
         for directory, dirs, files in os.walk(root, followlinks=False, onerror=walk_error):
@@ -120,7 +120,7 @@ def artifacts(roots):
                     items.append({"path": str(path), **file_size(path),
                         "classification": "protected" if recovery or path.is_symlink() else "unknown",
                         "protectedBy": (["recovery/export"] if recovery else []) + (["symlink"] if path.is_symlink() else []),
-                        "note": _('Použití mimo tento adresář nelze z náhledu prokázat.')})
+                        "note": _("The preview cannot prove whether files are used outside this directory.")})
                 except OSError as error:
                     errors.append(str(error))
     return {"images": items, "errors": errors}
@@ -128,7 +128,7 @@ def artifacts(roots):
 
 def preview(registry, names, roots=()):
     report = {"readOnly": True, "targets": {}, "hosts": {}, "artifacts": artifacts(roots),
-              "note": _('Náhled nic nemaže. Vypnutí ani stáří neprokazuje nepoužívání. Velikosti sdílených disků a generací nesčítej jako uvolnitelné místo.')}
+              "note": _("The preview deletes nothing. A stopped VM or old file is not proof of disuse. Do not add shared disk and generation sizes as reclaimable space.")}
     for name in names:
         target = registry[name]
         try:
@@ -148,10 +148,10 @@ def preview(registry, names, roots=()):
             elif target["backend"] == "hyperv":
                 data = json.loads(read([target["commands"]["probe"]]))
                 if data.get("hypervError") or data.get("computerName", "").lower() != target["spec"]["windowsComputerName"].lower():
-                    raise RuntimeError((data.get("hypervError") or _('Nesouhlasí Windows hostitel.')))
+                    raise RuntimeError((data.get("hypervError") or _("Windows host does not match.")))
                 report["hosts"][host] = {"machines": data["vms"], "images": data.get("images", []),
                     "errors": data.get("inventoryErrors", []),
-                    "note": _('Zahrnuje běžící i vypnuté VM a jejich checkpointy; cizí disky nejsou kandidáty k mazání.')}
+                    "note": _("Includes running and stopped VMs and their checkpoints; foreign disks are not deletion candidates.")}
         except (OSError, RuntimeError, ValueError, KeyError, ET.ParseError, subprocess.SubprocessError) as error:
             report["hosts"][host] = {"error": str(error)}
     return report

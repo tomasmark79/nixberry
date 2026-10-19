@@ -135,7 +135,7 @@ class CampaignTests(unittest.TestCase):
                 raise RuntimeError("second failure preserves new VM")
             with patch.object(task, "online", side_effect=second), self.assertRaises(RuntimeError):
                 task.run([], resume=True)
-            with patch.object(task, "online") as online, self.assertRaisesRegex(RuntimeError, "zachované prostředky"):
+            with patch.object(task, "online") as online, self.assertRaisesRegex(RuntimeError, "retained resources"):
                 task.run([], resume=True)
             online.assert_not_called()
 
@@ -166,7 +166,7 @@ class CampaignTests(unittest.TestCase):
             task = Campaign(Path(root) / "recipe", Path(root) / "run")
             with (Path(root) / "run.lock").open("w") as lock:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                with patch.object(task, "_run") as run, self.assertRaisesRegex(RuntimeError, "jiný proces"):
+                with patch.object(task, "_run") as run, self.assertRaisesRegex(RuntimeError, "Another process"):
                     task.run([])
                 run.assert_not_called()
             self.assertFalse(task.root.exists())
@@ -237,7 +237,7 @@ class CampaignTests(unittest.TestCase):
                 "probe": lambda *args: {"state": "shut off"}, "owned": lambda *args: None,
                 "run": lambda args: native_calls.append(args),
             })
-            with self.assertRaisesRegex(RuntimeError, "odkaz"):
+            with self.assertRaisesRegex(RuntimeError, "link"):
                 module["campaign_action"]({"backend": "virtualbox", "action": "cleanup",
                     "spec": {"name": "nixberry-vm-demo-test-owned"}})
             self.assertEqual(native_calls, [])

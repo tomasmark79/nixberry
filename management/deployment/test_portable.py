@@ -53,7 +53,7 @@ class PortableTests(unittest.TestCase):
     def test_shutdown_transient_error_has_finite_deadline(self):
         with patch.object(portable, "rpc", side_effect=RuntimeError("VBOX_E_INVALID_OBJECT_STATE")) as rpc, \
                 patch.object(portable.time, "monotonic", side_effect=[0, 1, 121]), \
-                patch.object(portable.time, "sleep"), self.assertRaisesRegex(RuntimeError, "ISO neodpojujeme"):
+                patch.object(portable.time, "sleep"), self.assertRaisesRegex(RuntimeError, "ISO will not be detached"):
             portable.wait_stopped({"backend": "virtualbox"})
         self.assertTrue(all(call.args[1] == "probe" for call in rpc.call_args_list))
 
@@ -89,7 +89,7 @@ class PortableTests(unittest.TestCase):
                 self.assertEqual(agent.vbox_guest_properties(output), values)
 
     def test_offline_rpc_never_connects(self):
-        with patch("subprocess.run") as run, self.assertRaisesRegex(RuntimeError, "Offline cíl"):
+        with patch("subprocess.run") as run, self.assertRaisesRegex(RuntimeError, "The offline target"):
             portable.rpc({"backend": "proxmox", "spec": {"transport": "offline"}}, "probe")
         run.assert_not_called()
 
@@ -115,11 +115,11 @@ class PortableTests(unittest.TestCase):
 
     def test_wrong_host_and_symlink_storage_rejected_before_cli(self):
         with patch.object(agent, "run") as run:
-            with self.assertRaisesRegex(RuntimeError, "Hostname"):
+            with self.assertRaisesRegex(RuntimeError, "hostname"):
                 agent.host_check(spec(self.root, hostName="foreign"), "vmware")
             link = self.root / "link"
             link.symlink_to(self.root, target_is_directory=True)
-            with self.assertRaisesRegex(RuntimeError, "odkaz"):
+            with self.assertRaisesRegex(RuntimeError, "link"):
                 agent.host_check(spec(link), "vmware")
             run.assert_not_called()
 
@@ -127,10 +127,10 @@ class PortableTests(unittest.TestCase):
         s = spec(self.root)
         directory = self.marker(s)
         (directory / "system.vmdk").write_bytes(b"corrupted")
-        with patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "součet"):
+        with patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "checksum"):
             agent.create(s, "vmware", directory)
         run.assert_not_called()
-        with self.assertRaisesRegex(RuntimeError, "deklarace"):
+        with self.assertRaisesRegex(RuntimeError, "declaration"):
             agent.owned(directory, {**s, "memoryMiB": 8192})
 
     def test_vmx_round_trip_and_foreign_config_rejected(self):
@@ -191,9 +191,9 @@ class PortableTests(unittest.TestCase):
         (directory / "system.vmdk").unlink()
         stream = type("Input", (), {"buffer": io.BytesIO(b"wrong")})()
         with patch.object(agent, "host_check", return_value=directory), patch.object(agent.sys, "stdin", stream):
-            with self.assertRaisesRegex(RuntimeError, "poškozený"):
+            with self.assertRaisesRegex(RuntimeError, "corrupted"):
                 agent.dispatch({"spec": s, "backend": "vmware", "action": "upload"})
-        with patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "součet"):
+        with patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "checksum"):
             agent.create(s, "vmware", directory)
         run.assert_not_called()
 
@@ -231,7 +231,7 @@ class PortableTests(unittest.TestCase):
     def test_proxmox_collision_in_cluster_rejected(self):
         s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
         with patch.object(agent, "proxmox_registry", return_value=[{"vmid": 1000, "name": "foreign", "node": "other"}]), \
-                patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "obsazené"):
+                patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "already in use"):
             agent.absent(s, "proxmox", self.root / s["name"])
         run.assert_not_called()
 
@@ -259,7 +259,7 @@ class PortableTests(unittest.TestCase):
                                  "running" if current == "running" else "shut off")
         config["description"] = "foreign-owner"
         with patch.object(agent, "proxmox_registry", return_value=[]), \
-                patch.object(agent, "run", side_effect=respond), self.assertRaisesRegex(RuntimeError, "vlastníkovi"):
+                patch.object(agent, "run", side_effect=respond), self.assertRaisesRegex(RuntimeError, "owner"):
             agent.probe(s, "proxmox", directory)
 
     def test_proxmox_creation_uses_uefi_virtio_import_and_owner(self):
@@ -296,7 +296,7 @@ class PortableTests(unittest.TestCase):
         with patch.object(agent, "proxmox_iso_medium", return_value=(volume, medium)), \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}), \
                 patch.object(agent, "run", return_value=json.dumps({**config, "ide2": "local:iso/foreign.iso"})) as run:
-            with self.assertRaisesRegex(RuntimeError, "očekávané ISO"):
+            with self.assertRaisesRegex(RuntimeError, "expected ISO"):
                 agent.installer_media(s, "proxmox", directory, detach=True)
             self.assertEqual(run.call_count, 1)
             self.assertTrue(medium.exists())
@@ -311,11 +311,11 @@ class PortableTests(unittest.TestCase):
     def test_proxmox_iso_refuses_existing_file_and_storage_without_iso(self):
         s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
         with patch.object(agent, "run", return_value='{"content":"images"}') as run:
-            with self.assertRaisesRegex(RuntimeError, "povolené pro ISO"):
+            with self.assertRaisesRegex(RuntimeError, "enabled for ISO"):
                 agent.proxmox_iso_medium(s)
             self.assertEqual(run.call_count, 1)
         with patch.object(agent, "run", side_effect=['{"content":"iso"}', '{"active":0,"enabled":1}']) as run:
-            with self.assertRaisesRegex(RuntimeError, "není aktivní"):
+            with self.assertRaisesRegex(RuntimeError, "inactive"):
                 agent.proxmox_iso_medium(s)
             self.assertEqual(run.call_count, 2)
         directory = self.marker(s, backend="proxmox")
@@ -388,7 +388,7 @@ class PortableTests(unittest.TestCase):
         with patch.object(agent, "host_check", return_value=self.root / s["name"]), \
                 patch.object(agent, "absent"), patch.object(agent.shutil, "disk_usage", return_value=type("Disk", (), {"free": 10})()):
             for action in ("plan", "prepare"):
-                with self.subTest(action=action), self.assertRaisesRegex(RuntimeError, "místo|místa"):
+                with self.subTest(action=action), self.assertRaisesRegex(RuntimeError, "space"):
                     agent.dispatch({"spec": s, "backend": "vmware", "action": action, "imageBytes": 100})
         self.assertFalse((self.root / s["name"]).exists())
 
@@ -495,7 +495,7 @@ class PortableTests(unittest.TestCase):
                 result = subprocess.run([str(package / "bin" / ("nixberry-" + backend + "-probe"))],
                                         text=True, capture_output=True, timeout=15)
                 self.assertNotEqual(result.returncode, 0)
-                self.assertIn("Hostname hostitele neodpovídá", result.stderr)
+                self.assertIn("The host hostname does not match", result.stderr)
 
 
 if __name__ == "__main__":

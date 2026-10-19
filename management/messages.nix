@@ -1,11 +1,14 @@
-# Jeden společný zdroj pro ovládací nástroje i instalační prostředí.
+# One shared source for management tools and installation environments.
 { pkgs }:
-pkgs.lib.fileset.toSource {
-  root = ./deployment;
-  fileset = pkgs.lib.fileset.unions [
-    ./deployment/messages.py
-    ./deployment/messages.sh
-    ./deployment/shell_runner.py
-    (pkgs.lib.fileset.fileFilter (file: file.hasExt "mo") ./deployment/locales)
-  ];
+import ./with-locales.nix {
+  inherit pkgs;
+  source = pkgs.lib.fileset.toSource {
+    root = ./deployment;
+    fileset = pkgs.lib.fileset.unions [
+      ./deployment/messages.py
+      ./deployment/messages.sh
+      ./deployment/shell_runner.py
+      ./deployment/locales/cs.sh
+    ];
+  };
 }

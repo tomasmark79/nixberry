@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regrese evidence cílů v kopiích receptu; bez připojení k hostitelům nebo změn VM."""
+"Target inventory regression checks in recipe copies; no host connections or VM changes."
 
 from messages import _, ArgumentParser, info, error as report_error
 
@@ -56,7 +56,7 @@ def main():
     preferred = Path("/home/shared/tmp")
     root = Path(tempfile.mkdtemp(prefix="nixberry-management-check-",
                                  dir=preferred if preferred.is_dir() else None))
-    info(_('Kopie a výsledky: {value1}'), value1=str(root))
+    info(_("Copies and results: {value1}"), value1=str(root))
     raw = evaluate("import " + str(recipe / "instances"))
     initial = registry(recipe)
     records = {}
@@ -120,7 +120,7 @@ def main():
                 "memoryMiB": 6144, "vcpus": 2, "diskGiB": 48}}
             (destination / "instances/another-hv.nix").write_text(nix(target) + "\n")
             if not any(item["backend"] == "hyperv" for item in initial["instances"].values()):
-                # Regrese musí mít dvě VM i po odebrání všech původních deklarací.
+                # The regression needs two VMs even after all original declarations are removed.
                 control = {**target, "spec": {**target["spec"], "name": "nixberry-control-hv",
                     "ownerId": "nixberry-hyperv-95a5abbf-ac9f-44ad-9f34-34dd14b77123",
                     "mac": "027981000056", "diskGiB": 32}}
@@ -186,20 +186,20 @@ def main():
     try:
         registry(destination)
     except RuntimeError as error:
-        assert "hostitel" in str(error) and "není deklarovaný" in str(error)
+        assert "host" in str(error) and "is not declared" in str(error)
     else:
-        raise AssertionError(_('Osiřelá deklarace hostitele nebyla odmítnutá.'))
-    info(_('OK missing-host: srozumitelná chyba konfigurace'))
+        raise AssertionError(_("The orphaned host declaration was not rejected."))
+    info(_("OK missing-host: clear configuration error"))
 
-    # Skutečně sestavíme prázdný management, nejen líně vyhodnotíme jeho atributy.
+    # Build empty management tools, not just their lazily evaluated attributes.
     subprocess.run(["nix", "build", "--no-link", "--no-write-lock-file",
                     "path:" + str(root / "empty-all") + "#nixberry"], check=True)
     for action in ("list", "status"):
         result = subprocess.run([records["empty-all"]["tool"] + "/bin/nixberry", action],
                                 capture_output=True, text=True, timeout=15)
         assert result.returncode == 0, result.stderr
-    info(_('OK empty CLI: build, list a status bez hostitelů a cílů'))
-    info(_('Všechny zkoušky evidence prošly; VM ani hostitelé nebyli kontaktovaní.'))
+    info(_("OK empty CLI: build, list and status without hosts or targets"))
+    info(_("All inventory checks passed; no VMs or hosts were contacted."))
 
 
 if __name__ == "__main__":

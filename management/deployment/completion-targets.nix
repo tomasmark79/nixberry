@@ -1,4 +1,4 @@
-# Čerstvé místní deklarace; nevyhodnocuje flake ani NixOS systémy.
+# Fresh local declarations; does not evaluate a flake or NixOS systems.
 let
   registry = import ./.;
   operations = import ./operations.nix;

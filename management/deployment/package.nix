@@ -2,30 +2,33 @@
 let
   version = pkgs.lib.removeSuffix "\n" (builtins.readFile ../../VERSION);
   registry = import ./.;
-  # Testy a lokální Python cache nemají měnit výsledný ovládací nástroj.
-  source = pkgs.lib.fileset.toSource {
-    root = ./.;
-    fileset = pkgs.lib.fileset.unions [
-      ./cli.py
-      ./dispatch.py
-      ./discovery.py
-      ./runtime.py
-      ./scaffold.py
-      ./exporter.py
-      ./guest-install.sh
-      ./updater.py
-      ./diffing.py
-      ./messages.py
-      ./messages.sh
-      (pkgs.lib.fileset.fileFilter (file: file.hasExt "mo") ./locales)
-      ./inspection.py
-      ./cleanup.py
-      ./portable.py
-      ./host_agent.py
-      ./reset.py
-    ];
+  # Tests and local Python caches must not change the resulting management tool.
+  source = import ../with-locales.nix {
+    inherit pkgs;
+    source = pkgs.lib.fileset.toSource {
+      root = ./.;
+      fileset = pkgs.lib.fileset.unions [
+        ./cli.py
+        ./dispatch.py
+        ./discovery.py
+        ./runtime.py
+        ./scaffold.py
+        ./exporter.py
+        ./guest-install.sh
+        ./updater.py
+        ./diffing.py
+        ./messages.py
+        ./messages.sh
+        ./locales/cs.sh
+        ./inspection.py
+        ./cleanup.py
+        ./portable.py
+        ./host_agent.py
+        ./reset.py
+      ];
+    };
   };
-  # Seznam příkazů nesmí vynutit vyhodnocení systémů, ISO ani diskových obrazů.
+  # Command listings must not force evaluation of systems, ISOs or disk images.
   lazyCommand =
     name: backend: action:
     let

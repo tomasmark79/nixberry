@@ -35,10 +35,10 @@ class HelpChecks(unittest.TestCase):
         for action in actions:
             self.assertRegex(text, r"(?m)^  " + action + r"(?:\s|$)")
         self.assertIn("nixberry update vm-demo-libvirt --apply", text)
-        self.assertIn("PŘED aktualizací", text)
-        self.assertIn("Dvě nejvyšší dochované generace", text)
+        self.assertIn("BEFORE an update", text)
+        self.assertIn("The two highest retained server generations", text)
         self.assertIn("docs/cli.md", text)
-        self.assertIn("new-* a export běžně zapisují místně", text)
+        self.assertIn("new-* and export normally write locally", text)
 
 
 class DispatchChecks(unittest.TestCase):
@@ -105,7 +105,7 @@ class DispatchChecks(unittest.TestCase):
 
     def test_verify_failure_keeps_direct_endpoint_in_recovery_commands(self):
         fixture = {"test": {"backend": "proxmox", "offline": True, "host": "offline:test", "spec": {}}}
-        verify = Mock(side_effect=RuntimeError("Běžící systém neodpovídá receptu."))
+        verify = Mock(side_effect=RuntimeError("The running system does not match the recipe."))
         with patch("pathlib.Path.read_text", return_value=json.dumps(fixture)), \
                 patch.dict(os.environ, {"NIXBERRY_RECIPE": "/recipe"}), \
                 patch.dict(MAIN.__globals__, {"verify": verify, "read": Mock(return_value="/nix/store/expected")}):
@@ -133,7 +133,7 @@ class DispatchChecks(unittest.TestCase):
                                      "update", "test"], text=True, capture_output=True)
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, "")
-        self.assertIn("[nixberry] update spusť přes spouštěč", result.stderr)
+        self.assertIn("[nixberry] Run update through the nixberry launcher", result.stderr)
         self.assertNotIn("\033[", result.stderr)
 
     def test_default_and_plan_cannot_write(self):
@@ -369,11 +369,11 @@ class DispatchChecks(unittest.TestCase):
                 contextlib.redirect_stderr(io.StringIO()) as output:
             self.assertEqual(MAIN(["ssh", "test"]), 255)
             self.assertEqual(run.call_args.args[0], ["ssh", "-e", "~", "--", "root@10.0.0.2"])
-            self.assertIn("Enter, potom ~.", output.getvalue())
+            self.assertIn("Enter, then ~.", output.getvalue())
             output.truncate(0)
             output.seek(0)
             MAIN(["ssh", "test", "--", "hostname"])
-            self.assertNotIn("Enter, potom ~.", output.getvalue())
+            self.assertNotIn("Enter, then ~.", output.getvalue())
             self.assertNotIn("-e", run.call_args.args[0])
 
     def test_ssh_interrupted_before_remote_terminal_returns_130(self):

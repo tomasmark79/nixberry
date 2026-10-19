@@ -1,5 +1,5 @@
-# Příklad: uprav všechny identifikátory podle skutečného RPi a SSD.
-# Potom zkopíruj do management/rpi/targets/rpi-demo.nix.
+# Example: replace every identifier with the actual RPi and SSD values.
+# Then copy to management/rpi/targets/rpi-demo.nix.
 {
   hostName = "rpi-demo";
   bootLabel = "rpi-demo-boot";

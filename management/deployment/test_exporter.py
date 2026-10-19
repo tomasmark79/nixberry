@@ -86,7 +86,7 @@ class ExportChecks(unittest.TestCase):
                 patch("exporter.subprocess.check_output", side_effect=self.nix_output):
             manifest = export(self.recipe, "kozlonix", self.target, destination)
         text = (destination / "PROXMOX.txt").read_text()
-        for value in ("VM103", "10.0.1.19/24", "10.0.1.1", "virtio0", "UEFI/OVMF", "MAC a UUID"):
+        for value in ("VM103", "10.0.1.19/24", "10.0.1.1", "virtio0", "UEFI/OVMF", "MAC and UUID"):
             self.assertIn(value, text)
         self.assertEqual(manifest["network"], self.target["network"])
         self.assertIn("PROXMOX.txt", (destination / "SHA256SUMS").read_text())

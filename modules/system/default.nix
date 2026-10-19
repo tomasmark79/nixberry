@@ -1,4 +1,4 @@
-# Společná systémová nastavení serveru bez závislosti na architektuře.
+# Shared server settings independent of architecture.
 {
   imports = [
     ./locale.nix

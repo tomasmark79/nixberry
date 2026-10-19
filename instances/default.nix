@@ -1,4 +1,4 @@
-# Každá VM má vlastní soubor; název souboru určuje jméno cíle v příkazech.
+# Each VM has its own file; the filename determines its CLI target name.
 let
   files = builtins.readDir ./.;
   names = builtins.filter (

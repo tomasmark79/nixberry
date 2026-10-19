@@ -1,5 +1,5 @@
-# Šablony, nikoli aktivní hostitelé. Uprav podle prostředí a zkopíruj vybrané
-# položky do hosts.local.nix. Adresy jsou pouze příklady.
+# Templates, not active hosts. Adjust for your environment and copy selected
+# entries into hosts.local.nix. Addresses are examples only.
 {
   local-libvirt = {
     backend = "libvirt";
@@ -33,7 +33,7 @@
       storageDirectory = "/var/lib/nixberry";
       node = "pve-example";
       storage = "local-lvm";
-      isoStorage = "local"; # Existující úložiště s povoleným obsahem iso.
+      isoStorage = "local"; # Existing storage with iso content enabled.
       bridge = "vmbr0";
     };
   };

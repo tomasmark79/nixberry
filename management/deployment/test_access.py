@@ -113,8 +113,8 @@ class AccessChecks(unittest.TestCase):
                 MAIN(["list"])
                 MAIN(["show", "test", "--json"])
                 self.assertEqual(MAIN(["update", "test"]), 0)
-            self.assertIn("nastavená", output.getvalue())
-            self.assertIn("nespravovaný", output.getvalue())
+            self.assertIn("configured", output.getvalue())
+            self.assertIn("unmanaged", output.getvalue())
             self.assertEqual(update.call_args.kwargs, {"apply": False})
             self.assertEqual(runtime.direct_connection(update.call_args.args[2])["port"], 2030)
             with contextlib.redirect_stdout(io.StringIO()):

@@ -1,4 +1,4 @@
-# Instalační prostředí pro testovací x86_64 VM bez grafického prostředí.
+# Installation environment for headless x86_64 test VMs.
 { lib, modulesPath, ... }:
 {
   imports = [
@@ -8,7 +8,7 @@
   ];
 
   networking.hostName = "nixberry-installer";
-  # ISO používá stejný networkd jako cílová VM.
+  # The ISO uses the same networkd setup as the target VM.
   networking.networkmanager.enable = lib.mkForce false;
   networking.wireless.enable = lib.mkForce false;
   users.users.root.openssh.authorizedKeys.keyFiles = [ ../../admin.pub ];

@@ -1,4 +1,4 @@
-# Platformní nastavení RPi5; služby vybírá konfigurace serveru.
+# RPi5 platform settings; the server configuration selects services.
 { config, ... }:
 {
   imports = [

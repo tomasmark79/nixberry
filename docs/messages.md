@@ -1,131 +1,138 @@
-# Psaní uživatelských hlášek
+# User-facing messages and translations
 
-Společná vrstva `management/deployment/messages.py` odděluje text, překlad
-a zobrazení. Používá ji společné CLI, diagnostika, offline export, adaptéry
-hypervizorů i instalace a obnova RPi. Závazná pravidla pro další práci jsou
-v [AGENTS.md](../AGENTS.md).
+[← Main guide](../README.md)
 
-## Zápis v Pythonu
+The shared `management/deployment/messages.py` layer separates text,
+translation and rendering. The CLI, diagnostics, offline export, hypervisor
+adapters and RPi tools all use it. [AGENTS.md](../AGENTS.md) defines the contract
+for future changes.
+
+## Language selection
+
+English is the source and default language, independent of `LANG` and `LC_ALL`.
+`NIXBERRY_LANG=cs` selects Czech; `NIXBERRY_LANG=en` selects English.
+Unknown language codes and missing translations fall back to English.
+The setting also applies to direct tools and locally prepared remote scripts.
+
+Commands, paths, JSON keys, schemas, state codes, check identifiers and technical
+values do not change language. Human fields such as `message`, `hint` and `note`
+may be translated. Pure Nix evaluation errors and generated declaration comments
+remain English. External tools keep their own language.
+
+## Python
 
 ```python
 from messages import _, info, success, warning
 
-info(_("Přenáším systém na {host}…"), host=destination)
-success(_("Systém je aktualizovaný a ověřený."))
-warning(_("Nový kernel se použije po restartu."))
+info(_("Transferring the system to {host}…"), host=destination)
+success(_("System updated and verified."))
+warning(_("The new kernel will be used after a reboot."))
 ```
 
-Text ponech přímo u kódu, který vysvětluje. Celou větu označ `_()`;
-nepoužívej v něm f-string ani skládání z přeložených fragmentů. Pojmenované
-hodnoty se doplní až po překladu. Příkazy, cesty a technická rozhraní ponech
-v původním tvaru. U počtů preferuj neutrální popisek `Počet cílů: {count}`;
-pokud je nutné skloňování, doplň podporu `ngettext` a odpovídající testy.
+Keep text beside the code it explains. Mark complete constant English sentences
+with `_()`; never use f-strings or assemble translated fragments inside it.
+Substitute named values after translation. For counts, prefer neutral labels
+such as `Target count: {count}`; add `ngettext` and tests if grammatical plurals
+become necessary.
 
-Pro výjimky přelož a zformátuj větu při vytvoření, ale nevypisuj ji současně:
+Translate and format an exception when creating it, but do not also print it:
 
 ```python
-raise RuntimeError(_("Přenos cíle {name} se nezdařil. Spusť {command}.").format(
+raise RuntimeError(_("Transfer of target {name} failed. Run {command}.").format(
     name=name, command=f"nixberry status {name}"))
 ```
 
-Společný vstup vypíše chybu přes `error()` jednou a skončí nenulovým kódem.
-Výjimku po částečně dokončené operaci formuluj přesně: například aktivace
-mohla proběhnout, i když SSH nevrátilo potvrzení. Nepřidávej tvrzení, které
-kontroly neprokázaly. Text cizí výjimky vkládej jako hodnotu `{error}`, aby se
-jeho složené závorky nezpracovávaly jako naše formátovací značky.
+The common entry point reports it once through `error()` and exits nonzero.
+Describe partial states accurately: activation may have completed even when
+SSH confirmation was lost. Insert external exception text as `{error}` so
+braces inside that value are never interpreted again.
 
-## Význam a vedení uživatele
+## Meaning and guidance
 
-- `info`: právě prováděný krok, plán, kontext nebo další příkaz.
-- `success`: ověřený výsledek, nikdy pouhý začátek operace.
-- `warning`: důležitý stav vyžadující pozornost, například potřeba restartu.
-- `error`: neúspěch; pokud je to známé, vysvětli stav operace a další krok.
+- `info`: a current step, plan, context or actionable next command.
+- `success`: a verified result, never merely the start of an operation.
+- `warning`: a condition needing attention, such as a pending reboot.
+- `error`: failure, with known operation state and a useful next step.
 
-Piš přirozené české věty a pro stejnou situaci používej stejná slova.
-Příkaz k nápravě musí používat skutečný cíl a zachovat případné `--ssh`.
-Neúspěšná následná kontrola nesmí skončit hláškou o ověřeném úspěchu.
+Use plain, consistent language. Recovery commands use the actual target and
+preserve any `--ssh` endpoint. Failed post-checks must never report verified success.
 
-## Proudy, barvy a podřízené nástroje
+## Streams, colors and subprocesses
 
-Vlastní hlášky mají označení `[nixberry]`, míří na stderr a ihned se flushují,
-aby se zobrazily před spuštěním dalšího nástroje. Datové výsledky patří
-na stdout. V režimu `--json` patří na stdout pouze JSON; nepřeváděj tabulky,
-JSON klíče ani technické hodnoty na hlášky.
+Our diagnostics have a `[nixberry]` prefix, go to stderr and flush immediately.
+Data and help go to stdout. In `--json` mode, stdout contains only JSON.
+Sending our diagnostics to stderr does not automatically redirect child output.
 
-Označení používá tyrkysovou pro průběh, zelenou pro úspěch, žlutou pro
-upozornění a červenou pro chybu. Věta musí být srozumitelná i bez barvy.
-O zapnutí rozhoduje terminál skutečného cílového proudu, nikoli jiného
-proudu. `NO_COLOR` i s prázdnou hodnotou a `TERM=dumb` barvy vypínají.
+The prefix uses cyan for progress, green for success, yellow for warnings and
+red for errors. Color follows the actual destination stream. `NO_COLOR`,
+including an empty value, and `TERM=dumb` disable it. Messages must remain clear
+without color.
 
-Výstup Nixu, SSH, `nvd` a dalších nástrojů nepřepisuj, nepřekládej a nepřidávej
-k němu automaticky naše označení. Při spouštění nástroje v JSON operaci ověř,
-že jeho výstup neznečistí stdout s JSON výsledkem. Přesměrování našich hlášek
-na stderr samo o sobě výstupy podprocesů nepřesměruje.
+Forward Nix, SSH, `nvd` and other external output without translation or added
+prefixes, including stderr on successful subprocess completion.
+Check that subprocess output does not pollute JSON stdout.
 
-`diffg` překládá a formátuje vlastní nadpisy místně, bezpečně je vloží do
-vzdáleného shellového příkazu a vypíše je na vzdálený stderr. Barvy `nvd`
-volí samostatně podle místního stdout; na serveru není potřeba Python helper
-ani překladový katalog. Bash skripty používají `messages.sh` a zapisují například
-`nb_info 'Cíl: %s' "$name"`; helper je jen soubor funkcí Bashe a nespouští
-Python pro jednotlivé řádky. `nb_help` vypisuje nápovědu na stdout.
+`diffg` translates and quotes labels locally, then prints them on remote stderr.
+It selects `nvd` colors separately from local stdout; the server needs neither
+the Python helper nor a catalogue.
 
-Celý shellový skript připraví místně `shell_script(path)`: přeloží konstantní
-hlášky a přiloží helper s volbou barev podle místního stderr. U místního
-libvirt `create` totéž provede `shell_runner.py` jednou před spuštěním Bashe.
-Instalační skripty se stejným způsobem předávají přes stdin do SSH i místní
-obnovy RPi. Neměň zástupné printf značky a dynamické hodnoty nikdy nevkládej
-do formátovacího řetězce.
+## Bash, PowerShell and transferred Python
 
-`localized_script(path)` překládá chyby PowerShellu z posledního literal
-argumentu `Require` a z literal `throw`. Překlady bezpečně cituje pro
-PowerShell, zatímco podmínky a technické hodnoty ponechává stejné.
-`python_script(path)` přibalí RPC adaptéru společný modul a případný binární
-katalog; adaptér proto zachová JSON i na hostiteli bez projektu nixberry.
+Bash uses `messages.sh`, for example `nb_info 'Target: %s' "$name"`.
+Formatting and local Czech lookup use only Bash builtins; no Python is spawned
+per line. `nb_help` prints help to stdout. Generated `locales/cs.sh` provides
+local lookup, including launcher failures.
 
-| Část | Podoba výstupu |
+`shell_script(path)` translates constant messages once, includes the helper and
+sets color policy from local stderr. `shell_runner.py` does the same before
+local libvirt creation. Guest installation scripts travel over stdin for SSH
+and local RPi recovery. Keep printf placeholders unchanged; pass dynamic values
+as separate arguments.
+
+`localized_script(path)` translates PowerShell errors in the last literal
+`Require` argument and literal `throw`. Quoting is escaped for PowerShell;
+conditions and technical values remain untouched.
+
+`python_script(path)` bundles the shared module and selected binary catalogue
+with an RPC adapter. Its stdout remains the JSON protocol. Remote hosts need
+no project checkout or gettext installation.
+
+| Area | Output contract |
 | --- | --- |
-| `list`, `show`, `status`, `doctor`, `cleanup` | Datové přehledy na stdout, rady a chyby na stderr |
-| `new-*` | Náhled deklarace nebo cesta na stdout, potvrzení a další krok na stderr |
-| `verify`, `export` | Výsledek/cesta nebo JSON na stdout, průběh a potvrzení na stderr |
-| `ssh`, `probe`, `plan`, nasazovací adaptéry | Převzaté technické výstupy a data zachované; vlastní hlášky na stderr |
-| libvirt, Hyper-V, Proxmox, VirtualBox, VMware | Společný Python helper; RPC zachovává své technické schéma |
-| RPi instalace, místní obnova a recovery test | Společný Python a Bash helper, sondy zůstávají datové |
-| Kontroly obrazů a evidence | Diagnostika na stderr, případné strukturované výsledky na stdout |
+| `list/show/status/doctor/cleanup` | Data on stdout; advice/errors on stderr. |
+| `new-*` | Declaration preview or path on stdout; confirmation and next step on stderr. |
+| `verify/export` | Result/path or JSON on stdout; progress and confirmation on stderr. |
+| `ssh/probe/plan` and deployment tools | Preserve technical child output; own diagnostics on stderr. |
+| All VM backends | Common Python helper; RPC keeps its technical schema. |
+| RPi installation, local recovery, recovery checks | Shared Python/Bash helpers; probes remain data. |
+| Image and inventory checks | Diagnostics on stderr; structured results on stdout where applicable. |
 
-Překladový katalog nezahrnuje zdrojové komentáře, generované Nix deklarace
-a čisté Nix výrazy. Ty nejsou runtime hláškami CLI.
-Chyby Nix vyhodnocení a původní texty cizích nástrojů zůstávají jejich vlastní
-diagnostikou. Nix balíčky používají `management/messages.nix`; symbolické
-odkazy `messages.py` v adaptérech zpřístupňují tentýž modul při spuštění ze zdrojů.
+Shared Nix sources use `management/messages.nix` and `management/with-locales.nix`.
+Adapter `messages.py` symlinks expose the same module during source development.
 
-## Překlady a ověření
+## Maintain the catalogues
 
-Čeština je výchozí bez ohledu na `LANG` a `LC_ALL`.
-`NIXBERRY_LANG=en` je připravené pro anglický katalog; chybějící překlad
-zůstane česky. Anglický katalog není součástí projektu.
-Jazyk ostatních nástrojů se tím nemění. Datové JSON klíče, stavové kódy,
-identifikátory kontrol a hodnoty z technických nástrojů se nepřekládají;
-textová pole jako `message`, `hint` a `note` překládat lze.
-
-Úplnou šablonu vytvoř z kořene receptu:
+From the recipe root:
 
 ```sh
 python3 management/deployment/extract_messages.py > management/deployment/locales/nixberry.pot
+# Update Czech translations in management/deployment/locales/cs/LC_MESSAGES/nixberry.po.
+python3 management/deployment/compile_locales.py
+python3 management/deployment/compile_locales.py --check
 ```
 
-Tento nástroj zpracuje označené texty Pythonu, Bashe
-i PowerShellu. `test_message_contract.py` kontroluje aktuálnost šablony
-a odmítá nové přímé textové printy či interpolované shellové hlášky.
+The extraction tool covers marked Python, Bash and PowerShell messages.
+The Czech PO contains English `msgid` and Czech `msgstr`. Preserve all named and
+printf placeholders. The compile tool requires GNU gettext (`msgfmt`), verifies
+coverage and generates the pure Bash table and an ignored development MO file.
+If needed, enter `nix shell nixpkgs#gettext` for development.
 
-Překlad ulož jako `management/deployment/locales/en.po` a zkompiluj přes
-`msgfmt --check-format` do `en/LC_MESSAGES/nixberry.mo` v témže adresáři.
-Při přidání katalogu zapoj kompilaci do Nix sestavení. Balíčky přebírají
-binární katalog spolu se společným modulem; POT není runtime součást.
-Bash a PowerShell se překládají místně před spuštěním nebo přenosem,
-RPC Python dostává modul i katalog v jednom přenosu. Vzdálený host
-nepotřebuje gettext a český katalog není nutný.
+Nix compiles MO files once during builds using `management/locales.nix` and
+attaches the same catalogue to every package. PO and the generated shell table
+are versioned; MO binaries are not. POT is not required at runtime.
 
-Při úpravě ověř terminál, přesměrovaný stdout a stderr, `NO_COLOR`,
-`TERM=dumb`, chybějící katalog a případný JSON režim. Zkontroluj také
-chybovou cestu: nesmí oznámit úspěch po neověřeném výsledku a musí zachovat
-návratový kód podřízeného nástroje.
+`test_message_contract.py` checks template freshness and output conventions.
+Translation tests cover English defaults, explicit Czech, missing catalogues,
+fallback, quoting, remote packaging and substitution order.
+Verify terminal/nonterminal streams, JSON, exit codes, `NO_COLOR` and
+`TERM=dumb`; failures must preserve child exit codes and must not claim success.

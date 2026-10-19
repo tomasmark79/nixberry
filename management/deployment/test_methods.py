@@ -48,7 +48,7 @@ class MethodTests(unittest.TestCase):
                 agent.dispatch(request)
                 self.assertEqual((directory / "installer.iso").read_bytes(), data)
                 self.assertFalse((directory / "system.vmdk").exists())
-                with self.assertRaisesRegex(RuntimeError, "Metoda neodpovídá"):
+                with self.assertRaisesRegex(RuntimeError, "The method differs"):
                     agent.dispatch({**request, "method": "image", "action": "start"})
 
     def test_iso_creation_allocates_empty_disk_and_attaches_iso_on_portable_platforms(self):
@@ -94,7 +94,7 @@ class MethodTests(unittest.TestCase):
         with patch.object(agent, "owned", return_value={"method": "iso"}), \
                 patch.object(agent, "probe", return_value={"state": "shut off"}), \
                 patch.object(agent, "run", return_value='"SATA-1-0"="/foreign.iso"') as run:
-            with self.assertRaisesRegex(RuntimeError, "očekávané ISO"):
+            with self.assertRaisesRegex(RuntimeError, "expected ISO"):
                 agent.installer_media(s, "virtualbox", Path("/tmp/own-vm"), detach=True)
             self.assertEqual(run.call_count, 1)
 
@@ -107,7 +107,7 @@ class MethodTests(unittest.TestCase):
             with patch.object(portable, "rpc", return_value=snapshot) as rpc, \
                     patch.object(portable.subprocess, "run", side_effect=[result, result, failed]), \
                     contextlib.redirect_stderr(io.StringIO()):
-                with self.assertRaisesRegex(RuntimeError, "Instalace selhala"):
+                with self.assertRaisesRegex(RuntimeError, "Installation failed"):
                     portable.install_iso(target, {"systemPath": "/nix/store/system", "diskoPath": "/nix/store/disko"}, apply=True)
             self.assertEqual([c.args[1] for c in rpc.call_args_list], ["installer-check"] * 3)
 

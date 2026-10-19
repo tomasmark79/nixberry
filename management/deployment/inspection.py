@@ -1,4 +1,4 @@
-"""Diagnostika a přehled generací pouze čtením, bez sestavení nebo aktivace."""
+"""Read-only diagnostics and generation inventory, without builds or activation."""
 
 from messages import _
 
@@ -21,11 +21,11 @@ def guest_services(backend):
 
 
 def shell_probe(command, probes):
-    """Každá kontrola má vlastní návratový kód; chyba jedné nezakryje ostatní."""
+    """Each check has its own exit code; one failure does not hide the others."""
     lines = []
     for key, script in probes.items():
         if not re.fullmatch(r"[a-z_]+", key):
-            raise ValueError(_('Neplatný klíč kontroly.'))
+            raise ValueError(_("Invalid check key."))
         lines.append("out=$( ( " + script + " ) 2>&1); rc=$?; "
                      + "printf '%s %s ' " + shlex.quote(key) + ' "$rc"; '
                      + 'printf %s "$out" | base64 -w0; printf "\\n"')
@@ -34,14 +34,14 @@ def shell_probe(command, probes):
     for line in output.splitlines():
         parts = line.split(" ", 2)
         if len(parts) < 2:
-            raise RuntimeError(_('Neúplná odpověď diagnostiky.'))
+            raise RuntimeError(_("Incomplete diagnostic response."))
         key, rc = parts[:2]
         if key not in probes or key in result:
-            raise RuntimeError(_('Neočekávaná odpověď diagnostiky.'))
+            raise RuntimeError(_("Unexpected diagnostic response."))
         result[key] = {"code": int(rc), "output": base64.b64decode(
             parts[2] if len(parts) == 3 else "", validate=True).decode("utf-8", errors="replace")}
     if result.keys() != probes.keys():
-        raise RuntimeError(_('Chybí část odpovědi diagnostiky.'))
+        raise RuntimeError(_("Part of the diagnostic response is missing."))
     return result
 
 
@@ -52,19 +52,19 @@ def doctor(target):
         result["checks"].append({"name": name, "level": level, "message": message, **details})
 
     if target.get("offline") and not capabilities(target)["system"]:
-        check("connection", "warning", _('Správa systému není nastavená; doplň access nebo použij --ssh.'))
+        check("connection", "warning", _("System management is not configured; add access or use --ssh."))
         return result
     try:
         snapshot = status(target)
         result["snapshot"] = snapshot
-        check("identity", "ok", _('Identita cíle odpovídá deklaraci.'))
+        check("identity", "ok", _("The target identity matches the declaration."))
         if snapshot["state"] != "running":
-            check("state", "warning", _('Cíl neběží: {value1}').format(value1=snapshot["state"]))
+            check("state", "warning", _("The target is not running: {value1}").format(value1=snapshot["state"]))
             return result
         command = connection(target, snapshot)
     except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as error:
         check("connection", "error", str(error), hint=(
-            _('Ověř SSH klíč a známý klíč hostitele; při síťové chybě také kabel, port a MAC v deklaraci. Diagnostika neskenuje síť ani neobchází kontrolu identity.')))
+            _("Verify the SSH key and known host key; for a network error, also check the cable, port and declared MAC. Diagnostics do not scan the network or bypass identity checks.")))
         return result
     services = guest_services(target["backend"])
     probes = {
@@ -94,16 +94,16 @@ def doctor(target):
     result["observations"] = data
     for name, item in data.items():
         if item["code"] and name not in ("services", "reboot", "installation"):
-            check(name, "warning", _('Kontrola se nezdařila: {value1}').format(value1=item["output"]))
+            check(name, "warning", _("The check failed: {value1}").format(value1=item["output"]))
     for name, expected in (("hostname", target["spec"].get("hostName") if target["backend"] == "rpi"
                             else target.get("guestHostName", "nixberry-vm")),
                            ("architecture", "aarch64" if target["backend"] == "rpi" else "x86_64")):
         if not data[name]["code"]:
             actual = data[name]["output"]
-            check(name, "ok" if actual == expected else "error", _('{actual} (očekáváno {value2})').format(actual=actual, value2=str(expected)))
+            check(name, "ok" if actual == expected else "error", _("{actual} (expected {value2})").format(actual=actual, value2=str(expected)))
     if not data["failed"]["code"]:
         failed = data["failed"]["output"]
-        check("failed", "error" if failed else "ok", (failed or _('Žádné neúspěšné jednotky.')))
+        check("failed", "error" if failed else "ok", (failed or _("No failed units.")))
     active = data["services"]["output"].splitlines()
     for index, service in enumerate(services):
         state = active[index] if index < len(active) else "unknown"
@@ -112,21 +112,21 @@ def doctor(target):
         level = "ok" if state == "active" else "warning" if optional_agent else "error"
         check("service:" + service, level, state)
     check("installation", "ok" if not data["installation"]["code"] else "error",
-          (_('Kořenový a bootovací oddíl odpovídají instalaci.') if not data["installation"]["code"] else _('Disk nebo prostředí neodpovídá instalaci; může jít o instalační ISO či obnovovací SD.')))
+          (_("Root and boot partitions match the installation.") if not data["installation"]["code"] else _("The disk or environment does not match the installation; this may be an installation ISO or recovery SD.")))
     if not data["memory"]["code"]:
         memory = {key: int(value) for key, value in re.findall(r"^(MemTotal|MemAvailable):\s+(\d+)",
                                                               data["memory"]["output"], re.M)}
         if memory.get("MemTotal") and "MemAvailable" in memory:
             available = 100 * memory["MemAvailable"] / memory["MemTotal"]
             check("memory", "warning" if available < 5 else "ok",
-                  _('Dostupná paměť: {available:.1f} %').format(available=available), availableBytes=memory["MemAvailable"] * 1024)
+                  _("Available memory: {available:.1f} %").format(available=available), availableBytes=memory["MemAvailable"] * 1024)
     if not data["temperature"]["code"]:
         for line in data["temperature"]["output"].splitlines():
             parts = line.split()
             if len(parts) == 2 and parts[1].lstrip("-").isdigit():
                 temperature = int(parts[1]) / 1000
                 check("temperature:" + parts[0], "warning" if temperature >= 80 else "ok",
-                      _('{temperature:.1f} °C (orientační práh 80 °C)').format(temperature=temperature))
+                      _("{temperature:.1f} °C (indicative threshold 80 °C)").format(temperature=temperature))
     for name in ("disks", "inodes"):
         if data[name]["code"]:
             continue
@@ -138,27 +138,27 @@ def doctor(target):
             if len(fields) == 6:
                 seen.add(fields[5])
             if name == "inodes" and len(fields) == 6 and fields[4] == "-":
-                check(name + ":" + fields[5], "ok", _('{value1}: souborový systém neudává inody.').format(value1=fields[5]))
+                check(name + ":" + fields[5], "ok", _("{value1}: the filesystem does not report inodes.").format(value1=fields[5]))
                 continue
             if len(fields) != 6 or not re.fullmatch(r"\d+%", fields[4]):
-                check(name, "warning", _('Neznámý formát df: {line}').format(line=line))
+                check(name, "warning", _("Unknown df format: {line}").format(line=line))
                 continue
             used = int(fields[4][:-1])
             check(name + ":" + fields[5], "error" if used >= 98 else "warning" if used >= 90 else "ok",
                   f"{fields[5]}: {used} %", usedPercent=used)
     if all(not data[key]["code"] for key in ("current", "default")):
         check("generation", "ok" if data["current"]["output"] == data["default"]["output"] else "warning",
-              _("Aktivní a výchozí systém odpovídají.") if data["current"]["output"] ==
-              data["default"]["output"] else _("Aktivní a výchozí systém se liší; po restartu může naběhnout jiný systém."))
+              _("The active and default systems match.") if data["current"]["output"] ==
+              data["default"]["output"] else _("The active and default systems differ; a reboot may start a different system."))
     check("reboot", "ok" if data["reboot"]["code"] == 0 else "warning",
-          (_('Bootovací konfigurace odpovídá.') if data["reboot"]["code"] == 0 else _('Bootovací konfigurace se liší nebo ji nelze porovnat; prověř potřebu restartu.')))
+          (_("The boot configuration matches.") if data["reboot"]["code"] == 0 else _("The boot configuration differs or cannot be compared; check whether a reboot is needed.")))
     if not data["routes"]["code"]:
         try:
             routes = json.loads(data["routes"]["output"])
             check("route", "ok" if any(r.get("dst") == "default" for r in routes) else "warning",
-                  (_('Výchozí trasa je přítomná.') if any(r.get("dst") == "default" for r in routes) else _('Chybí výchozí trasa; může jít o záměrně izolovanou síť.')))
+                  (_("A default route is present.") if any(r.get("dst") == "default" for r in routes) else _("No default route; the network may be intentionally isolated.")))
         except (ValueError, TypeError):
-            check("route", "warning", _('Neplatná odpověď ip route.'))
+            check("route", "warning", _("Invalid ip route response."))
     return result
 
 
@@ -174,13 +174,13 @@ def generations(target):
     }
     data = shell_probe(command, probes)
     if any(item["code"] for item in data.values()):
-        raise RuntimeError(_('Nelze bezpečně zjistit všechny chráněné generace.'))
+        raise RuntimeError(_("Cannot safely identify all protected generations."))
     rows = []
     for line in data["generations"]["output"].splitlines():
         path, system, timestamp = line.split("\t")
         number = re.fullmatch(r"/nix/var/nix/profiles/system-(\d+)-link", path)
         if not number or not re.fullmatch(r"/nix/store/[a-z0-9]{32}-nixos-system-[A-Za-z0-9+._-]+", system):
-            raise RuntimeError(_('Neplatná nebo neúplná evidence generací.'))
+            raise RuntimeError(_("Invalid or incomplete generation inventory."))
         rows.append({"generation": int(number[1]), "path": path, "system": system,
                      "timestamp": int(timestamp), "protectedBy": []})
     rows.sort(key=lambda row: row["generation"], reverse=True)
@@ -203,7 +203,7 @@ def generations(target):
         row["classification"] = "protected" if row["protectedBy"] else "review"
         row["closureBytes"] = sizes.get(row["system"], {}).get("closureSize")
     return {"generations": rows, "sizeError": size_error,
-            "note": _('Velikosti zahrnují sdílené závislosti; nelze je sčítat ani považovat za uvolnitelné místo. review znamená ruční posouzení, nikoli povolení smazat. Všechny dochované generace drží GC roots.')}
+            "note": _("Sizes include shared dependencies; they cannot be added or treated as reclaimable space. review means manual assessment, not permission to delete. All retained generations have GC roots.")}
 
 
 def exit_code(report):

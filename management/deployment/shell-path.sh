@@ -1,4 +1,4 @@
-# Společný výběr receptu pro spouštěč, editor i doplňování. Pouze místní čtení.
+# Shared recipe selection for launchers, editors and completion; local read-only access.
 source "${BASH_SOURCE[0]%/*}/messages.sh"
 
 _nixberry_recipe_dir() (
@@ -9,7 +9,7 @@ _nixberry_recipe_dir() (
     recipe=$1
   fi
   if [[ ! -f $recipe/flake.nix || ! -d $recipe/instances || ! -d $recipe/management/rpi/targets ]]; then
-    nb_error 'Recept NixBerry není úplný nebo dostupný: %s' "$recipe"
+    nb_error 'The NixBerry recipe is incomplete or unavailable: %s' "$recipe"
     return 1
   fi
   cd -- "$recipe" && pwd -P

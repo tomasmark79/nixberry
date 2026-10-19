@@ -3,6 +3,8 @@
 import ast
 from pathlib import Path
 import re
+import subprocess
+import sys
 import unittest
 
 from extract_messages import collect, template
@@ -12,6 +14,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class MessageContractChecks(unittest.TestCase):
+    def test_english_sources_and_complete_czech_catalogues(self):
+        czech_letters = re.compile('[ěščřžýáíéůúďťňĚŠČŘŽÝÁÍÉŮÚĎŤŇ]')
+        self.assertEqual([message for message in collect(ROOT) if czech_letters.search(message)], [])
+        result = subprocess.run([sys.executable, str(ROOT / 'deployment/compile_locales.py'), '--check'],
+                                text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_translation_template_covers_current_python_shell_and_powershell_sources(self):
         self.assertEqual((ROOT / "deployment/locales/nixberry.pot").read_text(), template(ROOT),
                          "Obnov katalog přes management/deployment/extract_messages.py")

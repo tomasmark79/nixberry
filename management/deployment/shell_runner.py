@@ -1,4 +1,4 @@
-"""Přeloží Bash skript jednou před spuštěním; jednotlivé hlášky obslouží Bash."""
+"""Translate a Bash script once before execution; Bash handles individual messages."""
 
 import os
 import subprocess

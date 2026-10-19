@@ -1,63 +1,75 @@
 # NixBerry
 
-NixBerry sestavuje a spravuje NixOS servery na platformách **QEMU/KVM (libvirt),
-Hyper-V, Proxmox VE, VirtualBox, VMware Workstation a Raspberry Pi 5**.
-Jeden recept určuje systém;
-deklarace každého stroje vybírá konfiguraci, platformu, síť a prostředky.
+NixBerry builds and manages NixOS servers on **QEMU/KVM (libvirt), Hyper-V,
+Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5**. One recipe
+defines the system; each machine declaration selects its configuration,
+platform, network and resources.
 
-Výchozí nasazení VM používá hotový disk (`image`). Na všech VM platformách
-lze zvolit instalaci z ISO. Raspberry Pi se obnovuje ze SD.
+VMs default to a prebuilt system disk (`image`). Every VM backend also
+supports installation from ISO. Raspberry Pi uses a recovery SD card.
 
-## Začít
+## Get started
 
-Projekt je v aktivním vývoji. Podporované postupy a rozsah ověření popisují
-[návod pro platformy](docs/vm.md) a [testovací plán](docs/test-plan.md).
+NixBerry is in active development. The [platform guide](docs/vm.md) describes
+supported environments; the [test guide](docs/test-plan.md) distinguishes
+isolated checks, builds and live deployment evidence.
 
-Správcovský počítač potřebuje Linux x86_64, Nix s povolenými flakes a SSH.
-Po naklonování vstup do kořene projektu. Zvolený adresář přidej do `PATH`,
-aby další ukázky s příkazem `nixberry` fungovaly z libovolného adresáře:
+The management computer needs Linux x86_64, Nix with flakes enabled, and SSH.
+After cloning, enter the project root and add it to your shell's `PATH`:
 
 ```sh
 export PATH="$PWD:$PATH"
 nixberry --help
 ```
 
-Před nasazením připrav vlastní veřejný SSH klíč a vybrané připojení podle
-[šablon hostitelů](management/examples/hosts.nix):
+Prepare your public SSH key and host connections using the
+[host templates](management/examples/hosts.nix):
 
 ```sh
 cp ~/.ssh/id_ed25519.pub admin.pub
 cp management/examples/hosts.nix hosts.local.nix
 ```
 
-V `hosts.local.nix` ponech pouze své hostitele a uprav jejich parametry.
-Pro první místní libvirt VM použij položku `local-libvirt`.
-NixBerry očekává již připravený hypervizor, síť a úložiště.
-Výhradně offline příprava hostitele nepotřebuje; klíč správce ano.
-Po čistém klonování je seznam cílů prázdný.
+Keep only your hosts in `hosts.local.nix` and adjust their parameters.
+Use `local-libvirt` for a first local QEMU/KVM VM.
+The hypervisor, network and storage must already exist. Offline preparation
+needs no hypervisor connection, but still needs the administrator's public key.
+A fresh clone has no declared targets.
 
 ```sh
 nixberry list
 nixberry --help
 ```
 
-**Cíl** je deklarovaný server, **hostitel** je počítač s hypervizorem.
-Jména existujících cílů ukazuje `list`; hostitelé jsou v [hosts.nix](hosts.nix).
-Všechny názvy `vm-demo-*` v návodech jsou příklady — nahraď je svým cílem.
+A **target** is a declared server; a **host** runs its hypervisor.
+`list` shows existing targets. [hosts.nix](hosts.nix) loads your local host file.
+All `vm-demo-*` names in this guide are examples; use your own target names.
 
-| Potřebuji | Návod |
+English is the default regardless of your system locale. To use Czech:
+
+```sh
+NIXBERRY_LANG=cs nixberry --help
+# Or persist the choice in your shell:
+export NIXBERRY_LANG=cs
+```
+
+Use `NIXBERRY_LANG=en` for English. JSON keys, technical values and external
+tool output do not change language. Documentation is maintained in English.
+
+| Task | Guide |
 | --- | --- |
-| Zjistit stav, přihlásit se, aktualizovat | [Běžná správa](#sprava) |
-| Vytvořit VM z disku nebo ISO | [Nová VM](#reprodukce) |
-| Předat systém bez přístupu k hypervizoru | [Offline předání](#offline) |
-| Upravit aplikace, služby nebo deklaraci | [Konfigurace](#konfigurace) |
-| Obnovit Raspberry Pi | [Obnova ze SD](docs/rpi-recovery.md) |
-| Najít příkaz nebo přepínač | [Reference CLI](docs/cli.md) |
-| Řešit chybu nebo nedostupnost | [Při potížích](#potize) |
+| Check status, log in or update | [Everyday management](#management) |
+| Deploy a VM from disk or ISO | [New VM](#deployment) |
+| Hand off a system without hypervisor access | [Offline handoff](#offline) |
+| Change packages, services or declarations | [Configuration](#configuration) |
+| Recover Raspberry Pi | [SD recovery](docs/rpi-recovery.md) |
+| Look up commands and options | [CLI reference](docs/cli.md) |
+| Troubleshoot a failure | [Troubleshooting](#troubleshooting) |
 
 <a id="sprava"></a>
+<a id="management"></a>
 
-## Běžná správa
+## Everyday management
 
 ```sh
 nixberry show vm-demo-libvirt
@@ -67,17 +79,18 @@ nixberry doctor vm-demo-libvirt
 nixberry verify vm-demo-libvirt
 ```
 
-`show` čte deklaraci a vypisuje dostupné operace. `status` zjišťuje živý stav;
-bez cíle se ptá všech deklarovaných strojů souběžně. Pro rychlou kontrolu
-jednoho serveru uveď jeho jméno. `doctor` hledá provozní problémy,
-`verify` navíc kontroluje shodu s receptem.
+`show` reads the declaration and lists available operations. `status` reads
+live state, querying hosts concurrently when no target is given.
+Specify one target for a quick check. `doctor` diagnoses operational issues;
+`verify` also checks the running system against the recipe.
 
 <a id="aktualizace"></a>
 <a id="porovnani-zmen"></a>
+<a id="updates"></a>
 
-### Aktualizovat systém
+### Update a system
 
-Uprav recept nebo deklaraci a pokračuj:
+Edit the recipe or declaration, then:
 
 ```sh
 nixberry diff vm-demo-libvirt
@@ -87,33 +100,33 @@ nixberry verify vm-demo-libvirt
 nixberry diffg vm-demo-libvirt
 ```
 
-- `diff` porovnává běžící systém s aktuálním receptem; může sestavovat místně.
-- `update` bez `--apply` ukáže plán bez připojení a sestavení.
-- `update --apply` sestaví, přenese a aktivuje systém. Nemění kapacitu VM ani oddíly.
-- `diffg` porovnává dvě nejvyšší dochované generace na serveru. Po aktualizaci
-  bývá `diff` prázdný; změnu mezi generacemi ukáže `diffg`.
+- `diff` compares the running system with the current recipe and may build locally.
+- `update` without `--apply` shows a plan without connecting or building.
+- `update --apply` builds, transfers and activates the system. It does not resize the VM or repartition disks.
+- `diffg` compares the two highest retained server generations. After an update,
+  `diff` is usually empty; use `diffg` to inspect the generation change.
 
-Postup je stejný pro VM i RPi. Aktualizace může restartovat služby, zařízení
-automaticky nerestartuje. Závislosti mění samostatný
-`nix flake update --flake .` z kořene tohoto receptu; aktualizace serveru používá
-jeho aktuální lock. Podrobnosti o [generacích a snímku receptu](docs/reference.md#recept).
+The same workflow applies to VMs and RPi. Activation may restart services,
+but does not automatically reboot the machine. Update dependencies separately
+with `nix flake update --flake .` in this recipe's root; server updates use
+its current lock. See [generations and immutable snapshots](docs/reference.md#recipe).
 
 <a id="reprodukce"></a>
+<a id="deployment"></a>
 
-## Nová VM
+## New VM
 
-V místním `hosts.local.nix`, načítaném přes [hosts.nix](hosts.nix), musí
-existovat připravený hostitel se sítí a úložištěm.
-NixBerry tyto prostředky nezakládá.
+Declare an existing hypervisor, network and storage in `hosts.local.nix`,
+loaded through [hosts.nix](hosts.nix). NixBerry does not create those resources.
 
 ```sh
 nixberry new-libvirt-vm vm-demo-libvirt --host local-libvirt
 nixberry show vm-demo-libvirt
 ```
 
-Vznikne místní `instances/vm-demo-libvirt.nix`. Zkontroluj v ní konfiguraci,
-síť a kapacitu. Výchozí prostředky jsou 4 CPU, 4 GiB RAM a 32 GiB disk.
-UUID a MAC zachovej pro další správu téže VM.
+This writes `instances/vm-demo-libvirt.nix`. Review its configuration,
+network and capacity. Defaults are 4 CPUs, 4 GiB RAM and a 32 GiB disk.
+Keep the UUID and MAC when managing the same VM.
 
 ```sh
 nixberry plan vm-demo-libvirt
@@ -121,7 +134,7 @@ nixberry reproduce vm-demo-libvirt --apply
 nixberry verify vm-demo-libvirt
 ```
 
-| Platforma | Příkaz pro deklaraci |
+| Platform | Declaration command |
 | --- | --- |
 | QEMU/KVM (libvirt) | `new-libvirt-vm` |
 | Hyper-V | `new-hyperv-vm` |
@@ -129,45 +142,47 @@ nixberry verify vm-demo-libvirt
 | VirtualBox | `new-virtualbox-vm` |
 | VMware Workstation | `new-vmware-vm` |
 
-Bez `--host` se vybere jediný deklarovaný hostitel dané platformy.
-Při více možnostech jej vyber výslovně. `new-* --dry-run` jen vypíše návrh.
-Proxmox VMID z místní evidence ještě nemusí být volné v clusteru; to ověří `plan`.
+Without `--host`, a sole matching host is selected automatically.
+Select explicitly if several exist. `new-* --dry-run` only prints the proposal.
+A Proxmox VMID unused in local inventory may still be occupied in the cluster;
+`plan` checks that live.
 
 <a id="metody"></a>
+<a id="methods"></a>
 
-### Disk nebo ISO
+### Disk or ISO
 
-| Metoda | `create CÍL --apply` | `install CÍL --apply` |
+| Method | `create TARGET --apply` | `install TARGET --apply` |
 | --- | --- | --- |
-| `image` — výchozí | Vytvoří vypnutou VM s hotovým diskem. | Spustí ji a ověří systém z disku. |
-| `iso` | Vytvoří VM s prázdným diskem a spustí ISO. | Nainstaluje systém, korektně vypne VM, odpojí ISO a ověří start z disku. |
+| `image` — default | Creates a powered-off VM with a prebuilt system disk. | Starts it and verifies the system from disk. |
+| `iso` | Creates a blank disk and boots the installation ISO. | Installs, shuts down gracefully, detaches ISO and verifies boot from disk. |
 
-`reproduce --apply` a `provision --apply` spojují oba kroky.
-Metodu ukládá `deploymentMethod` v deklaraci; `--method image|iso` ji jednorázově
-přepíše. Například:
+`reproduce --apply` and `provision --apply` combine both steps.
+`deploymentMethod` stores the default; `--method image|iso` overrides it once:
 
 ```sh
-nixberry new-proxmox-vm vm-demo-proxmox --host HOSTITEL --method iso
+nixberry new-proxmox-vm vm-demo-proxmox --host HOST --method iso
 nixberry plan vm-demo-proxmox
 nixberry reproduce vm-demo-proxmox --apply
 ```
 
-Při odděleném `create` a `install` zvol stejnou metodu. Nasazení odmítá
-existující cíl; ISO instalátor také odmítá disk s oddíly nebo signaturami.
-Při chybě nejprve zjisti stav přes `status` a `probe`, potom rozhodni o pokračování.
-[Podrobnosti nasazení a resetu](docs/vm.md).
+Use the same method for separate `create` and `install` operations.
+Deployment refuses existing targets; the ISO installer also refuses disks
+with partitions or signatures. After a failure, inspect `status` and `probe`
+before deciding how to continue. See [deployment and reset](docs/vm.md).
 
 <a id="offline"></a>
 
-## Offline předání
+## Offline handoff
 
-Když hypervizor spravuje kolega, připrav deklaraci bez hostitele:
+When a colleague manages the hypervisor, prepare a declaration without a host:
 
 ```sh
 nixberry new-proxmox-vm vm-demo-proxmox-offline --offline
 ```
 
-V deklaraci nastav kapacitu a síť. Výchozí je DHCP; pro přidělenou pevnou IP:
+Set capacity and network in the declaration. DHCP is the default; for an
+assigned static address:
 
 ```nix
 network = {
@@ -178,116 +193,122 @@ network = {
 };
 ```
 
-Adresy jsou příklad. Bridge, VLAN, firewall a připojení do správné podsítě
-zajišťuje provozovatel hypervizoru. Potom připrav disk nebo ISO:
+These addresses are examples. The hypervisor operator provides the bridge,
+VLAN, firewall and connection to the correct subnet. Export a disk or ISO:
 
 ```sh
 nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-disk
 nixberry export vm-demo-proxmox-offline --method iso --output ~/vm-demo-proxmox-iso
 ```
 
-Výstupní adresář musí být nový a mimo recept. Balíček obsahuje médium,
-manifest, recept s místními deklaracemi, kontrolní součty a návod pro provozovatele.
-Sestavení může potřebovat internet; hotové médium obsahuje cílový systém.
-**Export nezálohuje provozní data ani tajemství serveru.**
+The destination must be new and outside the recipe. The bundle contains media,
+a manifest, the recipe with local declarations, checksums and operator instructions.
+Building may require internet; completed media includes the target system.
+**Export is not a backup of server data or secrets.** Review included local
+configuration before sharing a bundle.
 
-Po importu lze server spravovat přes `access` v deklaraci nebo jednorázově:
+After import, manage the server through `access` in its declaration or a one-time endpoint:
 
 ```sh
 nixberry doctor vm-demo-proxmox-offline --ssh root@10.0.1.19:22
 nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply
 ```
 
-SSH přístup nepřidává správu hypervizoru. [Předání disku, ISO a Proxmox VM](docs/offline.md).
+SSH access does not grant hypervisor management.
+See [disk, ISO and Proxmox handoff](docs/offline.md).
 
 <a id="obnova-rpi"></a>
 
 ## Raspberry Pi 5
 
-RPi má deklaraci v `management/rpi/targets/`; běžná správa používá stejné
-`status`, `ssh`, `diff`, `update` a `verify`. Plnou obnovu zajišťuje SD:
+RPi declarations live in `management/rpi/targets/`. Everyday management uses
+the same `status`, `ssh`, `diff`, `update` and `verify` commands.
+A full recovery uses SD media:
 
 ```sh
-nixberry export nixberry --output ~/nixberry-sd
+nixberry export rpi-demo --output ~/rpi-demo-sd
 ```
 
-Dále postupuj podle [obnovy RPi ze SD](docs/rpi-recovery.md).
-Samotný start SD nic nemaže. Zápis na SSD vyžaduje výslovné provedení a kontrolu
-identity RPi i disku. `--method` a reset hypervizoru se na RPi nevztahují.
+Follow [RPi SD recovery](docs/rpi-recovery.md). Booting the SD alone erases nothing.
+Writing the SSD requires explicit execution and verified RPi and disk identity.
+VM `--method` selection and hypervisor reset do not apply.
 
 <a id="konfigurace"></a>
+<a id="configuration"></a>
 
-## Konfigurace a místní deklarace
+## Configuration and local declarations
 
-| Co nastavuji | Kde |
+| Setting | Location |
 | --- | --- |
-| Připojení a prostředky hypervizorů | [hosts.nix](hosts.nix) |
-| Konkrétní VM, její síť a kapacitu | `instances/JMÉNO.nix` |
-| RPi, jeho SSD a síť | [management/rpi/targets/](management/rpi/targets/default.nix) |
-| Skladbu balíčků a služeb | [configurations/](configurations/default.nix) |
-| Společný základ systému | [modules/common.nix](modules/common.nix) a `modules/` |
-| Boot, disky, ovladače a guest podporu | `platforms/` |
-| Veřejný klíč správce | Místní `admin.pub` |
+| Hypervisor connections and resources | Local `hosts.local.nix`, loaded by [hosts.nix](hosts.nix) |
+| A VM's identity, network and capacity | `instances/NAME.nix` |
+| RPi, SSD and network | [management/rpi/targets/](management/rpi/targets/default.nix) |
+| Packages and services | [configurations/](configurations/default.nix) |
+| Shared system base | [modules/common.nix](modules/common.nix) and `modules/` |
+| Boot, disks, drivers and guest support | `platforms/` |
+| Administrator public key | Local `admin.pub` |
 
-Každý cíl volí jednu `configuration`; výchozí je `default`.
-Volba `--configuration` vybírá konfiguraci při vytváření deklarace:
+Each target selects one `configuration`, defaulting to `default`.
+Use `--configuration` when creating a declaration:
 
 ```sh
 nixberry new-libvirt-vm vm-demo-nixoncpp --configuration nixoncpp
 ```
 
-U existujícího stroje uprav pole v deklaraci a pokračuj přes `diff` a `update`.
-Podrobný návod na [vlastní konfigurace, aplikace a sestavení](docs/reference.md).
+For an existing machine, edit its declaration and continue with `diff` and `update`.
+See [custom configurations, applications and builds](docs/reference.md).
 
-**Konkrétní VM i RPi deklarace, `hosts.local.nix` a `admin.pub` se v Gitu neverzují.**
-Místně fungují i bez `git add`; zálohuj je samostatně. V adresářích deklarací
-se verzují jen `default.nix` a `.gitignore`. Po klonování vytvoř nebo obnov
-svá místní data. Recept používá vlastní `flake.lock`.
+**Concrete VM and RPi declarations, `hosts.local.nix` and `admin.pub` are not tracked in Git.**
+They work without `git add`; back them up separately. Declaration directories
+only track their loader and ignore rules. Restore or create local data after cloning.
+NixBerry maintains its own `flake.lock`.
 
 <a id="potize"></a>
+<a id="troubleshooting"></a>
 
-## Při potížích
+## Troubleshooting
 
-| Situace | Další krok |
+| Situation | Next step |
 | --- | --- |
-| Přehled trvá dlouho | Použij `status CÍL` místo všech hostitelů. |
-| VM běží, ale server neodpovídá | `doctor CÍL`, `probe CÍL` a konzole hypervizoru. |
-| Vytvoření hlásí existující VM | Zjisti stav; podle metody můžeš pokračovat přes `install`. |
-| Po aktualizaci je `diff` prázdný | Použij `diffg CÍL`. |
-| Přenos SSH přerušil aktualizaci | Zkontroluj `journalctl -u nixberry-update` na serveru a spusť `verify`. |
-| Chci posoudit místo na disku | `cleanup CÍL` vypisuje náhled; nic nemaže. |
-| Chci odstranit spravovanou VM | [Chráněný reset](docs/vm.md#reset), nejprve plán a `allowReset = true;`. |
-| Hypervizor ukazuje téměř plnou RAM | Porovnej cache, `MemAvailable` a tlak na paměť; [postup](docs/reference.md#pamet). |
+| Inventory takes too long | Use `status TARGET` rather than querying all hosts. |
+| VM is running but the server does not respond | `doctor TARGET`, `probe TARGET` and the hypervisor console. |
+| Creation reports an existing VM | Inspect state; `install` may be the next step for its method. |
+| `diff` is empty after an update | Use `diffg TARGET`. |
+| SSH interrupted an update | Check server `journalctl -u nixberry-update`, then run `verify`. |
+| Assess disk usage | `cleanup TARGET` previews findings without deleting. |
+| Remove a managed VM | [Protected reset](docs/vm.md#reset): review the plan and set `allowReset = true;`. |
+| Hypervisor reports nearly full RAM | Check cache, `MemAvailable` and memory pressure; [details](docs/reference.md#memory). |
 
-Zaseknutou interaktivní SSH relaci odpoj sekvencí **Enter, `~`, `.`**.
-Při změně SSH host klíče nejprve nezávisle ověř otisk; starý záznam se automaticky nemaže.
-[Podrobnosti SSH a guest agentů](docs/vm.md#prime-ssh).
+Disconnect a stuck interactive SSH session with **Enter, `~`, `.`**.
+Independently verify a changed SSH host key; old keys are not removed automatically.
+See [SSH and guest agents](docs/vm.md#direct-ssh).
 
-## Shell a další návody
+## Shell and detailed guides
 
-Bash doplňuje příkazy, cíle, hostitele, konfigurace a volby. Pro načtení v aktuálním shellu:
+Bash completes commands, targets, hosts, configurations and options.
+Load it in your current shell from the recipe root:
 
 ```sh
 source ./completion.bash
 ```
 
-Spouštěč a doplňování respektují `NIXBERRY_RECIPE`; jinak používají adresář
-projektu. Proměnnou nastav pomocí `export`; neplatná výslovná cesta skončí
-chybou. Projekt funguje samostatně a nemá závislost na Nixonu.
+The launcher and completion honor exported `NIXBERRY_RECIPE`; otherwise they
+use the project directory. Invalid explicit paths fail without switching copies.
+NixBerry works independently of Nixon.
 
-| Návod | Obsah |
+| Guide | Contents |
 | --- | --- |
-| [CLI](docs/cli.md) | Všechny příkazy, přepínače a režimy zápisu. |
-| [VM platformy](docs/vm.md) | Hostitelé, přímé SSH, guest agenti a reset. |
-| [Offline předání](docs/offline.md) | Import disku, instalace z ISO a předání Proxmox VM. |
-| [Obnova RPi](docs/rpi-recovery.md) | Příprava SD a obnova konkrétního SSD. |
-| [Technická reference](docs/reference.md) | Moduly, konfigurace, aplikace a Nix výstupy. |
-| [Testování](docs/test-plan.md) | Izolované kontroly a živá testovací matice. |
-| [Jednotnost platforem](docs/platform-consistency.md) | Společný kontrakt a pravidla jeho kontroly. |
-| [Uživatelské hlášky](docs/messages.md) | Proudy, barvy a překlady. |
-| [Proxmox lab](docs/proxmox-lab.md) | Vnořený hostitel pro integrační zkoušky. |
+| [CLI](docs/cli.md) | Commands, options and write modes. |
+| [VM platforms](docs/vm.md) | Hosts, direct SSH, guest agents and reset. |
+| [Offline handoff](docs/offline.md) | Disk import, ISO installation and Proxmox handoff. |
+| [RPi recovery](docs/rpi-recovery.md) | SD preparation and SSD recovery. |
+| [Technical reference](docs/reference.md) | Modules, configurations, applications and Nix outputs. |
+| [Testing](docs/test-plan.md) | Isolated checks and live test matrix. |
+| [Platform consistency](docs/platform-consistency.md) | Shared contracts and review rules. |
+| [Messages](docs/messages.md) | Languages, streams, colors and translation maintenance. |
+| [Proxmox lab](docs/proxmox-lab.md) | Nested host for integration testing. |
 
-## Licence
+## License
 
-Autor: Tomas Mark. Zdrojový kód NixBerry je dostupný pod [licencí MIT](LICENSE).
-Používané balíčky a nástroje mají vlastní licence uvedené u jejich projektů.
+Author: Tomas Mark. NixBerry source code is available under the [MIT license](LICENSE).
+Dependencies and external tools retain their own licenses.

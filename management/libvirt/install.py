@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Instalace pouze do vyhrazené VM; bez --apply pouze kontrola plánu."""
+"Install only into the dedicated VM; without --apply, only check the plan."
 
 from messages import _, ArgumentParser, info, success, shell_script, forward_stderr, error as report_error
 
@@ -18,7 +18,7 @@ from storage import reject_shared_domains
 
 
 def remember_host_key(source, manifest):
-    """Uchováme klíč až po ověření identity VM a nainstalovaného systému."""
+    """Retain the key only after verifying VM identity and the installed system."""
     root = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
     destination = root / "nixberry/portable" / manifest["uuid"] / "known_hosts"
     destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -36,29 +36,29 @@ def require(condition, message):
 def validate_domain(xml, manifest):
     root = ET.fromstring(xml)
     policy.owner(root, manifest)
-    require(root.findtext("name") == manifest["name"], _('Nesouhlasí název VM.'))
-    require(root.findtext("uuid") == manifest["uuid"], _('Nesouhlasí UUID VM.'))
+    require(root.findtext("name") == manifest["name"], _("VM name does not match."))
+    require(root.findtext("uuid") == manifest["uuid"], _("VM UUID does not match."))
     disks = root.findall("./devices/disk[@device='disk']")
-    require(len(disks) == 1, _('VM musí mít právě jeden cílový disk.'))
-    require(disks[0].find("source").get("file") == manifest["diskPath"], _('Nesouhlasí cesta disku.'))
-    require(disks[0].find("target").get("dev") == "vda", _('Cílový disk není vda.'))
+    require(len(disks) == 1, _("The VM must have exactly one target disk."))
+    require(disks[0].find("source").get("file") == manifest["diskPath"], _("Disk path does not match."))
+    require(disks[0].find("target").get("dev") == "vda", _("The target disk is not vda."))
     cds = root.findall("./devices/disk[@device='cdrom']")
     if manifest.get("deploymentMethod", "iso") == "image":
         require(all(cd.find("source") is None or not cd.find("source").attrib for cd in cds),
-                _('Metoda image nesmí mít připojené instalační ISO.'))
+                _("The image method must not have an installation ISO attached."))
     else:
-        require(len(cds) == 1 and cds[0].find("target").get("dev") == "sda", _('Nesouhlasí CD-ROM.'))
+        require(len(cds) == 1 and cds[0].find("target").get("dev") == "sda", _("CD-ROM does not match."))
         require(cds[0].find("source") is not None and cds[0].find("source").get("file") == manifest["isoPath"],
-                _('VM nepoužívá očekávané ISO.'))
+                _("The VM is not using the expected ISO."))
     interfaces = root.findall("./devices/interface")
-    require(len(interfaces) == 1, _('VM musí mít právě jednu síťovou kartu.'))
-    require(interfaces[0].find("mac").get("address") == manifest["mac"], _('Nesouhlasí MAC.'))
-    require(interfaces[0].find("source").get("network") == manifest["network"], _('Nesouhlasí síť.'))
+    require(len(interfaces) == 1, _("The VM must have exactly one network adapter."))
+    require(interfaces[0].find("mac").get("address") == manifest["mac"], _("MAC address does not match."))
+    require(interfaces[0].find("source").get("network") == manifest["network"], _("Network does not match."))
 
 
 def choose_address(output, network_xml, mac):
     root = ET.fromstring(network_xml)
-    require(root.find("forward").get("mode") == "nat", _('Síť nemá NAT.'))
+    require(root.find("forward").get("mode") == "nat", _("The network has no NAT."))
     address = root.find("ip")
     network = ipaddress.ip_network(address.get("address") + "/" + address.get("netmask"), strict=False)
     candidates = []
@@ -67,9 +67,9 @@ def choose_address(output, network_xml, mac):
         if len(columns) >= 4 and columns[1].lower() == mac and columns[2] == "ipv4":
             candidate = ipaddress.ip_interface(columns[3]).ip
             require(candidate in network and str(candidate) != address.get("address"),
-                    _('Adresa hosta není v očekávané síti.'))
+                    _("The guest address is outside the expected network."))
             candidates.append(str(candidate))
-    require(len(set(candidates)) == 1, _('Nelze jednoznačně zjistit adresu VM.'))
+    require(len(set(candidates)) == 1, _("Cannot unambiguously determine the VM address."))
     return candidates[0]
 
 
@@ -94,9 +94,9 @@ def image_install(manifest, apply):
     validate_domain(virsh("dumpxml", manifest["name"], "--inactive"), manifest)
     reject_shared_domains(virsh, manifest["name"], manifest["diskPath"])
     state = virsh("domstate", manifest["name"])
-    require(state in ("running", "shut off"), _('VM není připravená ke spuštění z disku.'))
+    require(state in ("running", "shut off"), _("The VM is not ready to boot from disk."))
     if not apply:
-        info(_('Metoda image: install spustí a ověří hotový systém; disk se neformátuje.'))
+        info(_("Image method: install starts and verifies the prebuilt system; the disk is not formatted."))
         return
     if state == "shut off":
         virsh("start", manifest["name"])
@@ -115,17 +115,17 @@ def image_install(manifest, apply):
                     forward_stderr(result.stderr)
                     remember_host_key(Path(directory) / "known_hosts", manifest)
                     print(result.stdout, end="", flush=True)
-                    success(_('Start hotového systému z disku ověřený.'))
+                    success(_("Boot of the prebuilt system from disk verified."))
                     return
                 failure = result.stderr
             except (RuntimeError, subprocess.SubprocessError) as error:
                 failure = str(error)
             time.sleep(3)
-        raise RuntimeError(_('VM byla spuštěna, ale ověření systému selhalo: {error}').format(error=failure))
+        raise RuntimeError(_("The VM was started, but system verification failed: {error}").format(error=failure))
 
 
 def main():
-    parser = ArgumentParser(description=_('Instalace pouze do vyhrazené VM; bez --apply pouze kontrola plánu.'))
+    parser = ArgumentParser(description=_("Install only into the dedicated VM; without --apply, only check the plan."))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--apply", action="store_true")
     modes.add_argument("--dry-run", action="store_true")
@@ -141,7 +141,7 @@ def main():
         ).strip()
 
     def validate():
-        require(virsh("domstate", manifest["name"]) == "running", _('VM neběží.'))
+        require(virsh("domstate", manifest["name"]) == "running", _("The VM is not running."))
         for extra in ((), ("--inactive",)):
             validate_domain(virsh("dumpxml", manifest["name"], *extra), manifest)
         reject_shared_domains(virsh, manifest["name"], manifest["diskPath"])
@@ -152,7 +152,7 @@ def main():
         virsh("net-dumpxml", manifest["network"]), manifest["mac"]
     )
     info(_('VM: {value1}; UUID: {value2}; IP: {address}'), value1=manifest['name'], value2=manifest['uuid'], address=address)
-    info(_('Disk: {value1}; systém: {value2}'), value1=manifest['diskPath'], value2=manifest['systemPath'])
+    info(_("Disk: {value1}; system: {value2}"), value1=manifest['diskPath'], value2=manifest['systemPath'])
 
     with tempfile.TemporaryDirectory(prefix="nixberry-install-ssh-") as state:
         def ssh(command, phase, *, input_text=None, capture=False):
@@ -169,27 +169,27 @@ def main():
                       str(manifest["diskGiB"] * 1024**3)]
         result = ssh(shlex.join(guest_args), "installer",
                      input_text=shell_script(os.environ["NIXBERRY_GUEST_INSTALL"]))
-        require(result.returncode == 0, _('Kontrola nebo instalace hosta selhala; VM ponecháváme beze změny startu.'))
+        require(result.returncode == 0, _("Guest check or installation failed; leaving the VM boot configuration unchanged."))
         if not args.apply:
-            info(_('Plán ověřený. Disk nebyl změněný, VM nebyla vypnutá.'))
+            info(_("Plan verified. The disk was not changed and the VM was not shut down."))
             return
 
-        # Zopakujeme hostitelské kontroly po kontrole guest prostředí těsně před zápisem.
+        # Repeat host checks after guest checks, immediately before writing.
         validate()
         guest_args[3] = "apply"
         result = ssh(shlex.join(guest_args), "installer",
                      input_text=shell_script(os.environ["NIXBERRY_GUEST_INSTALL"]))
-        require(result.returncode == 0, _('Instalace hosta selhala; VM ponecháváme beze změny startu.'))
+        require(result.returncode == 0, _("Guest installation failed; leaving the VM boot configuration unchanged."))
 
-        success(_('Instalace dokončená, korektně vypínám testovací VM.'))
+        success(_("Installation completed; gracefully shutting down the test VM."))
         virsh("shutdown", manifest["name"])
         deadline = time.monotonic() + 120
         while virsh("domstate", manifest["name"]) != "shut off":
-            require(time.monotonic() < deadline, _('VM se nevypnula; ISO neodpojujeme.'))
+            require(time.monotonic() < deadline, _("The VM did not shut down; the ISO will not be detached."))
             time.sleep(2)
         virsh("change-media", manifest["name"], "sda", "--eject", "--config")
         virsh("start", manifest["name"])
-        info(_('ISO odpojené, čekám na SSH instalovaného systému.'))
+        info(_("ISO detached; waiting for SSH on the installed system."))
         verify = installed_check(manifest)
         deadline = time.monotonic() + 120
         while True:
@@ -198,9 +198,9 @@ def main():
                 remember_host_key(Path(state) / "installed.known_hosts", manifest)
                 print(result.stdout, end="", flush=True)
                 break
-            require(time.monotonic() < deadline, _('Kontrola instalovaného systému selhala: {value1}').format(value1=result.stderr))
+            require(time.monotonic() < deadline, _("Installed system check failed: {value1}").format(value1=result.stderr))
             time.sleep(2)
-        success(_('Ověřeno: start z ext4 disku bez ISO, UEFI, přesný systém a SSH.'))
+        success(_("Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."))
 
 
 if __name__ == "__main__":

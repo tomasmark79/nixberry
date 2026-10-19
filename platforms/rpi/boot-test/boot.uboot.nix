@@ -5,7 +5,7 @@
   ...
 }:
 let
-  # Stejné základní nastavení jako v sd-image-aarch64.nix této revize nixpkgs.
+  # The same base settings as sd-image-aarch64.nix in this nixpkgs revision.
   firmwareConfig = pkgs.writeText "nixberry-config.txt" ''
     [all]
     arm_64bit=1
@@ -40,13 +40,13 @@ in
   hardware.deviceTree.filter = "bcm2712-rpi-5-b.dtb";
   hardware.deviceTree.name = "broadcom/bcm2712-rpi-5-b.dtb";
 
-  # Extlinux samo firmware ani U-Boot neinstaluje. Tento skript doplní obojí
-  # při instalaci i při pozdější aktualizaci startovacích souborů.
+  # Extlinux does not install firmware or U-Boot. This script adds both
+  # during installation and subsequent boot file updates.
   system.build.installBootLoader = lib.mkForce (
     pkgs.writeShellScript "install-nixberry-boot" ''
       set -euo pipefail
       ${pkgs.util-linux}/bin/mountpoint -q /boot || {
-        echo "Chyba: startovací oddíl /boot není připojený." >&2
+        echo "Error: boot partition /boot is not mounted." >&2
         exit 1
       }
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} -d /boot -c "$1"

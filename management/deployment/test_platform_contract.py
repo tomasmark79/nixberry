@@ -83,7 +83,7 @@ class PlatformContractTests(unittest.TestCase):
                     binary = next((root / 'bin').iterdir())
                     result = subprocess.run([str(binary), '--apply'], capture_output=True, text=True, timeout=10)
                     self.assertNotEqual(result.returncode, 0)
-                    self.assertRegex(result.stderr, 'allowReset|není deklarativně povolené')
+                    self.assertRegex(result.stderr, 'allowReset|not declaratively allowed')
                     self.assertEqual(result.stdout, '')
             self.assertEqual(paths[0], paths[1], backend)
 

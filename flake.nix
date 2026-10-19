@@ -1,23 +1,23 @@
 {
-  description = "nixberry — deklarativní NixOS server, reprodukce a správa RPi5 a virtuálních strojů";
+  description = "NixBerry — declarative NixOS server deployment and management for VMs and Raspberry Pi 5";
 
   inputs = {
-    # Nástroj nixos-anywhere používá stejnou revizi jako instalační SD karta.
+    # nixos-anywhere uses the same revision as the installation SD.
     nixpkgs.url = "github:NixOS/nixpkgs/7a0f122f5090cf4c2ade2a13a0e229d4e19ba71f";
-    # Vybrané aplikace mohou používat unstable nezávisle na základu systému.
+    # Selected applications may use unstable independently of the system base.
     unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # Hotový balíček z projektu; závislosti sdílejí připnutý základ NixBerry.
+    # Upstream package; dependencies share the pinned NixBerry base.
     nixoncpp = {
       url = "github:tomasmark79/NixonCpp?dir=nix";
       inputs.nixpkgs.follows = "nixos-raspberrypi/nixpkgs";
       inputs.nixpkgs-wasm.follows = "nixos-raspberrypi/nixpkgs";
     };
     mc-modern = {
-      # Větev forku sleduje nové změny; konkrétní revizi drží zdejší flake.lock.
+      # The fork branch follows development; this flake.lock pins the exact revision.
       url = "github:tomasmark79/mc/mc-modern";
       inputs.nixpkgs.follows = "nixos-raspberrypi/nixpkgs";
     };
-    # Aktualizace sledují main; konkrétní použitou revizi drží flake.lock.
+    # Updates follow main; flake.lock pins the exact revision in use.
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
 
     disko = {
@@ -214,7 +214,7 @@
           ]
           ++ extraModules;
         };
-      # Profily jsou nezávislé na evidenci konkrétních VM.
+      # Profiles are independent of concrete VM inventory.
       defaultVmSystems = builtins.mapAttrs (
         _: profile:
         profile.system.extendModules {
@@ -322,7 +322,7 @@
         nixberry-hyperv-installer = genericInstallers.hyperv;
         nixberry-rpi-installer = rpiInstaller;
       };
-      # Původní libvirt výstupy zůstávají dostupné; všechny backendy mají nixberrySystems.CÍL.
+      # Direct libvirt outputs remain available; every backend has nixberrySystems.TARGET.
       namedVmSystems = lib.mapAttrs' (name: system: lib.nameValuePair "nixberry-libvirt-${name}" system) (
         lib.filterAttrs (name: _: deployment.instances.${name}.backend == "libvirt") vmSystems
       );
@@ -336,10 +336,10 @@
       + builtins.length (builtins.attrNames rpiSystems)
       + builtins.length (builtins.attrNames namedVmSystems)
       + builtins.length (builtins.attrNames namedRecoveries)
-      || throw "Název cíle koliduje s názvem systémového profilu.";
+      || throw "The target name conflicts with a system profile name.";
     {
       nixberryDeployment = deployment;
-      # Jednotné výstupy pro verify/export nikdy nevybírají první ani pevnou instanci.
+      # Unified verify/export outputs never select a first or fixed instance.
       nixberrySystems = rpiSystems // vmSystems;
       nixberryConfigurations = builtins.attrNames configurations.modules;
       nixberryImages = images;

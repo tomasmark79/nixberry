@@ -51,9 +51,9 @@ class RuntimeChecks(unittest.TestCase):
         result = subprocess.run(["sh", "-c", "readlink() { printf '/nix/store/actual\\n'; }; " + script],
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 1)
-        self.assertIn("Běžící systém neodpovídá receptu.", result.stdout)
-        self.assertIn("Očekávaný systém: /nix/store/expected", result.stdout)
-        self.assertIn("Běžící systém: /nix/store/actual", result.stdout)
+        self.assertIn("The running system does not match the recipe.", result.stdout)
+        self.assertIn("Expected system: /nix/store/expected", result.stdout)
+        self.assertIn("Running system: /nix/store/actual", result.stdout)
 
     def test_direct_ssh_endpoint_validates_syntax_and_port(self):
         self.assertEqual(runtime.guest_connection("root@203.0.113.19:2030"),

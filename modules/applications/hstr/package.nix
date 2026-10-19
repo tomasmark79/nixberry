@@ -1,4 +1,4 @@
-# Stejný připnutý fork jako v Nixonu; recept je místní kvůli samostatnému exportu nixberry.
+# The same pinned fork as Nixon; defined here for independent NixBerry export.
 {
   hstr,
   fetchFromGitHub,

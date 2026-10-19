@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
-    # Příkazová řádka a systémové nástroje.
+    # Command line and system tools.
     git
     bat
     btop

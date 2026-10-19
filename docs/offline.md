@@ -1,79 +1,79 @@
-# Offline balíček: disk, ISO nebo obnovovací SD
+# Offline bundles: disk, ISO or recovery SD
 
-[← Hlavní návod](../README.md) · [Platformy a hostitelé](vm.md)
+[← Main guide](../README.md) · [Platforms and hosts](vm.md)
 
-Balíček dodává systém z deklarace. Neobsahuje provozní data a tajemství
-živého serveru. Příprava může stahovat připnuté závislosti; cílový systém
-je potom součástí média. Aplikace mohou mít vlastní požadavky na síť.
-Názvy `vm-demo-*` jsou ukázkové; použij vlastní deklaraci.
+A bundle supplies the system from a declaration, not the live server's data or
+secrets. Preparation may download pinned dependencies; completed media includes
+the target system. Applications may have their own network requirements.
+Use your own declarations in place of `vm-demo-*` examples.
 
 <a id="export"></a>
 
-## Připravit balíček
+## Prepare a bundle
 
-Pro existující deklaraci vyber jedno médium a nový výstupní adresář:
+For an existing declaration, select one medium and a new destination:
 
 ```sh
 nixberry export vm-demo-libvirt --output ~/vm-demo-libvirt-disk
 nixberry export vm-demo-libvirt --method iso --output ~/vm-demo-libvirt-iso
-nixberry export nixberry --output ~/nixberry-sd
+nixberry export rpi-demo --output ~/rpi-demo-sd
 ```
 
-U VM je výchozí `image`, případně `deploymentMethod` z deklarace.
-`--method` ji přepíše pro tento export. Pro RPi se exportuje plná obnovovací SD.
-Náhled `export … --dry-run` nic nesestavuje ani nezapisuje.
-Výstup musí ležet mimo kořen receptu; relativní cesta se počítá od pracovního adresáře.
+VMs use `image` unless `deploymentMethod` says otherwise. `--method` overrides
+it for this export. RPi exports a full recovery SD image.
+`export … --dry-run` neither builds nor writes.
+The destination must be outside the recipe; relative paths start at the working directory.
 
-Pro kolegův hypervizor nejprve vytvoř novou deklaraci přes
-`new-*-vm JMÉNO --offline`, nastav kapacitu a síť a exportuj její jméno.
-Offline deklarace nepotřebuje přístup k hostiteli. Stejnou identitu zachovej
-při dalších exportech; souběžná kopie potřebuje vlastní deklaraci a MAC.
+For someone else's hypervisor, create `new-*-vm NAME --offline`, set capacity
+and networking, then export that target. No host access is needed.
+Keep its identity for subsequent exports; a concurrent copy needs a separate
+declaration and MAC.
 
-| Soubor | Účel |
+| File | Purpose |
 | --- | --- |
-| `README.txt` | Postup pro vybrané médium. |
-| `manifest.json` | Platforma, metoda, kapacita, síť a přesná cesta cílového systému. |
-| `SHA256SUMS` | Kontrolní součty všech souborů. |
-| `recipe/` | Stejný recept a lock, ze kterého vzniklo médium. |
-| `INSTALL-ISO.sh` | Kontrola a instalace uvnitř VM; pouze v ISO balíčku. |
-| `PROXMOX.txt`, `VIRTUALBOX.txt` | Předání hotového disku příslušné platformy. |
+| `README.txt` | Instructions for the selected medium, in the selected CLI language. |
+| `manifest.json` | Platform, method, capacity, networking and exact target system path. |
+| `SHA256SUMS` | Checksums of all files. |
+| `recipe/` | The same recipe and lock used to build the medium, including local declarations. |
+| `INSTALL-ISO.sh` | Guest-side check and installation, only in ISO bundles. |
+| `PROXMOX.txt`, `VIRTUALBOX.txt` | Platform-specific prebuilt disk handoff. |
 
-Před přenosem i po něm spusť **v kořeni balíčku**:
+Review included local configuration before sharing. Before and after transfer,
+run **from the bundle root**:
 
 ```sh
 sha256sum -c SHA256SUMS
 ```
 
-Ve Windows lze hodnotu jednotlivého média porovnat přes
-`Get-FileHash -Algorithm SHA256 CESTA` s odpovídajícím řádkem `SHA256SUMS`.
-Dřívější export je samostatný snímek. Jeho obsah se nemění s pracovní kopií;
-pro jinou konfiguraci připrav nový balíček.
+On Windows, compare `Get-FileHash -Algorithm SHA256 PATH` with the matching
+`SHA256SUMS` entry. Each export is an independent snapshot. Working-copy
+changes do not modify it; create a new bundle for a different configuration.
 
 <a id="disk"></a>
 
-## Spustit hotový systémový disk
+## Boot a prebuilt system disk
 
-Importuj **vlastní kopii** obrazu do nové VM. Instalační ISO při metodě `image`
-nepřipojuj. Nastav CPU a RAM podle manifestu, UEFI a vypnutý Secure Boot.
+Import **your own copy** of the image into a new VM. Do not attach an installation
+ISO for `image`. Set CPU/RAM from the manifest, enable UEFI and disable Secure Boot.
 
-| Platforma | Obraz a řadič | Guest služba |
+| Platform | Image and controller | Guest service |
 | --- | --- | --- |
-| libvirt/QEMU | QCOW2, VirtIO Block `/dev/vda` | `qemu-guest-agent`, připojený komunikační kanál |
+| QEMU/KVM (libvirt) | QCOW2, VirtIO Block `/dev/vda` | `qemu-guest-agent`, with a communication channel |
 | Hyper-V | VHDX, Generation 2, SCSI `/dev/sda` | `hv-kvp`, `hv-vss` |
-| Proxmox | QCOW2, `virtio0` nebo VirtIO SCSI `scsi0` | QEMU Guest Agent povolený v konfiguraci VM |
-| VirtualBox | VDI, SATA | Guest Additions, služba `virtualbox` |
-| VMware Workstation | VMDK, SATA | VMware Tools, služba `vmware` |
+| Proxmox VE | QCOW2, `virtio0` or VirtIO SCSI `scsi0` | QEMU Guest Agent enabled in VM configuration |
+| VirtualBox | VDI, SATA | Guest Additions, `virtualbox` service |
+| VMware Workstation | VMDK, SATA | VMware Tools, `vmware` service |
 
-Pro další kopii VDI použij `VBoxManage clonemedium disk`, aby měla vlastní UUID média.
-Při vytváření VirtualBox VM přeskoč bezobslužnou instalaci a připoj existující disk.
-Hyper-V přiděluje vlastní VM ID a BIOSGUID.
+For another VDI copy, use `VBoxManage clonemedium disk` to get a unique media UUID.
+Skip unattended installation when creating a VirtualBox VM and attach the existing disk.
+Hyper-V assigns its own VM ID and BIOSGUID.
 
-Síť připoj do prostředí odpovídajícího `network` v manifestu. Při DHCP musí
-být dostupný DHCP server; pevná IP vyžaduje správnou podsíť a bránu.
-Ruční import VirtualBoxu může použít Bridged Adapter nebo NAT; u NAT nastav
-forward SSH portu. Automatický adaptér používá bridged síť.
+Connect the network to an environment matching manifest `network`.
+DHCP requires a DHCP server; static IP requires the correct subnet and gateway.
+Manual VirtualBox imports may use Bridged Adapter or NAT; configure SSH port
+forwarding for NAT. The automatic adapter uses bridged networking.
 
-Po startu ověř z konzole VM:
+After boot, verify from the VM console:
 
 ```sh
 hostname
@@ -87,104 +87,104 @@ systemctl --failed
 systemctl is-active sshd systemd-networkd
 ```
 
-Cesta `/run/current-system` musí odpovídat `systemPath` v manifestu.
-Zkontroluj také guest službu platformy. Nově vzniklé SSH host klíče ověř
-před přihlášením. Veřejné HTTPS ani NTP nejsou podmínkou samotného offline startu.
+`/run/current-system` must match manifest `systemPath`. Also check the platform's
+guest service and independently verify new SSH host keys before login.
+Public HTTPS and NTP are not prerequisites for offline boot itself.
 
-Ruční import nevytváří značky vlastnictví automatické správy hypervizoru.
-Shodná MAC a UUID samy nestačí k převzetí VM adaptérem. Pro správu serveru
-použij [přímé SSH](vm.md#prime-ssh).
+Manual import does not create ownership markers for automatic hypervisor management.
+Matching UUID and MAC are not enough to adopt it. Use [direct SSH](vm.md#direct-ssh)
+to manage the server.
 
 <a id="iso"></a>
 
-## Nainstalovat systém z ISO
+## Install from ISO
 
-Použij ISO balíček **konkrétní deklarace a platformy**. Profily mají různé
-disky a ovladače; média různých platforem nejsou zaměnitelná.
+Use the ISO bundle for the **specific declaration and platform**.
+Profiles have different disks and drivers; their media is not interchangeable.
 
-1. Připrav novou VM s UEFI, vypnutým Secure Boot a jedním prázdným diskem
-   o velikosti z manifestu. Použij řadič a guest službu z tabulky výše.
-   Pro instalační Proxmox VM použij VirtIO Block `/dev/vda`.
-2. Připoj ISO a spusť instalační prostředí `nixberry-installer`.
-   Na Proxmoxu nejprve nahraj médium do úložiště s povoleným obsahem `iso`
-   a připoj jeho spravovaný svazek; běžná cesta mimo úložiště nestačí.
-   Přenes do něj `INSTALL-ISO.sh` přes SSH nebo další médium.
-3. V konzoli hypervizoru ověř, že jde o správnou VM, a zjisti její DMI UUID
-   pomocí `cat /sys/class/dmi/id/product_uuid`.
-4. Podle `README.txt` spusť jako root příkaz s `dry-run`, ověřeným UUID,
-   systémem, disko, kapacitou, profilem a cílovým diskem. Až kontrola projde,
-   zopakuj stejný příkaz s `apply` místo `dry-run`.
-5. Po úspěšné instalaci VM korektně vypni, odpoj ISO a spusť systém z disku.
-   Ověř síť, služby a přesný `systemPath` stejně jako při importu disku.
+1. Create a new VM with UEFI, disabled Secure Boot and one blank disk sized
+   from the manifest. Use the controller and guest service above.
+   For a Proxmox installation VM, use VirtIO Block `/dev/vda`.
+2. Attach the ISO and boot `nixberry-installer`. On Proxmox, first upload it to
+   storage allowing `iso` content and attach its managed volume; an arbitrary
+   filesystem path is insufficient. Transfer `INSTALL-ISO.sh` over SSH or another medium.
+3. Verify the correct VM in the hypervisor console, then read its DMI UUID with
+   `cat /sys/class/dmi/id/product_uuid`.
+4. Follow `README.txt` as root: run `dry-run` with the verified UUID, system,
+   disko, capacity, profile and disk. After checks pass, repeat with `apply`.
+5. After successful installation, shut down gracefully, detach ISO and boot from disk.
+   Verify networking, services and exact `systemPath` as for image import.
 
-ISO obsahuje připravený systém i disko; instalace nepoužívá síťové substitutery.
-Skript odmítá nesprávnou identitu, profil či kapacitu a disk s oddíly nebo
-signaturami. Pokud instalace selže, ponech ISO připojené a nejprve zjisti stav;
-opakovaný zápis na částečně nainstalovaný disk není povolený.
+The ISO includes the prepared system and disko; installation does not use network
+substituters. The script rejects incorrect identity, profile or capacity and disks
+with partitions or signatures. If installation fails, keep the ISO attached and
+inspect state first. Writing again to a partially installed disk is not allowed.
 
-Spravovaná VM absolvuje stejné kroky automaticky přes
-`nixberry reproduce CÍL --method iso --apply`; používá přitom i kontroly hostitele.
+Managed VMs perform these steps automatically through
+`nixberry reproduce TARGET --method iso --apply`, including host checks.
 
 <a id="proxmox-vm103"></a>
 
-## Ukázka předání pro Proxmox VM103: vm-demo-proxmox
+## Proxmox VM103 handoff example: vm-demo-proxmox
 
-Tento scénář nepotřebuje přístup k Proxmoxu ani generování jeho `.conf`.
-Provozovatel vytvoří VM, my dodáme systémový disk. Nejprve vytvoř ukázkovou deklaraci:
+No Proxmox access or generated `.conf` is needed. The operator creates the VM
+and receives a system disk. Create the example declaration:
 
 ```sh
 nixberry new-proxmox-vm vm-demo-proxmox --offline
 ```
 
-V `instances/vm-demo-proxmox.nix` nastav `spec.vmid = 103` a síť podle tabulky
-níže. VMID i adresy nahraď hodnotami přidělenými pro svou VM.
-Potom zkontroluj deklaraci a připrav export:
+Set `spec.vmid = 103` and networking in `instances/vm-demo-proxmox.nix`.
+Replace VMID and addresses with values assigned to your VM, then:
 
 ```sh
 nixberry show vm-demo-proxmox
 nixberry export vm-demo-proxmox --method image --output ~/vm-demo-proxmox-vm103
 ```
 
-| Parametr | Ukázková hodnota |
+| Parameter | Example |
 | --- | --- |
 | VMID | `103` |
-| CPU / RAM / disk | 4 CPU / 4 GiB / 32 GiB |
-| Hostname uvnitř serveru | `nixberry-vm-demo-proxmox` |
+| CPU / RAM / disk | 4 CPUs / 4 GiB / 32 GiB |
+| Guest hostname | `nixberry-vm-demo-proxmox` |
 | IP | `10.0.1.19/24` |
-| Brána a DNS | `10.0.1.1` |
+| Gateway and DNS | `10.0.1.1` |
 
-Provozovatel nastaví UEFI/OVMF, vypnutý Secure Boot, boot ze systémového
-disku a jednu VirtIO síťovou kartu do uvedené podsítě. Povolí QEMU Guest Agent
-a importuje kopii QCOW2 jako `virtio0` nebo VirtIO SCSI `scsi0`.
-Řiď se také souborem `PROXMOX.txt` v exportu; VMID a prostředky musí být na cíli volné.
+The operator configures UEFI/OVMF, disabled Secure Boot, disk boot and one VirtIO
+NIC on the specified subnet. Enable QEMU Guest Agent and import a QCOW2 copy as
+`virtio0` or VirtIO SCSI `scsi0`. Follow the exported `PROXMOX.txt`;
+the target VMID and resources must be available.
 
-Oddíly se připojují přes `disk-system-root` a `disk-system-boot`, takže obraz
-startuje i po změně `/dev/vda` na `/dev/sda`. Při potížích zkontroluj
-`lsblk -o NAME,TYPE,PARTLABEL,MOUNTPOINTS`; neměň řadič jen kvůli názvu zařízení.
-Větší virtuální disk se tímto postupem automaticky nerozdělí na větší oddíly.
+Partitions mount through `disk-system-root` and `disk-system-boot`, so the image
+can boot after changing `/dev/vda` to `/dev/sda`.
+Check `lsblk -o NAME,TYPE,PARTLABEL,MOUNTPOINTS` if needed; do not change controllers
+just to match a device name. A larger virtual disk does not automatically enlarge partitions.
 
-Provozovatel může přidělit vlastní název VM, MAC a UUID. Hostname systému
-zůstává podle deklarace a síť není vázaná na původní MAC. Po startu ověří
-adresu, bránu, DNS a `systemPath`. Dostupnost v kolegově prostředí ověřuje provozovatel.
+The operator may assign a VM name, MAC and UUID. The system hostname still follows
+the declaration, and networking is not tied to the original MAC.
+Verify address, gateway, DNS and `systemPath` after boot.
+The operator verifies connectivity in their environment.
 
-Pro následnou správu z Nixonu nastav samostatný SSH endpoint v `access`.
-Tento údaj nemění IP uvnitř obrazu. Proxmox bridge, VLAN ani firewall obraz nenastavuje.
+For subsequent management, set a separate SSH endpoint in `access`.
+It does not change image IPs. The image does not configure Proxmox bridges,
+VLANs or firewalls.
 
 <a id="rpi"></a>
 
-## Obnovovací SD pro RPi
+## RPi recovery SD
 
-Plný `img.zst` připravuje prostředí i cílový systém pro konkrétní RPi a SSD.
-Pokračuj podle [obnovy ze SD](rpi-recovery.md). Menší síťová SD vyžaduje
-přenos cílového store; pro místní obnovu bez internetu použij plný obraz.
+The full `img.zst` supplies an environment and target system for a specific RPi
+and SSD. Follow [SD recovery](rpi-recovery.md). The smaller network SD requires
+target store transfer; use the full image for local recovery without internet.
 
-Offline spuštění média neznamená, že lze bez připravených závislostí také
-spustit nové sestavení na správci. Samotný zdrojový recept a lock nejsou
-kopií všech závislostí Nix store. Pro místní instalátor jsou potřebné součásti na plné SD.
+Booting media offline does not mean new manager-side builds can run without
+prepared dependencies. The source recipe and lock are not copies of the Nix store.
+The full SD includes the components needed for its local installer.
 
-## Přímé sestavení média
+## Build media directly
 
-Pro běžné předání použij `export CÍL`: zvolí správný systém, médium a přibalí návod.
-Technické výstupy `nixberryImages.CÍL` a `nixberryInstallers.CÍL` jsou popsané
-v [referenci](reference.md#media). Generické obrazy mají výchozí profil a hostname;
-nenahrazují export konkrétní instance.
+Prefer `export TARGET` for normal handoff: it selects the system and media and
+includes instructions. See [technical outputs](reference.md#media) for
+`nixberryImages.TARGET` and `nixberryInstallers.TARGET`.
+Generic images use a default profile and hostname; they do not replace an
+instance-specific export.

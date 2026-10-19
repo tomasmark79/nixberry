@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Příprava nebo čistá instalace vybraného RPi5 z připnutých deklarací."""
+"Prepare or cleanly install a selected RPi5 from pinned declarations."
 
 from messages import _, ArgumentParser, info, success, warning, shell_script, forward_stderr, error as report_error
 
@@ -20,7 +20,7 @@ def require(condition, message):
 
 def parse_probe(output):
     parts = output.split("\x1e")
-    require(len(parts) == 10, _('Neúplná odpověď při kontrole RPi.'))
+    require(len(parts) == 10, _("Incomplete RPi check response."))
     return {
         "architecture": parts[0].strip(), "model": parts[1].strip(),
         "serial": parts[2].strip(), "hostname": parts[3].strip(),
@@ -38,60 +38,60 @@ def descendants(device):
 
 def validate(snapshot, target, *, installation, erase_existing=False):
     require(not any(device["type"] == "part" for device in snapshot["disks"]),
-            _('Výpis disků není stromový; nelze bezpečně přiřadit oddíly.'))
-    require(snapshot["architecture"] == "aarch64", _('Host není ARM64.'))
-    require(snapshot["model"].startswith("Raspberry Pi 5 "), _('Host není Raspberry Pi 5.'))
-    require(snapshot["serial"] == target["hardwareSerial"], _('Nesouhlasí sériové číslo RPi.'))
+            _("The disk listing is not a tree; partitions cannot be assigned safely."))
+    require(snapshot["architecture"] == "aarch64", _("The guest is not ARM64."))
+    require(snapshot["model"].startswith("Raspberry Pi 5 "), _("The guest is not a Raspberry Pi 5."))
+    require(snapshot["serial"] == target["hardwareSerial"], _("RPi serial number does not match."))
     require(any(link.get("address") == target["lanMac"] for link in snapshot["links"]),
-            _('Nesouhlasí MAC hlavního adaptéru.'))
+            _("Primary adapter MAC address does not match."))
     disks = [disk for disk in snapshot["disks"] if disk["path"] == snapshot["device"]]
-    require(len(disks) == 1 and disks[0]["type"] == "disk", _('Cíl není jednoznačný fyzický disk.'))
+    require(len(disks) == 1 and disks[0]["type"] == "disk", _("The target is not an unambiguous physical disk."))
     disk = disks[0]
-    require((disk.get("serial") or "").strip() == target["diskSerial"], _('Nesouhlasí sériové číslo disku.'))
-    require(disk["size"] >= target["minimumDiskBytes"], _('Cílový disk je příliš malý.'))
+    require((disk.get("serial") or "").strip() == target["diskSerial"], _("Disk serial number does not match."))
+    require(disk["size"] >= target["minimumDiskBytes"], _("The target disk is too small."))
     if not installation:
         return
     manifest = snapshot["installer"].get(target["target"])
-    require(manifest is not None, _('Host neběží z připraveného instalačního prostředí. Lze použít pouze --stage.'))
+    require(manifest is not None, _("The guest is not running the prepared installation environment. Only --stage is available."))
     require(manifest["systemPath"] == target["systemPath"] and manifest["diskoPath"] == target["diskoPath"],
-            _('Instalační médium obsahuje jiné připnuté výstupy.'))
+            _("The installation media contains different pinned outputs."))
     require(not any(point for node in descendants(disk) for point in node.get("mountpoints", [])),
-            _('Cílový disk je připojený.'))
+            _("The target disk is mounted."))
     if erase_existing:
         require(all(node["type"] == "part" for child in disk.get("children", []) for node in descendants(child)),
-                _('Disk má podřízená zařízení jiná než běžné oddíly.'))
+                _("The disk has child devices other than regular partitions."))
     else:
-        require(not disk.get("children"), _('Cílový disk již má oddíly nebo podřízená zařízení.'))
-        require(not snapshot["signatures"].get("signatures"), _('Cílový disk obsahuje signatury.'))
+        require(not disk.get("children"), _("The target disk already has partitions or child devices."))
+        require(not snapshot["signatures"].get("signatures"), _("The target disk contains signatures."))
     for device in snapshot["disks"]:
         if erase_existing and device["path"] == disk["path"]:
             continue
         for node in descendants(device):
             require(node.get("partlabel") not in (target["bootLabel"], target["rootLabel"]),
-                    _('Označení cílových oddílů už používá připojený disk.'))
+                    _("A mounted disk already uses the target partition labels."))
 
 
 def validate_address(address):
     parsed = ipaddress.ip_address(address)
     private = any(parsed in ipaddress.ip_network(network) for network in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
     require(parsed.version == 4 and private and not parsed.is_loopback
-            and str(parsed) != "192.168.79.1", _('Nepovolená instalační adresa.'))
+            and str(parsed) != "192.168.79.1", _("Disallowed installation address."))
     return str(parsed)
 
 
 def main():
-    parser = ArgumentParser(description=_('Příprava nebo čistá instalace vybraného RPi5 z připnutých deklarací.'))
-    parser.add_argument("--target", required=True, help=_('Název z rpi/targets/default.nix'))
-    parser.add_argument("--address", help=_('Aktuální DHCP adresa instalačního prostředí místo adresy z deklarace'))
+    parser = ArgumentParser(description=_("Prepare or cleanly install a selected RPi5 from pinned declarations."))
+    parser.add_argument("--target", required=True, help=_("Name from rpi/targets/default.nix"))
+    parser.add_argument("--address", help=_("Current DHCP address of the installation environment, overriding the declaration"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--dry-run", action="store_true")
-    modes.add_argument("--stage", action="store_true", help=_('Pouze předat výstupy do Nix store, bez instalace'))
+    modes.add_argument("--stage", action="store_true", help=_("Only transfer outputs to the Nix store, without installation"))
     modes.add_argument("--apply", action="store_true")
-    parser.add_argument("--erase-existing", action="store_true", help=_('Zahrnout vymazání nepřipojených oddílů do plánu; provede se pouze s --apply'))
+    parser.add_argument("--erase-existing", action="store_true", help=_("Include erasing unmounted partitions in the plan; only executed with --apply"))
     args = parser.parse_args()
-    require(not (args.erase_existing and args.stage), _('--erase-existing nelze kombinovat s --stage.'))
+    require(not (args.erase_existing and args.stage), _("--erase-existing cannot be combined with --stage."))
     targets = json.loads(Path(os.environ["NIXBERRY_RPI_TARGETS"]).read_text())
-    require(args.target in targets, _('Neznámý cíl RPi.'))
+    require(args.target in targets, _("Unknown RPi target."))
     target = targets[args.target]
     address = validate_address(args.address or target["installerAddress"])
     with tempfile.TemporaryDirectory(prefix="nixberry-rpi-ssh-") as state:
@@ -107,16 +107,16 @@ def main():
                     input_text=Path(os.environ["NIXBERRY_RPI_PROBE"]).read_text())
         snapshot = parse_probe(probe.stdout)
         validate(snapshot, target, installation=not args.stage, erase_existing=args.erase_existing)
-        info(_('RPi: {value1}; serial: {value2}; adresa: {address}'), value1=snapshot['hostname'], value2=snapshot['serial'], address=address)
+        info(_("RPi: {value1}; serial: {value2}; address: {address}"), value1=snapshot['hostname'], value2=snapshot['serial'], address=address)
         info(_('Disk: {value1}; serial: {value2}; root: {value3}'), value1=target['diskDevice'], value2=target['diskSerial'], value3=snapshot['root'])
         if not args.stage and not args.apply:
-            info(_('Instalační plán ověřený, nic nebylo změněné.'))
+            info(_("Installation plan verified; nothing was changed."))
             if args.erase_existing:
-                warning(_('Plán zahrnuje smazání existujících oddílů; provede se pouze s --apply.'))
+                warning(_("The plan includes erasing existing partitions; this only happens with --apply."))
             return
 
         environment = os.environ | {"NIX_SSHOPTS": shlex.join(options)}
-        # Přijímáme vlastní lokálně sestavené výstupy jen v tomto přenosu přes ověřené SSH.
+        # Accept locally built outputs only for this transfer over verified SSH.
         subprocess.run(
             ["nix", "--extra-experimental-features", "nix-command", "copy",
              "--no-check-sigs", "--to", "ssh-ng://root@" + address, target["systemPath"], target["diskoPath"],
@@ -127,7 +127,7 @@ def main():
                              "path-info", "--offline", target["systemPath"], target["diskoPath"]])
         print(ssh(verify).stdout, end="", flush=True)
         if args.stage:
-            success(_('Výstupy předané a ověřené. Oddíly, aktivní systém a start RPi se nezměnily.'))
+            success(_("Outputs transferred and verified. Partitions, the active system and RPi boot state were not changed."))
             return
 
         guest_arguments = ["bash", "-s", "--", target["hardwareSerial"], target["diskDevice"],

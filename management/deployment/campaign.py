@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sekvenční průřezová kampaň NixBerry podle docs/test-plan.md."""
+"Sequential NixBerry integration campaign following docs/test-plan.md."
 
 import base64
 import fcntl
@@ -68,7 +68,7 @@ class Campaign:
         self.recipe = Path(recipe).resolve()
         self.root = Path(root).resolve()
         if self.root == self.recipe or self.recipe in self.root.parents:
-            raise ValueError(_("Výsledky kampaně ukládej mimo recept."))
+            raise ValueError(_("Store campaign results outside the recipe."))
         self.settings = settings or {}
         self.report = None
         self.case = None
@@ -81,7 +81,7 @@ class Campaign:
         temporary = path.with_suffix(".tmp")
         temporary.write_text(json.dumps(self.report, ensure_ascii=False, indent=2) + "\n")
         temporary.replace(path)
-        rows = ["# Výsledky kampaně NixBerry", "", "| Případ | Výsledek | Podrobnosti |",
+        rows = ["# NixBerry campaign results", "", "| Case | Result | Details |",
                 "| --- | --- | --- |"]
         for item in self.report["cases"]:
             detail = item.get("detail", "").replace("|", "/").replace("\n", " ")
@@ -112,17 +112,17 @@ class Campaign:
                     process.wait()
                 entry.update(returncode=process.returncode, timeout=True, finished=time.time())
                 self.save()
-                raise RuntimeError(_("Časový limit kroku; stav prostředků vyžaduje kontrolu."))
+                raise RuntimeError(_("The step timed out; resource state requires inspection."))
         entry.update(returncode=process.returncode, finished=time.time())
         self.save()
         if expected is not None and process.returncode != expected:
             tail = stem.with_suffix(".stderr").read_text()[-1800:]
-            raise RuntimeError(_("Krok skončil kódem {code}: {detail}").format(code=process.returncode, detail=tail))
+            raise RuntimeError(_("The step exited with code {code}: {detail}").format(code=process.returncode, detail=tail))
         return process.returncode, stem.with_suffix(".stdout").read_text()
 
     def cli(self, *args, **kwargs):
         recipe = (self.work or self.recipe).resolve()
-        # Izolovanou kopii nesmí přesměrovat nastavení interaktivního shellu.
+        # Interactive shell settings must not redirect this isolated copy.
         return self.command([str(recipe / "nixberry"), *args],
                             env={**os.environ, "NIXBERRY_RECIPE": str(recipe)}, **kwargs)
 
@@ -152,13 +152,13 @@ class Campaign:
             entries = []
             for key, value in overrides.items():
                 if not re.fullmatch(r"[a-zA-Z0-9-]+", key):
-                    raise ValueError(_("Neplatné jméno testovacího hostitele."))
+                    raise ValueError(_("Invalid test host name."))
                 entries.append(key + " = original." + key + " // { connection = original." + key
                                + ".connection // " + nix_attrs(value) + "; };")
             host_file.write_text("let original = import ./hosts-base.nix; in original // { " + " ".join(entries) + " }\n")
         name = "vm-demo-test-" + self.case["id"].lower() + "-" + self.report["runId"][:4]
         if len(name) > 40:
-            raise ValueError(_("Testovací jméno překračuje limit CLI."))
+            raise ValueError(_("The test name exceeds the CLI limit."))
         self.case["target"] = name
         self.save()
         args = ["new-" + self.case["backend"] + "-vm", name]
@@ -168,8 +168,8 @@ class Campaign:
         self.cli(*args)
         file = self.work / "instances" / (name + ".nix")
         text = file.read_text().replace("vcpus = 4;", "vcpus = " + str(self.case.get("vcpus", 2)) + ";")
-        # Identita hypervizoru zůstává jedinečná, společný hostname dovolí
-        # sdílet totožné artefakty mezi sekvenčními případy stejného profilu.
+        # Hypervisor identities stay unique; a shared hostname lets sequential
+        # cases of the same profile reuse identical artifacts.
         text = text.replace("{\n", '{\n  guestHostName = "nixberry-campaign";\n', 1)
         file.write_text(text)
         self.set_revision("A")
@@ -195,11 +195,11 @@ class Campaign:
                                       connection["sshUser"] + "@" + connection["sshHost"], "hostname"],
                                      expected=None, timeout=20)
             if code:
-                raise Blocked(_("Deklarovaný hostitel není dostupný přes ověřené SSH."))
+                raise Blocked(_("The declared host is unavailable over verified SSH."))
 
     def guest(self, script, **kwargs):
-        # OpenSSH spojuje argumenty vzdáleného příkazu; předáme jediný úplný
-        # shellový program, aby se neztratilo uvozování sh -c.
+        # OpenSSH joins remote command arguments; send one complete shell program
+        # so sh -c quoting is preserved.
         return self.cli("ssh", self.case["target"], "--", "set -eu; " + script, **kwargs)
 
     def wait_off(self):
@@ -213,16 +213,16 @@ class Campaign:
             if state == "shut off":
                 return
             if state != "running":
-                raise RuntimeError(_("VM při vypínání přešla do neočekávaného stavu."))
+                raise RuntimeError(_("The VM entered an unexpected state during shutdown."))
             time.sleep(2)
-        raise RuntimeError(_("VM se korektně nevypnula; další krok je zastaven."))
+        raise RuntimeError(_("The VM did not shut down gracefully; the next step was stopped."))
 
     def poweroff(self):
         code, _output = self.guest("systemctl poweroff --no-block", expected=None)
         if code not in (0, 255):
-            raise RuntimeError(_("Vypnutí VM se nepodařilo vyžádat."))
-        # SSH může zaniknout dříve než dorazí odpověď. Rozhoduje ověřený
-        # vypnutý stav vlastní VM v hypervizoru, nikoli samotný kód 255.
+            raise RuntimeError(_("Could not request VM shutdown."))
+        # SSH may disconnect before its response arrives. A verified stopped VM
+        # in the hypervisor is decisive, not exit code 255 alone.
         self.wait_off()
 
     def powershell(self, body):
@@ -230,10 +230,10 @@ class Campaign:
         data = base64.b64encode(json.dumps({**spec, "campaignVMId": self.case.get("nativeVMId")}).encode()).decode()
         script = ("$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue';\n"
                   "$s=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + data + "'))|ConvertFrom-Json;\n"
-                  "if($env:COMPUTERNAME -ne $s.windowsComputerName){throw 'Hostitel nesouhlasí'};\n"
+                  "if($env:COMPUTERNAME -ne $s.windowsComputerName){throw 'Host does not match'};\n"
                   "$v=Get-VM -Name $s.name -ErrorAction Stop;\n"
-                  "if($v.Notes -ne $s.ownerId){throw 'Vlastník nesouhlasí'};\n"
-                  "if($s.campaignVMId -and $v.Id.ToString() -ne $s.campaignVMId){throw 'VM ID nesouhlasí'};\n" + body)
+                  "if($v.Notes -ne $s.ownerId){throw 'Owner does not match'};\n"
+                  "if($s.campaignVMId -and $v.Id.ToString() -ne $s.campaignVMId){throw 'VM ID does not match'};\n" + body)
         encoded = base64.b64encode(script.encode("utf-16le")).decode()
         return self.command(["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
                              spec["sshUser"] + "@" + spec["sshHost"],
@@ -245,7 +245,7 @@ class Campaign:
         if target["backend"] == "libvirt":
             self.command(["virsh", "-c", spec["uri"], "start", spec["name"]])
         elif target["backend"] == "hyperv":
-            self.powershell("if($v.State -ne 'Off'){throw 'VM není vypnutá'}; Start-VM -VM $v")
+            self.powershell("if($v.State -ne 'Off'){throw 'VM is not powered off'}; Start-VM -VM $v")
         else:
             rpc(target, "start")
 
@@ -277,17 +277,17 @@ class Campaign:
         self.cli("diff", name)
         self.cli("update", name)
         if self.guest("readlink -f /run/current-system")[1].strip() != system_a:
-            raise RuntimeError(_("Náhled aktualizace změnil běžící systém."))
+            raise RuntimeError(_("The update preview changed the running system."))
         self.cli("update", name, "--apply")
         system_b = self.guest("readlink -f /run/current-system")[1].strip()
         if system_a == system_b:
-            raise RuntimeError(_("Aktualizace nezměnila systémovou generaci."))
+            raise RuntimeError(_("The update did not change the system generation."))
         self.guest("sha256sum -c /root/nixberry-campaign-data.sha256; test -f /etc/nixberry-campaign")
         self.cli("verify", name, "--json")
         self.cli("diff", name)
         self.cli("diffg", name)
-        # Předaný offline recept zná přístup do systému, nikoli hostitele
-        # hypervizoru. Přehled jeho prostředků proto správně odmítne.
+        # A handed-off offline recipe knows system access, not its hypervisor host.
+        # Resource inventory must therefore refuse this request.
         self.cli("cleanup", name, "--json", expected=2 if self.case.get("manual") else 0)
         self.case.update(systemA=system_a, systemB=system_b)
         self.save()
@@ -298,31 +298,31 @@ class Campaign:
         if self.case["group"] == "NET":
             network = self.settings.get("networks", {}).get(self.case["host"])
             if not network:
-                raise Blocked(_("Chybí vyhrazená statická adresa testovací NAT sítě."))
+                raise Blocked(_("The reserved static address for the test NAT network is missing."))
             file = self.work / "instances" / (self.case["target"] + ".nix")
             text, count = re.subn(r'network = \{.*?\n  \};', "network = " + nix_attrs(network) + ";", file.read_text(), flags=re.S)
             if count != 1 or network.get("mode") != "static":
-                raise RuntimeError(_("Test pevné sítě nezměnil právě jednu deklaraci na statickou konfiguraci."))
+                raise RuntimeError(_("The static network test did not change exactly one declaration to static configuration."))
             file.write_text(text)
             configured = self.evaluate("nixberrySystems." + self.case["target"] + ".config.nixberry.vm.network")
             if configured != network:
-                raise RuntimeError(_("Vyhodnocená síť testovací VM neodpovídá zadaným hodnotám."))
+                raise RuntimeError(_("The evaluated test VM network does not match the specified values."))
             target = self.evaluate("nixberryDeployment.instances." + self.case["target"])
             self.case["targetSpec"] = target
         before = self.snapshot()
         if before["state"] != "absent":
-            raise RuntimeError(_("Nový testovací cíl už existuje; nic nepřebírám."))
+            raise RuntimeError(_("The new test target already exists; it will not be taken over."))
         self.cli("show", self.case["target"], "--json")
         self.cli("plan", self.case["target"])
         if self.snapshot() != before:
-            raise RuntimeError(_("Plán změnil stav hypervizoru."))
+            raise RuntimeError(_("The plan changed hypervisor state."))
         self.case["writeStarted"] = True
         self.save()
         if self.case["route"] == "split":
             self.cli("create", self.case["target"], "--apply")
             middle = self.snapshot()["state"]
             if middle != ("running" if self.case["method"] == "iso" else "shut off"):
-                raise RuntimeError(_("Stav po create neodpovídá metodě."))
+                raise RuntimeError(_("The state after create does not match the method."))
             self.cli("install", self.case["target"], "--apply")
         else:
             self.cli(self.case["route"], self.case["target"], "--apply")
@@ -338,7 +338,7 @@ class Campaign:
         code, _ = self.cli("create", self.case["target"], "--apply", expected=None)
         self.set_revision("B")
         if code == 0:
-            raise RuntimeError(_("Opakované vytvoření bylo nesprávně povoleno."))
+            raise RuntimeError(_("Repeated creation was incorrectly allowed."))
         self.guest("sha256sum -c /root/nixberry-campaign-data.sha256")
         self.cleanup()
 
@@ -350,7 +350,7 @@ class Campaign:
                 self.checks()
                 return
             time.sleep(3)
-        raise RuntimeError(_("Systém po novém startu neprošel ověřením."))
+        raise RuntimeError(_("System verification failed after the new boot."))
 
     def offline(self):
         self.fresh_recipe(offline=True)
@@ -363,26 +363,26 @@ class Campaign:
         bundle = self.folder / "bundle"
         self.cli("export", name, "--method", self.case["method"], "--output", str(bundle), "--dry-run")
         if bundle.exists():
-            raise RuntimeError(_("Náhled exportu zapsal balíček."))
+            raise RuntimeError(_("The export preview wrote a bundle."))
         elsewhere = self.folder / "elsewhere"
         elsewhere.mkdir()
         self.cli("export", name, "--method", self.case["method"], "--output", "../bundle", cwd=elsewhere)
         self.command(["sha256sum", "-c", "SHA256SUMS"], cwd=bundle)
         manifest = json.loads((bundle / "manifest.json").read_text())
         if manifest["deploymentMethod"] != self.case["method"] or manifest["backend"] != self.case["backend"]:
-            raise RuntimeError(_("Export neodpovídá zvolené platformě a metodě."))
+            raise RuntimeError(_("The export does not match the selected platform and method."))
         lock = hashlib.sha256((bundle / "recipe/flake.lock").read_bytes()).hexdigest()
         if lock != manifest["lockSha256"]:
-            raise RuntimeError(_("Exportovaný lock neodpovídá manifestu."))
+            raise RuntimeError(_("The exported lock does not match the manifest."))
         artifact = bundle / manifest["artifact"]
         if self.case["method"] == "image":
             details = json.loads(self.command(["qemu-img", "info", "--output=json", str(artifact)])[1])
             expected = {"libvirt": "qcow2", "hyperv": "vhdx", "proxmox": "qcow2", "virtualbox": "vdi", "vmware": "vmdk"}
             if details["format"] != expected[self.case["backend"]] or details["virtual-size"] != 32 * 1024**3:
-                raise RuntimeError(_("Exportovaný disk má nesprávný formát nebo kapacitu."))
+                raise RuntimeError(_("The exported disk has an incorrect format or capacity."))
         else:
             if not (bundle / "INSTALL-ISO.sh").is_file() or not manifest.get("diskoPath"):
-                raise RuntimeError(_("ISO balíček neobsahuje instalační postup."))
+                raise RuntimeError(_("The ISO bundle does not include installation instructions."))
         damaged = self.folder / "damaged"
         damaged.mkdir()
         copy = damaged / artifact.name
@@ -395,10 +395,10 @@ class Campaign:
                         if line.endswith("  " + artifact.name))
         (damaged / "SHA256SUMS").write_text(checksum + "\n")
         if self.command(["sha256sum", "-c", "SHA256SUMS"], cwd=damaged, expected=None)[0] == 0:
-            raise RuntimeError(_("Kontrolní součet nerozpoznal poškozenou kopii."))
+            raise RuntimeError(_("The checksum did not detect the corrupted copy."))
         copy.unlink()
         if self.cli("export", name, "--output", str(bundle), expected=None)[0] == 0:
-            raise RuntimeError(_("Export přepsal existující balíček."))
+            raise RuntimeError(_("The export overwrote an existing bundle."))
         self.case["bundle"] = str(bundle)
         self.save()
 
@@ -417,19 +417,19 @@ class Campaign:
         self.case["nativeFindings"] = findings
         self.save()
         if findings:
-            raise RuntimeError(_("Provozní cíl má nálezy: {checks}. Kontroly byly pouze pro čtení.").format(
+            raise RuntimeError(_("The operational target has findings: {checks}. All checks were read-only.").format(
                 checks=", ".join(item["command"] + "=" + str(item["returncode"]) for item in findings)))
 
     def cleanup(self):
         if self.snapshot()["state"] != "shut off":
             self.poweroff()
         target = self.case["targetSpec"]
-        info(_("Úklid vlastního testovacího cíle: {name}"), name=self.case["target"])
+        info(_("Cleaning up the dedicated test target: {name}"), name=self.case["target"])
         if not self.case.get("manual") or target["backend"] == "libvirt":
             file = self.work / "instances" / (self.case["target"] + ".nix")
             text = file.read_text()
             if "allowReset = false;" not in text:
-                raise RuntimeError(_("Testovací deklarace nemá očekávané výchozí oprávnění; úklid zastavuji."))
+                raise RuntimeError(_("The test declaration does not have the expected default permission; stopping cleanup."))
             text = text.replace("allowReset = false;", "allowReset = true;")
             if self.case.get("manual"):
                 text = re.sub(r'\n  access = \{[^\n]*\};', "", text)
@@ -442,15 +442,15 @@ class Campaign:
                               "--pool", target["spec"]["storagePool"]])
         elif target["backend"] == "hyperv":
             self.powershell("""
-if($v.State -ne 'Off'){throw 'VM není vypnutá'}
+if($v.State -ne 'Off'){throw 'VM is not powered off'}
 $root=[IO.Path]::GetFullPath((Join-Path $s.storageDirectory $s.name)).TrimEnd('\\')
-if(-not $s.name.StartsWith('nixberry-vm-demo-test-')){throw 'Cizí jméno'}
-if(-not ([IO.Path]::GetFullPath($v.Path)).StartsWith($root+'\\')){throw 'Cizí cesta'}
-if(@(Get-VMSnapshot -VM $v).Count){throw 'Snapshoty'}
+if(-not $s.name.StartsWith('nixberry-vm-demo-test-')){throw 'Foreign name'}
+if(-not ([IO.Path]::GetFullPath($v.Path)).StartsWith($root+'\\')){throw 'Foreign path'}
+if(@(Get-VMSnapshot -VM $v).Count){throw 'Snapshots'}
 $disks=@(Get-VMHardDiskDrive -VM $v)
-if($disks.Count -ne 1 -or -not ([IO.Path]::GetFullPath($disks[0].Path)).StartsWith($root+'\\')){throw 'Cizí disk'}
-if((Get-Item -LiteralPath $root).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Odkaz'}
-if(@(Get-ChildItem -LiteralPath $root -Recurse -Force | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count){throw 'Odkaz uvnitř adresáře'}
+if($disks.Count -ne 1 -or -not ([IO.Path]::GetFullPath($disks[0].Path)).StartsWith($root+'\\')){throw 'Foreign disk'}
+if((Get-Item -LiteralPath $root).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Link'}
+if(@(Get-ChildItem -LiteralPath $root -Recurse -Force | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count){throw 'Link inside directory'}
 Remove-VM -VM $v -Force
 Remove-Item -LiteralPath $root -Recurse -Force
 """)
@@ -468,7 +468,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
                 command += ["-c", bootstrap]
             self.command(command, input_text=source, timeout=180)
         if self.snapshot()["state"] != "absent":
-            raise RuntimeError(_("Po úklidu cíl není nepřítomný."))
+            raise RuntimeError(_("The target is not absent after cleanup."))
         self.case["cleaned"] = True
         self.save()
 
@@ -480,7 +480,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
-                raise RuntimeError(_("Tuto kampaň už provádí jiný proces.")) from None
+                raise RuntimeError(_("Another process is already running this campaign.")) from None
             return self._run(selected, resume=resume)
 
     def _run(self, selected, *, resume=False):
@@ -495,14 +495,14 @@ Remove-Item -LiteralPath $root -Recurse -Force
             if selected and case["id"] not in selected or case["result"] == "PASS":
                 continue
             if case.get("writeStarted") and not case.get("cleaned"):
-                raise RuntimeError(_("Případ má zachované prostředky; nejprve je nutná kontrola stavu."))
+                raise RuntimeError(_("The case has retained resources; inspect its state first."))
             self.case = case
             case.setdefault("history", []).append({"result": case["result"], "detail": case.get("detail", ""),
                 "stepCount": len(case.get("steps", [])), "targetSpec": case.get("targetSpec"),
                 "directory": case.get("directory"), "writeStarted": case.get("writeStarted"),
                 "cleaned": case.get("cleaned"), "nativeVMId": case.get("nativeVMId")})
-            # Uchováme i adresář vzniklý těsně před přerušením prvního zápisu
-            # reportu. Nikdy jej nepoužijeme znovu ani nepřepíšeme jeho logy.
+            # Preserve directories created just before the first report write was
+            # interrupted. Never reuse them or overwrite their logs.
             while True:
                 case["attempt"] = case.get("attempt", 0) + 1
                 self.folder = self.root / case["id"] / ("attempt-" + str(case["attempt"]))
@@ -519,7 +519,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
             self.work = None
             self.counter = len(case.get("steps", []))
             self.save()
-            info(_("Případ kampaně: {name}"), name=case["id"])
+            info(_("Campaign case: {name}"), name=case["id"])
             try:
                 if case["group"] in ("ON", "NET"):
                     self.online()
@@ -545,18 +545,18 @@ Remove-Item -LiteralPath $root -Recurse -Force
         dependency = "OFF-" + code + "-" + self.case["method"]
         exported = next(c for c in self.report["cases"] if c["id"] == dependency)
         if exported["result"] != "PASS":
-            raise Blocked(_("Nejprve musí projít odpovídající offline export."))
+            raise Blocked(_("The corresponding offline export must pass first."))
         bundle = Path(exported["bundle"])
         self.command(["sha256sum", "-c", "SHA256SUMS"], cwd=bundle)
         manifest = json.loads((bundle / "manifest.json").read_text())
         self.work = self.folder / "recipe"
         shutil.copytree(bundle / "recipe", self.work, symlinks=True)
-        # Export zachovává zdroje z Nix store jen pro čtení. Zapisujeme
-        # pouze připojení a testovací revizi v oddělené pracovní kopii.
+        # Exported Nix store sources are read-only. Only change access and the
+        # test revision in a separate working copy.
         for path in (self.work / "instances" / (manifest["target"] + ".nix"),
                      self.work / "platforms/vm/configuration.nix"):
             if path.is_symlink():
-                raise RuntimeError(_("Pracovní deklarace předaného balíčku nesmí být symbolický odkaz."))
+                raise RuntimeError(_("The handoff bundle's working declaration must not be a symbolic link."))
             path.chmod(path.stat().st_mode | 0o200)
         self.case["target"] = manifest["target"]
         hosts = self.evaluate("nixberryDeployment.hosts")
@@ -569,15 +569,15 @@ Remove-Item -LiteralPath $root -Recurse -Force
         self.save()
         self.preflight()
         if self.snapshot()["state"] != "absent":
-            raise RuntimeError(_("Cíl pro předání už existuje; import se nepovoluje."))
+            raise RuntimeError(_("The handoff target already exists; import is not allowed."))
         self.case["writeStarted"] = True
         self.save()
         artifact = bundle / manifest["artifact"]
         if self.case["backend"] == "libvirt":
             self.import_libvirt(manifest, artifact)
         else:
-            # Importér operátora pracuje výhradně s předaným médiem. Použije
-            # nativní hostitelský adaptér z balíčku, systém znovu nesestavuje.
+            # The operator importer uses only handed-off media and the bundle's native
+            # host adapter; it does not rebuild the system.
             media = self.folder / "operator-media"
             media.mkdir()
             (media / "system.vmdk").symlink_to(artifact)
@@ -606,10 +606,10 @@ Remove-Item -LiteralPath $root -Recurse -Force
         pool = spec["storagePool"]
         disk = spec["storageDirectory"] + "/" + spec["volume"]
         if self.command([*prefix, "vol-info", spec["volume"], "--pool", pool], expected=None)[0] == 0:
-            raise RuntimeError(_("Import by přepsal existující svazek."))
+            raise RuntimeError(_("Import would overwrite an existing volume."))
         self.command([*prefix, "vol-create-as", pool, spec["volume"], str(spec["diskGiB"]) + "G", "--format", "qcow2"])
         if self.command([*prefix, "vol-path", spec["volume"], "--pool", pool])[1].strip() != disk:
-            raise RuntimeError(_("Import vytvořil svazek na jiné cestě."))
+            raise RuntimeError(_("Import created a volume at a different path."))
         boot = "uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no"
         args = ["virt-install", "--connect", spec["uri"], "--name", spec["name"], "--uuid", spec["uuid"],
                 "--memory", str(spec["memoryMiB"]), "--vcpus", str(spec["vcpus"]), "--osinfo", "generic",
@@ -643,13 +643,13 @@ Remove-Item -LiteralPath $root -Recurse -Force
                 break
             time.sleep(3)
         else:
-            raise RuntimeError(_("Ručně vytvořená VM nezískala adresu."))
+            raise RuntimeError(_("The manually created VM did not obtain an address."))
         if self.case["method"] == "iso":
             from runtime import ssh_command
             target = {**self.case["targetSpec"], "_acceptNewGuestKey": True}
             connection = ssh_command(target, state)
-            # Klíč instalátoru patří k tomuto pokusu, nikoli do trvalé
-            # evidence klíčů hotového systému. Rodič adresáře už existuje.
+            # The installer key belongs to this attempt, not the installed system's
+            # persistent trust store. The parent directory already exists.
             installer_known = self.folder / "installer.known_hosts"
             installer_known.touch(mode=0o600, exist_ok=False)
             connection = ["UserKnownHostsFile=" + json.dumps(str(installer_known))
@@ -662,7 +662,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
                 self.command(connection + [shlex.join(["bash", "-s", "--", mode, *values])], input_text=script)
             code, _output = self.command(connection + ["systemctl poweroff --no-block"], expected=None)
             if code not in (0, 255):
-                raise RuntimeError(_("Vypnutí VM se nepodařilo vyžádat."))
+                raise RuntimeError(_("Could not request VM shutdown."))
             self.wait_off()
             config = ET.fromstring(self.command([*prefix, "dumpxml", spec["name"], "--inactive"])[1])
             for cdrom in config.findall("./devices/disk[@device='cdrom']"):
@@ -673,8 +673,8 @@ Remove-Item -LiteralPath $root -Recurse -Force
             for node in list(os_node.findall("boot")):
                 os_node.remove(node)
             ET.SubElement(os_node, "boot", {"dev": "hd"})
-            # Instalační fáze virt-install vypíná VM při rebootu; hotový
-            # systém má po odpojení ISO opět běžné restartování.
+            # virt-install shuts down on installation reboot; restore normal reboot
+            # behavior after detaching the ISO.
             reboot = config.find("on_reboot")
             if reboot is None:
                 reboot = ET.SubElement(config, "on_reboot")
@@ -694,7 +694,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
                 break
             time.sleep(3)
         else:
-            raise RuntimeError(_("Předaná VM nemá ověřenou adresu."))
+            raise RuntimeError(_("The handed-off VM has no verified address."))
         port = 22
         host = address
         spec = self.case["targetSpec"]["spec"]
@@ -709,14 +709,14 @@ Remove-Item -LiteralPath $root -Recurse -Force
             deadline = time.monotonic() + 15
             while time.monotonic() < deadline:
                 if self.forward.poll() is not None:
-                    raise RuntimeError(_("SSH forward se nepodařilo připravit."))
+                    raise RuntimeError(_("Could not prepare the SSH forward."))
                 try:
                     with socket.create_connection(("127.0.0.1", port), timeout=1):
                         break
                 except OSError:
                     time.sleep(0.5)
             else:
-                raise RuntimeError(_("SSH forward nezačal naslouchat."))
+                raise RuntimeError(_("The SSH forward did not start listening."))
             host = "127.0.0.1"
         known = self.folder / "known_hosts"
         alias = self.case["id"]
@@ -726,21 +726,21 @@ Remove-Item -LiteralPath $root -Recurse -Force
                              "-p", str(port), "root@" + host, "hostname"])
         access = {"host": host, "user": "root", "port": str(port),
                   "knownHostsFile": str(known), "hostKeyAlias": alias}
-        # Port je Nix integer, ostatní hodnoty řetězce; schéma access jej kontroluje.
+        # Port is a Nix integer, other fields are strings; access validates the schema.
         expression = nix_attrs(access).replace('port = "' + str(port) + '";', 'port = ' + str(port) + ';')
         file = self.work / "instances" / (self.case["target"] + ".nix")
         file.write_text(file.read_text().replace("{\n", "{\n  access = " + expression + ";\n", 1))
         self.wait_verified()
 
     def wait_guest_ssh(self, command):
-        # DHCP může přidělit adresu dříve, než systém spustí sshd.
-        # Připnutý klíč se při opakování nemění ani neodstraňuje.
+        # DHCP may assign an address before sshd starts.
+        # Retries neither change nor remove the pinned key.
         deadline = time.monotonic() + 300
         while time.monotonic() < deadline:
             if self.command(command, expected=None, timeout=20)[0] == 0:
                 return
             time.sleep(3)
-        raise RuntimeError(_("Předaná VM nespustila ověřené SSH v časovém limitu."))
+        raise RuntimeError(_("The handed-off VM did not start verified SSH within the timeout."))
 
 
 def validate_static_network(expected, addresses, routes, dns):
@@ -748,10 +748,10 @@ def validate_static_network(expected, addresses, routes, dns):
                   if str(address.get("local")) + "/" + str(address.get("prefixlen")) == expected["address"]}
     if not interfaces or not any(route.get("gateway") == expected["gateway"] and route.get("dev") in interfaces
                                  for route in routes):
-        raise RuntimeError(_("Běžící VM nemá očekávanou pevnou adresu, prefix nebo výchozí bránu."))
+        raise RuntimeError(_("The running VM does not have the expected static address, prefix or default gateway."))
     servers = set(re.findall(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])", dns))
     if not set(expected["dns"]).issubset(servers):
-        raise RuntimeError(_("Běžící VM nepoužívá očekávané DNS servery."))
+        raise RuntimeError(_("The running VM is not using the expected DNS servers."))
 
 
 def nix_attrs(value):
@@ -761,7 +761,7 @@ def nix_attrs(value):
         return "[ " + " ".join(nix_attrs(v) for v in value) + " ]"
     if isinstance(value, str):
         return json.dumps(value).replace("${", "\\${")
-    raise ValueError(_("Nepodporovaná hodnota testovací konfigurace."))
+    raise ValueError(_("Unsupported test configuration value."))
 
 
 def main():
@@ -777,7 +777,7 @@ def main():
         print(json.dumps(matrix(), ensure_ascii=False, indent=2))
         return 0
     if not args.run_root:
-        parser.error(_("Pro běh kampaně zadej --run-root mimo recept."))
+        parser.error(_("Set --run-root outside the recipe to run the campaign."))
     settings = json.loads(args.settings.read_text()) if args.settings else {}
     return Campaign(args.recipe, args.run_root, settings).run(args.case, resume=args.resume)
 

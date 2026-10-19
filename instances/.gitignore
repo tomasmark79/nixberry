@@ -1,4 +1,4 @@
-# Místní deklarace VM; verzují se pouze pravidla a společný loader.
+# Local VM declarations; track only these rules and the shared loader.
 *
 !.gitignore
 !default.nix

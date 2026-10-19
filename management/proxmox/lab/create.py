@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Samostatný vnořený Proxmox pro zkoušení adaptéru; nikdy nepřebírá existující VM."""
+"Dedicated nested Proxmox for adapter testing; never takes over an existing VM."
 
 import hashlib
 import ipaddress
@@ -29,7 +29,7 @@ URI = "qemu:///system"
 
 def run(argv, **kwargs):
     result = subprocess.run(argv, text=True, capture_output=True, check=False, **kwargs)
-    # Asistent Proxmoxu může při chybě vypsat Error: na stderr a přesto vrátit 0.
+    # The Proxmox assistant may report Error: on stderr but still exit with code 0.
     if result.returncode or result.stderr.lstrip().startswith("Error:"):
         raise RuntimeError("\n".join(s.strip() for s in (result.stderr, result.stdout) if s.strip()))
     forward_stderr(result.stderr)
@@ -42,43 +42,43 @@ def virsh(*args):
 
 def preflight():
     if run(["hostname"]) != "nixon":
-        raise RuntimeError(_("Tento lab je vyhrazený pro místní Nixon."))
+        raise RuntimeError(_("This lab is reserved for the local Nixon host."))
     if Path("/sys/module/kvm_amd/parameters/nested").read_text().strip() not in ("1", "Y"):
-        raise RuntimeError(_("Nested AMD KVM není zapnuté."))
+        raise RuntimeError(_("Nested AMD KVM is not enabled."))
     if NAME in virsh("list", "--all", "--name").splitlines() or IDENTITY in virsh("list", "--all", "--uuid").splitlines():
-        raise RuntimeError(_("Proxmox lab už existuje; nic nepřepisuji ani nerestartuji."))
+        raise RuntimeError(_("The Proxmox lab already exists; nothing will be overwritten or rebooted."))
     if NAME in virsh("net-list", "--all", "--name").splitlines():
-        raise RuntimeError(_("Síť labu už existuje; částečný stav vyžaduje kontrolu."))
+        raise RuntimeError(_("The lab network already exists; partial state requires inspection."))
     for path in (ROOT, *ROOT.parents):
         if path.is_symlink():
-            raise RuntimeError(_("Úložiště labu nesmí vést přes symbolický odkaz."))
+            raise RuntimeError(_("Lab storage must not traverse a symbolic link."))
     for name in ("system.qcow2", "data.qcow2"):
         path = ROOT / name
         if path.exists() or path.is_symlink():
-            raise RuntimeError(_("Disk labu už existuje: {path}").format(path=path))
+            raise RuntimeError(_("The lab disk already exists: {path}").format(path=path))
     subnet = ipaddress.ip_network("192.168.78.0/24")
     for route in json.loads(run(["ip", "-j", "-4", "route", "show"])):
         if route.get("dst") not in (None, "default") and subnet.overlaps(ipaddress.ip_network(route["dst"], strict=False)):
-            raise RuntimeError(_("Podsíť labu koliduje s existující trasou."))
+            raise RuntimeError(_("The lab subnet overlaps an existing route."))
     if shutil.disk_usage(ROOT.parent).free < 100 * 1024 ** 3:
-        raise RuntimeError(_("Lab vyžaduje alespoň 100 GiB volné kapacity úložiště."))
-    info(_("Plán: {name}, 6 CPU, 12 GiB RAM, disky 32 + 64 GiB, UEFI a samostatná NAT síť."), name=NAME)
+        raise RuntimeError(_("The lab requires at least 100 GiB of free storage."))
+    info(_("Plan: {name}, 6 CPUs, 12 GiB RAM, 32 + 64 GiB disks, UEFI and a dedicated NAT network."), name=NAME)
 
 
 def prepare_iso():
     ROOT.mkdir(exist_ok=True)
     iso = ROOT / ISO_NAME
     if iso.is_symlink():
-        raise RuntimeError(_("Instalační ISO nesmí být symbolický odkaz."))
+        raise RuntimeError(_("The installation ISO must not be a symbolic link."))
     if not iso.exists():
-        info(_("Stahuji oficiální instalační ISO Proxmoxu…"))
+        info(_("Downloading the official Proxmox installation ISO…"))
         temporary = iso.with_suffix(".iso.part")
         with urllib.request.urlopen("https://enterprise.proxmox.com/iso/" + ISO_NAME, timeout=60) as response, temporary.open("xb") as stream:
             shutil.copyfileobj(response, stream)
         temporary.rename(iso)
     with iso.open("rb") as stream:
         if hashlib.file_digest(stream, "sha256").hexdigest() != ISO_HASH:
-            raise RuntimeError(_("Kontrolní součet oficiálního ISO nesouhlasí."))
+            raise RuntimeError(_("The official ISO checksum does not match."))
     STATE.mkdir(mode=0o700, parents=True, exist_ok=False)
     password = secrets.token_urlsafe(24)
     secret = STATE / "root-password"
@@ -98,8 +98,8 @@ def prepare_iso():
     run(["proxmox-auto-install-assistant", "validate-answer", str(answer)])
     prepared = ROOT / "proxmox-auto.iso"
     if prepared.exists() or prepared.is_symlink():
-        raise RuntimeError(_("Připravené ISO už existuje; nic nepřepisuji."))
-    info(_("Připravuji automatickou instalaci pouze na nový systémový disk VM…"))
+        raise RuntimeError(_("The prepared ISO already exists; nothing will be overwritten."))
+    info(_("Preparing automatic installation only onto the new VM system disk…"))
     run(["proxmox-auto-install-assistant", "prepare-iso", str(iso), "--fetch-from", "iso",
          "--answer-file", str(answer), "--output", str(prepared)])
     prepared.chmod(0o600)
@@ -122,8 +122,8 @@ def create(iso):
         disks.append(path)
     virsh("net-define", str(network))
     virsh("net-start", NAME)
-    # Záměrně bez autostartu: lab má vlastní životní cyklus a nespouští se po bootu notebooku.
-    info(_("Spouštím novou Proxmox VM a její automatický instalátor…"))
+    # No autostart: the lab has its own lifecycle and does not start at laptop boot.
+    info(_("Starting the new Proxmox VM and its automatic installer…"))
     run(["virt-install", "--connect", URI, "--name", NAME, "--uuid", IDENTITY,
          "--memory", "12288", "--vcpus", "6", "--cpu", "host-passthrough", "--machine", "q35",
          "--boot", "uefi,loader_secure=no,bootmenu.enable=yes,hd,cdrom",
@@ -134,20 +134,20 @@ def create(iso):
          "--osinfo", "debian13", "--graphics", "spice,listen=127.0.0.1", "--noautoconsole", "--wait", "0"])
     domain = virsh("dumpxml", NAME)
     (STATE / "domain.xml").write_text(domain)
-    success(_("Instalátor běží. Heslo je v souboru {path}; výsledek instalace ještě ověř samostatně."), path=STATE / "root-password")
+    success(_("The installer is running. The password is in {path}; verify the installation result separately."), path=STATE / "root-password")
     print(json.dumps({"name": NAME, "uuid": IDENTITY, "address": ADDRESS, "state": "installer-started"}))
 
 
 def main():
     parser = ArgumentParser(description=_(__doc__))
     modes = parser.add_mutually_exclusive_group()
-    modes.add_argument("--apply", action="store_true", help=_("Vytvořit nový lab a spustit instalaci"))
-    modes.add_argument("--dry-run", action="store_true", help=_("Pouze ověřit plán bez zápisu"))
+    modes.add_argument("--apply", action="store_true", help=_("Create a new lab and start installation"))
+    modes.add_argument("--dry-run", action="store_true", help=_("Only verify the plan without writing"))
     args = parser.parse_args()
     preflight()
     if args.apply:
         iso = prepare_iso()
-        # Během stahování nebo přípravy ISO mohl vzniknout kolidující prostředek.
+        # A conflicting resource may appear during ISO download or preparation.
         preflight()
         create(iso)
     return 0
@@ -157,5 +157,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as exc:
-        error(_("Příprava Proxmox labu selhala: {error}"), error=str(exc))
+        error(_("Proxmox lab preparation failed: {error}"), error=str(exc))
         raise SystemExit(1)

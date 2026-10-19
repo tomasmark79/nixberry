@@ -1,38 +1,38 @@
-# Technická reference
+# Technical reference
 
-[← Hlavní návod](../README.md) · [CLI](cli.md) · [Testování](test-plan.md)
+[← Main guide](../README.md) · [CLI](cli.md) · [Testing](test-plan.md)
 
-## Rozdělení konfigurace
+## Configuration boundaries
 
-| Oblast | Zdroj |
+| Area | Source |
 | --- | --- |
-| Hostitelé a jejich připojení | Místní `hosts.local.nix`, načítaný přes [hosts.nix](../hosts.nix) |
-| Místní VM deklarace a loader | [instances/](../instances/default.nix) |
-| Konfigurace serverů | [configurations/](../configurations/default.nix) |
-| Společný základ | [modules/common.nix](../modules/common.nix) |
-| Služby, balíčky, nastavení systému | `modules/services/`, `modules/applications/`, `modules/system/` |
-| Hardware a bootování | `platforms/rpi/`, `platforms/vm/` |
-| Fyzické RPi a SSD | [management/rpi/targets/](../management/rpi/targets/default.nix) |
-| Složení systémů, médií a nástrojů | [flake.nix](../flake.nix) |
-| Registr a CLI | [management/deployment/](../management/deployment/default.nix) |
-| Sdílené VM adaptéry | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
+| Hosts and connections | Local `hosts.local.nix`, loaded through [hosts.nix](../hosts.nix) |
+| Local VM declarations and loader | [instances/](../instances/default.nix) |
+| Server configurations | [configurations/](../configurations/default.nix) |
+| Shared base | [modules/common.nix](../modules/common.nix) |
+| Services, packages, system settings | `modules/services/`, `modules/applications/`, `modules/system/` |
+| Hardware and boot | `platforms/rpi/`, `platforms/vm/` |
+| Physical RPi and SSD | [management/rpi/targets/](../management/rpi/targets/default.nix) |
+| System, media and tool composition | [flake.nix](../flake.nix) |
+| Registry and CLI | [management/deployment/](../management/deployment/default.nix) |
+| Shared VM adapters | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
 
-Služby pro konkrétní použití patří do vybrané konfigurace. Společné části
-patří do `modules/`. Platforma řeší boot, disky, ovladače a guest podporu;
-nevybírá aplikační konfiguraci. Identita, síť a prostředky patří do deklarace.
+Use the selected configuration for application-specific services and `modules/`
+for shared behavior. Platforms handle boot, disks, drivers and guest support;
+they do not choose application configurations. Declarations contain identity,
+networking and resources.
 
-NixBerry má vlastní recept i lock a funguje bez osobní konfigurace notebooku.
-V `instances/` a `management/rpi/targets/` se verzují jen loadery a pravidla
-ignorování. Konkrétní VM i RPi deklarace, `hosts.local.nix` a `admin.pub`
-zálohuj samostatně. Používej `path:` vstup, který je zahrnuje i bez `git add`.
-Prázdná evidence je platná, neznámý hostitel je chyba.
+NixBerry has its own recipe and lock and works independently of notebook configuration.
+Declaration directories track only loaders and ignore rules. Back up VM/RPi
+declarations, `hosts.local.nix` and `admin.pub` separately. Use `path:` inputs to
+include them without `git add`. Empty inventory is valid; an unknown host is an error.
 
-## Pojmenované konfigurace
+## Named configurations
 
-Každý cíl vybírá jednu `configuration`; výchozí je `default`.
-Platí stejně pro VM, RPi, aktualizaci, image, ISO i export.
+Every target selects one `configuration`, defaulting to `default`.
+This applies to VM/RPi updates, images, ISOs and export.
 
-Novou konfiguraci vytvoř například jako `configurations/web.nix`:
+For example, create `configurations/web.nix`:
 
 ```nix
 { ... }:
@@ -42,8 +42,8 @@ Novou konfiguraci vytvoř například jako `configurations/web.nix`:
 }
 ```
 
-Konfigurace importuje společný základ, nikoli jinou konfiguraci.
-Službě podle potřeby otevři firewall. Platformu připojí flake automaticky.
+Import the common base, not another configuration. Open firewall ports as needed.
+The flake attaches the platform automatically.
 
 ```sh
 nixberry new-libvirt-vm vm-demo-web --configuration web
@@ -52,101 +52,105 @@ nixberry plan vm-demo-web
 nixberry reproduce vm-demo-web --apply
 ```
 
-`web` je příklad, který musíš nejprve vytvořit. U existujícího cíle uprav
-`configuration` v deklaraci a pokračuj přes `diff` a `update`.
-`--configuration` platí jen při vytváření deklarace.
+Create this example `web` module before using it. For an existing target,
+edit its stored `configuration` and continue with `diff` and `update`.
+`--configuration` only applies when creating declarations.
 
-Název začíná malým písmenem a obsahuje malá písmena, číslice a pomlčky.
-Větší konfigurace může mít `configurations/web/default.nix`; souběžný
-`web.nix` je chyba. Pomocné moduly ukládej dovnitř adresáře.
-Katalog ignoruje symlinky a jeho výpis nesestavuje systémy:
+Names start with a lowercase letter and contain lowercase letters, digits and hyphens.
+Larger configurations may use `configurations/web/default.nix`; a simultaneous
+`web.nix` is an error. Put helper modules inside the directory.
+The catalogue ignores symlinks; listing it does not build systems:
 
 ```sh
 nix eval --json path:.#nixberryConfigurations
 ```
 
-Obsah modulů a podporu balíčků na ARM ověřuje až vyhodnocení a sestavení
-příslušného systému. Změna společného základu ovlivňuje všechny konfigurace;
-změna jednoho modulu jen jeho uživatele. Aktivace může restartovat služby
-a měnit firewall. Rollback systému nevrací migrace databází ani provozní data.
+Module content and ARM package availability are checked when evaluating/building
+the selected system. Shared-base changes affect all configurations; a configuration
+module affects only its users. Activation can restart services and change firewalls.
+System rollback does not undo database migrations or application data changes.
 
-### Konfigurace nixoncpp
+### nixoncpp configuration
 
-`configuration = "nixoncpp";` přidává konzolovou aplikaci
-[NixonCpp](https://github.com/tomasmark79/NixonCpp) a její knihovnu.
-[Modul](../configurations/nixoncpp.nix) používá hotový balíček upstream flake
-v podadresáři `nix`; zdroj připíná společný lock.
+`configuration = "nixoncpp";` adds the console application
+[NixonCpp](https://github.com/tomasmark79/NixonCpp) and its library.
+The [module](../configurations/nixoncpp.nix) uses the upstream flake package
+from its `nix` directory, pinned by the common lock.
 
 ```sh
 NixonCpp --help
 NixonCpp
 ```
 
-Aplikace se spouští ručně, nevytváří službu ani neotevírá porty.
-`--write2file` ukládá `application.log` do pracovního adresáře.
+It runs manually, creates no service and opens no ports.
+`--write2file` writes `application.log` in the working directory.
 
-## Identita a klíče
+## Identity and keys
 
-Název souboru určuje cíl CLI. Hostname VM je standardně `spec.name`,
-přepsat jej lze přes `guestHostName`. Pro další kopii vytvoř novou deklaraci
-s novým UUID a MAC; pro správu téže VM je zachovej.
+A filename determines the CLI target name. VM hostname defaults to `spec.name`;
+override with `guestHostName`. Another copy needs a new declaration, UUID and MAC.
+Keep them for subsequent management of the same VM.
 
-`admin.pub` obsahuje veřejný klíč správce. Připrav jej před sestavením médií;
-změnu na běžícím serveru aktivuje až `update`. Soukromý klíč do receptu nepatří.
-Hostitele odeber až po odebrání nebo přesměrování jeho deklarací.
+Prepare `admin.pub` before building media. A changed administrator key reaches a
+running system only through `update`. Never put private keys in the recipe.
+Remove hosts only after deleting or redirecting their declarations.
 
 <a id="recept"></a>
+<a id="recipe"></a>
 
-## Snímek receptu a systémové generace
+## Immutable recipes and system generations
 
-Nasazení, export a aktualizace používají neměnný snímek receptu.
-Při změně deklarace oproti již spuštěnému CLI operaci spusť znovu;
-nástroj nepřechází potichu na jiný cíl. Dočasné GC roots chrání zdroj
-a sestavený výstup po dobu práce.
+Deployment, export and updates use an immutable recipe snapshot.
+If a declaration differs from the running CLI, rerun the operation;
+the tool never silently switches targets. Temporary GC roots protect source
+and built outputs throughout the operation.
 
-Export přibaluje stejný snímek jako `recipe/`; nemění se s pracovní kopií
-a není kopií všech závislostí Nix store. Pro jiné nastavení vytvoř nový balíček.
+Export includes this same snapshot as `recipe/`. It does not follow working-copy
+changes and is not a copy of every Nix store dependency.
+Create a new bundle for different settings.
 
-`update --apply` ověří identitu a instalaci na disku, přenese systém
-a aktivuje jej přes jednotku `nixberry-update` s vlastním prostředím.
-Po aktivaci kontroluje systém a služby. Přerušené SSH proto není důkaz
-ukončené aktivace. `diffg` porovnává nejvyšší dochované generace,
-nikoli nutně právě aktivní a předchozí nabootovanou generaci.
+`update --apply` verifies identity and disk installation, transfers the system
+and activates it through `nixberry-update` with an explicit environment.
+It then checks system and services. Interrupted SSH does not prove activation
+stopped. `diffg` compares the highest retained generations, which need not be
+the active and previously booted generations.
 
 <a id="diagnostika"></a>
+<a id="diagnostics"></a>
 
-## Diagnostika a místo na disku
+## Diagnostics and storage
 
-`doctor` kontroluje identitu, síť, služby, bloky a inody na `/`, `/boot`
-a `/nix`. Zaplnění od 90 % je varování, od 98 % chyba.
-Bez sestavení nepotvrzuje shodu s receptem; tu ověřuje `verify`.
-[Příkazy a návratové kódy](cli.md#výstupy-a-návratové-kódy).
+`doctor` checks identity, networking, services, blocks and inodes on `/`,
+`/boot` and `/nix`. Usage at 90% is a warning; 98% is an error.
+It does not build to confirm recipe consistency; `verify` does that.
+See [commands and exit codes](cli.md#language-output-and-exit-codes).
 
-`cleanup` pouze čte. Chrání aktivní, nabootovaný a výchozí systém i nejvyšší
-dochovanou generaci odlišnou od aktivní jako možnost návratu.
-`review` znamená ruční posouzení, `unknown` potřebu dalších informací.
-Součet `closureBytes` není odhad uvolnitelného místa: závislosti se sdílejí.
+`cleanup` is read-only. It protects the active, booted and default systems,
+plus the highest retained generation different from the active one for rollback.
+`review` means manual assessment; `unknown` means more information is needed.
+Adding `closureBytes` does not estimate reclaimable space because dependencies are shared.
 
 ```sh
 nixberry cleanup vm-demo-libvirt
-nixberry cleanup --artifact-root /cesta/k/balickum --json
+nixberry cleanup --artifact-root /path/to/bundles --json
 ```
 
-Inventura respektuje rozsah hypervizoru a vyhrazeného úložiště.
-Vypnuté VMware VM mimo něj nejsou úplně inventarizované; fyzická alokace
-thin úložiště může zůstat neznámá. Neznámá velikost je `null`, nikoli nula.
-`--artifact-root` lze opakovat; odkazy na adresáře se nepřecházejí a exporty
-s manifestem jsou chráněné. Použití obrazu mimo sledovaný rozsah nelze vyloučit.
+Inventory respects hypervisor and dedicated-storage boundaries.
+Stopped VMware VMs outside that storage are not fully inventoried.
+Thin-storage allocation may be unknown: `null` is not zero.
+`--artifact-root` is repeatable; directory links are not followed and exports
+with manifests are protected. Usage outside the inspected scope cannot be ruled out.
 
 <a id="pamet"></a>
+<a id="memory"></a>
 
-## Paměť a swap
+## Memory and swap
 
-[Modul swapu](../modules/system/swap.nix) nastavuje zram s `zstd`,
-limitem nejvýše 2 GiB a nejvýše velikosti RAM, prioritou 100.
-Záložní `/swapfile` má 8 GiB a prioritu 10.
+The [swap module](../modules/system/swap.nix) uses zram with `zstd`,
+capped at 2 GiB and at RAM size, priority 100.
+Fallback `/swapfile` is 8 GiB at priority 10.
 
-Na cílovém serveru ověř:
+Check on the server:
 
 ```sh
 free -h
@@ -157,31 +161,31 @@ zramctl
 journalctl -b -u mkswap-swapfile.service
 ```
 
-Vytváření swap souboru při prvním startu může naplnit souborovou cache,
-kterou hypervizor započítá do obsazené RAM. Rozlišuj `MemFree`, `Cached`
-a `MemAvailable`. Vysoká cache s dostatečným `MemAvailable` a bez tlaku
-na paměť sama nepotvrzuje nedostatek RAM.
+Creating a swap file on first boot can fill the filesystem cache, which a
+hypervisor may count as used RAM. Distinguish `MemFree`, `Cached` and
+`MemAvailable`. High cache with sufficient available memory and no pressure
+does not itself prove RAM exhaustion.
 
-## Společné aplikace
+## Shared applications
 
-Midnight Commander používá připnutý vstup `mc-modern`. Samotný vstup aktualizuje
-`nix flake update mc-modern --flake .`; server potom aktualizuj běžným CLI.
-Uživatelské `~/.config/mc/ini` má přednost před výchozím nastavením balíčku.
-Bash wrapper `mc` zachovává poslední adresář; přímá binárka tuto funkci nemá.
-Schránka Wayland vyžaduje grafickou relaci, kterou samotné SSH neposkytuje.
+Midnight Commander uses the pinned `mc-modern` input.
+Update it with `nix flake update mc-modern --flake .`, then update servers through
+the normal CLI. User `~/.config/mc/ini` overrides package defaults.
+The Bash `mc` wrapper preserves the last visited directory; the direct binary does not.
+Wayland clipboard access requires a graphical session, not SSH alone.
 
-HSTR je v [modules/applications/hstr/](../modules/applications/hstr/package.nix).
-V interaktivním Bashi `Ctrl+R` otevře historii a výběr vloží do příkazové
-řádky; Enter jej spustí. Historie se před otevřením synchronizuje.
+[HSTR](../modules/applications/hstr/package.nix) opens history with `Ctrl+R` in
+interactive Bash. Selecting inserts a command; Enter executes it.
+History is synchronized before opening.
 
-Kernel a firmware RPi určuje připnutý `nixos-raspberrypi` a
-[platforms/rpi/boot.nix](../platforms/rpi/boot.nix), nikoli aplikační vstup `unstable`.
+The pinned `nixos-raspberrypi` and [boot module](../platforms/rpi/boot.nix)
+select RPi kernel/firmware, independently of application input `unstable`.
 
 <a id="media"></a>
 
-## Nix výstupy bez nasazení
+## Nix outputs without deployment
 
-Z kořene receptu, pro existující místní deklaraci:
+From the recipe root, for an existing local declaration:
 
 ```sh
 nix build --no-link --print-out-paths --no-write-lock-file path:.#nixberrySystems.vm-demo-libvirt.config.system.build.toplevel
@@ -189,38 +193,39 @@ nix build --no-link --print-out-paths --no-write-lock-file path:.#nixberryImages
 nix build --no-link --print-out-paths --no-write-lock-file path:.#nixberryInstallers.vm-demo-libvirt
 ```
 
-`nixberryImages.CÍL` vybírá disk konkrétní VM nebo plnou SD RPi.
-`nixberryInstallers.CÍL` vybírá ISO VM; médium je pod `iso/*.iso`.
+`nixberryImages.TARGET` selects a VM disk or full RPi SD.
+`nixberryInstallers.TARGET` selects the VM ISO under `iso/*.iso`.
 
-`nixberryTools.CÍL` respektuje deklarovanou metodu.
-`nixberryToolsByMethod.image.CÍL` a `.iso.CÍL` vybírají variantu výslovně.
-Každý online VM backend poskytuje `probe/create/install/provision/reset`.
-Libvirt používá `nixberry-vm-*` a `nixberry-libvirt-probe`,
-ostatní `nixberry-BACKEND-*`. Samostatné `.reset` nepotřebuje systém ani médium.
-Manifest rozlišuje `imagePath` a `isoPath`; nepoužitá položka je `null`.
+`nixberryTools.TARGET` honors the declared method.
+`nixberryToolsByMethod.image.TARGET` and `.iso.TARGET` explicitly select a variant.
+Each online VM backend provides `probe/create/install/provision/reset`.
+Libvirt uses `nixberry-vm-*` and `nixberry-libvirt-probe`;
+others use `nixberry-BACKEND-*`. Standalone `.reset` needs no system or media.
+Manifests distinguish `imagePath` and `isoPath`; the unused field is `null`.
 
-Generické obrazy mají 32 GiB a výchozí hostname profilu:
+Generic images have 32 GiB and the profile's default hostname:
 
-| Platforma | Diskový balíček | ISO balíček |
+| Platform | Disk package | ISO package |
 | --- | --- | --- |
-| libvirt/QEMU | `nixberry-qemu-image` | `nixberry-installer` |
+| QEMU/KVM (libvirt) | `nixberry-qemu-image` | `nixberry-installer` |
 | Hyper-V | `nixberry-hyperv-image` | `nixberry-hyperv-installer` |
-| Proxmox | `nixberry-proxmox-image` | `nixberry-proxmox-installer` |
+| Proxmox VE | `nixberry-proxmox-image` | `nixberry-proxmox-installer` |
 | VirtualBox | `nixberry-virtualbox-image` | `nixberry-virtualbox-installer` |
-| VMware | `nixberry-vmware-image` | `nixberry-vmware-installer` |
+| VMware Workstation | `nixberry-vmware-image` | `nixberry-vmware-installer` |
 
-RPi poskytuje `nixberry-rpi-installer` a síťovou variantu
-`nixberry-rpi-network-installer`. Pro předání konkrétního stroje použij `export`,
-který přibalí odpovídající médium, deklaraci, lock a návod.
+RPi provides `nixberry-rpi-installer` and `nixberry-rpi-network-installer`.
+Use `export` to hand off a particular machine with its matching medium,
+declaration, lock and instructions.
 
-## Testování a údržba dokumentace
+## Testing and documentation maintenance
 
-[Testovací postup](test-plan.md) rozlišuje izolované kontroly, sestavení,
-živé nasazení a ověření hostovaného systému. Výsledek jedné vrstvy nepotvrzuje ostatní.
+The [test guide](test-plan.md) separates isolated checks, builds, live deployment
+and guest verification. Evidence from one layer does not prove another.
 
-Verzi určuje [VERSION](../VERSION); `nixberry --version` ji vypisuje.
-Číslo verze nenahrazuje lock ani přesnou systémovou cestu.
+[VERSION](../VERSION) determines `nixberry --version`; it does not replace a
+lockfile or exact system path.
 
-[README](../README.md) je jediný vstupní návod. Podrobnosti jsou v `docs/`.
-Popisuj aktuální příkazy, podporované varianty a omezení podle zdrojů.
-Příklady VM pojmenovávej `vm-demo-*`; skutečnou evidenci ukazuje `list`.
+[README](../README.md) is the entry guide, with English details in `docs/`.
+Document current commands and limitations,
+use `vm-demo-*` examples and read real inventory through `list`.
+See [message conventions](messages.md) for English source strings and Czech catalogues.

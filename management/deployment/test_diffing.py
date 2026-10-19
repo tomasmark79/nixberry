@@ -53,7 +53,7 @@ class DiffChecks(unittest.TestCase):
         for dependency in self.dependencies.values():
             dependency.assert_not_called()
         self.assertEqual(self.output.getvalue(), "")
-        self.assertIn("[nixberry] Plán:", self.messages.getvalue())
+        self.assertIn("[nixberry] Plan:", self.messages.getvalue())
 
     def test_recipe_comparison_only_copies_from_server_and_keeps_jump_host(self):
         self.assertEqual(diffing.compare(self.recipe, "test", TARGET), 0)
@@ -68,8 +68,8 @@ class DiffChecks(unittest.TestCase):
         self.assertEqual(self.dependencies["build"].call_args.args[0], "/nix/store/frozen-recipe")
 
     def test_stale_cli_stops_before_connecting(self):
-        self.dependencies["freeze_recipe"].side_effect = RuntimeError("Deklarace cíle se liší")
-        with self.assertRaisesRegex(RuntimeError, "Deklarace cíle se liší"):
+        self.dependencies["freeze_recipe"].side_effect = RuntimeError("The target declaration differs")
+        with self.assertRaisesRegex(RuntimeError, "The target declaration differs"):
             diffing.compare(self.recipe, "test", TARGET)
         self.dependencies["status"].assert_not_called()
         self.dependencies["build"].assert_not_called()
@@ -97,13 +97,13 @@ class DiffChecks(unittest.TestCase):
 
     def test_change_during_build_stops_before_copy(self):
         self.dependencies["preflight"].side_effect = [OLD, NEW]
-        with self.assertRaisesRegex(RuntimeError, "Během sestavení"):
+        with self.assertRaisesRegex(RuntimeError, "during the build"):
             diffing.compare(self.recipe, "test", TARGET)
         self.run.assert_not_called()
 
     def test_change_during_copy_stops_before_diff(self):
         self.dependencies["preflight"].side_effect = [OLD, OLD, NEW]
-        with self.assertRaisesRegex(RuntimeError, "Během přenosu"):
+        with self.assertRaisesRegex(RuntimeError, "during transfer"):
             diffing.compare(self.recipe, "test", TARGET)
         self.assertEqual(len(self.run.call_args_list), 2)
 
@@ -158,10 +158,10 @@ class GenerationScriptChecks(unittest.TestCase):
                 result = subprocess.run(["sh", "-c", script], text=True, capture_output=True)
                 if len(numbers) < 2:
                     self.assertEqual(result.returncode, 1)
-                    self.assertIn("dvě dochované", result.stderr)
+                    self.assertIn("two retained", result.stderr)
                 else:
                     self.assertEqual(result.returncode, 23)
-                    self.assertIn("[nixberry] Předchozí generace:", result.stderr)
+                    self.assertIn("[nixberry] Previous generation:", result.stderr)
                     self.assertNotIn("[nixberry]", result.stdout)
                     self.assertEqual(result.stdout.splitlines()[-3:],
                                      ["diff", str(root / "system-9-link"), str(root / "system-10-link")])

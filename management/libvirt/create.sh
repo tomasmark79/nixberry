@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Vytvoří pouze novou testovací VM. Bez --apply provádí výhradně kontroly.
+# Create only a new test VM. Without --apply, perform checks only.
 set -euo pipefail
-# Při přenosu je helper přiložený; přímé spuštění používá zdroj z pracovní kopie.
+# Transferred scripts include the helper; direct execution uses the working copy.
 if ! declare -F nb_info >/dev/null; then
   source "${NIXBERRY_MESSAGES_SH:-${BASH_SOURCE[0]%/*}/../deployment/messages.sh}"
 fi
@@ -12,14 +12,14 @@ case "${1:---dry-run}" in
   --dry-run) ;;
   --apply) mode=apply ;;
   --help)
-    nb_help 'Použití: nixberry-vm-create [--dry-run|--apply]'
-    nb_help 'Výchozí režim jen ověří plán. --apply vytvoří VM podle zvolené metody image nebo iso.'
+    nb_help 'Usage: nixberry-vm-create [--dry-run|--apply]'
+    nb_help 'The default mode only verifies the plan. --apply creates a VM using the selected image or iso method.'
     exit 0
     ;;
-  *) nb_error 'Neznámá volba: %s' "$1"; exit 2 ;;
+  *) nb_error 'Unknown option: %s' "$1"; exit 2 ;;
 esac
 if (( $# > 1 )); then
-  nb_error 'Příkaz přijímá nejvýše jednu volbu.'
+  nb_error 'The command accepts at most one option.'
   exit 2
 fi
 
@@ -41,77 +41,77 @@ machine=$(value machine)
 v() { virsh --connect "$uri" "$@"; }
 fail() { nb_error "$@"; exit 1; }
 
-# Záměrně nepřijímáme vzdálený host ani adresu serveru jako argument.
-[[ "$uri" == qemu:///system ]] || fail 'Povolený je pouze místní qemu:///system.'
+# Intentionally accept neither remote hosts nor server addresses as arguments.
+[[ "$uri" == qemu:///system ]] || fail 'Only local qemu:///system is allowed.'
 python3 "${NIXBERRY_POLICY:-$(dirname -- "${BASH_SOURCE[0]}")/policy.py}" "$NIXBERRY_MANIFEST"
-[[ "$volume" == "$name.qcow2" ]] || fail 'Název disku neodpovídá testovací VM.'
+[[ "$volume" == "$name.qcow2" ]] || fail 'The disk name does not match the test VM.'
 if [[ "$method" == iso ]]; then
-  [[ -f "$iso" ]] || fail 'Chybí sestavené instalační ISO: %s' "$iso"
+  [[ -f "$iso" ]] || fail 'The built installation ISO is missing: %s' "$iso"
 else
-  [[ "$method" == image && -f "$image" ]] || fail 'Chybí hotový systémový disk: %s' "$image"
+  [[ "$method" == image && -f "$image" ]] || fail 'The prebuilt system disk is missing: %s' "$image"
 fi
 virt-xml-validate "$NIXBERRY_DOMAIN_XML" domain
 v list --all >/dev/null
 
-# Seznamy načítáme předem, aby chyba spojení nebyla zaměněna za volný název.
+# Read listings first so connection failures cannot appear as available names.
 names=$(v list --all --name)
 uuids=$(v list --all --uuid)
 if grep -Fxq "$name" <<< "$names" || grep -Fxq "$uuid" <<< "$uuids"; then
-  fail 'Testovací VM již existuje. Příkaz ji nepřepíše ani nerestartuje.'
+  fail 'The test VM already exists. It will not be overwritten or rebooted.'
 fi
-# Nejprve načteme celý výstup. grep -q v pipeline by mohl ukončit virsh přes SIGPIPE.
+# Capture the full output first; grep -q in a pipeline could SIGPIPE virsh.
 pool_info=$(v pool-info "$pool")
-grep -Eq '^State: +running$' <<< "$pool_info" || fail 'Úložiště není aktivní.'
+grep -Eq '^State: +running$' <<< "$pool_info" || fail 'The storage is inactive.'
 pool_xml=$(v pool-dumpxml "$pool")
 pool_path=$(xmllint --xpath 'string(/pool/target/path)' - <<< "$pool_xml")
-[[ "$pool_path" == "$directory" ]] || fail 'Cesta úložiště neodpovídá manifestu.'
+[[ "$pool_path" == "$directory" ]] || fail 'The storage path does not match the manifest.'
 volumes=$(v vol-list "$pool")
 while read -r existing_volume _; do
-  [[ "$existing_volume" != "$volume" ]] || fail 'Cílový disk již existuje v úložišti.'
+  [[ "$existing_volume" != "$volume" ]] || fail 'The target disk already exists in storage.'
 done <<< "$volumes"
 if [[ -e "$disk" || -L "$disk" ]]; then
-  fail 'Cílový disk již existuje. Příkaz jej nepřepíše.'
+  fail 'The target disk already exists. It will not be overwritten.'
 fi
 network_info=$(v net-info "$network")
-grep -Eq '^Active: +yes$' <<< "$network_info" || fail 'Síť není aktivní.'
+grep -Eq '^Active: +yes$' <<< "$network_info" || fail 'The network is inactive.'
 network_xml=$(v net-dumpxml "$network")
 [[ $(xmllint --xpath 'string(/network/forward/@mode)' - <<< "$network_xml") == nat ]] \
-  || fail 'Testovací síť musí používat NAT.'
+  || fail 'The test network must use NAT.'
 v domcapabilities --virttype kvm --arch x86_64 --machine "$machine" >/dev/null
 
-# Kontrola MAC zahrnuje i vypnuté stroje a statické rezervace DHCP.
+# MAC checks include stopped VMs and static DHCP reservations.
 while IFS= read -r domain; do
   [[ -n "$domain" ]] || continue
   domain_xml=$(v dumpxml "$domain")
   if grep -Fiq "$mac" <<< "$domain_xml"; then
-    fail 'MAC je již použita strojem %s.' "$domain"
+    fail 'The MAC address is already used by %s.' "$domain"
   fi
 done <<< "$names"
 if grep -Fiq "$mac" <<< "$network_xml"; then
-  fail 'MAC má v síti již existující deklaraci.'
+  fail 'The MAC address already has a declaration in this network.'
 fi
 
-nb_info 'Režim: %s; URI: %s; VM: %s' "$mode" "$uri" "$name"
-nb_info 'Disk: %s (%s GiB); síť: %s' "$disk" "$size" "$network"
-nb_info 'Metoda: %s; ISO: %s; diskový obraz: %s' "$method" "$iso" "$image"
+nb_info 'Mode: %s; URI: %s; VM: %s' "$mode" "$uri" "$name"
+nb_info 'Disk: %s (%s GiB); network: %s' "$disk" "$size" "$network"
+nb_info 'Method: %s; ISO: %s; disk image: %s' "$method" "$iso" "$image"
 if [[ "$mode" == dry-run ]]; then
-  nb_success 'Kontroly prošly. Nebyl vytvořen disk ani VM.'
+  nb_success 'Checks passed. No disk or VM was created.'
   exit 0
 fi
 
-# Při chybě nic automaticky nemažeme; vytvořené prostředky je nutné nejprve ověřit.
+# Never clean up automatically on failure; inspect created resources first.
 v vol-create-as "$pool" "$volume" "${size}G" --format qcow2
 created_path=$(v vol-path "$volume" --pool "$pool")
-[[ "$created_path" == "$disk" ]] || fail 'Libvirt vytvořil disk na jiné cestě: %s' "$created_path"
+[[ "$created_path" == "$disk" ]] || fail 'Libvirt created the disk at a different path: %s' "$created_path"
 if [[ "$method" == image ]]; then
   v vol-upload "$volume" "$image" --pool "$pool"
 fi
 v define "$NIXBERRY_DOMAIN_XML"
 if [[ "$method" == image ]]; then
-  nb_success 'VM vytvořená s hotovým diskem; install ji spustí a ověří.'
+  nb_success 'VM created with a prebuilt disk; install will start and verify it.'
   exit 0
 fi
 v start "$name"
-nb_info 'Spuštěno instalační ISO. Cílový NixOS ještě není nainstalovaný.'
-nb_info 'Konzole: virsh --connect %s console %s' "$uri" "$name"
-nb_info 'Adresa: virsh --connect %s domifaddr %s --source lease' "$uri" "$name"
+nb_info 'Installation ISO started. The target NixOS is not installed yet.'
+nb_info 'Console: virsh --connect %s console %s' "$uri" "$name"
+nb_info 'Address: virsh --connect %s domifaddr %s --source lease' "$uri" "$name"

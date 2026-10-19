@@ -2,12 +2,12 @@
 {
   imports = [ nixos-raspberrypi.nixosModules.raspberry-pi-5.base ];
 
-  # Firmware načte kernel přímo. Použitý U-Boot neumí na RPi5 číst USB SSD.
-  # Modul dodává vzájemně odpovídající kernel, firmware a device tree pro RPi5.
+  # Firmware loads the kernel directly; this U-Boot cannot read USB SSDs on RPi5.
+  # This module supplies matching RPi5 kernel, firmware and device tree.
   boot.loader.raspberry-pi = {
     bootloader = "kernel";
     firmwarePath = "/boot";
-    # Oddělený adresář zachová staré soubory extlinux pro případ návratu.
+    # A separate directory preserves old extlinux files for recovery.
     nixosGenerationsDir = "rpi-generations";
     configurationLimit = 1;
   };

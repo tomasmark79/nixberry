@@ -1,4 +1,4 @@
-"""Čerstvý stav souběžně po hostitelích, se sdílením přehledu v jediném dotazu."""
+"""Fresh concurrent host status, sharing inventory within a single query."""
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
@@ -56,7 +56,7 @@ def inspect_group(registry, names, inspect):
         snapshots = rpc(registry[chunk[0]], "probe-many", specs=[registry[name]["spec"] for name in chunk],
                         timeout=15 + 10 * len(chunk))
         if not isinstance(snapshots, list) or len(snapshots) != len(chunk):
-            raise RuntimeError(_('Hostitel nevrátil stav všech požadovaných VM.'))
+            raise RuntimeError(_("The host did not return the state of all requested VMs."))
         for name, snapshot in zip(chunk, snapshots):
             if "error" in snapshot:
                 results[name] = failure(snapshot["error"])
@@ -70,7 +70,7 @@ def collect_status(registry, names, inspect, on_result=None):
     groups = {}
     for name in names:
         target = registry[name]
-        # Přímé SSH a offline deklarace nemají společnou správu hypervizoru.
+        # Direct SSH and offline declarations have no shared hypervisor management.
         key = (target["backend"], target["host"]) if not target.get("offline") else ("direct", name)
         groups.setdefault(key, []).append(name)
     results = {}

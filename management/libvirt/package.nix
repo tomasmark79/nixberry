@@ -1,4 +1,4 @@
-# Manifest, XML a ovládací příkaz vznikají ze stejných připnutých vstupů.
+# Manifest, XML and management commands use the same pinned inputs.
 {
   pkgs,
   installerIso,

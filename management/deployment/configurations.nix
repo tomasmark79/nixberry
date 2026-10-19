@@ -1,4 +1,4 @@
-# Konfigurace jsou běžné NixOS moduly; jejich seznam nevyhodnocuje systémy.
+# Configurations are ordinary NixOS modules; listing them does not evaluate systems.
 let
   directory = ../../configurations;
   entries = builtins.readDir directory;
@@ -24,7 +24,7 @@ let
 in
 assert
   builtins.length definitions == builtins.length (builtins.attrNames modules)
-  || throw "Konfigurace má současně soubor i adresář; ponech pouze jednu definici.";
+  || throw "The configuration has both a file and a directory; keep only one definition.";
 {
   inherit modules;
   select =
@@ -35,5 +35,5 @@ assert
     if builtins.isString name && builtins.hasAttr name modules then
       name
     else
-      throw "Neznámá configuration. Dostupné konfigurace: ${builtins.concatStringsSep ", " (builtins.attrNames modules)}.";
+      throw "Unknown configuration. Available configurations: ${builtins.concatStringsSep ", " (builtins.attrNames modules)}.";
 }

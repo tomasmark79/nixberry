@@ -1,4 +1,4 @@
-# Pouze čtení. Názvy, cesty a přepínače z hostitele nepoužíváme jako příkazy.
+# Read-only. Never use host names, paths or options as commands.
 $ErrorActionPreference = 'Stop'
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = New-Object Security.Principal.WindowsPrincipal($identity)
@@ -49,7 +49,7 @@ if ($hyperv) {
                     $seen = @{}
                     $path = $diskPath
                     while ($path) {
-        if ($seen.ContainsKey($path)) { throw 'Cyklus podkladových disků.' }
+        if ($seen.ContainsKey($path)) { throw 'A backing disk cycle was detected.' }
                         $seen[$path] = $true
                         $vhd = Get-VHD -Path $path -ErrorAction Stop
                         if (-not $allDisks.ContainsKey($path)) {

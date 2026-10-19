@@ -1,4 +1,4 @@
-# Průzkum hostitele je nezávislý na obrazu a konfiguraci systému VM.
+# Host discovery is independent of VM images and system configuration.
 { pkgs, spec }:
 let
   commonSource = import ../messages.nix { inherit pkgs; };

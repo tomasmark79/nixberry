@@ -1,130 +1,138 @@
-# Reference CLI
+# CLI reference
 
-[← Hlavní návod](../README.md)
+[← Main guide](../README.md)
 
-`nixberry [PŘÍKAZ] [CÍL] [VOLBY]` pracuje s místními deklaracemi.
-Bez příkazu vypíše `list`. Cíl je jméno deklarace, nikoli IP adresa.
-Příkaz za `--` lze předat pouze do `ssh`.
+`nixberry [COMMAND] [TARGET] [OPTIONS]` works with local declarations.
+Without a command it runs `list`. A target is a declaration name, not an IP.
+A command after `--` is only accepted by `ssh`.
 
-## Evidence a správa
+## Inventory and management
 
-| Příkaz | Výsledek |
+| Command | Result |
 | --- | --- |
-| `list` | Místní cíle, konfigurace a možnosti správy. |
-| `show CÍL` | Deklarace, síť, prostředky, metoda a dostupné operace. |
-| `status [CÍL]` | Čerstvý stav jednoho nebo všech cílů, bez cache. |
-| `ssh CÍL [-- PŘÍKAZ …]` | Interaktivní přihlášení nebo vzdálený příkaz. |
-| `probe CÍL` | Podrobný průzkum hostitele/platformy; RPi má vlastní sondu. |
-| `doctor [CÍL]` | Provozní diagnostika bez sestavení cílového systému. |
-| `verify CÍL` | Kontrola identity, instalace, služeb a shody s receptem. |
-| `cleanup [CÍL]` | Náhled generací, VM a obrazů; nic nemaže. |
+| `list` | Local targets, configurations and management capabilities. |
+| `show TARGET` | Declaration, network, resources, method and available operations. |
+| `status [TARGET]` | Fresh state of one or all targets, without a cache. |
+| `ssh TARGET [-- COMMAND …]` | Interactive login or a remote command. |
+| `probe TARGET` | Detailed host/platform discovery; RPi has its own probe. |
+| `doctor [TARGET]` | Operational diagnostics without building the target system. |
+| `verify TARGET` | Identity, installation, services and recipe consistency checks. |
+| `cleanup [TARGET]` | Preview generations, VMs and images; deletes nothing. |
 
-Bez cíle se `status`, `doctor` a `cleanup` týkají celé evidence.
-`list`, `show` a čtecí sondy nepotřebují sestavovat systém ani média.
-`verify` vyhodnotí očekávaný systém. První spuštění může sestavit samotné nástroje.
+Without a target, `status`, `doctor` and `cleanup` cover the whole inventory.
+`list`, `show` and read-only probes do not need system or media builds.
+`verify` evaluates the expected system. The tools themselves may be built
+on first use.
 
-## Aktualizace
+## Updates
 
-| Příkaz | Výsledek |
+| Command | Result |
 | --- | --- |
-| `diff CÍL` | Porovná běžící systém s receptem; může sestavovat místně a stahovat části systému. |
-| `diffg CÍL` | Na serveru porovná dvě nejvyšší dochované generace. |
-| `update CÍL` | Vypíše plán bez připojení a sestavení. |
-| `update CÍL --apply` | Sestaví, přenese a aktivuje systém, potom ověří výsledek. |
+| `diff TARGET` | Compare the running system with the recipe; may build locally and retrieve system paths. |
+| `diffg TARGET` | Compare the two highest retained server generations on the server. |
+| `update TARGET` | Show a plan without connecting or building. |
+| `update TARGET --apply` | Build, transfer, activate and verify the system. |
 
-`diff` a `diffg` server nemění. U obou `--dry-run` vynechá připojení a sestavení.
-Systémové porovnání neporovnává data aplikací. Po rollbacku nemusí být nejvyšší
-generace aktivní; `diffg` vypisuje aktivní systém zvlášť.
+`diff` and `diffg` do not change the server. Their `--dry-run` skips connections
+and builds. System comparison does not compare application data. After a rollback,
+the highest generation may not be active; `diffg` reports the active system separately.
 
-Aktualizace používá aktuální `flake.lock`, nemění závislosti ani oddíly
-a automaticky nerestartuje zařízení. Při přerušení zjisti stav jednotky
-`nixberry-update` a ověř server před opakováním.
+Updates use the current `flake.lock`, do not update dependencies or partitions,
+and do not reboot automatically. After interruption, inspect `nixberry-update`
+and verify the server before retrying.
 
-## Nové deklarace VM
+## New VM declarations
 
-| Příkaz | Backend |
+| Command | Backend |
 | --- | --- |
-| `new-libvirt-vm JMÉNO` | libvirt |
-| `new-hyperv-vm JMÉNO` | Hyper-V |
-| `new-proxmox-vm JMÉNO` | Proxmox |
-| `new-virtualbox-vm JMÉNO` | VirtualBox |
-| `new-vmware-vm JMÉNO` | VMware Workstation |
+| `new-libvirt-vm NAME` | QEMU/KVM (libvirt) |
+| `new-hyperv-vm NAME` | Hyper-V |
+| `new-proxmox-vm NAME` | Proxmox VE |
+| `new-virtualbox-vm NAME` | VirtualBox |
+| `new-vmware-vm NAME` | VMware Workstation |
 
-Každý příkaz vytvoří místní `instances/JMÉNO.nix`; VM ještě nevytváří.
-Jméno má 1–40 malých písmen, číslic a pomlček, začíná písmenem a končí
-písmenem nebo číslicí. Existující deklarace se nepřepisuje.
+Each command writes local `instances/NAME.nix`; it does not create a VM.
+Names contain 1–40 lowercase letters, digits and hyphens, start with a letter,
+and end with a letter or digit. Existing declarations are not overwritten.
 
-- `--host HOSTITEL` vybírá z místního `hosts.local.nix` přes loader `hosts.nix`; jediný vhodný hostitel se vybere automaticky.
-- `--offline` vytvoří deklaraci bez hypervizoru. Nelze jej kombinovat s `--host`.
-- `--configuration JMÉNO` vybírá modul z `configurations/`, výchozí je `default`.
-- `--method image|iso` ukládá způsob nasazení; výchozí je `image`.
-- `--dry-run` vypíše návrh bez vytvoření souboru.
+- `--host HOST` selects a local `hosts.local.nix` entry through `hosts.nix`; a sole matching host is selected automatically.
+- `--offline` creates a declaration without a hypervisor and cannot be combined with `--host`.
+- `--configuration NAME` selects a module from `configurations/`, defaulting to `default`.
+- `--method image|iso` stores the deployment method, defaulting to `image`.
+- `--dry-run` prints the proposal without writing a file.
 
-Názvy `new-libvirt`, `new-hyperv`, `new-proxmox`, `new-virtualbox`
-a `new-vmware` jsou aliasy odpovídajících příkazů s příponou `-vm`.
+`new-libvirt`, `new-hyperv`, `new-proxmox`, `new-virtualbox` and `new-vmware`
+are aliases of their `-vm` commands.
 
-## Nasazení a odstranění
+## Deployment and removal
 
-| Příkaz | Výsledek |
+| Command | Result |
 | --- | --- |
-| `plan CÍL` | Plán vytvoření VM nebo obnovy RPi. |
-| `create CÍL --apply` | Vytvoření nové VM podle metody. |
-| `install CÍL --apply` | Dokončení nasazení vytvořené VM podle stejné metody. |
-| `provision CÍL --apply` | Vytvoření a dokončení VM. |
-| `reproduce CÍL --apply` | Úplné nasazení VM nebo obnova RPi. |
-| `reset CÍL --apply` | Odstranění povolené spravované VM po bezpečnostních kontrolách. |
+| `plan TARGET` | VM creation or RPi recovery plan. |
+| `create TARGET --apply` | Create a new VM using the selected method. |
+| `install TARGET --apply` | Complete an existing VM deployment using the same method. |
+| `provision TARGET --apply` | Create and complete a VM. |
+| `reproduce TARGET --apply` | Complete VM deployment or RPi recovery. |
+| `reset TARGET --apply` | Remove an authorized managed VM after safety checks. |
 
-Bez `--apply` tyto operace pouze plánují; příprava nástrojů a médií může
-sestavovat nebo stahovat závislosti. `plan` nepřijímá `--apply`.
+Without `--apply`, these operations only plan. Preparing tools and media may
+still build or download dependencies. `plan` does not accept `--apply`.
 
-`image` vytvoří vypnutou VM s hotovým diskem; `install` ji spustí a ověří.
-`iso` vytvoří prázdný disk a spustí instalátor; `install` provede instalaci,
-korektní vypnutí, odpojení ISO a kontrolu startu z disku.
+`image` creates a powered-off VM with a prebuilt disk; `install` starts and
+verifies it. `iso` creates a blank disk and boots the installer; `install`
+installs, shuts down gracefully, detaches ISO and verifies boot from disk.
 
-`reset` vyžaduje `allowReset = true;` v deklaraci VM a deklarovaného hostitele.
-Bez `--apply` jen ověřuje plán, nepotřebuje systém ani médium.
-Offline VM a RPi jej nepodporují. [Rozsah odstranění](vm.md#reset).
+`reset` requires instance `allowReset = true;` and a declared host.
+Without `--apply`, it only verifies and needs no system or media.
+Offline VMs and RPi do not support it. See [removal scope](vm.md#reset).
 
 ## Export
 
 ```sh
 nixberry export vm-demo-libvirt --output ~/vm-demo-libvirt-disk
 nixberry export vm-demo-libvirt --method iso --output ~/vm-demo-libvirt-iso
-nixberry export nixberry --output ~/nixberry-sd
+nixberry export rpi-demo --output ~/rpi-demo-sd
 ```
 
-`export` běžně sestavuje a zapisuje místní balíček. `--dry-run` nic nesestavuje
-ani nezapisuje; `--apply` zde neplatí. Adresář musí být nový a mimo recept.
-Relativní cesta se počítá od aktuálního pracovního adresáře.
-[Obsah balíčku a předání](offline.md).
+`export` normally builds and writes a local bundle. `--dry-run` builds and
+writes nothing; `--apply` does not apply. The directory must be new and outside
+the recipe. Relative paths start at the current working directory.
+See [bundle contents and handoff](offline.md).
 
-## Společné volby
+## Shared options
 
-| Volba | Kde platí |
+| Option | Applicability |
 | --- | --- |
-| `--help`, `--version` | Nápověda a verze nástroje. |
-| `--method image|iso` | VM: `new-*`, `show`, `plan`, `create`, `install`, `provision`, `reproduce`, `export`. |
-| `--configuration JMÉNO` | Pouze `new-*`; u existujícího cíle uprav deklaraci. |
-| `--offline` | Pouze `new-*` bez `--host`. |
-| `--ssh root@HOST[:PORT]` | Offline VM: `status`, `ssh`, `doctor`, `verify`, `update`, `diff`, `diffg`. |
-| `--host` | Hostitel pro `new-*`; u přímé správy offline VM je alternativou k `--ssh`. |
-| `--output ADRESÁŘ` | Pouze `export`. |
-| `--artifact-root ADRESÁŘ` | Pouze `cleanup`; lze opakovat. |
-| `--address IP_SD`, `--erase-existing` | Pouze `plan` a `reproduce` cíle RPi. |
+| `--help`, `--version` | Tool help and version. |
+| `--method image|iso` | VM `new-*`, `show`, `plan`, `create`, `install`, `provision`, `reproduce`, `export`. |
+| `--configuration NAME` | Only `new-*`; edit the declaration for an existing target. |
+| `--offline` | Only `new-*` without `--host`. |
+| `--ssh root@HOST[:PORT]` | Offline VM `status`, `ssh`, `doctor`, `verify`, `update`, `diff`, `diffg`. |
+| `--host` | Hypervisor host for `new-*`; an alternative to `--ssh` for direct offline VM management. |
+| `--output DIRECTORY` | Only `export`. |
+| `--artifact-root DIRECTORY` | Only `cleanup`; repeatable. |
+| `--address SD_IP`, `--erase-existing` | Only RPi `plan` and `reproduce`. |
 | `--json` | `list`, `show`, `status`, `verify`, `doctor`, `cleanup`, `export`. |
 
-`--apply` a `--dry-run` jsou vzájemně výlučné.
-`--dry-run` u `doctor` a `cleanup` nevynechává jejich čtecí dotazy.
-`ssh` ani `list` tento přepínač nepřijímají.
-`--ssh` a `--host` nelze kombinovat. Přímé SSH nemění síť uvnitř obrazu.
+`--apply` and `--dry-run` are mutually exclusive. For `doctor` and `cleanup`,
+`--dry-run` does not skip read-only queries. `ssh` and `list` do not accept it.
+`--ssh` and `--host` cannot be combined. Direct SSH does not change image networking.
 
-## Výstupy a návratové kódy
+## Language, output and exit codes
 
-Data a nápověda chodí na stdout, vlastní průběžné hlášky a diagnostika na stderr.
-`--json` zachovává platný JSON bez informačních příměsí. Barvy se řídí proudem,
-`NO_COLOR` a `TERM=dumb`; cizí výstupy se nepřekládají.
+English is the default independently of `LANG` or `LC_ALL`.
+Set `NIXBERRY_LANG=cs` for Czech, or `NIXBERRY_LANG=en` for English.
+Unknown language codes and missing translations fall back to English.
+This environment setting is shared by the CLI and direct adapters.
+Pure Nix evaluation errors and generated declaration comments remain English.
 
-`doctor` vrací `0` bez nálezu, `1` při chybě a `2` při samotném varování.
-Neúplná inventura `cleanup` vrací `1` a zachovává částečné výsledky.
-Nenulový kód vyhodnocuj spolu s hláškou a známým stavem operace;
-neznamená, že předchozí zápis byl automaticky vrácen.
+Data and help go to stdout; progress and diagnostics go to stderr.
+`--json` remains valid JSON without progress text. Keys, schemas, state codes
+and technical values are stable across languages; human message fields can
+be translated. Colors follow the destination stream, `NO_COLOR` and
+`TERM=dumb`. External tool output is not translated.
+
+`doctor` returns `0` for no findings, `1` for errors and `2` for warnings only.
+Incomplete `cleanup` inventory returns `1` and retains partial results.
+Interpret nonzero codes together with the diagnostic and known operation state:
+they do not imply previous writes were rolled back.

@@ -1,9 +1,9 @@
-# Komprimovaný swap má přednost před záložním swap souborem na disku.
+# Compressed swap takes priority over the fallback disk swap file.
 {
   zramSwap = {
     enable = true;
     algorithm = "zstd";
-    # Na RPi se 4 GiB RAM zajistí limit přesně 2 GiB; menší VM omezí RAM.
+    # A 4 GiB RPi gets exactly 2 GiB; smaller VMs are capped by RAM size.
     memoryPercent = 100;
     memoryMax = 2 * 1024 * 1024 * 1024;
     priority = 100;

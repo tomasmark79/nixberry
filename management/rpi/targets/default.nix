@@ -1,4 +1,4 @@
-# Každé RPi má vlastní soubor; prázdný adresář znamená žádné fyzické cíle.
+# Each RPi has its own file; an empty directory means no physical targets.
 let
   files = builtins.readDir ./.;
   names = builtins.filter (

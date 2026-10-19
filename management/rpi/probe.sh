@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pouze čtení; oddělovače umožňují zpracovat JSON bez dalších balíčků v hostu.
+# Read-only; delimiters allow JSON processing without extra guest packages.
 set -euo pipefail
 uname -m
 printf '\036'

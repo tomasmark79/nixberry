@@ -23,7 +23,7 @@ class LabChecks(unittest.TestCase):
                 patch.object(Path, "read_text", return_value="1"), \
                 patch.object(lab, "virsh", return_value=lab.NAME) as virsh, \
                 patch.object(lab.urllib.request, "urlopen") as download, \
-                self.assertRaisesRegex(RuntimeError, "už existuje"):
+                self.assertRaisesRegex(RuntimeError, "already exists"):
             lab.preflight()
         self.assertEqual(virsh.call_count, 1)
         download.assert_not_called()
@@ -33,7 +33,7 @@ class LabChecks(unittest.TestCase):
             root = Path(tmp)
             (root / lab.ISO_NAME).write_bytes(b"wrong image")
             with patch.object(lab, "ROOT", root), patch.object(lab, "STATE", root / "state"), \
-                    self.assertRaisesRegex(RuntimeError, "součet"):
+                    self.assertRaisesRegex(RuntimeError, "checksum"):
                 lab.prepare_iso()
             self.assertFalse((root / "state").exists())
 

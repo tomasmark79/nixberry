@@ -1,4 +1,4 @@
-# Platformní nastavení x86_64 VM; služby vybírá konfigurace serveru.
+# x86_64 VM platform settings; the server configuration selects services.
 { ... }:
 {
   imports = [

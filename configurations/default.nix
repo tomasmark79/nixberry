@@ -1,4 +1,4 @@
-# Výchozí server NixBerry složený ze společných modulů.
+# Default NixBerry server assembled from shared modules.
 {
   imports = [ ../modules/common.nix ];
 }

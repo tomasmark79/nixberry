@@ -1,4 +1,4 @@
-# Překladová šablona nixberry. Zdrojový jazyk: čeština.
+# NixBerry translation template. Source language: English.
 # Generuje management/deployment/extract_messages.py.
 msgid ""
 msgstr ""
@@ -8,588 +8,630 @@ msgstr ""
 
 #: deployment/cli.py:62
 #, python-brace-format
-msgid "\nGenerace: {name}"
+msgid "\nGeneration: {name}"
 msgstr ""
 
 #: deployment/cli.py:74
 #, python-brace-format
-msgid "\nHostitel: {name}"
+msgid "\nHost: {name}"
 msgstr ""
 
 #: deployment/cli.py:88
-msgid "\nObrazy v zadaných adresářích:"
+msgid "\nImages in the selected directories:"
 msgstr ""
 
-#: deployment/exporter.py:100
-msgid "\nPředání pro Proxmox: viz PROXMOX.txt.\n"
+#: deployment/exporter.py:94
+msgid "\nProxmox handoff: see PROXMOX.txt.\n"
 msgstr ""
 
-#: deployment/exporter.py:101
-msgid "\nPředání pro VirtualBox: viz VIRTUALBOX.txt.\n"
-msgstr ""
-
-#: deployment/cli.py:291
-msgid "--address a --erase-existing patří pouze k plan/reproduce cíle RPi."
-msgstr ""
-
-#: deployment/cli.py:254
-msgid "--artifact-root patří pouze k cleanup."
-msgstr ""
-
-#: deployment/cli.py:224
-msgid "--configuration patří pouze k new-*-vm; u existujícího cíle uprav configuration v deklaraci."
-msgstr ""
-
-#: rpi/install.py:92
-msgid "--erase-existing nelze kombinovat s --stage."
-msgstr ""
-
-#: deployment/cli.py:293
-msgid "--json je dostupné pro list, show, status, verify, export, doctor a cleanup."
-msgstr ""
-
-#: deployment/cli.py:351
-msgid "--method je určené pro VM; RPi používá obnovovací SD."
-msgstr ""
-
-#: deployment/cli.py:226
-msgid "--method patří k new-*, show, plan, create, install, provision, reproduce a export."
+#: deployment/exporter.py:95
+msgid "\nVirtualBox handoff: see VIRTUALBOX.txt.\n"
 msgstr ""
 
 #: deployment/cli.py:222
-msgid "--offline patří k new-*-vm bez --host."
+msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
 msgstr ""
 
-#: deployment/cli.py:256
-msgid "--output patří pouze k export."
+#: deployment/cli.py:185
+msgid "--artifact-root only applies to cleanup."
 msgstr ""
 
-#: deployment/cli.py:231
-msgid "--ssh patří ke správě serveru a nelze jej kombinovat s --host nebo new-*."
+#: deployment/cli.py:155
+msgid "--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."
+msgstr ""
+
+#: rpi/install.py:92
+msgid "--erase-existing cannot be combined with --stage."
+msgstr ""
+
+#: deployment/cli.py:224
+msgid "--json is available for list, show, status, verify, export, doctor and cleanup."
+msgstr ""
+
+#: deployment/cli.py:157
+msgid "--method applies to new-*, show, plan, create, install, provision, reproduce and export."
+msgstr ""
+
+#: deployment/cli.py:282
+msgid "--method is for VMs; RPi uses a recovery SD card."
+msgstr ""
+
+#: deployment/cli.py:153
+msgid "--offline applies to new-*-vm without --host."
+msgstr ""
+
+#: deployment/cli.py:187
+msgid "--output only applies to export."
+msgstr ""
+
+#: deployment/cli.py:162
+msgid "--ssh applies to server management and cannot be combined with --host or new-*."
 msgstr ""
 
 #: deployment/guest-install.sh:25 libvirt/guest-install.sh:27 rpi/guest-install.sh:42
-msgid "/mnt je již připojené."
+msgid "/mnt is already mounted."
 msgstr ""
 
 #: hyperv/guest-install.sh:28
-msgid "/mnt je připojené."
+msgid "/mnt is mounted."
 msgstr ""
 
-#: deployment/portable.py:105
-msgid "Adaptér selhal."
+#: hyperv/policy.py:12
+msgid "A Hyper-V VM must have a safe nixberry-… name."
 msgstr ""
 
-#: deployment/runtime.py:266
-msgid "Adresa guest systému nesmí být adresa Windows hostitele."
+#: hyperv/policy.py:14
+msgid "A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."
 msgstr ""
 
-#: libvirt/install.py:70
-msgid "Adresa hosta není v očekávané síti."
+#: hyperv/reset.ps1:93
+msgid "A VM with the same name is present again after removal; keeping the directory."
 msgstr ""
 
-#: deployment/updater.py:102
-msgid "Adresa se zjistí z deklarace a živého stavu; Hyper-V použije Windows jako jump host."
+#: hyperv/probe.ps1:52
+msgid "A backing disk cycle was detected."
 msgstr ""
 
-#: deployment/cli.py:35
-msgid "Adresa serveru"
+#: deployment/cli.py:159
+msgid "A command after -- is only available for ssh TARGET -- COMMAND."
+msgstr ""
+
+#: deployment/inspection.py:159
+msgid "A default route is present."
+msgstr ""
+
+#: deployment/host_agent.py:774
+msgid "A differencing image depends on this disk; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:622
+msgid "A disk, snapshot, backing image or recovery medium may be attached."
+msgstr ""
+
+#: rpi/install.py:71
+msgid "A mounted disk already uses the target partition labels."
+msgstr ""
+
+#: libvirt/policy.py:26
+msgid "A new VM must have a declared owner tied to its UUID."
+msgstr ""
+
+#: deployment/check_images.py:56
+msgid "A partition extends beyond the disk."
+msgstr ""
+
+#: deployment/host_agent.py:77
+msgid "A static VMware MAC must be in the range 00:50:56:00:00:00–00:50:56:3f:ff:ff."
+msgstr ""
+
+#: deployment/cleanup.py:46
+msgid "A stopped VM is not necessarily unused; it may be needed for recovery."
+msgstr ""
+
+#: deployment/updater.py:141
+msgid "Activating the new generation without rebooting…"
+msgstr ""
+
+#: deployment/updater.py:154
+#, python-brace-format
+msgid "Activation completed, but the subsequent check failed: {error}. Once SSH is restored, run {command}."
+msgstr ""
+
+#: deployment/diffing.py:41
+#, python-brace-format
+msgid "Active system: {path}"
+msgstr ""
+
+#: hyperv/reset.ps1:44
+msgid "Actual VM ID or owner does not match."
 msgstr ""
 
 #: libvirt/create.sh:117
 #, c-format
-msgid "Adresa: virsh --connect %s domifaddr %s --source lease"
+msgid "Address: virsh --connect %s domifaddr %s --source lease"
 msgstr ""
 
-#: deployment/host_agent.py:129
-msgid "Adresář VM chybí nebo je odkaz."
-msgstr ""
-
-#: deployment/host_agent.py:714
-msgid "Adresář VM obsahuje odkaz, připojený svazek nebo sdílený soubor; reset odmítám."
-msgstr ""
-
-#: hyperv/reset.ps1:32
-msgid "Adresář VM obsahuje odkaz; reset odmítám."
-msgstr ""
-
-#: deployment/campaign_host.py:19
-msgid "Adresář VM obsahuje odkaz; ruční kontrola je nutná."
-msgstr ""
-
-#: hyperv/reset.ps1:96
-msgid "Adresář VM po odstranění zůstal."
-msgstr ""
-
-#: hyperv/host.ps1:43
-msgid "Adresář VM už existuje."
-msgstr ""
-
-#: deployment/host_agent.py:210
-msgid "Adresář cíle už existuje; existující ani částečný výsledek nepřepisuji."
-msgstr ""
-
-#: hyperv/host.ps1:101
-msgid "Adresář médií je reparse point."
-msgstr ""
-
-#: deployment/cli.py:213
-msgid "Adresář obrazů pro náhled cleanup; lze opakovat, odkazy se nepřecházejí"
-msgstr ""
-
-#: deployment/updater.py:156
+#: deployment/updater.py:162
 #, python-brace-format
-msgid "Aktivace doběhla, ale následná kontrola neprošla: {error}. Po obnovení SSH spusť {command}."
+msgid "After boot: {command}"
 msgstr ""
 
-#: deployment/updater.py:145
+#: deployment/cli.py:217
 #, python-brace-format
-msgid "Aktivaci se nepodařilo potvrdit (SSH nebo systemd-run). Zkontroluj {logs} a {verify}. Generace již mohla být nastavena; restart jsem neprovedl."
+msgid "After reviewing: {command}"
 msgstr ""
 
-#: deployment/inspection.py:151
-msgid "Aktivní a výchozí systém odpovídají."
+#: deployment/reset.py:43
+msgid "After verification, the running VM will be shut down gracefully and only its own resources removed."
 msgstr ""
 
-#: deployment/inspection.py:152
-msgid "Aktivní a výchozí systém se liší; po restartu může naběhnout jiný systém."
+#: deployment/check_inventory.py:202
+msgid "All inventory checks passed; no VMs or hosts were contacted."
 msgstr ""
 
-#: rpi/recovery-test.py:53
-msgid "Aktivní systém není očekávaný připnutý systém."
-msgstr ""
-
-#: deployment/diffing.py:42
+#: deployment/cli.py:266
 #, python-brace-format
-msgid "Aktivní systém: {path}"
-msgstr ""
-
-#: deployment/updater.py:141
-msgid "Aktivuji novou generaci bez restartu…"
-msgstr ""
-
-#: deployment/campaign.py:284
-msgid "Aktualizace nezměnila systémovou generaci."
-msgstr ""
-
-#: deployment/updater.py:91
-#, python-brace-format
-msgid "Aktualizace systému: {name} ({backend})"
-msgstr ""
-
-#: deployment/updater.py:86
-msgid "Aktualizace této platformy není implementovaná."
-msgstr ""
-
-#: rpi/install.py:85
-msgid "Aktuální DHCP adresa instalačního prostředí místo adresy z deklarace"
-msgstr ""
-
-#: deployment/cli.py:209
-msgid "Aktuální IP instalační SD, pouze pro reprodukci RPi"
+msgid "All target statuses: {command}"
 msgstr ""
 
 #: deployment/cli.py:78 deployment/cli.py:95
-msgid "Alokace"
+msgid "Allocation"
+msgstr ""
+
+#: deployment/host_agent.py:786
+msgid "Another VM or its snapshot uses a file belonging to this VM; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:781 deployment/host_agent.py:816 hyperv/reset.ps1:66
+msgid "Another VM uses a file belonging to this VM; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:875
+msgid "Another VM, container or snapshot uses the volume or ISO; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:826
+msgid "Another VMware image depends on this disk; refusing reset."
+msgstr ""
+
+#: rpi/guest-install.sh:37
+msgid "Another disk already uses the partition label."
+msgstr ""
+
+#: rpi/guest-install.sh:39
+msgid "Another disk uses the partition label."
+msgstr ""
+
+#: rpi/recovery-test.py:55
+msgid "Another kernel is already loaded; it will not be overwritten."
+msgstr ""
+
+#: deployment/campaign.py:483
+msgid "Another process is already running this campaign."
+msgstr ""
+
+#: deployment/cli.py:146
+msgid "Apply changes for update and deployment/recovery operations"
 msgstr ""
 
 #: deployment/messages.py:159
 #, python-brace-format
-msgid "Argument {option}: nepovolená hodnota {value}. Možnosti: {choices}"
+msgid "Argument {option}: invalid value {value}. Choices: {choices}"
 msgstr ""
 
 #: deployment/messages.py:142
-msgid "Argumenty"
+msgid "Arguments"
 msgstr ""
 
-#: deployment/updater.py:164
+#: deployment/cli.py:66 deployment/cli.py:78 deployment/cli.py:95
+msgid "Assessment"
+msgstr ""
+
+#: deployment/inspection.py:122
 #, python-brace-format
-msgid "Až bude vhodná chvíle: {command}"
+msgid "Available memory: {available:.1f} %"
 msgstr ""
 
-#: deployment/exporter.py:23
-msgid "Balíček ukládej mimo kořen projektového receptu nixberry."
+#: deployment/cli.py:211
+msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
 msgstr ""
 
-#: deployment/updater.py:103
-msgid "Bez --apply se nepřipojuji k cíli, nesestavuji ani neměním systém."
+#: hyperv/manage.py:179 libvirt/install.py:118
+msgid "Boot of the prebuilt system from disk verified."
 msgstr ""
 
-#: deployment/diffing.py:64
-msgid "Bez připojení a sestavení. Vzdálený systém se při porovnání nemění."
+#: hyperv/manage.py:177 hyperv/manage.py:204
+msgid "Boot verification from VHDX failed."
 msgstr ""
 
-#: deployment/inspection.py:154
-msgid "Bootovací konfigurace odpovídá."
+#: deployment/cli.py:262
+msgid "Build/export"
 msgstr ""
 
-#: deployment/inspection.py:154
-msgid "Bootovací konfigurace se liší nebo ji nelze porovnat; prověř potřebu restartu."
-msgstr ""
-
-#: deployment/updater.py:163
-msgid "Bootovací konfigurace se liší od běžícího systému; je potřeba restart."
-msgstr ""
-
-#: deployment/check_images.py:68
-msgid "Bootovací záznam neodkazuje na kernel, initrd a systém."
-msgstr ""
-
-#: deployment/updater.py:128
-msgid "Během přenosu se cíl změnil. Aktivace neproběhla; spusť update znovu."
-msgstr ""
-
-#: deployment/diffing.py:95
-msgid "Během přenosu se systém cíle změnil. Spusť diff znovu."
-msgstr ""
-
-#: deployment/diffing.py:86
-msgid "Během sestavení se systém cíle změnil. Spusť diff znovu."
-msgstr ""
-
-#: deployment/updater.py:118
-msgid "Během sestavení se systém cíle změnil. Spusť update znovu."
-msgstr ""
-
-#: deployment/campaign.py:751
-msgid "Běžící VM nemá očekávanou pevnou adresu, prefix nebo výchozí bránu."
-msgstr ""
-
-#: deployment/campaign.py:754
-msgid "Běžící VM nepoužívá očekávané DNS servery."
-msgstr ""
-
-#: deployment/runtime.py:328
+#: deployment/cli.py:354
 #, python-brace-format
-msgid "Běžící systém neodpovídá receptu.\nOčekávaný systém: {system}"
-msgstr ""
-
-#: deployment/runtime.py:330
-#, c-format
-msgid "Běžící systém: %s"
+msgid "Build/export: yes; system management: {value1}"
 msgstr ""
 
 #: deployment/diffing.py:81
+msgid "Building the recipe for comparison…"
+msgstr ""
+
+#: deployment/updater.py:112
+msgid "Building the target configuration…"
+msgstr ""
+
+#: deployment/host_agent.py:925
+msgid "Bulk status requires 1–128 VM declarations."
+msgstr ""
+
+#: libvirt/install.py:50
+msgid "CD-ROM does not match."
+msgstr ""
+
+#: deployment/cli.py:129
+msgid "COMMAND"
+msgstr ""
+
+#: hyperv/host.ps1:59 hyperv/reset.ps1:47
+msgid "CPU or RAM does not match."
+msgstr ""
+
+#: deployment/campaign.py:522
 #, python-brace-format
-msgid "Běžící systém: {system}"
+msgid "Campaign case: {name}"
+msgstr ""
+
+#: deployment/campaign_host.py:14
+msgid "Campaign cleanup requires a verified powered-off VM."
+msgstr ""
+
+#: deployment/campaign_host.py:12
+msgid "Campaign operations require a dedicated test name."
+msgstr ""
+
+#: deployment/cli.py:72
+#, python-brace-format
+msgid "Cannot determine sizes: {error}"
+msgstr ""
+
+#: deployment/cleanup.py:57
+msgid "Cannot determine the VM disk size."
+msgstr ""
+
+#: deployment/inspection.py:177
+msgid "Cannot safely identify all protected generations."
+msgstr ""
+
+#: deployment/host_agent.py:870
+msgid "Cannot safely verify another VM's snapshot; refusing reset."
+msgstr ""
+
+#: hyperv/host.ps1:80
+msgid "Cannot unambiguously determine the VM BIOS UUID."
+msgstr ""
+
+#: libvirt/install.py:72
+msgid "Cannot unambiguously determine the VM address."
+msgstr ""
+
+#: libvirt/storage.py:25
+msgid "Cannot verify another VM's volume path; refusing writes or removal."
+msgstr ""
+
+#: deployment/host_agent.py:55
+msgid "Cannot verify the user SID for the private VM directory."
+msgstr ""
+
+#: deployment/exporter.py:37
+#, python-brace-format
+msgid "Cannot write to bundle location {path}. Relative paths are resolved from the working directory. Choose a writable directory, for example --output ~/{target}-offline."
+msgstr ""
+
+#: deployment/cli.py:241
+msgid "Check"
+msgstr ""
+
+#: deployment/compile_locales.py:30
+msgid "Check catalogue coverage and generated shell content"
+msgstr ""
+
+#: deployment/check_images.py:78
+msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
+msgstr ""
+
+#: deployment/runtime.py:323
+#, python-brace-format
+msgid "Check failed: {check}"
+msgstr ""
+
+#: libvirt/provision.py:26
+msgid "Checking VM readiness to complete the selected deployment method."
+msgstr ""
+
+#: deployment/reset.py:41
+msgid "Checking owner, disks, snapshots and VM state before removal…"
+msgstr ""
+
+#: deployment/portable.py:134
+msgid "Checking target absence and host resources…"
+msgstr ""
+
+#: libvirt/create.sh:98
+msgid "Checks passed. No disk or VM was created."
+msgstr ""
+
+#: deployment/scaffold.py:42
+msgid "Choose a new target name: 1–40 lowercase letters, digits and hyphens, starting with a letter."
+msgstr ""
+
+#: deployment/campaign.py:427
+#, python-brace-format
+msgid "Cleaning up the dedicated test target: {name}"
+msgstr ""
+
+#: deployment/cli.py:66
+msgid "Closure size"
+msgstr ""
+
+#: deployment/cli.py:129
+msgid "Command from the list below (default: list)"
+msgstr ""
+
+#: deployment/diffing.py:55
+msgid "Comparison is not implemented for this platform."
+msgstr ""
+
+#: deployment/diffing.py:35
+#, python-brace-format
+msgid "Comparison requires two retained system generations. Use {command} to compare with the recipe."
+msgstr ""
+
+#: deployment/diffing.py:59
+#, python-brace-format
+msgid "Comparison: {name} ({backend})"
+msgstr ""
+
+#: deployment/compile_locales.py:29
+msgid "Compile Czech gettext and shell catalogues; --check verifies generated shell content."
+msgstr ""
+
+#: deployment/exporter.py:126
+msgid "Computing bundle checksums…"
+msgstr ""
+
+#: deployment/cli.py:262
+msgid "Configuration"
+msgstr ""
+
+#: hyperv/host.ps1:58
+msgid "Configuration directory does not match."
+msgstr ""
+
+#: hyperv/reset.ps1:46
+msgid "Configuration directory or VM generation does not match."
+msgstr ""
+
+#: deployment/cli.py:350 deployment/updater.py:92
+#, python-brace-format
+msgid "Configuration: {configuration}"
+msgstr ""
+
+#: proxmox/lab/configure.sh:18
+msgid "Configuring the serial console to capture potential kernel panics…"
+msgstr ""
+
+#: deployment/cli.py:390
+#, python-brace-format
+msgid "Connecting: {command}"
+msgstr ""
+
+#: libvirt/create.sh:116
+#, c-format
+msgid "Console: virsh --connect %s console %s"
+msgstr ""
+
+#: deployment/check_images.py:74
+msgid "Content checks do not prove boot on a hypervisor."
+msgstr ""
+
+#: deployment/check_inventory.py:59
+#, python-brace-format
+msgid "Copies and results: {value1}"
+msgstr ""
+
+#: deployment/reset.py:27
+msgid "Could not confirm Hyper-V VM removal; check status and storage state."
+msgstr ""
+
+#: hyperv/reset.ps1:92
+msgid "Could not confirm VM removal."
+msgstr ""
+
+#: deployment/updater.py:145
+#, python-brace-format
+msgid "Could not confirm activation (SSH or systemd-run). Check {logs} and {verify}. The generation may already have been set; no reboot was performed."
+msgstr ""
+
+#: deployment/host_agent.py:912
+msgid "Could not confirm removal of the VM or its directory."
+msgstr ""
+
+#: deployment/updater.py:80
+msgid "Could not determine whether a reboot is needed."
+msgstr ""
+
+#: deployment/campaign.py:712
+msgid "Could not prepare the SSH forward."
+msgstr ""
+
+#: deployment/campaign.py:223 deployment/campaign.py:665
+msgid "Could not request VM shutdown."
+msgstr ""
+
+#: proxmox/lab/create.py:144
+msgid "Create a new lab and start installation"
+msgstr ""
+
+#: libvirt/provision.py:14
+msgid "Create and install a test VM in one command; without --apply, only show the plan."
+msgstr ""
+
+#: deployment/portable.py:221
+msgid "Create the VM first using create or reproduce."
+msgstr ""
+
+#: deployment/cli.py:66
+msgid "Created (UTC)"
 msgstr ""
 
 #: libvirt/provision.py:39
-msgid "Celé vytvoření dokončené a ověřené: VM běží z deklarovaného systému na disku."
+msgid "Creation completed and verified: the VM is running the declared system from disk."
 msgstr ""
 
-#: hyperv/reset.ps1:23
-msgid "Cesta VM obsahuje reparse point."
+#: deployment/portable.py:143
+msgid "Creation did not return a verified powered-off VM."
 msgstr ""
 
-#: deployment/host_agent.py:97
-msgid "Cesta pro Proxmox import nesmí obsahovat čárku."
+#: deployment/cli.py:389
+msgid "Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."
 msgstr ""
 
-#: deployment/host_agent.py:369
-msgid "Cesta spravovaného ISO není bezpečný existující adresář."
+#: rpi/install.py:85
+msgid "Current DHCP address of the installation environment, overriding the declaration"
 msgstr ""
 
-#: libvirt/create.sh:67
-msgid "Cesta úložiště neodpovídá manifestu."
+#: deployment/cli.py:140
+msgid "Current installation SD address, only for RPi reproduction"
 msgstr ""
 
-#: deployment/host_agent.py:112
-msgid "Cesta úložiště nesmí obsahovat symbolický odkaz."
-msgstr ""
-
-#: deployment/reset.py:33
-msgid "Chráněné odstranění deklarované VM bez sestavování systému a instalačních médií."
-msgstr ""
-
-#: deployment/guest-install.sh:35 hyperv/guest-install.sh:37 libvirt/guest-install.sh:38
-msgid "Chybí EFI zavaděč."
-msgstr ""
-
-#: deployment/check_images.py:44
-msgid "Chybí GPT."
-msgstr ""
-
-#: deployment/host_agent.py:966
-msgid "Chybí SHA256 obrazu."
-msgstr ""
-
-#: hyperv/manage.py:91
-msgid "Chybí cesta k médiu zvolené metody nasazení."
-msgstr ""
-
-#: deployment/host_agent.py:93
-msgid "Chybí cesta k nástroji hypervizoru."
-msgstr ""
-
-#: deployment/cleanup.py:80
-msgid "Chybí cesta podkladového obrazu."
-msgstr ""
-
-#: rpi/guest-install.sh:61
-msgid "Chybí generované startovací soubory RPi."
-msgstr ""
-
-#: hyperv/host.ps1:23
-msgid "Chybí hash média."
-msgstr ""
-
-#: deployment/host_agent.py:378
-msgid "Chybí hotový obraz."
-msgstr ""
-
-#: libvirt/create.sh:51
-#, c-format
-msgid "Chybí hotový systémový disk: %s"
-msgstr ""
-
-#: deployment/messages.py:151
+#: deployment/cli.py:206
 #, python-brace-format
-msgid "Chybí povinné argumenty: {arguments}"
+msgid "Declaration created: {path}"
 msgstr ""
 
-#: libvirt/create.sh:49
-#, c-format
-msgid "Chybí sestavené instalační ISO: %s"
-msgstr ""
-
-#: deployment/portable.py:123
+#: deployment/cli.py:204
 #, python-brace-format
-msgid "Chybí sestavené instalační ISO: {path}"
+msgid "Declaration plan: {path}"
 msgstr ""
 
-#: deployment/host_agent.py:683
-msgid "Chybí spravované instalační ISO."
+#: hyperv/reset.ps1:11
+msgid "Declared UUID and owner do not match."
 msgstr ""
 
-#: deployment/campaign.py:301
-msgid "Chybí vyhrazená statická adresa testovací NAT sítě."
+#: libvirt/policy.py:37
+msgid "Declared disk capacity does not match."
 msgstr ""
 
-#: deployment/inspection.py:159
-msgid "Chybí výchozí trasa; může jít o záměrně izolovanou síť."
+#: proxmox/lab/create.py:142
+msgid "Dedicated nested Proxmox for adapter testing; never takes over an existing VM."
 msgstr ""
 
-#: hyperv/host.ps1:50
-msgid "Chybí záznam vlastnictví VM."
+#: deployment/portable.py:242
+msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/inspection.py:44
-msgid "Chybí část odpovědi diagnostiky."
+#: deployment/dispatch.py:21 deployment/host_agent.py:943 deployment/runtime.py:228 hyperv/host.ps1:25 hyperv/manage.py:89
+msgid "Deployment method must be iso or image."
 msgstr ""
 
-#: deployment/cli.py:459
-msgid "Ctrl+C přerušuje vzdálený příkaz. Zaseknutou relaci odpojíš: Enter, potom ~."
-msgstr ""
-
-#: hyperv/probe.ps1:52
-msgid "Cyklus podkladových disků."
-msgstr ""
-
-#: deployment/cli.py:202
-msgid "CÍL"
-msgstr ""
-
-#: deployment/cli.py:310 deployment/cli.py:331 deployment/cli.py:35
-msgid "Cíl"
-msgstr ""
-
-#: deployment/updater.py:17
-msgid "Cíl nebo sestavení nevrátilo platnou cestu systémové generace."
-msgstr ""
-
-#: deployment/inspection.py:62
+#: deployment/cli.py:353 deployment/cli.py:405
 #, python-brace-format
-msgid "Cíl neběží: {value1}"
+msgid "Deployment method: {method}"
 msgstr ""
 
-#: deployment/runtime.py:234
-msgid "Cíl neběží; přihlášení není dostupné."
-msgstr ""
-
-#: deployment/runtime.py:250
-msgid "Cíl nemá právě jednu použitelnou IPv4. Podrobnosti: probe CÍL."
-msgstr ""
-
-#: rpi/guest-install.sh:23
-msgid "Cíl není blokové zařízení."
-msgstr ""
-
-#: rpi/install.py:48
-msgid "Cíl není jednoznačný fyzický disk."
-msgstr ""
-
-#: deployment/campaign.py:572
-msgid "Cíl pro předání už existuje; import se nepovoluje."
-msgstr ""
-
-#: proxmox/lab/finish.py:21
-#, python-brace-format
-msgid "Cíl: Proxmox lab {address}; připravení vyhrazeného datového disku a stagingu."
-msgstr ""
-
-#: deployment/cli.py:419
-#, python-brace-format
-msgid "Cíl: {value1}\nPlatforma: {value2}"
-msgstr ""
-
-#: rpi/install.py:59
-msgid "Cílový disk je připojený."
-msgstr ""
-
-#: rpi/install.py:51
-msgid "Cílový disk je příliš malý."
-msgstr ""
-
-#: libvirt/create.sh:70
-msgid "Cílový disk již existuje v úložišti."
-msgstr ""
-
-#: libvirt/create.sh:73
-msgid "Cílový disk již existuje. Příkaz jej nepřepíše."
-msgstr ""
-
-#: rpi/install.py:64
-msgid "Cílový disk již má oddíly nebo podřízená zařízení."
-msgstr ""
-
-#: libvirt/install.py:44 libvirt/reset.py:32
-msgid "Cílový disk není vda."
-msgstr ""
-
-#: rpi/install.py:65
-msgid "Cílový disk obsahuje signatury."
-msgstr ""
-
-#: deployment/cli.py:283 deployment/cli.py:285
-#, python-brace-format
-msgid "Další krok: {command}"
-msgstr ""
-
-#: proxmox/lab/finish.py:29
-msgid "Datové prostředky Proxmox labu jsou připravené."
-msgstr ""
-
-#: proxmox/lab/configure.sh:24
-msgid "Datový disk je připojený."
-msgstr ""
-
-#: proxmox/lab/configure.sh:23
-msgid "Datový disk má oddíly nebo další připojená zařízení."
-msgstr ""
-
-#: proxmox/lab/configure.sh:8
-msgid "Datový disk nemá očekávaný serial."
-msgstr ""
-
-#: proxmox/lab/configure.sh:33
-msgid "Datový disk nepatří do očekávané LVM skupiny."
-msgstr ""
-
-#: proxmox/lab/configure.sh:26
-msgid "Datový disk obsahuje rozpoznaná data; nic nemažu."
-msgstr ""
-
-#: deployment/updater.py:64
-msgid "Deklarace cíle se liší od spuštěného CLI. Spusť příkaz znovu přes aktuální spouštěč nixberry."
-msgstr ""
-
-#: deployment/scaffold.py:104
-msgid "Deklarace už existuje; nepřepisuji ji."
-msgstr ""
-
-#: deployment/host_agent.py:216
-msgid "Deklarovaný VirtualBox bridge adaptér neexistuje."
-msgstr ""
-
-#: deployment/campaign.py:198
-msgid "Deklarovaný hostitel není dostupný přes ověřené SSH."
+#: deployment/cli.py:241
+msgid "Details"
 msgstr ""
 
 #: rpi/recovery-test.py:26
-msgid "Diagnostika načtení recovery kernelu RPi bez restartu a bez zápisu do oddílů."
+msgid "Diagnose loading the RPi recovery kernel without rebooting or writing partitions."
 msgstr ""
 
-#: deployment/host_agent.py:843
-msgid "Disk Proxmox VM není ověřený svazek této instance; reset odmítám."
+#: deployment/cli.py:169
+msgid "Direct SSH requires an offline VM declaration without hypervisor management."
 msgstr ""
 
-#: deployment/cleanup.py:53
-msgid "Disk VM nemá cíl pro dotaz na velikost."
+#: deployment/cli.py:166
+msgid "Direct SSH supports update, ssh, verify, status, doctor, diff and diffg."
 msgstr ""
 
-#: deployment/host_agent.py:803
-msgid "Disk VMware má podkladový obraz nebo neověřený původ; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:806
-msgid "Disk VMware odkazuje na další nebo neověřené soubory; reset odmítám."
-msgstr ""
-
-#: hyperv/guest-install.sh:26 rpi/guest-install.sh:26
-msgid "Disk je připojený."
-msgstr ""
-
-#: rpi/guest-install.sh:25
-msgid "Disk je příliš malý."
-msgstr ""
-
-#: hyperv/host.ps1:67
-msgid "Disk je sdílený jinou VM."
-msgstr ""
-
-#: proxmox/lab/create.py:58
+#: deployment/updater.py:99
 #, python-brace-format
-msgid "Disk labu už existuje: {path}"
+msgid "Direct SSH to VM: {endpoint}; verifying the SSH key and declared hostname."
 msgstr ""
 
-#: deployment/host_agent.py:767
-msgid "Disk má podkladový obraz nebo neověřený původ; reset odmítám."
+#: hyperv/probe.py:31
+msgid "Disallowed SSH account."
 msgstr ""
 
-#: rpi/guest-install.sh:29 rpi/install.py:62
-msgid "Disk má podřízená zařízení jiná než běžné oddíly."
+#: deployment/portable.py:41 deployment/runtime.py:263
+msgid "Disallowed SSH host or account."
 msgstr ""
 
-#: libvirt/reset.py:71
-msgid "Disk nebo NVRAM chybí, je odkazem nebo sdíleným souborem; reset odmítám."
+#: hyperv/host.ps1:9 hyperv/reset.ps1:10
+msgid "Disallowed VM name."
 msgstr ""
 
-#: libvirt/storage.py:31
-msgid "Disk nebo NVRAM sdílí jiná VM; odmítám zápis nebo odstranění."
+#: hyperv/probe.py:29
+msgid "Disallowed Windows host."
 msgstr ""
 
-#: deployment/inspection.py:115
-msgid "Disk nebo prostředí neodpovídá instalaci; může jít o instalační ISO či obnovovací SD."
+#: deployment/exporter.py:19
+msgid "Disallowed exported target name."
 msgstr ""
 
-#: libvirt/policy.py:33
-msgid "Disk nepatří do deklarovaného úložiště."
+#: hyperv/manage.py:37
+msgid "Disallowed guest address."
 msgstr ""
 
-#: hyperv/guest-install.sh:27
-msgid "Disk obsahuje signatury."
+#: rpi/install.py:78
+msgid "Disallowed installation address."
 msgstr ""
 
-#: deployment/host_agent.py:771
-msgid "Disk používá jiná VM nebo snapshot; reset odmítám."
+#: libvirt/policy.py:35
+msgid "Disallowed libvirt VM MAC address."
 msgstr ""
 
-#: deployment/guest-install.sh:23 hyperv/guest-install.sh:25 libvirt/guest-install.sh:25
-msgid "Disk už obsahuje oddíly."
+#: deployment/host_agent.py:919 hyperv/host.ps1:163
+msgid "Disallowed operation."
 msgstr ""
 
-#: rpi/guest-install.sh:32
-msgid "Disk už obsahuje podřízená zařízení."
+#: hyperv/host.ps1:14 hyperv/reset.ps1:12
+msgid "Disallowed path."
 msgstr ""
 
-#: deployment/guest-install.sh:24 libvirt/guest-install.sh:26 rpi/guest-install.sh:33
-msgid "Disk už obsahuje signatury."
+#: deployment/guest-install.sh:13
+msgid "Disallowed target disk."
+msgstr ""
+
+#: hyperv/probe.py:55
+msgid "Discover Windows and Hyper-V over SSH without changing the host or VMs."
+msgstr ""
+
+#: hyperv/guest-install.sh:24
+msgid "Disk capacity does not match."
+msgstr ""
+
+#: hyperv/guest-install.sh:21 libvirt/guest-install.sh:21
+msgid "Disk does not match."
+msgstr ""
+
+#: libvirt/install.py:43 libvirt/reset.py:31
+msgid "Disk path does not match."
+msgstr ""
+
+#: rpi/guest-install.sh:24 rpi/install.py:50
+msgid "Disk serial number does not match."
+msgstr ""
+
+#: libvirt/guest-install.sh:24
+msgid "Disk size does not match."
 msgstr ""
 
 #: libvirt/create.sh:95
 #, c-format
-msgid "Disk: %s (%s GiB); síť: %s"
+msgid "Disk: %s (%s GiB); network: %s"
 msgstr ""
 
 #: rpi/install.py:111
@@ -599,1150 +641,534 @@ msgstr ""
 
 #: libvirt/install.py:155
 #, python-brace-format
-msgid "Disk: {value1}; systém: {value2}"
+msgid "Disk: {value1}; system: {value2}"
 msgstr ""
 
-#: deployment/exporter.py:37
+#: hyperv/guest-install.sh:23 libvirt/guest-install.sh:23
+msgid "Disko does not match."
+msgstr ""
+
+#: proxmox/lab/create.py:74
+msgid "Downloading the official Proxmox installation ISO…"
+msgstr ""
+
+#: deployment/cli.py:124
+msgid "Everyday management:\n  list                         Local target inventory and available management capabilities.\n  show TARGET                  Target declaration, capacity, network and available operations.\n  status [TARGET]              Live status; hosts are queried concurrently and rows appear as ready.\n  ssh TARGET [-- COMMAND ...]  Log in or run a command on the server.\n  verify TARGET                Check the running system against the recipe, disk and services.\n  doctor [TARGET]              Diagnose one or all targets.\n  probe TARGET                 Detailed platform discovery for troubleshooting.\n\nUpdates and comparisons:\n  update TARGET                Update plan; --apply builds and activates the system.\n  diff TARGET                  Running system against the current recipe BEFORE an update.\n  diffg TARGET                 The two highest retained server generations.\n                               diff builds locally; diffg runs on the server.\n\nNew VM declarations (write a local file, do not create a VM):\n  new-libvirt-vm NAME          VM declaration for QEMU/KVM (libvirt).\n  new-hyperv-vm NAME           VM declaration for Hyper-V.\n  new-proxmox-vm NAME          Proxmox VE VM declaration with editable networking.\n  new-virtualbox-vm NAME       VM declaration for VirtualBox.\n  new-vmware-vm NAME           VM declaration for VMware Workstation.\n                               --host selects a host; a sole matching host is selected automatically.\n                               --offline prepares any backend without a hypervisor.\n                               --configuration NAME selects a server configuration; default is default.\n                               --dry-run does not write the file. new-* names without -vm are aliases.\n\nDeployment, recovery and offline transfer (subject to platform capabilities):\n  plan TARGET                  Read-only VM creation or RPi recovery plan.\n  reproduce TARGET             Complete deployment/recovery; execution requires --apply.\n  create TARGET                Create a VM; execution requires --apply.\n  install TARGET               Complete the selected deployment method; requires --apply.\n  provision TARGET             Create and install; execution requires --apply.\n  reset TARGET                 Remove an authorized VM on any of the five backends.\n                               Requires allowReset = true in the instance; without --apply, verifies only.\n  export TARGET --output DIR   Offline bundle with disk or ISO and recipe in a new directory.\n  cleanup [TARGET]             Preview cleanup candidates; deletes nothing.\n                               --artifact-root DIR adds image inspection.\n\nUsage and modes:\n  Without a command, list is shown. TARGET is a declaration name, not an IP address.\n  show TARGET lists the operations available for a particular target.\n  update/create/install/provision/reproduce/reset only plan without --apply.\n  new-* and export normally write locally; --dry-run shows a plan without writing.\n  diff/diffg may read the server and diff builds the recipe; --dry-run only shows the plan.\n  --ssh root@HOST:PORT overrides SSH access to an offline VM of any backend.\n  --method image is the default for all VMs: import a prebuilt disk and verify boot.\n  --method iso installs to a blank disk, detaches the ISO and verifies system boot.\n  Set deploymentMethod in a declaration for a persistent default; --method overrides it.\n  Applies to new-*, show, plan, create, install, provision, reproduce and export.\n  --offline prepares without a hypervisor, independently of the method. RPi uses SD.\n  diff shows pending changes. After an update it is usually empty; use diffg.\n\nExamples:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOST\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan rpi-demo --address 192.168.50.20\n\nDetailed operating guide: README.md in the NixBerry recipe root.\nComplete command and option reference: docs/cli.md.\n"
+msgstr ""
+
+#: deployment/updater.py:104
 #, python-brace-format
-msgid "Do umístění balíčku {path} nelze zapisovat. Relativní cesta se počítá od pracovního adresáře. Vyber zapisovatelný adresář, například --output ~/{target}-offline."
+msgid "Execute: {command}"
 msgstr ""
 
-#: proxmox/lab/finish.py:37
-#, python-brace-format
-msgid "Dokončení Proxmox labu selhalo: {error}"
+#: deployment/cli.py:133
+msgid "Existing target name, or a new name for new-*"
 msgstr ""
 
-#: deployment/inspection.py:122
-#, python-brace-format
-msgid "Dostupná paměť: {available:.1f} %"
+#: deployment/check_images.py:61
+msgid "Expected exactly one ESP and one Linux partition."
 msgstr ""
 
-#: deployment/campaign.py:373
-msgid "Export neodpovídá zvolené platformě a metodě."
-msgstr ""
-
-#: deployment/exporter.py:68
-msgid "Export obrazu pro tuto platformu není implementovaný."
-msgstr ""
-
-#: deployment/campaign.py:401
-msgid "Export přepsal existující balíček."
-msgstr ""
-
-#: deployment/cli.py:449
+#: deployment/cli.py:379
 #, python-brace-format
 msgid "Export: {command}"
 msgstr ""
 
-#: deployment/campaign.py:382
-msgid "Exportovaný disk má nesprávný formát nebo kapacitu."
+#: deployment/extract_messages.py:65
+msgid "Extract a translation template from Python, Bash and PowerShell without extra dependencies."
 msgstr ""
 
-#: deployment/campaign.py:376
-msgid "Exportovaný lock neodpovídá manifestu."
+#: deployment/check_images.py:44
+msgid "GPT is missing."
+msgstr ""
+
+#: rpi/guest-install.sh:61
+msgid "Generated RPi boot files are missing."
 msgstr ""
 
 #: deployment/cli.py:66
-msgid "Generace"
-msgstr ""
-
-#: deployment/runtime.py:211
-msgid "Hardware RPi neodpovídá deklarovanému stroji."
-msgstr ""
-
-#: rpi/guest-install.sh:22
-msgid "Host neběží z připraveného instalačního prostředí."
-msgstr ""
-
-#: rpi/install.py:55
-msgid "Host neběží z připraveného instalačního prostředí. Lze použít pouze --stage."
-msgstr ""
-
-#: hyperv/guest-install.sh:18 libvirt/guest-install.sh:18
-msgid "Host nenaběhl přes UEFI."
-msgstr ""
-
-#: rpi/guest-install.sh:21 rpi/install.py:42
-msgid "Host není ARM64."
-msgstr ""
-
-#: rpi/install.py:43
-msgid "Host není Raspberry Pi 5."
-msgstr ""
-
-#: deployment/guest-install.sh:14 hyperv/guest-install.sh:16 libvirt/guest-install.sh:16
-msgid "Host není instalační prostředí."
-msgstr ""
-
-#: hyperv/guest-install.sh:14
-msgid "Host není x86_64."
-msgstr ""
-
-#: deployment/cli.py:203
-msgid "Hostitel hypervizoru pro new-*; pro správu VM přímé SSH root@HOST[:PORT]"
-msgstr ""
-
-#: deployment/scaffold.py:54
-msgid "Hostitel neodpovídá zvolenému backendu."
-msgstr ""
-
-#: deployment/runtime.py:20
-msgid "Hostitel neodpověděl."
-msgstr ""
-
-#: deployment/discovery.py:59
-msgid "Hostitel nevrátil stav všech požadovaných VM."
-msgstr ""
-
-#: deployment/portable.py:103
-#, python-brace-format
-msgid "Hostitelský adaptér nevrátil JSON: {value1}"
-msgstr ""
-
-#: deployment/host_agent.py:103
-msgid "Hostname hostitele neodpovídá deklaraci."
-msgstr ""
-
-#: deployment/host_agent.py:925
-msgid "Hromadný stav vyžaduje 1–128 deklarací VM."
-msgstr ""
-
-#: hyperv/policy.py:12
-msgid "Hyper-V VM musí mít bezpečný název nixberry-…."
-msgstr ""
-
-#: hyperv/policy.py:14
-msgid "Hyper-V VM musí mít vlastní ownerId ve tvaru nixberry-hyperv-UUID."
-msgstr ""
-
-#: deployment/runtime.py:128
-msgid "Hyper-V VM nemá deklarovaného vlastníka."
-msgstr ""
-
-#: deployment/runtime.py:133
-msgid "Hyper-V VM neodpovídá deklaraci adaptéru a generace."
-msgstr ""
-
-#: deployment/runtime.py:120
-msgid "Hyper-V není dostupné."
-msgstr ""
-
-#: hyperv/policy.py:16
-msgid "Hyper-V vyžaduje Generation 2 a vypnutý Secure Boot."
-msgstr ""
-
-#: hyperv/policy.py:21
-msgid "Hyper-V úložiště musí být absolutní cesta na lokálním disku bez nadřazených složek."
-msgstr ""
-
-#: deployment/cli.py:331 deployment/cli.py:35
-msgid "Hypervizor"
-msgstr ""
-
-#: deployment/cli.py:421
-#, python-brace-format
-msgid "Hypervizor: {value1}"
-msgstr ""
-
-#: deployment/campaign.py:385
-msgid "ISO balíček neobsahuje instalační postup."
-msgstr ""
-
-#: hyperv/guest-install.sh:19
-msgid "ISO není připojené."
-msgstr ""
-
-#: libvirt/install.py:192
-msgid "ISO odpojené, čekám na SSH instalovaného systému."
-msgstr ""
-
-#: hyperv/manage.py:201
-msgid "ISO zůstalo připojené."
-msgstr ""
-
-#: proxmox/lab/configure.sh:6
-msgid "Identita Proxmox labu neodpovídá deklaraci."
-msgstr ""
-
-#: deployment/host_agent.py:254
-msgid "Identita VirtualBox VM nesouhlasí."
-msgstr ""
-
-#: deployment/inspection.py:60
-msgid "Identita cíle odpovídá deklaraci."
-msgstr ""
-
-#: deployment/runtime.py:152
-msgid "Identita libvirt VM neodpovídá deklaraci."
-msgstr ""
-
-#: proxmox/lab/finish.py:20
-msgid "Identita libvirt VM neodpovídá vlastnímu Proxmox labu."
-msgstr ""
-
-#: deployment/host_agent.py:280 deployment/host_agent.py:288
-msgid "Identita nebo uzel Proxmox VM nesouhlasí."
-msgstr ""
-
-#: deployment/campaign.py:609
-msgid "Import by přepsal existující svazek."
-msgstr ""
-
-#: deployment/campaign.py:612
-msgid "Import vytvořil svazek na jiné cestě."
-msgstr ""
-
-#: deployment/cli.py:435
-#, python-brace-format
-msgid "Import: VMID {value1}, úložiště {value2}, bridge {value3}"
-msgstr ""
-
-#: hyperv/guest-install.sh:39
-msgid "Instalace Hyper-V dokončená."
-msgstr ""
-
-#: hyperv/manage.py:206
-msgid "Instalace a start z VHDX ověřené. VM zůstává běžet."
-msgstr ""
-
-#: libvirt/install.py:184
-msgid "Instalace dokončená, korektně vypínám testovací VM."
-msgstr ""
-
-#: deployment/portable.py:210
-msgid "Instalace dokončená. Odpojuji ISO a spouštím systém z disku…"
-msgstr ""
-
-#: rpi/guest-install.sh:63
-msgid "Instalace dokončená. RPi zůstává v instalačním prostředí; restart a vyjmutí SD jsou samostatný krok."
-msgstr ""
-
-#: libvirt/guest-install.sh:40
-msgid "Instalace dokončená. VM lze korektně vypnout a odpojit ISO."
-msgstr ""
-
-#: libvirt/install.py:182
-msgid "Instalace hosta selhala; VM ponecháváme beze změny startu."
-msgstr ""
-
-#: libvirt/install.py:128
-msgid "Instalace pouze do vyhrazené VM; bez --apply pouze kontrola plánu."
-msgstr ""
-
-#: deployment/portable.py:204
-msgid "Instalace selhala; ISO zůstává připojené, nic automaticky neopakuji."
-msgstr ""
-
-#: deployment/portable.py:189
-msgid "Instalační ISO není dosažitelné; VM ponechávám beze změny."
-msgstr ""
-
-#: deployment/guest-install.sh:17 libvirt/guest-install.sh:19
-msgid "Instalační ISO není připojené."
-msgstr ""
-
-#: proxmox/lab/create.py:72
-msgid "Instalační ISO nesmí být symbolický odkaz."
-msgstr ""
-
-#: deployment/guest-install.sh:16
-msgid "Instalační VM neběží přes UEFI."
-msgstr ""
-
-#: rpi/install.py:57
-msgid "Instalační médium obsahuje jiné připnuté výstupy."
-msgstr ""
-
-#: rpi/install.py:113
-msgid "Instalační plán ověřený, nic nebylo změněné."
-msgstr ""
-
-#: libvirt/provision.py:36
-#, python-brace-format
-msgid "Instalační prostředí není připravené: {value1}"
-msgstr ""
-
-#: proxmox/lab/create.py:137
-#, python-brace-format
-msgid "Instalátor běží. Heslo je v souboru {path}; výsledek instalace ještě ověř samostatně."
-msgstr ""
-
-#: deployment/host_agent.py:658
-msgid "Inventura je pouze čtení. VMware: běžící VM a soubory vyhrazeného adresáře, nikoli všechny vypnuté VM hostitele. unknown není kandidát k mazání. Ve vlastním adresáři VM chráníme i snapshoty a uložené stavy. Na Windows se alokace čte pomocí GetCompressedFileSizeW; logicalBytes je délka souboru."
-msgstr ""
-
-#: deployment/cli.py:207
-msgid "Jednorázový SSH endpoint serveru root@HOST[:PORT]; přepíše access.host a access.port"
-msgstr ""
-
-#: rpi/recovery-test.py:55
-msgid "Jiný kernel už je načtený; nepřepisujeme ho."
-msgstr ""
-
-#: hyperv/probe.py:57
-msgid "Jméno VM pro rychlý stav; lze opakovat"
-msgstr ""
-
-#: deployment/cli.py:202
-msgid "Jméno existujícího cíle, u new-* nové jméno"
-msgstr ""
-
-#: deployment/cli.py:433
-#, python-brace-format
-msgid "Kapacita: {value1} CPU, {value2} MiB RAM, {value3} GiB disk"
-msgstr ""
-
-#: rpi/recovery-test.py:73
-msgid "Kernel není načtený."
-msgstr ""
-
-#: rpi/recovery-test.py:76
-msgid "Kernel se neuvolnil."
-msgstr ""
-
-#: deployment/updater.py:167
-msgid "Kernel, initrd a parametry startu odpovídají běžícímu systému; restart není potřeba."
-msgstr ""
-
-#: deployment/cli.py:331
-msgid "Konfigurace"
-msgstr ""
-
-#: deployment/host_agent.py:751
-msgid "Konfigurace VirtualBox VM není ve vlastním adresáři; reset odmítám."
-msgstr ""
-
-#: proxmox/lab/configure.sh:5
-msgid "Konfigurace labu vyžaduje root a očekávané UUID."
-msgstr ""
-
-#: deployment/scaffold.py:27
-msgid "Konfigurace má současně soubor i adresář; ponech pouze jednu definici."
-msgstr ""
-
-#: deployment/cli.py:205
-msgid "Konfigurace serveru pro new-*; výchozí default, další názvy z configurations/"
-msgstr ""
-
-#: deployment/cli.py:277 deployment/cli.py:360 deployment/cli.py:364 deployment/cli.py:399
-#, python-brace-format
-msgid "Konfigurace serveru: {configuration}"
-msgstr ""
-
-#: deployment/cli.py:420 deployment/updater.py:92
-#, python-brace-format
-msgid "Konfigurace: {configuration}"
-msgstr ""
-
-#: deployment/cli.py:310
-msgid "Kontrola"
-msgstr ""
-
-#: deployment/check_images.py:78
-msgid "Kontrola formátů, GPT, ext4 a UEFI souborů hotových disků bez jejich startu."
-msgstr ""
-
-#: deployment/updater.py:32
-#, python-brace-format
-msgid "Kontrola instalace neprošla: {check}"
-msgstr ""
-
-#: deployment/portable.py:197
-msgid "Kontrola instalačního prostředí selhala; disk nebyl změněný."
-msgstr ""
-
-#: libvirt/install.py:201
-#, python-brace-format
-msgid "Kontrola instalovaného systému selhala: {value1}"
-msgstr ""
-
-#: hyperv/manage.py:189
-msgid "Kontrola nebo instalace hosta selhala."
-msgstr ""
-
-#: libvirt/install.py:172
-msgid "Kontrola nebo instalace hosta selhala; VM ponecháváme beze změny startu."
-msgstr ""
-
-#: deployment/runtime.py:323
-#, python-brace-format
-msgid "Kontrola neprošla: {check}"
-msgstr ""
-
-#: deployment/check_images.py:74
-msgid "Kontrola obsahu není důkaz startu na hypervizoru."
-msgstr ""
-
-#: deployment/inspection.py:97
-#, python-brace-format
-msgid "Kontrola se nezdařila: {value1}"
-msgstr ""
-
-#: hyperv/manage.py:177 hyperv/manage.py:204
-msgid "Kontrola startu z VHDX selhala."
-msgstr ""
-
-#: deployment/runtime.py:337
-msgid "Kontrola systému nevrátila očekávaný výsledek."
-msgstr ""
-
-#: deployment/campaign.py:398
-msgid "Kontrolní součet nerozpoznal poškozenou kopii."
-msgstr ""
-
-#: proxmox/lab/create.py:81
-msgid "Kontrolní součet oficiálního ISO nesouhlasí."
-msgstr ""
-
-#: hyperv/manage.py:210
-msgid "Kontrolované vytvoření a instalace vyhrazené Hyper-V VM přes Windows SSH."
-msgstr ""
-
-#: libvirt/create.sh:98
-msgid "Kontroly prošly. Nebyl vytvořen disk ani VM."
-msgstr ""
-
-#: libvirt/create.sh:116
-#, c-format
-msgid "Konzole: virsh --connect %s console %s"
-msgstr ""
-
-#: deployment/check_inventory.py:59
-#, python-brace-format
-msgid "Kopie a výsledky: {value1}"
-msgstr ""
-
-#: hyperv/guest-install.sh:17 libvirt/guest-install.sh:17
-msgid "Kořen není instalační tmpfs."
-msgstr ""
-
-#: deployment/cleanup.py:107
-#, python-brace-format
-msgid "Kořen obrazů musí být adresář: {value1}"
-msgstr ""
-
-#: deployment/inspection.py:115
-msgid "Kořenový a bootovací oddíl odpovídají instalaci."
-msgstr ""
-
-#: deployment/check_images.py:71
-msgid "Kořenový oddíl není ext4."
-msgstr ""
-
-#: deployment/campaign.py:120
-#, python-brace-format
-msgid "Krok skončil kódem {code}: {detail}"
-msgstr ""
-
-#: proxmox/lab/configure.sh:34
-msgid "LVM skupina používá další disk."
-msgstr ""
-
-#: proxmox/lab/create.py:64
-msgid "Lab vyžaduje alespoň 100 GiB volné kapacity úložiště."
-msgstr ""
-
-#: deployment/runtime.py:156
-msgid "Libvirt VM nemá deklarovanou značku vlastníka."
-msgstr ""
-
-#: libvirt/create.sh:105
-#, c-format
-msgid "Libvirt vytvořil disk na jiné cestě: %s"
-msgstr ""
-
-#: libvirt/create.sh:87
-#, c-format
-msgid "MAC je již použita strojem %s."
-msgstr ""
-
-#: libvirt/create.sh:91
-msgid "MAC má v síti již existující deklaraci."
-msgstr ""
-
-#: hyperv/host.ps1:45
-msgid "MAC už používá jiná VM."
-msgstr ""
-
-#: rpi/recovery-test.py:60
-#, python-brace-format
-msgid "MemAvailable={available}; konzervativní požadavek={needed}"
-msgstr ""
-
-#: hyperv/host.ps1:149 libvirt/install.py:48
-msgid "Metoda image nesmí mít připojené instalační ISO."
-msgstr ""
-
-#: hyperv/manage.py:172 libvirt/install.py:99
-msgid "Metoda image: install spustí a ověří hotový systém; disk se neformátuje."
-msgstr ""
-
-#: deployment/portable.py:265
-msgid "Metoda iso vytvoří novou VM s prázdným diskem; install ověří instalační prostředí, zapíše systém a odpojí ISO."
-msgstr ""
-
-#: deployment/portable.py:172
-msgid "Metoda iso: install spustí instalační ISO a zapíše systém pouze na ověřený prázdný disk."
-msgstr ""
-
-#: deployment/cli.py:206
-msgid "Metoda nasazení VM: instalace z ISO, nebo import hotového disku; přepíše deploymentMethod z deklarace"
-msgstr ""
-
-#: deployment/dispatch.py:21 deployment/host_agent.py:943 deployment/runtime.py:228 hyperv/host.ps1:25 hyperv/manage.py:89
-msgid "Metoda nasazení musí být iso nebo image."
-msgstr ""
-
-#: deployment/cli.py:423 deployment/cli.py:475
-#, python-brace-format
-msgid "Metoda nasazení: {method}"
-msgstr ""
-
-#: deployment/host_agent.py:972 hyperv/host.ps1:53
-msgid "Metoda neodpovídá vytvořené VM; použij původní --method."
-msgstr ""
-
-#: libvirt/create.sh:96
-#, c-format
-msgid "Metoda: %s; ISO: %s; diskový obraz: %s"
-msgstr ""
-
-#: deployment/host_agent.py:75
-msgid "Multicast MAC není povolená."
-msgstr ""
-
-#: deployment/portable.py:35
-msgid "Místní správce nyní podporuje Linux; Windows používej přes SSH."
-msgstr ""
-
-#: deployment/host_agent.py:622
-msgid "Může být připojený disk, snapshot, podkladový obraz nebo médium obnovy."
-msgstr ""
-
-#: libvirt/reset.py:104
-msgid "NVRAM po odstranění stále existuje."
-msgstr ""
-
-#: deployment/host_agent.py:826
-msgid "Na disk navazuje jiný obraz VMware; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:774
-msgid "Na disk navazuje rozdílový obraz; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:961
-msgid "Na úložišti ISO Proxmoxu není dost volného místa."
-msgstr ""
-
-#: deployment/host_agent.py:963
-msgid "Na úložišti není dost místa pro obraz a deklarovanou kapacitu VM."
-msgstr ""
-
-#: deployment/portable.py:242
-msgid "Nasazení z hotového disku nebo instalačního ISO přes jednotný adaptér."
-msgstr ""
-
-#: proxmox/lab/configure.sh:18
-msgid "Nastavuji sériovou konzoli pro záznam případného kernel panicu…"
-msgstr ""
-
-#: rpi/recovery-test.py:77
-msgid "Načtení i uvolnění ověřené. RPi nebylo restartované."
-msgstr ""
-
-#: rpi/recovery-test.py:30
-msgid "Načíst a znovu uvolnit kernel bez restartu"
-msgstr ""
-
-#: hyperv/host.ps1:47
-msgid "Nedostatek místa."
-msgstr ""
-
-#: rpi/recovery-test.py:58
-msgid "Nedostatek volné RAM pro kontrolu načtení."
-msgstr ""
-
-#: deployment/portable.py:221
-msgid "Nejdřív vytvoř VM přes create nebo reproduce."
-msgstr ""
-
-#: deployment/campaign.py:548
-msgid "Nejprve musí projít odpovídající offline export."
-msgstr ""
-
-#: deployment/cli.py:329
-msgid "Nejsou deklarované žádné cíle. Přidej hostitele a instanci nebo cíl RPi."
-msgstr ""
-
-#: deployment/host_agent.py:870
-msgid "Nelze bezpečně ověřit snapshot jiné VM; reset odmítám."
-msgstr ""
-
-#: deployment/inspection.py:177
-msgid "Nelze bezpečně zjistit všechny chráněné generace."
-msgstr ""
-
-#: hyperv/host.ps1:80
-msgid "Nelze jednoznačně určit BIOS UUID VM."
-msgstr ""
-
-#: libvirt/install.py:72
-msgid "Nelze jednoznačně zjistit adresu VM."
-msgstr ""
-
-#: deployment/host_agent.py:55
-msgid "Nelze ověřit SID uživatele pro soukromý adresář VM."
-msgstr ""
-
-#: libvirt/storage.py:25
-msgid "Nelze ověřit cestu svazku jiné VM; odmítám zápis nebo odstranění."
-msgstr ""
-
-#: deployment/cli.py:72
-#, python-brace-format
-msgid "Nelze zjistit velikosti: {error}"
-msgstr ""
-
-#: deployment/inspection.py:40
-msgid "Neočekávaná odpověď diagnostiky."
-msgstr ""
-
-#: deployment/check_images.py:47
-msgid "Neočekávané rozložení GPT."
-msgstr ""
-
-#: deployment/check_images.py:63
-msgid "Neočekávaně velký ESP."
-msgstr ""
-
-#: deployment/runtime.py:56
-msgid "Neplatná IPv4 adresa SSH cíle."
-msgstr ""
-
-#: hyperv/policy.py:18
-msgid "Neplatná MAC Hyper-V VM."
-msgstr ""
-
-#: deployment/host_agent.py:73 hyperv/host.ps1:13
-msgid "Neplatná MAC."
-msgstr ""
-
-#: deployment/host_agent.py:95
-msgid "Neplatná cesta úložiště."
-msgstr ""
-
-#: hyperv/policy.py:24
-#, python-brace-format
-msgid "Neplatná kapacita Hyper-V: {key}"
-msgstr ""
-
-#: hyperv/host.ps1:12
-msgid "Neplatná kapacita VM."
-msgstr ""
-
-#: deployment/host_agent.py:80
-#, python-brace-format
-msgid "Neplatná kapacita: {key}"
-msgstr ""
-
-#: deployment/inspection.py:183
-msgid "Neplatná nebo neúplná evidence generací."
-msgstr ""
-
-#: deployment/inspection.py:161
-msgid "Neplatná odpověď ip route."
-msgstr ""
-
-#: deployment/runtime.py:61
-msgid "Neplatné DNS jméno SSH cíle."
-msgstr ""
-
-#: deployment/host_agent.py:71
-msgid "Neplatné UUID nebo značka vlastníka."
-msgstr ""
-
-#: deployment/host_agent.py:83
-msgid "Neplatné VMID."
-msgstr ""
-
-#: deployment/host_agent.py:68
-msgid "Neplatné jméno VM."
-msgstr ""
-
-#: deployment/updater.py:88
-msgid "Neplatné jméno cíle pro aktualizaci."
-msgstr ""
-
-#: deployment/diffing.py:54
-msgid "Neplatné jméno cíle pro porovnání."
-msgstr ""
-
-#: deployment/campaign.py:155
-msgid "Neplatné jméno testovacího hostitele."
-msgstr ""
-
-#: deployment/host_agent.py:88
-msgid "Neplatné úložiště ISO Proxmoxu."
-msgstr ""
-
-#: deployment/runtime.py:51
-msgid "Neplatný SSH hostitel nebo port (1–65535)."
-msgstr ""
-
-#: deployment/check_images.py:27
-msgid "Neplatný formát, kapacita nebo neočekávaný backing file."
-msgstr ""
-
-#: deployment/runtime.py:88
-msgid "Neplatný hostKeyAlias pro ověřování SSH klíče."
-msgstr ""
-
-#: deployment/host_agent.py:66
-msgid "Neplatný hostname hostitele."
-msgstr ""
-
-#: hyperv/host.ps1:102 hyperv/host.ps1:114
-msgid "Neplatný identifikátor uploadu."
-msgstr ""
-
-#: deployment/inspection.py:28
-msgid "Neplatný klíč kontroly."
-msgstr ""
-
-#: deployment/host_agent.py:86
-#, python-brace-format
-msgid "Neplatný prostředek Proxmox: {key}"
-msgstr ""
-
-#: deployment/guest-install.sh:12
-msgid "Neplatný režim instalace."
-msgstr ""
-
-#: hyperv/host.ps1:10
-msgid "Neplatný vlastník VM."
-msgstr ""
-
-#: deployment/updater.py:80
-msgid "Nepodařilo se zjistit potřebu restartu."
-msgstr ""
-
-#: deployment/campaign.py:764
-msgid "Nepodporovaná hodnota testovací konfigurace."
-msgstr ""
-
-#: deployment/scaffold.py:40
-msgid "Nepodporovaný backend nové deklarace."
-msgstr ""
-
-#: deployment/host_agent.py:62
-msgid "Nepodporovaný backend."
-msgstr ""
-
-#: deployment/host_agent.py:64
-msgid "Nepodporovaný systém hostitele."
-msgstr ""
-
-#: libvirt/policy.py:35
-msgid "Nepovolená MAC libvirt VM."
-msgstr ""
-
-#: hyperv/manage.py:37
-msgid "Nepovolená adresa hosta."
-msgstr ""
-
-#: hyperv/host.ps1:14 hyperv/reset.ps1:12
-msgid "Nepovolená cesta."
-msgstr ""
-
-#: rpi/install.py:78
-msgid "Nepovolená instalační adresa."
-msgstr ""
-
-#: deployment/host_agent.py:919 hyperv/host.ps1:163
-msgid "Nepovolená operace."
-msgstr ""
-
-#: deployment/exporter.py:19
-msgid "Nepovolené jméno exportovaného cíle."
-msgstr ""
-
-#: deployment/portable.py:41 deployment/runtime.py:263
-msgid "Nepovolený SSH hostitel nebo účet."
-msgstr ""
-
-#: hyperv/probe.py:31
-msgid "Nepovolený SSH účet."
-msgstr ""
-
-#: hyperv/probe.py:29
-msgid "Nepovolený Windows hostitel."
-msgstr ""
-
-#: deployment/guest-install.sh:13
-msgid "Nepovolený cílový disk."
-msgstr ""
-
-#: hyperv/host.ps1:9 hyperv/reset.ps1:10
-msgid "Nepovolený název VM."
-msgstr ""
-
-#: libvirt/install.py:50
-msgid "Nesouhlasí CD-ROM."
-msgstr ""
-
-#: hyperv/host.ps1:59 hyperv/reset.ps1:47
-msgid "Nesouhlasí CPU nebo RAM."
-msgstr ""
-
-#: rpi/install.py:46
-msgid "Nesouhlasí MAC hlavního adaptéru."
-msgstr ""
-
-#: libvirt/install.py:55
-msgid "Nesouhlasí MAC."
-msgstr ""
-
-#: rpi/guest-install.sh:20
-msgid "Nesouhlasí RPi."
-msgstr ""
-
-#: hyperv/reset.ps1:48
-msgid "Nesouhlasí Secure Boot."
-msgstr ""
-
-#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:27
-msgid "Nesouhlasí UUID VM."
+msgid "Generation"
 msgstr ""
 
 #: libvirt/guest-install.sh:15
-msgid "Nesouhlasí UUID hosta."
+msgid "Guest UUID does not match."
 msgstr ""
 
-#: deployment/guest-install.sh:15
-msgid "Nesouhlasí UUID instalační VM."
+#: hyperv/manage.py:189
+msgid "Guest check or installation failed."
 msgstr ""
 
-#: hyperv/host.ps1:57
-msgid "Nesouhlasí VM ID."
+#: libvirt/install.py:172
+msgid "Guest check or installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: deployment/cleanup.py:151 hyperv/host.ps1:8 hyperv/reset.ps1:9
-msgid "Nesouhlasí Windows hostitel."
+#: libvirt/install.py:182
+msgid "Guest installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: libvirt/reset.py:40
-msgid "Nesouhlasí cesta NVRAM testovací VM."
+#: hyperv/manage.py:193
+msgid "Guest shutdown failed."
 msgstr ""
 
-#: libvirt/install.py:43 libvirt/reset.py:31
-msgid "Nesouhlasí cesta disku."
+#: hyperv/guest-install.sh:39
+msgid "Hyper-V installation completed."
 msgstr ""
 
-#: libvirt/reset.py:34
-msgid "Nesouhlasí cesta svazku."
+#: deployment/runtime.py:120
+msgid "Hyper-V is unavailable."
 msgstr ""
 
-#: hyperv/host.ps1:63
-msgid "Nesouhlasí cílový VHDX."
+#: hyperv/policy.py:16
+msgid "Hyper-V requires Generation 2 with Secure Boot disabled."
 msgstr ""
 
-#: deployment/guest-install.sh:19
-msgid "Nesouhlasí cílový disk instalátoru."
+#: hyperv/policy.py:21
+msgid "Hyper-V storage must be an absolute path on a local drive without parent directory components."
 msgstr ""
 
-#: deployment/guest-install.sh:20
-msgid "Nesouhlasí cílový systém instalátoru."
+#: deployment/cli.py:262 deployment/cli.py:35
+msgid "Hypervisor"
 msgstr ""
 
-#: libvirt/policy.py:37
-msgid "Nesouhlasí deklarovaná kapacita disku."
+#: deployment/cli.py:134
+msgid "Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"
 msgstr ""
 
-#: hyperv/reset.ps1:11
-msgid "Nesouhlasí deklarované UUID a vlastník."
+#: deployment/cli.py:351
+#, python-brace-format
+msgid "Hypervisor: {value1}"
 msgstr ""
 
-#: hyperv/guest-install.sh:21 libvirt/guest-install.sh:21
-msgid "Nesouhlasí disk."
+#: libvirt/install.py:192
+msgid "ISO detached; waiting for SSH on the installed system."
 msgstr ""
 
-#: deployment/guest-install.sh:21
-msgid "Nesouhlasí disko instalátoru."
+#: deployment/host_agent.py:955
+msgid "ISO installation requires vmware-vdiskmanager next to vmrun."
 msgstr ""
 
-#: hyperv/guest-install.sh:23 libvirt/guest-install.sh:23
-msgid "Nesouhlasí disko."
+#: deployment/portable.py:172
+msgid "ISO method: install boots the installation ISO and writes the system only to a verified blank disk."
 msgstr ""
 
-#: hyperv/host.ps1:116
-msgid "Nesouhlasí délka uploadu."
+#: deployment/host_agent.py:365
+#, python-brace-format
+msgid "ISO storage {storage} is inactive on the target node."
 msgstr ""
 
-#: hyperv/host.ps1:126
-msgid "Nesouhlasí hash kopie systémového disku."
-msgstr ""
-
-#: hyperv/host.ps1:120
-msgid "Nesouhlasí hash média."
-msgstr ""
-
-#: hyperv/host.ps1:107
-msgid "Nesouhlasí hash uloženého média."
-msgstr ""
-
-#: hyperv/host.ps1:117
-msgid "Nesouhlasí hash uploadu."
-msgstr ""
-
-#: hyperv/host.ps1:157
-msgid "Nesouhlasí instalační DVD."
-msgstr ""
-
-#: hyperv/guest-install.sh:36
-msgid "Nesouhlasí instalovaný profil."
-msgstr ""
-
-#: hyperv/guest-install.sh:24
-msgid "Nesouhlasí kapacita disku."
-msgstr ""
-
-#: hyperv/reset.ps1:46
-msgid "Nesouhlasí konfigurační adresář nebo generace VM."
-msgstr ""
-
-#: hyperv/host.ps1:58
-msgid "Nesouhlasí konfigurační adresář."
+#: deployment/cli.py:95
+msgid "Image"
 msgstr ""
 
 #: deployment/host_agent.py:382
-msgid "Nesouhlasí kontrolní součet obrazu."
+msgid "Image checksum does not match."
 msgstr ""
 
-#: deployment/host_agent.py:422 deployment/host_agent.py:686
-msgid "Nesouhlasí kontrolní součet spravovaného ISO."
+#: deployment/cli.py:144
+msgid "Image directory for cleanup preview; repeatable, links are not followed"
 msgstr ""
 
-#: libvirt/install.py:39 libvirt/reset.py:26
-msgid "Nesouhlasí název VM."
+#: deployment/exporter.py:68
+msgid "Image export is not implemented for this platform."
 msgstr ""
 
-#: libvirt/reset.py:33
-msgid "Nesouhlasí název svazku."
+#: hyperv/manage.py:172 libvirt/install.py:99
+msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
 msgstr ""
 
-#: hyperv/host.ps1:11
-msgid "Nesouhlasí profil UEFI."
+#: deployment/campaign.py:612
+msgid "Import created a volume at a different path."
 msgstr ""
 
-#: deployment/guest-install.sh:18
-msgid "Nesouhlasí profil instalátoru."
+#: deployment/campaign.py:609
+msgid "Import would overwrite an existing volume."
 msgstr ""
 
-#: hyperv/guest-install.sh:20 libvirt/guest-install.sh:20
-msgid "Nesouhlasí profil."
-msgstr ""
-
-#: rpi/guest-install.sh:45
-msgid "Nesouhlasí připnutý instalační manifest."
-msgstr ""
-
-#: hyperv/host.ps1:60
-msgid "Nesouhlasí režim RAM."
-msgstr ""
-
-#: hyperv/reset.ps1:44
-msgid "Nesouhlasí skutečné VM ID nebo vlastník."
-msgstr ""
-
-#: hyperv/host.ps1:18
-msgid "Nesouhlasí switch."
-msgstr ""
-
-#: hyperv/guest-install.sh:22 libvirt/guest-install.sh:22
-msgid "Nesouhlasí systém."
-msgstr ""
-
-#: hyperv/reset.ps1:50
-msgid "Nesouhlasí systémový disk nebo je připojen další disk."
-msgstr ""
-
-#: rpi/install.py:44
-msgid "Nesouhlasí sériové číslo RPi."
-msgstr ""
-
-#: rpi/guest-install.sh:24 rpi/install.py:50
-msgid "Nesouhlasí sériové číslo disku."
-msgstr ""
-
-#: hyperv/host.ps1:69 hyperv/reset.ps1:54
-msgid "Nesouhlasí síť VM."
-msgstr ""
-
-#: libvirt/install.py:56
-msgid "Nesouhlasí síť."
-msgstr ""
-
-#: hyperv/host.ps1:65
-msgid "Nesouhlasí typ nebo velikost VHDX."
-msgstr ""
-
-#: deployment/guest-install.sh:22
-msgid "Nesouhlasí velikost cílového disku."
-msgstr ""
-
-#: libvirt/guest-install.sh:24
-msgid "Nesouhlasí velikost disku."
-msgstr ""
-
-#: hyperv/reset.ps1:52
-msgid "Nesouhlasí velikost nebo původ VHDX."
-msgstr ""
-
-#: libvirt/reset.py:35
-msgid "Nesouhlasí velikost svazku."
-msgstr ""
-
-#: hyperv/host.ps1:55
-msgid "Nesouhlasí vlastnictví nebo médium."
-msgstr ""
-
-#: hyperv/reset.ps1:42
-msgid "Nesouhlasí záznam vlastnictví VM."
-msgstr ""
-
-#: proxmox/lab/create.py:47
-msgid "Nested AMD KVM není zapnuté."
-msgstr ""
-
-#: deployment/scaffold.py:30
+#: deployment/cli.py:365
 #, python-brace-format
-msgid "Neznámá konfigurace {name}. Dostupné konfigurace: {names}."
+msgid "Import: VMID {value1}, storage {value2}, bridge {value3}"
 msgstr ""
 
-#: deployment/campaign_host.py:17
-msgid "Neznámá operace kampaně."
+#: deployment/cli.py:141
+msgid "Include SSD erasure during RPi recovery"
 msgstr ""
 
-#: libvirt/create.sh:19
-#, c-format
-msgid "Neznámá volba: %s"
+#: rpi/install.py:90
+msgid "Include erasing unmounted partitions in the plan; only executed with --apply"
 msgstr ""
 
-#: deployment/messages.py:150
-#, python-brace-format
-msgid "Neznámé argumenty: {arguments}"
+#: deployment/cleanup.py:154
+msgid "Includes running and stopped VMs and their checkpoints; foreign disks are not deletion candidates."
 msgstr ""
 
-#: rpi/install.py:94
-msgid "Neznámý cíl RPi."
+#: rpi/install.py:23
+msgid "Incomplete RPi check response."
 msgstr ""
 
-#: rpi/recovery-test.py:34
-msgid "Neznámý cíl obnovy RPi."
-msgstr ""
-
-#: deployment/cli.py:298 deployment/cli.py:340
-#, python-brace-format
-msgid "Neznámý cíl. Dostupné cíle: {value1}"
-msgstr ""
-
-#: deployment/inspection.py:144
-#, python-brace-format
-msgid "Neznámý formát df: {line}"
-msgstr ""
-
-#: deployment/host_agent.py:187
-msgid "Neznámý výstup VBoxManage list vms."
-msgstr ""
-
-#: deployment/cleanup.py:69
-#, python-brace-format
-msgid "Neznámý řádek seznamu svazků: {line}"
+#: deployment/inspection.py:37
+msgid "Incomplete diagnostic response."
 msgstr ""
 
 #: deployment/check_images.py:39
 #, python-brace-format
-msgid "Neúplná extrakce {name}: {value2} bajtů místo {value3}."
+msgid "Incomplete extraction of {name}: {value2} bytes instead of {value3}."
 msgstr ""
 
-#: deployment/inspection.py:37
-msgid "Neúplná odpověď diagnostiky."
+#: libvirt/install.py:128
+msgid "Install only into the dedicated VM; without --apply, only check the plan."
 msgstr ""
 
-#: rpi/install.py:23
-msgid "Neúplná odpověď při kontrole RPi."
+#: hyperv/host.ps1:157
+msgid "Installation DVD does not match."
 msgstr ""
 
-#: deployment/exporter.py:92
-msgid "Nixberry: offline balíček\n\n1. Ověř kontrolní součty: sha256sum -c SHA256SUMS\n2. Postup přenosu a startu: recipe/README.md\n3. Cíl a parametry: manifest.json\n\nObraz obsahuje systém a jeho závislosti. VM disk startuje přímo;\nRPi SD je obnovovací prostředí s hotovým cílovým systémem.\nInstalované služby a aplikace mohou mít vlastní síťové nároky.\n"
+#: libvirt/create.sh:115
+msgid "Installation ISO started. The target NixOS is not installed yet."
 msgstr ""
 
-#: deployment/exporter.py:109
+#: deployment/guest-install.sh:15
+msgid "Installation VM UUID does not match."
+msgstr ""
+
+#: deployment/portable.py:207
+msgid "Installation VM shutdown failed; the ISO remains attached."
+msgstr ""
+
+#: hyperv/manage.py:206
+msgid "Installation and boot from VHDX verified. The VM remains running."
+msgstr ""
+
+#: deployment/updater.py:32
 #, python-brace-format
-msgid "Nixberry: offline instalace z ISO\n\n1. Ověř sha256sum -c SHA256SUMS.\n2. Vytvoř novou VM s UEFI, vypnutým Secure Boot a právě jedním prázdným diskem.\n   Parametry CPU, RAM, disk a síť jsou v manifest.json; cílový disk musí být {disk}.\n   Použij guest agenta a řadič odpovídající platformě popsané v recipe/README.md.\n3. Připoj {filename} a spusť z něj VM. Systém i disko jsou již součástí ISO.\n4. Přenes INSTALL-ISO.sh do instalační VM přes SSH nebo další médium.\n   Nejdřív ověř identitu VM v konzoli hypervizoru a její skutečné DMI UUID:\n   cat /sys/class/dmi/id/product_uuid\n5. Kontrola bez zápisu (UUID nahraď ověřenou hodnotou):\n   bash INSTALL-ISO.sh dry-run UUID {system} {disko} {bytes} {profile} {disk}\n   Po kontrole zopakuj stejný příkaz s apply místo dry-run.\n   Instalace odmítá disk s oddíly nebo signaturami; existující systém nepřeinstaluje.\n6. Korektně vypni VM, odpoj ISO a spusť ji z disku.\n   Ověř síť a readlink -f /run/current-system proti manifest.json.\n\nSíť hypervizoru připravuje provozovatel. Síť systému je podle manifest.json.\n"
+msgid "Installation check failed: {check}"
 msgstr ""
 
-#: libvirt/policy.py:26
-msgid "Nová VM musí mít deklarovaného vlastníka svázaného s UUID."
+#: deployment/portable.py:210
+msgid "Installation completed. Detaching the ISO and booting the system from disk…"
 msgstr ""
 
-#: deployment/cli.py:208
-msgid "Nový adresář offline balíčku; relativní cesta se počítá od pracovního adresáře"
+#: rpi/guest-install.sh:63
+msgid "Installation completed. The RPi remains in the installation environment; reboot and SD removal are separate steps."
 msgstr ""
 
-#: deployment/diffing.py:96
+#: libvirt/guest-install.sh:40
+msgid "Installation completed. The VM can be shut down gracefully and the ISO detached."
+msgstr ""
+
+#: libvirt/install.py:184
+msgid "Installation completed; gracefully shutting down the test VM."
+msgstr ""
+
+#: deployment/portable.py:197
+msgid "Installation environment check failed; the disk was not changed."
+msgstr ""
+
+#: deployment/portable.py:204
+msgid "Installation failed; the ISO remains attached and no automatic retry is performed."
+msgstr ""
+
+#: rpi/install.py:113
+msgid "Installation plan verified; nothing was changed."
+msgstr ""
+
+#: hyperv/guest-install.sh:36
+msgid "Installed profile does not match."
+msgstr ""
+
+#: libvirt/install.py:201
 #, python-brace-format
-msgid "Nový recept: {system}"
+msgid "Installed system check failed: {value1}"
 msgstr ""
 
-#: deployment/campaign.py:314
-msgid "Nový testovací cíl už existuje; nic nepřebírám."
+#: deployment/guest-install.sh:21
+msgid "Installer disko does not match."
 msgstr ""
 
-#: deployment/diffing.py:41
+#: deployment/guest-install.sh:18
+msgid "Installer profile does not match."
+msgstr ""
+
+#: deployment/guest-install.sh:19
+msgid "Installer target disk does not match."
+msgstr ""
+
+#: deployment/guest-install.sh:20
+msgid "Installer target system does not match."
+msgstr ""
+
+#: hyperv/policy.py:18
+msgid "Invalid Hyper-V VM MAC address."
+msgstr ""
+
+#: hyperv/policy.py:24
 #, python-brace-format
-msgid "Novější generace: {path}"
+msgid "Invalid Hyper-V capacity: {key}"
 msgstr ""
 
-#: deployment/campaign.py:280
-msgid "Náhled aktualizace změnil běžící systém."
+#: deployment/host_agent.py:73 hyperv/host.ps1:13
+msgid "Invalid MAC address."
 msgstr ""
 
-#: deployment/campaign.py:366
-msgid "Náhled exportu zapsal balíček."
+#: deployment/host_agent.py:88
+msgid "Invalid Proxmox ISO storage."
 msgstr ""
 
-#: deployment/cleanup.py:131
-msgid "Náhled nic nemaže. Vypnutí ani stáří neprokazuje nepoužívání. Velikosti sdílených disků a generací nesčítej jako uvolnitelné místo."
+#: deployment/host_agent.py:86
+#, python-brace-format
+msgid "Invalid Proxmox resource: {key}"
 msgstr ""
 
-#: deployment/runtime.py:125
-msgid "Název VM není jednoznačný."
+#: deployment/runtime.py:51
+msgid "Invalid SSH host or port (1–65535)."
 msgstr ""
 
-#: libvirt/create.sh:47
-msgid "Název disku neodpovídá testovací VM."
+#: deployment/runtime.py:61
+msgid "Invalid SSH target DNS name."
 msgstr ""
 
-#: deployment/host_agent.py:213
-msgid "Název nebo UUID VirtualBox VM je obsazené."
+#: deployment/runtime.py:56
+msgid "Invalid SSH target IPv4 address."
 msgstr ""
 
-#: libvirt/policy.py:28
-msgid "Název svazku musí odpovídat deklarované VM."
+#: deployment/host_agent.py:71
+msgid "Invalid UUID or owner marker."
+msgstr ""
+
+#: hyperv/host.ps1:12
+msgid "Invalid VM capacity."
+msgstr ""
+
+#: deployment/host_agent.py:68
+msgid "Invalid VM name."
+msgstr ""
+
+#: hyperv/host.ps1:10
+msgid "Invalid VM owner."
+msgstr ""
+
+#: deployment/host_agent.py:83
+msgid "Invalid VMID."
+msgstr ""
+
+#: deployment/host_agent.py:80
+#, python-brace-format
+msgid "Invalid capacity: {key}"
+msgstr ""
+
+#: deployment/inspection.py:28
+msgid "Invalid check key."
+msgstr ""
+
+#: deployment/check_images.py:27
+msgid "Invalid format, capacity or unexpected backing file."
+msgstr ""
+
+#: deployment/host_agent.py:66
+msgid "Invalid host hostname."
+msgstr ""
+
+#: deployment/runtime.py:88
+msgid "Invalid hostKeyAlias for SSH key verification."
+msgstr ""
+
+#: deployment/guest-install.sh:12
+msgid "Invalid installation mode."
+msgstr ""
+
+#: deployment/inspection.py:161
+msgid "Invalid ip route response."
+msgstr ""
+
+#: deployment/inspection.py:183
+msgid "Invalid or incomplete generation inventory."
+msgstr ""
+
+#: deployment/host_agent.py:95
+msgid "Invalid storage path."
+msgstr ""
+
+#: deployment/diffing.py:53
+msgid "Invalid target name for comparison."
+msgstr ""
+
+#: deployment/updater.py:88
+msgid "Invalid target name for update."
+msgstr ""
+
+#: deployment/campaign.py:155
+msgid "Invalid test host name."
+msgstr ""
+
+#: hyperv/host.ps1:102 hyperv/host.ps1:114
+msgid "Invalid upload identifier."
+msgstr ""
+
+#: deployment/host_agent.py:658
+msgid "Inventory is read-only. VMware: running VMs and files in the dedicated directory, not all stopped VMs on the host. unknown is not a deletion candidate. Snapshots and saved states in each VM directory are also protected. On Windows, allocation is read through GetCompressedFileSizeW; logicalBytes is the file length."
+msgstr ""
+
+#: deployment/cli.py:371
+#, python-brace-format
+msgid "Key verification: strict known_hosts{value1}{value2}"
+msgstr ""
+
+#: proxmox/lab/configure.sh:5
+msgid "Lab configuration requires root and the expected UUID."
+msgstr ""
+
+#: proxmox/lab/create.py:54
+msgid "Lab storage must not traverse a symbolic link."
+msgstr ""
+
+#: deployment/cleanup.py:26
+msgid "Libvirt cleanup only supports local qemu:///system."
+msgstr ""
+
+#: libvirt/create.sh:105
+#, c-format
+msgid "Libvirt created the disk at a different path: %s"
+msgstr ""
+
+#: deployment/cli.py:381
+#, python-brace-format
+msgid "Live status: {command}"
+msgstr ""
+
+#: rpi/recovery-test.py:30
+msgid "Load and unload the kernel without rebooting"
+msgstr ""
+
+#: rpi/recovery-test.py:77
+msgid "Loading and unloading verified. The RPi was not rebooted."
+msgstr ""
+
+#: libvirt/install.py:55
+msgid "MAC address does not match."
+msgstr ""
+
+#: deployment/cli.py:142
+msgid "Machine-readable output for inventory, diagnostics, verify and export"
+msgstr ""
+
+#: deployment/host_agent.py:422 deployment/host_agent.py:686
+msgid "Managed ISO checksum does not match."
+msgstr ""
+
+#: hyperv/host.ps1:120
+msgid "Media hash does not match."
+msgstr ""
+
+#: hyperv/manage.py:140
+msgid "Media transfer failed."
+msgstr ""
+
+#: rpi/recovery-test.py:60
+#, python-brace-format
+msgid "MemAvailable={available}; conservative requirement={needed}"
+msgstr ""
+
+#: libvirt/create.sh:96
+#, c-format
+msgid "Method: %s; ISO: %s; disk image: %s"
+msgstr ""
+
+#: deployment/compile_locales.py:42
+#, python-brace-format
+msgid "Missing Czech translations: {messages}"
+msgstr ""
+
+#: libvirt/create.sh:94
+#, c-format
+msgid "Mode: %s; URI: %s; VM: %s"
+msgstr ""
+
+#: deployment/host_agent.py:75
+msgid "Multicast MAC addresses are not allowed."
+msgstr ""
+
+#: libvirt/reset.py:104
+msgid "NVRAM still exists after removal."
 msgstr ""
 
 #: rpi/install.py:84
-msgid "Název z rpi/targets/default.nix"
+msgid "Name from rpi/targets/default.nix"
+msgstr ""
+
+#: proxmox/lab/create.py:47
+msgid "Nested AMD KVM is not enabled."
+msgstr ""
+
+#: libvirt/install.py:56
+msgid "Network does not match."
+msgstr ""
+
+#: deployment/cli.py:376
+msgid "Network: DHCP"
+msgstr ""
+
+#: deployment/cli.py:374
+#, python-brace-format
+msgid "Network: {value1}, gateway {value2}, DNS {value3}"
+msgstr ""
+
+#: deployment/cli.py:139
+msgid "New offline bundle directory; relative paths are resolved from the working directory"
+msgstr ""
+
+#: deployment/diffing.py:95
+#, python-brace-format
+msgid "New recipe: {system}"
+msgstr ""
+
+#: deployment/diffing.py:40
+#, python-brace-format
+msgid "Newer generation: {path}"
+msgstr ""
+
+#: deployment/cli.py:214 deployment/cli.py:216
+#, python-brace-format
+msgid "Next step: {command}"
+msgstr ""
+
+#: deployment/exporter.py:103
+#, python-brace-format
+msgid "NixBerry: offline ISO installation\n\n1. Verify sha256sum -c SHA256SUMS.\n2. Create a new VM with UEFI, Secure Boot disabled and exactly one blank disk.\n   CPU, RAM, disk and network parameters are in manifest.json; the target disk must be {disk}.\n   Use the guest agent and controller for the platform described in recipe/README.md.\n3. Attach {filename} and boot the VM from it. The ISO already contains the system and disko.\n4. Transfer INSTALL-ISO.sh to the installation VM over SSH or another medium.\n   First verify the VM identity in the hypervisor console and its actual DMI UUID:\n   cat /sys/class/dmi/id/product_uuid\n5. Read-only check (replace UUID with the verified value):\n   bash INSTALL-ISO.sh dry-run UUID {system} {disko} {bytes} {profile} {disk}\n   After checking, repeat the same command with apply instead of dry-run.\n   Installation refuses disks with partitions or signatures; it does not reinstall an existing system.\n6. Shut down the VM gracefully, detach the ISO and boot from disk.\n   Verify networking and readlink -f /run/current-system against manifest.json.\n\nThe operator prepares the hypervisor network. System networking follows manifest.json.\n"
+msgstr ""
+
+#: deployment/exporter.py:92
+msgid "NixBerry: offline bundle\n\n1. Verify checksums: sha256sum -c SHA256SUMS\n2. Transfer and boot instructions: recipe/README.md\n3. Target and parameters: manifest.json\n\nThe image contains the system and its dependencies. VM disks boot directly;\nthe RPi SD card is a recovery environment with the prebuilt target system.\nInstalled services and applications may have their own network requirements.\n"
+msgstr ""
+
+#: deployment/diffing.py:63
+msgid "No connection or build. Comparison does not change the remote system."
+msgstr ""
+
+#: deployment/inspection.py:159
+msgid "No default route; the network may be intentionally isolated."
+msgstr ""
+
+#: deployment/inspection.py:106
+msgid "No failed units."
+msgstr ""
+
+#: deployment/cli.py:260
+msgid "No targets are declared. Add a host and instance or an RPi target."
+msgstr ""
+
+#: rpi/recovery-test.py:58
+msgid "Not enough free RAM for the loading check."
+msgstr ""
+
+#: hyperv/host.ps1:47
+msgid "Not enough free space."
 msgstr ""
 
 #: deployment/check_inventory.py:201
-msgid "OK empty CLI: build, list a status bez hostitelů a cílů"
+msgid "OK empty CLI: build, list and status without hosts or targets"
 msgstr ""
 
 #: deployment/check_inventory.py:192
-msgid "OK missing-host: srozumitelná chyba konfigurace"
+msgid "OK missing-host: clear configuration error"
 msgstr ""
 
 #: deployment/check_inventory.py:180
@@ -1750,625 +1176,238 @@ msgstr ""
 msgid "OK {case}: {value2}"
 msgstr ""
 
-#: rpi/local-install.py:15
-msgid "Obnova ze samotné plné SD; bez internetu, SSH nebo sestavování na dalším počítači."
-msgstr ""
-
-#: deployment/cli.py:95
-msgid "Obraz"
-msgstr ""
-
-#: deployment/cli.py:66 deployment/cli.py:95
-msgid "Ochrana"
-msgstr ""
-
-#: deployment/check_images.py:56
-msgid "Oddíl přesahuje disk."
-msgstr ""
-
-#: deployment/host_agent.py:236
-msgid "Odpovídající VMware VM už běží."
-msgstr ""
-
-#: libvirt/reset.py:89
+#: deployment/cli.py:304
 #, python-brace-format
-msgid "Odstranit pouze: {disk} a {nvram}"
+msgid "Offline bundle ready: {path}"
 msgstr ""
 
-#: libvirt/reset.py:105
-msgid "Odstraněna pouze vyhrazená testovací VM, její disk a NVRAM."
-msgstr ""
-
-#: deployment/reset.py:27
-msgid "Odstranění Hyper-V VM se nepodařilo potvrdit; zkontroluj status a stav úložiště."
-msgstr ""
-
-#: deployment/host_agent.py:912
-msgid "Odstranění VM nebo jejího adresáře se nepodařilo potvrdit."
-msgstr ""
-
-#: hyperv/reset.ps1:92
-msgid "Odstranění VM se nepodařilo potvrdit."
-msgstr ""
-
-#: deployment/cli.py:358
-msgid "Odstranění není povolené. Nastav allowReset = true; v deklaraci této VM v instances/, potom zkontroluj reset CÍL bez --apply."
-msgstr ""
-
-#: deployment/reset.py:48
-msgid "Odstranění ověřené VM dokončeno. Instanční deklarace zůstala zachovaná."
-msgstr ""
-
-#: libvirt/reset.py:45
-msgid "Odstranění pouze vyhrazené testovací VM a jejího disku; výchozí režim nic nemění."
-msgstr ""
-
-#: libvirt/reset.py:52
-msgid "Odstranění této instance není deklarativně povolené."
-msgstr ""
-
-#: deployment/cli.py:373
-#, python-brace-format
-msgid "Offline balíček připravený: {path}"
-msgstr ""
-
-#: deployment/portable.py:52
-msgid "Offline cíl nemá připojeného hostitele; použij show nebo export."
-msgstr ""
-
-#: deployment/cli.py:282
-msgid "Offline deklarace: před exportem uprav kapacitu a parametry nasazení v souboru."
-msgstr ""
-
-#: deployment/cli.py:204
-msgid "Offline příprava libovolné VM bez hypervizoru; nelze kombinovat s --host"
+#: deployment/cli.py:213
+msgid "Offline declaration: edit capacity and deployment parameters in the file before export."
 msgstr ""
 
 #: deployment/scaffold.py:37
-msgid "Offline přípravu nelze kombinovat s --host."
+msgid "Offline preparation cannot be combined with --host."
 msgstr ""
 
-#: deployment/campaign.py:341
-msgid "Opakované vytvoření bylo nesprávně povoleno."
+#: deployment/cli.py:138
+msgid "One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"
 msgstr ""
 
-#: hyperv/manage.py:229
-msgid "Operace Hyper-V překročila časový limit. Před opakováním zkontroluj status a probe cíle."
+#: libvirt/create.sh:45 libvirt/policy.py:20
+msgid "Only local qemu:///system is allowed."
 msgstr ""
 
-#: deployment/campaign_host.py:12
-msgid "Operace kampaně vyžaduje vlastní testovací jméno."
+#: hyperv/probe.py:56
+msgid "Only report selected VM status without inspecting disks or snapshots"
 msgstr ""
 
-#: hyperv/manage.py:110
-msgid "Operace na Windows selhala."
+#: libvirt/reset.py:105
+msgid "Only the dedicated test VM, its disk and NVRAM were removed."
 msgstr ""
 
-#: deployment/cli.py:252
-msgid "Operace není dostupná. Pro správu systému nastav access nebo použij --ssh root@HOST:PORT; ovládání hypervizoru vyžaduje deklarovaný host."
+#: rpi/install.py:88
+msgid "Only transfer outputs to the Nix store, without installation"
 msgstr ""
 
-#: deployment/cli.py:470
+#: proxmox/lab/create.py:145
+msgid "Only verify the plan without writing"
+msgstr ""
+
+#: deployment/cli.py:183
+msgid "Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."
+msgstr ""
+
+#: deployment/cli.py:400
 #, python-brace-format
-msgid "Operace {action} pro {value2} není implementovaná. Dostupné: {value3}"
+msgid "Operation {action} is not implemented for {value2}. Available: {value3}"
 msgstr ""
 
-#: deployment/cli.py:447
+#: deployment/cli.py:377
 #, python-brace-format
-msgid "Operace: {value1}"
+msgid "Operation: {value1}"
 msgstr ""
 
-#: deployment/dispatch.py:25
-msgid "Operaci spusť přes spouštěč nixberry s úplným projektovým receptem."
-msgstr ""
-
-#: deployment/host_agent.py:106
-msgid "Operační systém hostitele neodpovídá deklaraci."
-msgstr ""
-
-#: deployment/check_inventory.py:191
-msgid "Osiřelá deklarace hostitele nebyla odmítnutá."
-msgstr ""
-
-#: deployment/inspection.py:67
-msgid "Ověř SSH klíč a známý klíč hostitele; při síťové chybě také kabel, port a MAC v deklaraci. Diagnostika neskenuje síť ani neobchází kontrolu identity."
-msgstr ""
-
-#: deployment/guest-install.sh:27
-msgid "Ověřeno instalační ISO, UUID, profil, UEFI, cílový systém a prázdný disk."
-msgstr ""
-
-#: hyperv/guest-install.sh:30
-msgid "Ověřeno: Hyper-V UUID, UEFI, manifest a prázdný disk."
-msgstr ""
-
-#: libvirt/guest-install.sh:29
-msgid "Ověřeno: instalační VM, UUID, UEFI, připnuté výstupy a prázdný /dev/vda."
-msgstr ""
-
-#: libvirt/install.py:203
-msgid "Ověřeno: start z ext4 disku bez ISO, UEFI, přesný systém a SSH."
-msgstr ""
-
-#: deployment/cli.py:394 deployment/updater.py:159
+#: deployment/messages.py:155
 #, python-brace-format
-msgid "Ověřeno: {name}, {hostname}, systém z {root}."
+msgid "Option {option} does not accept a value {value}."
 msgstr ""
 
-#: deployment/cli.py:386
+#: deployment/messages.py:153
 #, python-brace-format
-msgid "Ověření cíle {name} neprošlo: {error}\nDiagnostika: {doctor}\nPorovnání s receptem: {diff}"
+msgid "Option {option} requires a value."
 msgstr ""
 
-#: deployment/cli.py:441
+#: deployment/messages.py:143
+msgid "Options"
+msgstr ""
+
+#: deployment/messages.py:157
 #, python-brace-format
-msgid "Ověření klíče: striktní known_hosts{value1}{value2}"
+msgid "Options {option} and {other} cannot be combined."
 msgstr ""
 
-#: deployment/portable.py:134
-msgid "Ověřuji nepřítomnost cíle a prostředky hostitele…"
+#: rpi/install.py:130
+msgid "Outputs transferred and verified. Partitions, the active system and RPi boot state were not changed."
 msgstr ""
 
-#: libvirt/provision.py:26
-msgid "Ověřuji připravenost VM pro dokončení zvolené metody nasazení."
+#: hyperv/host.ps1:55
+msgid "Ownership or media does not match."
 msgstr ""
 
-#: deployment/reset.py:41
-msgid "Ověřuji vlastníka, disky, snapshoty a stav VM před odstraněním…"
+#: deployment/inspection.py:44
+msgid "Part of the diagnostic response is missing."
 msgstr ""
 
-#: rpi/install.py:71
-msgid "Označení cílových oddílů už používá připojený disk."
-msgstr ""
-
-#: rpi/guest-install.sh:39
-msgid "Označení oddílu používá jiný disk."
-msgstr ""
-
-#: rpi/guest-install.sh:37
-msgid "Označení oddílu už používá jiný disk."
-msgstr ""
-
-#: deployment/check_images.py:61
-msgid "Očekávám právě jeden ESP a jeden linuxový oddíl."
-msgstr ""
-
-#: deployment/exporter.py:130 deployment/exporter.py:157
-#, python-brace-format
-msgid "Pevná IP: {address}\nBrána: {gateway}\nDNS: {dns}\n"
-msgstr ""
-
-#: deployment/cli.py:331
-msgid "Platforma"
-msgstr ""
-
-#: deployment/cli.py:273
-#, python-brace-format
-msgid "Plán deklarace: {path}"
-msgstr ""
-
-#: libvirt/reset.py:91
-msgid "Plán odstranění ověřený. Nic nebylo změněné."
-msgstr ""
-
-#: deployment/reset.py:50
-msgid "Plán odstranění ověřený; nic se nevypínalo ani nemazalo. S --apply se VM korektně vypne a po opětovné kontrole odstraní."
-msgstr ""
-
-#: rpi/recovery-test.py:62
-msgid "Plán ověřený. Bez kopírování, načtení kernelu a restartu."
-msgstr ""
-
-#: libvirt/install.py:174
-msgid "Plán ověřený. Disk nebyl změněný, VM nebyla vypnutá."
+#: rpi/guest-install.sh:45
+msgid "Pinned installation manifest does not match."
 msgstr ""
 
 #: hyperv/manage.py:131
 #, python-brace-format
-msgid "Plán ověřený. Metoda {method}; bez přenosu média, vytvoření disku a VM."
+msgid "Plan verified. Method {method}; no media transfer, disk creation or VM creation."
+msgstr ""
+
+#: rpi/recovery-test.py:62
+msgid "Plan verified. No copying, kernel loading or reboot."
 msgstr ""
 
 #: rpi/local-install.py:37
 #, python-brace-format
-msgid "Plán ověřený. Nic se nezměnilo. Vymazání SSD: {value1}"
+msgid "Plan verified. Nothing changed. Erase SSD: {value1}"
 msgstr ""
 
-#: rpi/install.py:115
-msgid "Plán zahrnuje smazání existujících oddílů; provede se pouze s --apply."
-msgstr ""
-
-#: deployment/campaign.py:318
-msgid "Plán změnil stav hypervizoru."
-msgstr ""
-
-#: deployment/updater.py:96
-msgid "Plán: ověřit běžící instalaci → sestavit → přenést přes SSH → aktivovat → ověřit."
+#: libvirt/install.py:174
+msgid "Plan verified. The disk was not changed and the VM was not shut down."
 msgstr ""
 
 #: deployment/diffing.py:62
-msgid "Plán: ověřit instalaci → porovnat dvě nejvyšší dochované generace."
+msgid "Plan: verify installation → build recipe → retrieve missing old paths → nvd diff."
 msgstr ""
 
-#: deployment/diffing.py:63
-msgid "Plán: ověřit instalaci → sestavit recept → stáhnout chybějící staré cesty → nvd diff."
+#: deployment/diffing.py:61
+msgid "Plan: verify installation → compare the two highest retained generations."
+msgstr ""
+
+#: deployment/updater.py:96
+msgid "Plan: verify the running installation → build → transfer over SSH → activate → verify."
 msgstr ""
 
 #: proxmox/lab/create.py:65
 #, python-brace-format
-msgid "Plán: {name}, 6 CPU, 12 GiB RAM, disky 32 + 64 GiB, UEFI a samostatná NAT síť."
+msgid "Plan: {name}, 6 CPUs, 12 GiB RAM, 32 + 64 GiB disks, UEFI and a dedicated NAT network."
 msgstr ""
 
-#: deployment/guest-install.sh:34 libvirt/guest-install.sh:37
-msgid "Po instalaci nesouhlasí systémový profil."
+#: deployment/cli.py:262
+msgid "Platform"
 msgstr ""
 
-#: deployment/cli.py:286
+#: deployment/cli.py:355
 #, python-brace-format
-msgid "Po kontrole: {command}"
+msgid "Platform profile: {value1}"
 msgstr ""
 
-#: hyperv/reset.ps1:93
-msgid "Po odstranění je znovu přítomná VM stejného jména; adresář ponechávám."
+#: deployment/cli.py:135
+msgid "Prepare any VM offline without a hypervisor; cannot be combined with --host"
 msgstr ""
 
-#: deployment/reset.py:43
-msgid "Po ověření korektně vypnu běžící VM a odstraním pouze její vlastní prostředky."
+#: proxmox/lab/finish.py:14
+msgid "Prepare only the data disk and staging directory of an installed Proxmox lab."
 msgstr ""
 
-#: deployment/updater.py:165
-#, python-brace-format
-msgid "Po startu: {command}"
-msgstr ""
-
-#: deployment/campaign.py:471
-msgid "Po úklidu cíl není nepřítomný."
-msgstr ""
-
-#: deployment/cli.py:310
-msgid "Podrobnosti"
-msgstr ""
-
-#: deployment/cli.py:336
-#, python-brace-format
-msgid "Podrobnosti cíle: {command}"
-msgstr ""
-
-#: proxmox/lab/create.py:62
-msgid "Podsíť labu koliduje s existující trasou."
-msgstr ""
-
-#: deployment/diffing.py:56
-msgid "Porovnání této platformy není implementované."
-msgstr ""
-
-#: deployment/diffing.py:60
-#, python-brace-format
-msgid "Porovnání: {name} ({backend})"
-msgstr ""
-
-#: deployment/cli.py:66 deployment/cli.py:78 deployment/cli.py:95
-msgid "Posouzení"
-msgstr ""
-
-#: proxmox/lab/create.py:145
-msgid "Pouze ověřit plán bez zápisu"
-msgstr ""
-
-#: rpi/install.py:88
-msgid "Pouze předat výstupy do Nix store, bez instalace"
-msgstr ""
-
-#: hyperv/probe.py:56
-msgid "Pouze stav vybraných VM bez průzkumu disků a snapshotů"
-msgstr ""
-
-#: deployment/cleanup.py:123
-msgid "Použití mimo tento adresář nelze z náhledu prokázat."
-msgstr ""
-
-#: deployment/messages.py:132
-msgid "Použití: "
-msgstr ""
-
-#: deployment/cli.py:367
-msgid "Použití: nixberry export CÍL --output NOVÝ_ADRESÁŘ."
-msgstr ""
-
-#: libvirt/create.sh:15
-msgid "Použití: nixberry-vm-create [--dry-run|--apply]"
-msgstr ""
-
-#: deployment/cli.py:427
-#, python-brace-format
-msgid "Povolení odstranění: {value}"
-msgstr ""
-
-#: libvirt/create.sh:45 libvirt/policy.py:20
-msgid "Povolený je pouze místní qemu:///system."
-msgstr ""
-
-#: deployment/exporter.py:180
-msgid "Počítám kontrolní součty balíčku…"
-msgstr ""
-
-#: deployment/campaign.py:559
-msgid "Pracovní deklarace předaného balíčku nesmí být symbolický odkaz."
-msgstr ""
-
-#: deployment/campaign.py:780
-msgid "Pro běh kampaně zadej --run-root mimo recept."
-msgstr ""
-
-#: deployment/host_agent.py:955
-msgid "Pro instalaci z ISO chybí vmware-vdiskmanager vedle vmrun."
-msgstr ""
-
-#: deployment/diffing.py:35
-#, python-brace-format
-msgid "Pro porovnání jsou potřeba dvě dochované systémové generace. Pro porovnání s receptem použij {command}."
-msgstr ""
-
-#: deployment/runtime.py:222
-msgid "Pro tento typ hostitele není čtení stavu implementované."
-msgstr ""
-
-#: deployment/cli.py:425
-#, python-brace-format
-msgid "Profil platformy: {value1}"
-msgstr ""
-
-#: deployment/updater.py:104
-#, python-brace-format
-msgid "Provedení: {command}"
-msgstr ""
-
-#: deployment/campaign.py:420
-#, python-brace-format
-msgid "Provozní cíl má nálezy: {checks}. Kontroly byly pouze pro čtení."
-msgstr ""
-
-#: deployment/cli.py:215
-msgid "Provést změny u update a operací nasazení/obnovy"
-msgstr ""
-
-#: deployment/host_agent.py:831
-msgid "Proxmox VM je zamčená, chráněná nebo je šablonou; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:850
-msgid "Proxmox VM má další disk nebo cizí médium; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:408
-msgid "Proxmox VM už existuje."
-msgstr ""
-
-#: deployment/host_agent.py:227
-msgid "Proxmox bridge neexistuje."
-msgstr ""
-
-#: deployment/host_agent.py:295
-msgid "Proxmox konfigurace neodpovídá vlastníkovi nebo hardwaru."
-msgstr ""
-
-#: proxmox/lab/configure.sh:46
-msgid "Proxmox lab má připravené úložiště lab-vm, bridge vmbr0 a KVM."
-msgstr ""
-
-#: proxmox/lab/create.py:49
-msgid "Proxmox lab už existuje; nic nepřepisuji ani nerestartuji."
-msgstr ""
-
-#: proxmox/lab/configure.sh:20
-msgid "Proxmox nemá dostupné zařízení KVM."
-msgstr ""
-
-#: proxmox/lab/configure.sh:44
-msgid "Proxmox nemá očekávaný bridge vmbr0."
-msgstr ""
-
-#: deployment/host_agent.py:301
-msgid "Proxmox systémový disk byl změněn mimo deklarované vytvoření."
-msgstr ""
-
-#: deployment/host_agent.py:434
-msgid "Proxmox vytvořil disk mimo deklarované úložiště."
-msgstr ""
-
-#: deployment/host_agent.py:225
-msgid "Proxmox úložiště nemá místo pro deklarovanou kapacitu disku a EFI."
-msgstr ""
-
-#: deployment/host_agent.py:222
-msgid "Proxmox úložiště není aktivní."
-msgstr ""
-
-#: deployment/host_agent.py:361
-#, python-brace-format
-msgid "Proxmox úložiště {storage} není povolené pro ISO."
-msgstr ""
-
-#: deployment/host_agent.py:583
-msgid "Proxmox: VM a snapshoty uzlu, obrazy zadaného úložiště. Blokové/thin úložiště nemusí poskytovat fyzickou alokaci; null není nula. Sdílení úložiště s dalšími uzly brání potvrzení nepoužívání osiřelých svazků."
-msgstr ""
-
-#: hyperv/probe.py:83
-#, python-brace-format
-msgid "Průzkum Windows a Hyper-V nedoběhl do {seconds} sekund; zkontroluj dostupnost hostitele."
-msgstr ""
-
-#: hyperv/probe.py:55
-msgid "Průzkum Windows a Hyper-V přes SSH, bez změn hostitele a virtuálních strojů."
-msgstr ""
-
-#: hyperv/probe.py:73
-msgid "Průzkum Windows selhal."
-msgstr ""
-
-#: deployment/cli.py:198
-msgid "PŘÍKAZ"
-msgstr ""
-
-#: deployment/cli.py:375
-msgid "Před přenosem ověř SHA256SUMS; postup pro zvolené médium je v README.txt."
-msgstr ""
-
-#: deployment/cli.py:280
-msgid "Před sestavením zkontroluj network: DHCP, nebo mode = \"static\" s address, gateway a dns."
-msgstr ""
-
-#: deployment/campaign.py:697
-msgid "Předaná VM nemá ověřenou adresu."
-msgstr ""
-
-#: deployment/campaign.py:743
-msgid "Předaná VM nespustila ověřené SSH v časovém limitu."
-msgstr ""
-
-#: deployment/diffing.py:40
-#, python-brace-format
-msgid "Předchozí generace: {path}"
-msgstr ""
-
-#: deployment/exporter.py:160
-#, python-brace-format
-msgid "Předání systémového disku pro VM{vmid}\n\nObraz: {filename}\nHostname: {hostname}\n{network}\n1. Ověř sha256sum -c SHA256SUMS.\n2. Připrav vypnutou VM s UEFI/OVMF a vypnutým Secure Boot.\n   Doporučená kapacita: {vcpus} CPU, {memory} MiB RAM, disk {disk} GiB.\n3. Importuj QCOW2 do zvoleného úložiště a připoj jej jako virtio0 nebo scsi0 (VirtIO SCSI).\n   Nastav bootování z připojeného disku a povol QEMU Guest Agent.\n4. Připoj jedinou síťovou kartu VirtIO do dohodnuté sítě a spusť VM.\n   Pro pevnou IP musí připojená síť odpovídat uvedené podsíti a bráně.\n5. Z konzole ověř ip -4 address, ip route a resolvectl status.\n   Systém: readlink -f /run/current-system; očekávaná hodnota je v manifest.json.\n\nMAC a UUID může provozovatel přidělit vlastní; systémová síť není vázaná na MAC.\nRuční import nepřebírá značky vlastnictví požadované správou přes hypervizor.\nSamotný server lze spravovat přes access v deklaraci nebo nixberry update CIL --ssh root@HOST:PORT --apply.\nPřístup přes SSH používá klíče z přiloženého receptu, heslo je vypnuté.\nObraz dodává systém; konfiguraci hostitele, bridge a firewall spravuje provozovatel.\n"
-msgstr ""
-
-#: deployment/exporter.py:133
-#, python-brace-format
-msgid "Předání systémového disku pro VirtualBox na Linuxu i Windows\n\nObraz: {filename}\nHostname: {hostname}\n{network}\n1. Ověř SHA256SUMS před importem. Na Linuxu: sha256sum -c SHA256SUMS.\n   Ve Windows porovnej Get-FileHash -Algorithm SHA256 '{filename}' s řádkem v SHA256SUMS.\n2. Vytvoř novou VM typu Linux (64-bit), přeskoč bezobslužnou instalaci a nepřipojuj ISO.\n   Kapacita: {vcpus} CPU, {memory} MiB RAM. Zapni UEFI, Secure Boot ponech vypnutý.\n3. VDI nejprve zkopíruj mimo balíček; k řadiči SATA připoj tento existující disk.\n   Obraz má kapacitu {disk} GiB a obsahuje nainstalovaný systém.\n   Kopii pro další VM vytvoř pomocí VBoxManage clonemedium disk, aby měla vlastní UUID média.\n4. Připoj jediný síťový adaptér Intel PRO/1000 MT Desktop do zvolené sítě.\n   Pro DHCP použij Bridged Adapter s DHCP nebo NAT.\n   Pro pevnou IP musí síť odpovídat uvedené podsíti a bráně.\n5. Spusť VM z disku a z konzole ověř ip -4 address, ip route a systemctl status virtualbox.\n   Očekávaný systém (readlink -f /run/current-system) je v manifest.json.\n\nPři NAT nastav v prostředí provozovatele přesměrování SSH portu.\nUUID a MAC VM může provozovatel přidělit vlastní; síť není vázaná na MAC.\nRuční import nepřebírá značky vlastníka automatické správy hypervizoru.\nServer spravuj přes access v offline deklaraci nebo --ssh root@HOST:PORT.\nSSH přijímá klíče z receptu; heslo je vypnuté.\n"
-msgstr ""
-
-#: hyperv/manage.py:140
-msgid "Přenos média selhal."
-msgstr ""
-
-#: deployment/host_agent.py:990
-msgid "Přenos obrazu je neúplný nebo poškozený."
-msgstr ""
-
-#: deployment/host_agent.py:986
-msgid "Přenos překročil deklarovanou délku."
-msgstr ""
-
-#: deployment/portable.py:139
-#, python-brace-format
-msgid "Přenáším a ověřuji instalační médium; metoda {method}…"
-msgstr ""
-
-#: deployment/updater.py:122
-#, python-brace-format
-msgid "Přenáším systém na {host}…"
-msgstr ""
-
-#: hyperv/manage.py:137
-#, python-brace-format
-msgid "Přenáším {bytes} bajtů média na Windows; SHA256={sha256}"
-msgstr ""
-
-#: deployment/cli.py:460
-#, python-brace-format
-msgid "Připojuji: {command}"
-msgstr ""
-
-#: proxmox/lab/create.py:101
-msgid "Připravené ISO už existuje; nic nepřepisuji."
+#: rpi/install.py:83
+msgid "Prepare or cleanly install a selected RPi5 from pinned declarations."
 msgstr ""
 
 #: proxmox/lab/finish.py:15
-msgid "Připravit datový disk pouze ověřeného nového labu"
+msgid "Prepare the data disk only for a verified new lab"
 msgstr ""
 
 #: proxmox/lab/create.py:102
-msgid "Připravuji automatickou instalaci pouze na nový systémový disk VM…"
+msgid "Preparing automatic installation only onto the new VM system disk…"
+msgstr ""
+
+#: proxmox/lab/configure.sh:28
+msgid "Preparing the blank lab data disk as LVM thin storage…"
 msgstr ""
 
 #: deployment/exporter.py:39
 #, python-brace-format
-msgid "Připravuji offline balíček cíle {target} do {path}."
+msgid "Preparing the offline bundle for target {target} in {path}."
 msgstr ""
 
-#: proxmox/lab/configure.sh:28
-msgid "Připravuji prázdný datový disk labu jako LVM thin úložiště…"
-msgstr ""
-
-#: proxmox/lab/finish.py:14
-msgid "Připraví pouze datový disk a staging již nainstalovaného Proxmox labu."
-msgstr ""
-
-#: libvirt/create.sh:22
-msgid "Příkaz přijímá nejvýše jednu volbu."
-msgstr ""
-
-#: deployment/cli.py:198
-msgid "Příkaz z přehledu níže (výchozí: list)"
-msgstr ""
-
-#: deployment/cli.py:228
-msgid "Příkaz za -- je dostupný pouze pro ssh CÍL -- PŘÍKAZ."
-msgstr ""
-
-#: deployment/cli.py:193
-msgid "Příkazy pro běžnou správu:\n  list                         Místní evidence cílů a dostupných možností správy.\n  show CÍL                     Deklarace, kapacita, síť a dostupné operace cíle.\n  status [CÍL]                 Živý stav; hostitelé se dotazují souběžně, řádky přibývají.\n  ssh CÍL [-- PŘÍKAZ ...]       Přihlášení nebo spuštění příkazu na serveru.\n  verify CÍL                   Shoda běžícího systému s receptem, disk a služby.\n  doctor [CÍL]                 Diagnostika jednoho nebo všech cílů.\n  probe CÍL                    Podrobný průzkum platformy pro řešení problémů.\n\nAktualizace a porovnání:\n  update CÍL                   Plán aktualizace; s --apply sestaví a aktivuje systém.\n  diff CÍL                     Běžící systém proti aktuálnímu receptu PŘED aktualizací.\n  diffg CÍL                    Dvě nejvyšší dochované generace na serveru.\n                               diff sestavuje místně; diffg běží na serveru.\n\nNové deklarace VM (zapisují místní soubor, nevytvářejí VM):\n  new-libvirt-vm JMÉNO          Deklarace VM pro libvirt.\n  new-hyperv-vm JMÉNO           Deklarace VM pro Hyper-V.\n  new-proxmox-vm JMÉNO          Deklarace Proxmox VM včetně upravitelné sítě.\n  new-virtualbox-vm JMÉNO       Deklarace VM pro VirtualBox.\n  new-vmware-vm JMÉNO           Deklarace VM pro VMware Workstation.\n                               --host vybírá hostitele; jediný dostupný se vybere automaticky.\n                               --offline připraví kterýkoli backend bez hypervizoru.\n                               --configuration JMÉNO vybírá konfiguraci serveru; výchozí je default.\n                               --dry-run soubor nezapíše. Názvy new-* bez -vm jsou aliasy.\n\nNasazení, obnova a offline přenos (podle možností platformy):\n  plan CÍL                     Plán vytvoření VM nebo obnovy RPi bez zápisu.\n  reproduce CÍL                Úplné nasazení/obnova; provedení vyžaduje --apply.\n  create CÍL                   Vytvoření VM; provedení vyžaduje --apply.\n  install CÍL                  Dokončení nasazení podle metody; vyžaduje --apply.\n  provision CÍL                Vytvoření a instalace; provedení vyžaduje --apply.\n  reset CÍL                    Odstranění povolené VM na všech pěti backendech.\n                               Vyžaduje allowReset = true v instanci; bez --apply jen ověřuje plán.\n  export CÍL --output ADRESÁŘ   Offline balíček s diskem nebo ISO a receptem do nového adresáře.\n  cleanup [CÍL]                Náhled kandidátů na úklid, nic nemaže.\n                               --artifact-root ADRESÁŘ přidá kontrolu obrazů.\n\nPoužití a režimy:\n  Bez příkazu se vypíše list. CÍL je jméno deklarace, nikoli IP adresa.\n  Dostupné operace konkrétního cíle ukáže show CÍL.\n  update/create/install/provision/reproduce/reset bez --apply pouze plánují.\n  new-* a export běžně zapisují místně; --dry-run zobrazí plán bez zápisu.\n  diff/diffg mohou číst server a diff sestavuje recept; --dry-run vypíše jen plán.\n  --ssh root@HOST:PORT přepíše SSH přístup k offline VM libovolného backendu.\n  --method image je výchozí pro všechny VM: import hotového disku a ověření startu.\n  --method iso instaluje na prázdný disk, potom ISO odpojí a ověří start systému.\n  Volbu lze uložit jako deploymentMethod v deklaraci; --method ji přepíše.\n  Platí pro new-*, show, plan, create, install, provision, reproduce a export.\n  --offline vybírá přípravu bez hypervizoru nezávisle na metodě. RPi používá SD.\n  diff ukáže připravené změny. Po aktualizaci je obvykle prázdný; použij diffg.\n\nPříklady:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOSTITEL\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan nixberry --address 192.168.50.20\n\nPodrobný provozní návod: README.md v kořeni receptu nixberry.\nÚplná reference příkazů a voleb: docs/cli.md.\n"
-msgstr ""
-
-#: deployment/updater.py:99
+#: deployment/diffing.py:39
 #, python-brace-format
-msgid "Přímé SSH do VM: {endpoint}; ověřím SSH klíč a deklarovaný hostname."
-msgstr ""
-
-#: deployment/cli.py:235
-msgid "Přímé SSH podporuje update, ssh, verify, status, doctor, diff a diffg."
-msgstr ""
-
-#: deployment/cli.py:238
-msgid "Přímé SSH vyžaduje offline deklaraci VM bez správy hypervizoru."
-msgstr ""
-
-#: deployment/runtime.py:48
-msgid "Přímé SSH zadej jako root@HOST[:PORT]."
-msgstr ""
-
-#: deployment/runtime.py:188
-msgid "Přímý SSH cíl neodpovídá deklarované architektuře a hostname VM."
-msgstr ""
-
-#: deployment/campaign.py:522
-#, python-brace-format
-msgid "Případ kampaně: {name}"
-msgstr ""
-
-#: deployment/campaign.py:498
-msgid "Případ má zachované prostředky; nejprve je nutná kontrola stavu."
-msgstr ""
-
-#: proxmox/lab/create.py:160
-#, python-brace-format
-msgid "Příprava Proxmox labu selhala: {error}"
-msgstr ""
-
-#: rpi/install.py:83
-msgid "Příprava nebo čistá instalace vybraného RPi5 z připnutých deklarací."
+msgid "Previous generation: {path}"
 msgstr ""
 
 #: deployment/updater.py:111
 #, python-brace-format
-msgid "Původní systém: {system}"
+msgid "Previous system: {system}"
 msgstr ""
 
-#: deployment/runtime.py:201
-msgid "RPi nemá povolenou deklarovanou IPv4 adresu."
+#: rpi/install.py:46
+msgid "Primary adapter MAC address does not match."
+msgstr ""
+
+#: hyperv/guest-install.sh:20 libvirt/guest-install.sh:20
+msgid "Profile does not match."
+msgstr ""
+
+#: deployment/cli.py:66 deployment/cli.py:95
+msgid "Protection"
+msgstr ""
+
+#: deployment/host_agent.py:434
+msgid "Proxmox created a disk outside the declared storage."
+msgstr ""
+
+#: proxmox/lab/configure.sh:44
+msgid "Proxmox does not have the expected vmbr0 bridge."
+msgstr ""
+
+#: proxmox/lab/configure.sh:20
+msgid "Proxmox has no available KVM device."
+msgstr ""
+
+#: proxmox/lab/finish.py:37
+#, python-brace-format
+msgid "Proxmox lab finalization failed: {error}"
+msgstr ""
+
+#: proxmox/lab/create.py:160
+#, python-brace-format
+msgid "Proxmox lab preparation failed: {error}"
+msgstr ""
+
+#: deployment/host_agent.py:361
+#, python-brace-format
+msgid "Proxmox storage {storage} is not enabled for ISO content."
+msgstr ""
+
+#: deployment/host_agent.py:583
+msgid "Proxmox: node VMs and snapshots, images in the selected storage. Block/thin storage may not report physical allocation; null is not zero. Storage shared with other nodes prevents proof that orphaned volumes are unused."
+msgstr ""
+
+#: hyperv/host.ps1:60
+msgid "RAM mode does not match."
+msgstr ""
+
+#: rpi/guest-install.sh:20
+msgid "RPi does not match."
+msgstr ""
+
+#: rpi/install.py:44
+msgid "RPi serial number does not match."
 msgstr ""
 
 #: rpi/recovery-test.py:59
 #, python-brace-format
-msgid "RPi ověřeno: {value1}; recovery: {value2}"
+msgid "RPi verified: {value1}; recovery: {value2}"
 msgstr ""
 
-#: deployment/cli.py:429
+#: deployment/cli.py:359
 #, python-brace-format
-msgid "RPi: {value1}\nAdresa: {value2}"
+msgid "RPi: {value1}\nAddress: {value2}"
 msgstr ""
 
 #: rpi/local-install.py:35
@@ -2378,565 +1417,1742 @@ msgstr ""
 
 #: rpi/install.py:110
 #, python-brace-format
-msgid "RPi: {value1}; serial: {value2}; adresa: {address}"
+msgid "RPi: {value1}; serial: {value2}; address: {address}"
+msgstr ""
+
+#: deployment/portable.py:97
+#, python-brace-format
+msgid "Reading the image during transfer failed: {value1}"
+msgstr ""
+
+#: rpi/local-install.py:15
+msgid "Recover from the full SD card alone; no internet, SSH or builds on another computer."
+msgstr ""
+
+#: deployment/compile_locales.py:46
+msgid "Regenerate shell catalogue with compile_locales.py"
+msgstr ""
+
+#: deployment/cli.py:357
+#, python-brace-format
+msgid "Removal allowed: {value}"
+msgstr ""
+
+#: deployment/cli.py:289
+msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
+msgstr ""
+
+#: libvirt/reset.py:52
+msgid "Removal of this instance is not declaratively allowed."
+msgstr ""
+
+#: libvirt/reset.py:91
+msgid "Removal plan verified. Nothing was changed."
+msgstr ""
+
+#: deployment/reset.py:50
+msgid "Removal plan verified; nothing was shut down or deleted. With --apply, the VM is gracefully shut down and removed after revalidation."
+msgstr ""
+
+#: libvirt/reset.py:45
+msgid "Remove only the dedicated test VM and its disk; the default mode changes nothing."
+msgstr ""
+
+#: libvirt/reset.py:89
+#, python-brace-format
+msgid "Remove only: {disk} and {nvram}"
+msgstr ""
+
+#: deployment/campaign.py:341
+msgid "Repeated creation was incorrectly allowed."
+msgstr ""
+
+#: deployment/messages.py:151
+#, python-brace-format
+msgid "Required arguments are missing: {arguments}"
+msgstr ""
+
+#: hyperv/reset.ps1:7
+msgid "Reset is not explicitly allowed."
+msgstr ""
+
+#: libvirt/reset.py:54
+msgid "Reset requires a declared NixBerry owner; a known UUID alone is not enough."
+msgstr ""
+
+#: deployment/reset.py:40
+msgid "Reset requires allowReset = true; for this instance and a declared hypervisor host."
+msgstr ""
+
+#: deployment/host_agent.py:732
+msgid "Reset requires an existing running or stopped VM; partial operation remnants will not be deleted."
+msgstr ""
+
+#: hyperv/reset.ps1:8
+msgid "Reset requires an unambiguous apply mode."
+msgstr ""
+
+#: deployment/host_agent.py:921
+msgid "Reset requires explicit permission and an unambiguous apply mode."
+msgstr ""
+
+#: deployment/cli.py:363
+#, python-brace-format
+msgid "Resources: {value1} CPUs, {value2} MiB RAM, {value3} GiB disk"
+msgstr ""
+
+#: deployment/cli.py:241
+msgid "Result"
+msgstr ""
+
+#: deployment/diffing.py:87
+msgid "Retrieving missing parts of the running system into the local Nix store…"
+msgstr ""
+
+#: deployment/inspection.py:115
+msgid "Root and boot partitions match the installation."
+msgstr ""
+
+#: deployment/cli.py:333
+msgid "Run RPi reproduction through the nixberry launcher from the project root."
+msgstr ""
+
+#: deployment/diffing.py:58
+msgid "Run diff through the nixberry launcher with a complete pinned recipe."
+msgstr ""
+
+#: deployment/scaffold.py:58
+msgid "Run the command from a complete project recipe."
+msgstr ""
+
+#: deployment/dispatch.py:25
+msgid "Run the operation through the nixberry launcher with a complete project recipe."
+msgstr ""
+
+#: deployment/updater.py:90
+msgid "Run update through the nixberry launcher with a complete pinned recipe."
+msgstr ""
+
+#: deployment/cli.py:311
+msgid "Run verify through the nixberry launcher from the project root."
+msgstr ""
+
+#: deployment/runtime.py:330
+#, c-format
+msgid "Running system: %s"
+msgstr ""
+
+#: deployment/diffing.py:80
+#, python-brace-format
+msgid "Running system: {system}"
+msgstr ""
+
+#: hyperv/manage.py:164
+msgid "SSH is not available yet."
+msgstr ""
+
+#: deployment/host_agent.py:115
+msgid "SSH must connect directly to the declared Proxmox node."
+msgstr ""
+
+#: deployment/runtime.py:58
+msgid "SSH requires a specific host address."
+msgstr ""
+
+#: deployment/host_agent.py:531
+msgid "SSH user's VirtualBox registry, including media and snapshot references. review requires checking usage outside this registry. Do not add shared disk sizes across VMs."
+msgstr ""
+
+#: hyperv/manage.py:210
+msgid "Safely create and install a dedicated Hyper-V VM over Windows SSH."
+msgstr ""
+
+#: deployment/reset.py:33
+msgid "Safely remove a declared VM without building the system or installation media."
+msgstr ""
+
+#: deployment/cleanup.py:99
+msgid "Scope: all VMs and snapshots in local libvirt, images in the declared pool. External consumers outside libvirt may be undetectable; review does not prove disuse."
+msgstr ""
+
+#: hyperv/reset.ps1:48
+msgid "Secure Boot does not match."
+msgstr ""
+
+#: hyperv/host.ps1:61
+msgid "Secure Boot is not disabled."
+msgstr ""
+
+#: deployment/scaffold.py:48
+#, python-brace-format
+msgid "Select --host from the declared {backend} hosts: {hosts}. Use --offline to prepare without a hypervisor."
+msgstr ""
+
+#: deployment/cli.py:279
+#, python-brace-format
+msgid "Select a target: {value1}. Arbitrary addresses are not allowed."
+msgstr ""
+
+#: deployment/campaign.py:768
+msgid "Sequential NixBerry integration campaign following docs/test-plan.md."
+msgstr ""
+
+#: deployment/cli.py:360
+#, python-brace-format
+msgid "Serial number: {value1}\nDisk: {value2}"
+msgstr ""
+
+#: deployment/cli.py:370
+#, python-brace-format
+msgid "Server SSH: {value1}@{value2}:{value3}"
+msgstr ""
+
+#: deployment/cli.py:35
+msgid "Server address"
+msgstr ""
+
+#: deployment/cli.py:136
+msgid "Server configuration for new-*; defaults to default, other names from configurations/"
+msgstr ""
+
+#: deployment/cli.py:208 deployment/cli.py:291 deployment/cli.py:295 deployment/cli.py:329
+#, python-brace-format
+msgid "Server configuration: {configuration}"
+msgstr ""
+
+#: deployment/campaign.py:780
+msgid "Set --run-root outside the recipe to run the campaign."
+msgstr ""
+
+#: deployment/messages.py:145
+msgid "Show help and exit"
+msgstr ""
+
+#: deployment/cli.py:147
+msgid "Show the plan without writing; diff/diffg without connections or builds"
+msgstr ""
+
+#: deployment/inspection.py:206
+msgid "Sizes include shared dependencies; they cannot be added or treated as reclaimable space. review means manual assessment, not permission to delete. All retained generations have GC roots."
+msgstr ""
+
+#: deployment/cli.py:192
+#, python-brace-format
+msgid "Specify a new target name: {value1} NAME."
+msgstr ""
+
+#: deployment/runtime.py:48
+msgid "Specify direct SSH as root@HOST[:PORT]."
+msgstr ""
+
+#: deployment/messages.py:152
+#, python-brace-format
+msgid "Specify one of these options: {arguments}"
+msgstr ""
+
+#: deployment/host_agent.py:605
+msgid "Staging, recovery or interrupted creation; review is required."
+msgstr ""
+
+#: deployment/host_agent.py:996
+msgid "Starting requires an existing powered-off VM with a verified owner."
+msgstr ""
+
+#: proxmox/lab/create.py:126
+msgid "Starting the new Proxmox VM and its automatic installer…"
+msgstr ""
+
+#: deployment/cli.py:35 deployment/cli.py:78
+msgid "State"
+msgstr ""
+
+#: deployment/exporter.py:109 deployment/exporter.py:118
+#, python-brace-format
+msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
+msgstr ""
+
+#: deployment/runtime.py:222
+msgid "Status queries are not implemented for this host type."
+msgstr ""
+
+#: libvirt/policy.py:31
+msgid "Storage must have an absolute path without parent directory components."
+msgstr ""
+
+#: deployment/campaign.py:71
+msgid "Store campaign results outside the recipe."
+msgstr ""
+
+#: deployment/exporter.py:23
+msgid "Store the bundle outside the NixBerry recipe root."
+msgstr ""
+
+#: hyperv/host.ps1:107
+msgid "Stored media hash does not match."
+msgstr ""
+
+#: hyperv/policy.py:26
+msgid "Switch ID must be a canonical UUID."
+msgstr ""
+
+#: hyperv/host.ps1:18
+msgid "Switch does not match."
+msgstr ""
+
+#: hyperv/host.ps1:126
+msgid "System disk copy hash does not match."
+msgstr ""
+
+#: deployment/exporter.py:121
+#, python-brace-format
+msgid "System disk handoff for VM{vmid}\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify sha256sum -c SHA256SUMS.\n2. Prepare a powered-off VM with UEFI/OVMF and Secure Boot disabled.\n   Recommended resources: {vcpus} CPUs, {memory} MiB RAM, {disk} GiB disk.\n3. Import QCOW2 into the chosen storage and attach it as virtio0 or scsi0 (VirtIO SCSI).\n   Configure boot from the attached disk and enable QEMU Guest Agent.\n4. Attach exactly one VirtIO network adapter to the agreed network and start the VM.\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. In the console, verify ip -4 address, ip route and resolvectl status.\n   System: readlink -f /run/current-system; the expected value is in manifest.json.\n\nThe operator may assign a different MAC and UUID; system networking is not tied to the MAC.\nManual import does not adopt ownership markers required for hypervisor management.\nManage the server through access in its declaration or nixberry update TARGET --ssh root@HOST:PORT --apply.\nSSH access uses keys from the included recipe; password login is disabled.\nThe image supplies the system; the operator manages the host, bridge and firewall.\n"
+msgstr ""
+
+#: deployment/exporter.py:112
+#, python-brace-format
+msgid "System disk handoff for VirtualBox on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux (64-bit) VM, skip unattended installation and do not attach an ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM. Enable UEFI and leave Secure Boot disabled.\n3. First copy the VDI outside the bundle; attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n   For another VM, use VBoxManage clonemedium disk to assign a unique media UUID.\n4. Attach exactly one Intel PRO/1000 MT Desktop network adapter to the chosen network.\n   For DHCP, use Bridged Adapter with DHCP or NAT.\n   For a static IP, the network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status virtualbox in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\nFor NAT, configure SSH port forwarding in the operator's environment.\nThe operator may assign a different VM UUID and MAC; networking is not tied to the MAC.\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
+msgstr ""
+
+#: hyperv/guest-install.sh:22 libvirt/guest-install.sh:22
+msgid "System does not match."
+msgstr ""
+
+#: deployment/cli.py:262
+msgid "System management"
+msgstr ""
+
+#: deployment/inspection.py:55
+msgid "System management is not configured; add access or use --ssh."
+msgstr ""
+
+#: deployment/updater.py:91
+#, python-brace-format
+msgid "System update: {name} ({backend})"
+msgstr ""
+
+#: deployment/campaign.py:353
+msgid "System verification failed after the new boot."
+msgstr ""
+
+#: deployment/cli.py:133
+msgid "TARGET"
+msgstr ""
+
+#: deployment/cli.py:241 deployment/cli.py:262 deployment/cli.py:35
+msgid "Target"
+msgstr ""
+
+#: hyperv/host.ps1:63
+msgid "Target VHDX does not match."
+msgstr ""
+
+#: deployment/cli.py:267
+#, python-brace-format
+msgid "Target details: {command}"
+msgstr ""
+
+#: deployment/guest-install.sh:22
+msgid "Target disk size does not match."
+msgstr ""
+
+#: deployment/check_inventory.py:54
+msgid "Target inventory regression checks in recipe copies; no host connections or VM changes."
+msgstr ""
+
+#: deployment/cli.py:317
+#, python-brace-format
+msgid "Target {name} verification failed: {error}\nDiagnostics: {doctor}\nRecipe comparison: {diff}"
+msgstr ""
+
+#: proxmox/lab/finish.py:21
+#, python-brace-format
+msgid "Target: Proxmox lab {address}; preparing the dedicated data disk and staging directory."
+msgstr ""
+
+#: deployment/cli.py:349
+#, python-brace-format
+msgid "Target: {value1}\nPlatform: {value2}"
+msgstr ""
+
+#: libvirt/reset.py:40
+msgid "Test VM NVRAM path does not match."
+msgstr ""
+
+#: deployment/guest-install.sh:35 hyperv/guest-install.sh:37 libvirt/guest-install.sh:38
+msgid "The EFI bootloader is missing."
+msgstr ""
+
+#: deployment/runtime.py:128
+msgid "The Hyper-V VM does not have the declared owner."
+msgstr ""
+
+#: deployment/runtime.py:133
+msgid "The Hyper-V VM does not match the declared adapter and generation."
+msgstr ""
+
+#: hyperv/manage.py:229
+msgid "The Hyper-V operation timed out. Check the target's status and probe before retrying."
+msgstr ""
+
+#: deployment/campaign.py:385
+msgid "The ISO bundle does not include installation instructions."
+msgstr ""
+
+#: hyperv/guest-install.sh:19
+msgid "The ISO is not attached."
+msgstr ""
+
+#: hyperv/manage.py:201
+msgid "The ISO is still attached."
+msgstr ""
+
+#: proxmox/lab/configure.sh:34
+msgid "The LVM group uses another disk."
+msgstr ""
+
+#: libvirt/create.sh:91
+msgid "The MAC address already has a declaration in this network."
+msgstr ""
+
+#: libvirt/create.sh:87
+#, c-format
+msgid "The MAC address is already used by %s."
+msgstr ""
+
+#: hyperv/host.ps1:45
+msgid "The MAC address is already used by another VM."
 msgstr ""
 
 #: deployment/shell-path.sh:12
 #, c-format
-msgid "Recept NixBerry není úplný nebo dostupný: %s"
+msgid "The NixBerry recipe is incomplete or unavailable: %s"
 msgstr ""
 
-#: deployment/check_inventory.py:54
-msgid "Regrese evidence cílů v kopiích receptu; bez připojení k hostitelům nebo změn VM."
+#: deployment/host_agent.py:408
+msgid "The Proxmox VM already exists."
 msgstr ""
 
-#: deployment/cli.py:403
-msgid "Reprodukci RPi spusť přes spouštěč nixberry z kořene projektu."
+#: deployment/host_agent.py:843
+msgid "The Proxmox VM disk is not a verified volume of this instance; refusing reset."
 msgstr ""
 
-#: hyperv/reset.ps1:7
-msgid "Reset není výslovně povolený."
+#: deployment/host_agent.py:850
+msgid "The Proxmox VM has an additional disk or foreign medium; refusing reset."
 msgstr ""
 
-#: deployment/reset.py:40
-msgid "Reset vyžaduje allowReset = true; u této instance a deklarovaného hostitele hypervizoru."
+#: deployment/host_agent.py:280 deployment/host_agent.py:288
+msgid "The Proxmox VM identity or node does not match."
 msgstr ""
 
-#: libvirt/reset.py:54
-msgid "Reset vyžaduje deklarovaného vlastníka NixBerry; samotné známé UUID nestačí."
+#: deployment/host_agent.py:831
+msgid "The Proxmox VM is locked, protected or a template; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:732
-msgid "Reset vyžaduje existující VM v běžícím nebo vypnutém stavu; zbytky po částečné operaci nemažu."
+#: deployment/host_agent.py:219
+msgid "The Proxmox VMID or name is already in use in the cluster."
 msgstr ""
 
-#: hyperv/reset.ps1:8
-msgid "Reset vyžaduje jednoznačný režim apply."
+#: deployment/host_agent.py:227
+msgid "The Proxmox bridge does not exist."
 msgstr ""
 
-#: deployment/host_agent.py:921
-msgid "Reset vyžaduje výslovné povolení a jednoznačný režim apply."
+#: deployment/host_agent.py:295
+msgid "The Proxmox configuration does not match the owner or hardware."
 msgstr ""
 
-#: libvirt/create.sh:94
-#, c-format
-msgid "Režim: %s; URI: %s; VM: %s"
+#: deployment/host_agent.py:97
+msgid "The Proxmox import path must not contain a comma."
 msgstr ""
 
-#: deployment/cleanup.py:99
-msgid "Rozsah: všechny VM a snapshoty místního libvirt, obrazy deklarovaného poolu. Externí konzumenti mimo libvirt nemusí být zjistitelní; review není důkaz nepoužívání."
+#: proxmox/lab/create.py:49
+msgid "The Proxmox lab already exists; nothing will be overwritten or rebooted."
 msgstr ""
 
-#: deployment/campaign.py:646
-msgid "Ručně vytvořená VM nezískala adresu."
+#: proxmox/lab/finish.py:29
+msgid "The Proxmox lab data resources are ready."
 msgstr ""
 
-#: deployment/portable.py:269
-msgid "S --apply se importuje hotový disk, neformátuje se existující VM. install spustí a ověří hotový systém."
+#: proxmox/lab/configure.sh:46
+msgid "The Proxmox lab has lab-vm storage, vmbr0 bridge and KVM ready."
 msgstr ""
 
-#: libvirt/provision.py:23
-msgid "S --apply: vytvoření VM a dokončení zvolené metody nasazení včetně ověření startu z disku."
+#: proxmox/lab/configure.sh:6
+msgid "The Proxmox lab identity does not match the declaration."
 msgstr ""
 
-#: deployment/campaign.py:719
-msgid "SSH forward nezačal naslouchat."
+#: deployment/host_agent.py:222
+msgid "The Proxmox storage is inactive."
 msgstr ""
 
-#: deployment/campaign.py:712
-msgid "SSH forward se nepodařilo připravit."
+#: deployment/host_agent.py:225
+msgid "The Proxmox storage lacks space for the declared disk capacity and EFI."
 msgstr ""
 
-#: hyperv/manage.py:164
-msgid "SSH ještě není dostupné."
+#: deployment/host_agent.py:301
+msgid "The Proxmox system disk was changed outside the declared creation."
 msgstr ""
 
-#: deployment/host_agent.py:115
-msgid "SSH musí vést přímo na deklarovaný Proxmox uzel."
-msgstr ""
-
-#: deployment/cli.py:440
-#, python-brace-format
-msgid "SSH serveru: {value1}@{value2}:{value3}"
-msgstr ""
-
-#: deployment/runtime.py:58
-msgid "SSH vyžaduje adresu konkrétního hostitele."
-msgstr ""
-
-#: proxmox/lab/create.py:142
-msgid "Samostatný vnořený Proxmox pro zkoušení adaptéru; nikdy nepřebírá existující VM."
-msgstr ""
-
-#: hyperv/host.ps1:61
-msgid "Secure Boot není vypnutý."
-msgstr ""
-
-#: deployment/campaign.py:768
-msgid "Sekvenční průřezová kampaň NixBerry podle docs/test-plan.md."
-msgstr ""
-
-#: deployment/exporter.py:75
-msgid "Sestavení nevrátilo právě jeden obraz."
-msgstr ""
-
-#: deployment/cli.py:331
-msgid "Sestavení/export"
-msgstr ""
-
-#: deployment/cli.py:424
-#, python-brace-format
-msgid "Sestavení/export: ano; správa systému: {value1}"
-msgstr ""
-
-#: deployment/updater.py:112
-msgid "Sestavuji konfiguraci cíle…"
-msgstr ""
-
-#: deployment/diffing.py:82
-msgid "Sestavuji recept pro porovnání…"
-msgstr ""
-
-#: hyperv/probe.py:20
-msgid "Skript obsahuje vyhrazenou koncovou značku vstupu."
-msgstr ""
-
-#: libvirt/reset.py:77
-msgid "Skutečný obraz má jiný formát, kapacitu, podklad nebo interní snapshot; reset odmítám."
-msgstr ""
-
-#: libvirt/reset.py:103
-msgid "Soubor disku po odstranění stále existuje."
-msgstr ""
-
-#: deployment/host_agent.py:786
-msgid "Soubor této VM používá jiná VM nebo její snapshot; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:781 deployment/host_agent.py:816 hyperv/reset.ps1:66
-msgid "Soubor této VM používá jiná VM; reset odmítám."
-msgstr ""
-
-#: deployment/cli.py:193
-msgid "Společné ovládání deklarovaných RPi a VM: správa, nasazení a offline export."
-msgstr ""
-
-#: proxmox/lab/create.py:126
-msgid "Spouštím novou Proxmox VM a její automatický instalátor…"
-msgstr ""
-
-#: deployment/host_agent.py:959
-msgid "Spravované ISO cíle už existuje; nic nepřepisuji."
-msgstr ""
-
-#: deployment/host_agent.py:858
-msgid "Spravované ISO má jiný obsah; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:855
-msgid "Spravované ISO není ověřené; reset odmítám."
-msgstr ""
-
-#: deployment/cli.py:331
-msgid "Správa systému"
-msgstr ""
-
-#: deployment/inspection.py:55
-msgid "Správa systému není nastavená; doplň access nebo použij --ssh."
-msgstr ""
-
-#: deployment/scaffold.py:58
-msgid "Spusť příkaz z úplného projektového receptu."
-msgstr ""
-
-#: libvirt/create.sh:115
-msgid "Spuštěno instalační ISO. Cílový NixOS ještě není nainstalovaný."
-msgstr ""
-
-#: deployment/host_agent.py:605
-msgid "Staging, obnova nebo přerušené vytváření; vyžaduje posouzení."
-msgstr ""
-
-#: deployment/diffing.py:88
-msgid "Stahuji chybějící části běžícího systému do místní Nix store…"
-msgstr ""
-
-#: proxmox/lab/create.py:74
-msgid "Stahuji oficiální instalační ISO Proxmoxu…"
-msgstr ""
-
-#: hyperv/manage.py:179 libvirt/install.py:118
-msgid "Start hotového systému z disku ověřený."
-msgstr ""
-
-#: deployment/host_agent.py:996
-msgid "Start vyžaduje existující vypnutou VM s ověřeným vlastníkem."
-msgstr ""
-
-#: deployment/host_agent.py:77
-msgid "Statická VMware MAC musí být v rozsahu 00:50:56:00:00:00–00:50:56:3f:ff:ff."
-msgstr ""
-
-#: deployment/cli.py:35 deployment/cli.py:78
-msgid "Stav"
-msgstr ""
-
-#: deployment/campaign.py:325
-msgid "Stav po create neodpovídá metodě."
-msgstr ""
-
-#: deployment/cli.py:335
-#, python-brace-format
-msgid "Stav všech cílů: {command}"
-msgstr ""
-
-#: deployment/cli.py:211
-msgid "Strojový výstup pro inventuru, diagnostiku, verify a export"
-msgstr ""
-
-#: deployment/host_agent.py:875
-msgid "Svazek nebo ISO používá jiná VM, kontejner či snapshot; reset odmítám."
-msgstr ""
-
-#: libvirt/reset.py:56
-msgid "Svazek nemá vyhrazený název testovací VM."
-msgstr ""
-
-#: libvirt/reset.py:36
-msgid "Svazek není qcow2."
-msgstr ""
-
-#: deployment/cleanup.py:87
-msgid "Svazek nevrátil velikost v bajtech."
-msgstr ""
-
-#: libvirt/reset.py:37
-msgid "Svazek používá podkladový obraz."
-msgstr ""
-
-#: hyperv/policy.py:26
-msgid "Switch ID musí být kanonické UUID."
-msgstr ""
-
-#: deployment/guest-install.sh:37
-msgid "Systém je nainstalovaný na disku; připravený k vypnutí a odpojení ISO."
-msgstr ""
-
-#: deployment/campaign.py:353
-msgid "Systém po novém startu neprošel ověřením."
-msgstr ""
-
-#: proxmox/lab/configure.sh:7
-msgid "Systémový disk nemá očekávaný serial."
-msgstr ""
-
-#: deployment/cli.py:430
-#, python-brace-format
-msgid "Sériové číslo: {value1}\nDisk: {value2}"
-msgstr ""
-
-#: proxmox/lab/create.py:51
-msgid "Síť labu už existuje; částečný stav vyžaduje kontrolu."
-msgstr ""
-
-#: libvirt/install.py:61
-msgid "Síť nemá NAT."
-msgstr ""
-
-#: libvirt/create.sh:76
-msgid "Síť není aktivní."
-msgstr ""
-
-#: deployment/exporter.py:132 deployment/exporter.py:159
-msgid "Síť uvnitř VM: DHCP.\n"
-msgstr ""
-
-#: deployment/cli.py:446
-msgid "Síť: DHCP"
-msgstr ""
-
-#: deployment/cli.py:444
-#, python-brace-format
-msgid "Síť: {value1}, brána {value2}, DNS {value3}"
+#: deployment/runtime.py:211
+msgid "The RPi hardware does not match the declared machine."
 msgstr ""
 
 #: deployment/runtime.py:214
-msgid "Síťový adaptér RPi neodpovídá deklaraci."
+msgid "The RPi network adapter does not match the declaration."
+msgstr ""
+
+#: deployment/campaign.py:719
+msgid "The SSH forward did not start listening."
+msgstr ""
+
+#: hyperv/host.ps1:42
+msgid "The VM already exists; it will not be overwritten."
+msgstr ""
+
+#: hyperv/reset.ps1:90
+msgid "The VM changed during reset; nothing will be deleted."
+msgstr ""
+
+#: hyperv/reset.ps1:33
+msgid "The VM contains a differencing disk; refusing reset."
+msgstr ""
+
+#: deployment/campaign_host.py:26 deployment/campaign_host.py:37
+msgid "The VM contains unexpected disks; cleanup was stopped."
+msgstr ""
+
+#: hyperv/manage.py:196
+msgid "The VM did not shut down gracefully."
+msgstr ""
+
+#: hyperv/reset.ps1:85
+msgid "The VM did not shut down gracefully; nothing will be deleted."
+msgstr ""
+
+#: deployment/host_agent.py:894
+msgid "The VM did not shut down gracefully; reset will delete nothing."
+msgstr ""
+
+#: deployment/campaign.py:218
+msgid "The VM did not shut down gracefully; the next step was stopped."
+msgstr ""
+
+#: libvirt/reset.py:97
+msgid "The VM did not shut down; nothing will be deleted."
+msgstr ""
+
+#: deployment/portable.py:163 libvirt/install.py:188
+msgid "The VM did not shut down; the ISO will not be detached."
+msgstr ""
+
+#: hyperv/host.ps1:43
+msgid "The VM directory already exists."
+msgstr ""
+
+#: deployment/host_agent.py:714
+msgid "The VM directory contains a link, mount point or shared file; refusing reset."
+msgstr ""
+
+#: deployment/campaign_host.py:19
+msgid "The VM directory contains a link; manual inspection is required."
+msgstr ""
+
+#: hyperv/reset.ps1:32
+msgid "The VM directory contains a link; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:129
+msgid "The VM directory is missing or is a link."
+msgstr ""
+
+#: hyperv/reset.ps1:96
+msgid "The VM directory remains after removal."
+msgstr ""
+
+#: deployment/cleanup.py:53
+msgid "The VM disk has no target for a size query."
+msgstr ""
+
+#: libvirt/reset.py:29
+msgid "The VM does not have exactly one disk."
+msgstr ""
+
+#: deployment/campaign.py:216
+msgid "The VM entered an unexpected state during shutdown."
+msgstr ""
+
+#: deployment/campaign_host.py:22
+msgid "The VM has a lock or snapshot; cleanup was stopped."
+msgstr ""
+
+#: deployment/host_agent.py:797
+msgid "The VM has a snapshot, saved state or lock; refusing reset."
+msgstr ""
+
+#: deployment/campaign_host.py:29 deployment/campaign_host.py:33 deployment/campaign_host.py:43
+msgid "The VM has a snapshot; cleanup was stopped."
+msgstr ""
+
+#: deployment/host_agent.py:794
+msgid "The VM has additional disks or unexpected disk files; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:756
+msgid "The VM has additional or foreign media; refusing reset."
+msgstr ""
+
+#: hyperv/reset.ps1:55
+msgid "The VM has checkpoints; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:649
+msgid "The VM has media outside its own directory; total allocation is unknown."
+msgstr ""
+
+#: hyperv/manage.py:39
+msgid "The VM has multiple possible IPv4 addresses."
+msgstr ""
+
+#: hyperv/manage.py:150
+msgid "The VM has no IP address yet."
+msgstr ""
+
+#: hyperv/host.ps1:70
+msgid "The VM has snapshots."
+msgstr ""
+
+#: libvirt/reset.py:83
+msgid "The VM has snapshots; refusing removal."
+msgstr ""
+
+#: deployment/host_agent.py:753 deployment/host_agent.py:799 deployment/host_agent.py:834
+msgid "The VM has snapshots; refusing reset."
+msgstr ""
+
+#: hyperv/reset.ps1:45
+msgid "The VM is in an unsupported state; refusing reset."
+msgstr ""
+
+#: libvirt/policy.py:44
+msgid "The VM is missing the declared owner marker."
+msgstr ""
+
+#: libvirt/reset.py:79
+msgid "The VM is not in a supported state."
+msgstr ""
+
+#: deployment/host_agent.py:667
+msgid "The VM is not in the required state for ISO operations."
+msgstr ""
+
+#: libvirt/reset.py:100
+msgid "The VM is not powered off; nothing will be deleted."
+msgstr ""
+
+#: hyperv/host.ps1:148 libvirt/install.py:97
+msgid "The VM is not ready to boot from disk."
+msgstr ""
+
+#: libvirt/install.py:144
+msgid "The VM is not running."
+msgstr ""
+
+#: deployment/host_agent.py:672 deployment/host_agent.py:681 deployment/host_agent.py:695 hyperv/manage.py:182 libvirt/install.py:52
+msgid "The VM is not using the expected ISO."
+msgstr ""
+
+#: hyperv/host.ps1:155
+msgid "The VM must be shut down gracefully."
+msgstr ""
+
+#: libvirt/policy.py:22
+msgid "The VM must have a safe nixberry-… name of up to 63 characters."
+msgstr ""
+
+#: libvirt/install.py:54
+msgid "The VM must have exactly one network adapter."
+msgstr ""
+
+#: libvirt/install.py:42
+msgid "The VM must have exactly one target disk."
+msgstr ""
+
+#: deployment/runtime.py:125
+msgid "The VM name is ambiguous."
 msgstr ""
 
 #: deployment/runtime.py:159
-msgid "Síťový adaptér VM neodpovídá deklaraci."
+msgid "The VM network adapter does not match the declaration."
 msgstr ""
 
-#: deployment/cli.py:295
-msgid "Tato operace nepřijímá --apply."
+#: deployment/host_agent.py:898
+msgid "The VM or its resources changed during reset; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:147
-msgid "Tato operace vyžaduje metodu image."
+#: hyperv/host.ps1:50
+msgid "The VM ownership record is missing."
 msgstr ""
 
-#: deployment/runtime.py:144
-msgid "Tento adaptér podporuje pouze místní libvirt."
+#: hyperv/reset.ps1:23
+msgid "The VM path contains a reparse point."
 msgstr ""
 
-#: rpi/local-install.py:27
-msgid "Tento cíl není součástí instalační SD."
+#: deployment/portable.py:148
+msgid "The VM was created with a prebuilt system disk; it has not been started yet."
 msgstr ""
 
-#: proxmox/lab/create.py:45
-msgid "Tento lab je vyhrazený pro místní Nixon."
+#: deployment/host_agent.py:664
+msgid "The VM was not created for ISO installation."
 msgstr ""
 
-#: deployment/scaffold.py:53
-msgid "Tento postup zatím podporuje pouze místní libvirt."
+#: deployment/host_agent.py:905
+msgid "The VM was removed, but its volume remains; keeping records for manual inspection."
 msgstr ""
 
-#: rpi/local-install.py:26
-msgid "Tento příkaz patří do připraveného instalačního prostředí plné SD."
+#: deployment/portable.py:238
+#, python-brace-format
+msgid "The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}"
 msgstr ""
 
-#: deployment/campaign.py:305
-msgid "Test pevné sítě nezměnil právě jednu deklaraci na statickou konfiguraci."
+#: libvirt/install.py:124
+#, python-brace-format
+msgid "The VM was started, but system verification failed: {error}"
 msgstr ""
 
-#: libvirt/create.sh:60
-msgid "Testovací VM již existuje. Příkaz ji nepřepíše ani nerestartuje."
+#: deployment/host_agent.py:791
+msgid "The VMware VM has additional or foreign media; refusing reset."
 msgstr ""
 
-#: deployment/campaign.py:432
-msgid "Testovací deklarace nemá očekávané výchozí oprávnění; úklid zastavuji."
+#: deployment/host_agent.py:326
+msgid "The VMware configuration does not match the declaration."
 msgstr ""
 
-#: deployment/campaign.py:161
-msgid "Testovací jméno překračuje limit CLI."
+#: deployment/host_agent.py:803
+msgid "The VMware disk has a backing image or unverified origin; refusing reset."
 msgstr ""
 
-#: libvirt/create.sh:79
-msgid "Testovací síť musí používat NAT."
+#: deployment/host_agent.py:806
+msgid "The VMware disk references additional or unverified files; refusing reset."
 msgstr ""
 
-#: deployment/campaign.py:483
-msgid "Tuto kampaň už provádí jiný proces."
+#: deployment/host_agent.py:385
+msgid "The VirtualBox VM already exists."
 msgstr ""
 
-#: libvirt/policy.py:24
-msgid "UUID není v kanonickém tvaru."
+#: deployment/host_agent.py:751
+msgid "The VirtualBox VM configuration is outside its dedicated directory; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:254
+msgid "The VirtualBox VM identity does not match."
+msgstr ""
+
+#: deployment/host_agent.py:213
+msgid "The VirtualBox VM name or UUID is already in use."
+msgstr ""
+
+#: deployment/runtime.py:118
+msgid "The Windows host does not match the declaration."
+msgstr ""
+
+#: hyperv/manage.py:110
+msgid "The Windows operation failed."
+msgstr ""
+
+#: deployment/inspection.py:152
+msgid "The active and default systems differ; a reboot may start a different system."
+msgstr ""
+
+#: deployment/inspection.py:151
+msgid "The active and default systems match."
+msgstr ""
+
+#: rpi/recovery-test.py:53
+msgid "The active system is not the expected pinned system."
+msgstr ""
+
+#: libvirt/reset.py:77
+msgid "The actual image has a different format, capacity, backing image or internal snapshot; refusing reset."
+msgstr ""
+
+#: deployment/portable.py:105
+msgid "The adapter failed."
+msgstr ""
+
+#: deployment/updater.py:102
+msgid "The address is resolved from the declaration and live state; Hyper-V uses Windows as a jump host."
+msgstr ""
+
+#: deployment/cleanup.py:80
+msgid "The backing image path is missing."
+msgstr ""
+
+#: deployment/updater.py:160
+msgid "The boot configuration differs from the running system; a reboot is required."
+msgstr ""
+
+#: deployment/inspection.py:154
+msgid "The boot configuration differs or cannot be compared; check whether a reboot is needed."
+msgstr ""
+
+#: deployment/inspection.py:154
+msgid "The boot configuration matches."
+msgstr ""
+
+#: deployment/check_images.py:68
+msgid "The boot entry does not reference the kernel, initrd and system."
+msgstr ""
+
+#: deployment/exporter.py:75
+msgid "The build did not return exactly one image."
+msgstr ""
+
+#: deployment/portable.py:128
+#, python-brace-format
+msgid "The build result is missing the expected image: {value1}"
+msgstr ""
+
+#: libvirt/create.sh:49
+#, c-format
+msgid "The built installation ISO is missing: %s"
+msgstr ""
+
+#: deployment/portable.py:123
+#, python-brace-format
+msgid "The built installation ISO is missing: {path}"
+msgstr ""
+
+#: deployment/campaign_host.py:46
+msgid "The campaign does not support cleanup for this backend."
+msgstr ""
+
+#: deployment/campaign.py:498
+msgid "The case has retained resources; inspect its state first."
+msgstr ""
+
+#: deployment/inspection.py:97
+#, python-brace-format
+msgid "The check failed: {value1}"
+msgstr ""
+
+#: deployment/campaign.py:398
+msgid "The checksum did not detect the corrupted copy."
+msgstr ""
+
+#: libvirt/create.sh:22
+msgid "The command accepts at most one option."
+msgstr ""
+
+#: deployment/scaffold.py:27
+msgid "The configuration has both a file and a directory; keep only one definition."
+msgstr ""
+
+#: deployment/campaign.py:548
+msgid "The corresponding offline export must pass first."
+msgstr ""
+
+#: proxmox/lab/configure.sh:26
+msgid "The data disk contains recognized data; nothing will be erased."
+msgstr ""
+
+#: proxmox/lab/configure.sh:33
+msgid "The data disk does not belong to the expected LVM group."
+msgstr ""
+
+#: proxmox/lab/configure.sh:8
+msgid "The data disk does not have the expected serial."
+msgstr ""
+
+#: proxmox/lab/configure.sh:23
+msgid "The data disk has partitions or other attached devices."
+msgstr ""
+
+#: proxmox/lab/configure.sh:24
+msgid "The data disk is mounted."
+msgstr ""
+
+#: deployment/scaffold.py:104
+msgid "The declaration already exists; refusing to overwrite it."
+msgstr ""
+
+#: deployment/runtime.py:201
+msgid "The declared IPv4 address is not enabled on the RPi."
+msgstr ""
+
+#: deployment/host_agent.py:216
+msgid "The declared VirtualBox bridge adapter does not exist."
+msgstr ""
+
+#: deployment/campaign.py:198
+msgid "The declared host is unavailable over verified SSH."
+msgstr ""
+
+#: deployment/host_agent.py:109
+msgid "The dedicated storageDirectory must be an existing absolute directory outside the drive root."
+msgstr ""
+
+#: libvirt/create.sh:16
+msgid "The default mode only verifies the plan. --apply creates a VM using the selected image or iso method."
+msgstr ""
+
+#: deployment/host_agent.py:210
+msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
+msgstr ""
+
+#: deployment/runtime.py:188
+msgid "The direct SSH target does not match the declared VM architecture and hostname."
+msgstr ""
+
+#: rpi/guest-install.sh:32
+msgid "The disk already contains child devices."
+msgstr ""
+
+#: deployment/guest-install.sh:23 hyperv/guest-install.sh:25 libvirt/guest-install.sh:25
+msgid "The disk already contains partitions."
+msgstr ""
+
+#: deployment/guest-install.sh:24 libvirt/guest-install.sh:26 rpi/guest-install.sh:33
+msgid "The disk already contains signatures."
+msgstr ""
+
+#: hyperv/guest-install.sh:27
+msgid "The disk contains signatures."
+msgstr ""
+
+#: libvirt/policy.py:33
+msgid "The disk does not belong to the declared storage."
+msgstr ""
+
+#: libvirt/reset.py:103
+msgid "The disk file still exists after removal."
+msgstr ""
+
+#: deployment/host_agent.py:767
+msgid "The disk has a backing image or unverified origin; refusing reset."
+msgstr ""
+
+#: rpi/guest-install.sh:29 rpi/install.py:62
+msgid "The disk has child devices other than regular partitions."
+msgstr ""
+
+#: hyperv/guest-install.sh:26 rpi/guest-install.sh:26
+msgid "The disk is mounted."
+msgstr ""
+
+#: hyperv/host.ps1:67
+msgid "The disk is shared with another VM."
+msgstr ""
+
+#: rpi/guest-install.sh:25
+msgid "The disk is too small."
+msgstr ""
+
+#: deployment/host_agent.py:771
+msgid "The disk is used by another VM or snapshot; refusing reset."
+msgstr ""
+
+#: rpi/install.py:41
+msgid "The disk listing is not a tree; partitions cannot be assigned safely."
+msgstr ""
+
+#: libvirt/create.sh:47
+msgid "The disk name does not match the test VM."
+msgstr ""
+
+#: libvirt/reset.py:71
+msgid "The disk or NVRAM is missing, is a link or is a shared file; refusing reset."
+msgstr ""
+
+#: libvirt/storage.py:31
+msgid "The disk or NVRAM is shared with another VM; refusing writes or removal."
+msgstr ""
+
+#: deployment/inspection.py:115
+msgid "The disk or environment does not match the installation; this may be an installation ISO or recovery SD."
+msgstr ""
+
+#: deployment/host_agent.py:298
+msgid "The disk record must not be a link."
+msgstr ""
+
+#: deployment/campaign.py:309
+msgid "The evaluated test VM network does not match the specified values."
+msgstr ""
+
+#: deployment/campaign.py:373
+msgid "The export does not match the selected platform and method."
+msgstr ""
+
+#: deployment/campaign.py:401
+msgid "The export overwrote an existing bundle."
+msgstr ""
+
+#: deployment/campaign.py:366
+msgid "The export preview wrote a bundle."
+msgstr ""
+
+#: deployment/campaign.py:382
+msgid "The exported disk has an incorrect format or capacity."
+msgstr ""
+
+#: deployment/campaign.py:376
+msgid "The exported lock does not match the manifest."
+msgstr ""
+
+#: deployment/scaffold.py:66
+msgid "The generated MAC conflicts with an existing one; run the command again."
+msgstr ""
+
+#: libvirt/install.py:70
+msgid "The guest address is outside the expected network."
+msgstr ""
+
+#: deployment/runtime.py:266
+msgid "The guest address must differ from the Windows host address."
+msgstr ""
+
+#: hyperv/guest-install.sh:18 libvirt/guest-install.sh:18
+msgid "The guest did not boot through UEFI."
+msgstr ""
+
+#: rpi/guest-install.sh:21 rpi/install.py:42
+msgid "The guest is not ARM64."
+msgstr ""
+
+#: rpi/install.py:43
+msgid "The guest is not a Raspberry Pi 5."
+msgstr ""
+
+#: deployment/guest-install.sh:14 hyperv/guest-install.sh:16 libvirt/guest-install.sh:16
+msgid "The guest is not an installation environment."
+msgstr ""
+
+#: rpi/guest-install.sh:22
+msgid "The guest is not running the prepared installation environment."
+msgstr ""
+
+#: rpi/install.py:55
+msgid "The guest is not running the prepared installation environment. Only --stage is available."
+msgstr ""
+
+#: hyperv/guest-install.sh:14
+msgid "The guest is not x86_64."
+msgstr ""
+
+#: deployment/campaign.py:743
+msgid "The handed-off VM did not start verified SSH within the timeout."
+msgstr ""
+
+#: deployment/campaign.py:697
+msgid "The handed-off VM has no verified address."
+msgstr ""
+
+#: deployment/campaign.py:559
+msgid "The handoff bundle's working declaration must not be a symbolic link."
+msgstr ""
+
+#: deployment/campaign.py:572
+msgid "The handoff target already exists; import is not allowed."
+msgstr ""
+
+#: deployment/portable.py:103
+#, python-brace-format
+msgid "The host adapter did not return JSON: {value1}"
+msgstr ""
+
+#: deployment/runtime.py:20
+msgid "The host did not respond."
+msgstr ""
+
+#: deployment/discovery.py:59
+msgid "The host did not return the state of all requested VMs."
+msgstr ""
+
+#: deployment/scaffold.py:54
+msgid "The host does not match the selected backend."
+msgstr ""
+
+#: deployment/host_agent.py:103
+msgid "The host hostname does not match the declaration."
+msgstr ""
+
+#: deployment/host_agent.py:106
+msgid "The host operating system does not match the declaration."
+msgstr ""
+
+#: deployment/host_agent.py:93
+msgid "The hypervisor tool path is missing."
+msgstr ""
+
+#: deployment/host_agent.py:966
+msgid "The image SHA256 is missing."
+msgstr ""
+
+#: hyperv/host.ps1:149 libvirt/install.py:48
+msgid "The image method must not have an installation ISO attached."
+msgstr ""
+
+#: deployment/cleanup.py:107
+#, python-brace-format
+msgid "The image root must be a directory: {value1}"
+msgstr ""
+
+#: deployment/host_agent.py:990
+msgid "The image transfer is incomplete or corrupted."
+msgstr ""
+
+#: deployment/guest-install.sh:17 libvirt/guest-install.sh:19
+msgid "The installation ISO is not attached."
+msgstr ""
+
+#: deployment/portable.py:189
+msgid "The installation ISO is unreachable; leaving the VM unchanged."
+msgstr ""
+
+#: proxmox/lab/create.py:72
+msgid "The installation ISO must not be a symbolic link."
+msgstr ""
+
+#: deployment/guest-install.sh:16
+msgid "The installation VM did not boot through UEFI."
+msgstr ""
+
+#: libvirt/provision.py:36
+#, python-brace-format
+msgid "The installation environment is not ready: {value1}"
+msgstr ""
+
+#: rpi/install.py:57
+msgid "The installation media contains different pinned outputs."
+msgstr ""
+
+#: proxmox/lab/create.py:137
+#, python-brace-format
+msgid "The installer is running. The password is in {path}; verify the installation result separately."
+msgstr ""
+
+#: deployment/portable.py:265
+msgid "The iso method creates a new VM with a blank disk; install verifies the installation environment, writes the system and detaches the ISO."
+msgstr ""
+
+#: rpi/recovery-test.py:73
+msgid "The kernel is not loaded."
+msgstr ""
+
+#: rpi/recovery-test.py:76
+msgid "The kernel was not unloaded."
+msgstr ""
+
+#: deployment/updater.py:164
+msgid "The kernel, initrd and boot parameters match the running system; no reboot is needed."
+msgstr ""
+
+#: proxmox/lab/create.py:58
+#, python-brace-format
+msgid "The lab disk already exists: {path}"
+msgstr ""
+
+#: proxmox/lab/create.py:51
+msgid "The lab network already exists; partial state requires inspection."
+msgstr ""
+
+#: proxmox/lab/create.py:64
+msgid "The lab requires at least 100 GiB of free storage."
+msgstr ""
+
+#: proxmox/lab/create.py:62
+msgid "The lab subnet overlaps an existing route."
+msgstr ""
+
+#: deployment/runtime.py:152
+msgid "The libvirt VM identity does not match the declaration."
+msgstr ""
+
+#: proxmox/lab/finish.py:20
+msgid "The libvirt VM identity does not match the dedicated Proxmox lab."
+msgstr ""
+
+#: deployment/runtime.py:156
+msgid "The libvirt VM is missing the declared owner marker."
+msgstr ""
+
+#: deployment/portable.py:35
+msgid "The local manager currently supports Linux; use SSH for Windows."
+msgstr ""
+
+#: deployment/host_agent.py:858
+msgid "The managed ISO has different content; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:855
+msgid "The managed ISO is not verified; refusing reset."
+msgstr ""
+
+#: deployment/host_agent.py:369
+msgid "The managed ISO path is not a safe existing directory."
+msgstr ""
+
+#: deployment/host_agent.py:683
+msgid "The managed installation ISO is missing."
+msgstr ""
+
+#: deployment/campaign.py:646
+msgid "The manually created VM did not obtain an address."
+msgstr ""
+
+#: deployment/host_agent.py:236
+msgid "The matching VMware VM is already running."
+msgstr ""
+
+#: hyperv/host.ps1:101
+msgid "The media directory is a reparse point."
+msgstr ""
+
+#: hyperv/host.ps1:23
+msgid "The media hash is missing."
+msgstr ""
+
+#: hyperv/manage.py:91
+msgid "The media path for the selected deployment method is missing."
+msgstr ""
+
+#: deployment/host_agent.py:972 hyperv/host.ps1:53
+msgid "The method differs from the created VM; use the original --method."
+msgstr ""
+
+#: libvirt/install.py:61
+msgid "The network has no NAT."
+msgstr ""
+
+#: libvirt/create.sh:76
+msgid "The network is inactive."
+msgstr ""
+
+#: deployment/campaign.py:314
+msgid "The new test target already exists; it will not be taken over."
+msgstr ""
+
+#: proxmox/lab/create.py:81
+msgid "The official ISO checksum does not match."
+msgstr ""
+
+#: deployment/portable.py:52
+msgid "The offline target has no connected host; use show or export."
+msgstr ""
+
+#: deployment/campaign.py:420
+#, python-brace-format
+msgid "The operational target has findings: {checks}. All checks were read-only."
+msgstr ""
+
+#: deployment/cli.py:367
+msgid "The operator creates the VM; prepare the image through offline export."
+msgstr ""
+
+#: deployment/check_inventory.py:191
+msgid "The orphaned host declaration was not rejected."
+msgstr ""
+
+#: deployment/exporter.py:21
+msgid "The output directory already exists; export will not overwrite it."
+msgstr ""
+
+#: deployment/host_agent.py:132
+msgid "The owner marker must not be a link."
+msgstr ""
+
+#: deployment/campaign.py:318
+msgid "The plan changed hypervisor state."
+msgstr ""
+
+#: rpi/install.py:115
+msgid "The plan includes erasing existing partitions; this only happens with --apply."
+msgstr ""
+
+#: deployment/host_agent.py:378
+msgid "The prebuilt image is missing."
+msgstr ""
+
+#: libvirt/create.sh:51
+#, c-format
+msgid "The prebuilt system disk is missing: %s"
+msgstr ""
+
+#: proxmox/lab/create.py:101
+msgid "The prepared ISO already exists; nothing will be overwritten."
+msgstr ""
+
+#: deployment/cleanup.py:123
+msgid "The preview cannot prove whether files are used outside this directory."
+msgstr ""
+
+#: deployment/cleanup.py:131
+msgid "The preview deletes nothing. A stopped VM or old file is not proof of disuse. Do not add shared disk and generation sizes as reclaimable space."
+msgstr ""
+
+#: deployment/campaign.py:301
+msgid "The reserved static address for the test NAT network is missing."
+msgstr ""
+
+#: deployment/exporter.py:78
+msgid "The result does not contain exactly one image of the expected format."
+msgstr ""
+
+#: hyperv/guest-install.sh:17 libvirt/guest-install.sh:17
+msgid "The root filesystem is not the installation tmpfs."
+msgstr ""
+
+#: deployment/check_images.py:71
+msgid "The root partition is not ext4."
+msgstr ""
+
+#: deployment/campaign.py:751
+msgid "The running VM does not have the expected static address, prefix or default gateway."
+msgstr ""
+
+#: deployment/campaign.py:754
+msgid "The running VM is not using the expected DNS servers."
+msgstr ""
+
+#: deployment/runtime.py:328
+#, python-brace-format
+msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
 
 #: deployment/host_agent.py:135
-msgid "Uložená deklarace VM neodpovídá aktuální; nic nepřepisuji."
+msgid "The saved VM declaration differs from the current one; nothing will be overwritten."
+msgstr ""
+
+#: hyperv/probe.py:20
+msgid "The script contains a reserved input terminator."
+msgstr ""
+
+#: deployment/campaign.py:325
+msgid "The state after create does not match the method."
+msgstr ""
+
+#: deployment/campaign.py:305
+msgid "The static network test did not change exactly one declaration to static configuration."
+msgstr ""
+
+#: deployment/campaign.py:120
+#, python-brace-format
+msgid "The step exited with code {code}: {detail}"
+msgstr ""
+
+#: deployment/campaign.py:115
+msgid "The step timed out; resource state requires inspection."
+msgstr ""
+
+#: hyperv/host.ps1:35
+msgid "The storage is a reparse point."
+msgstr ""
+
+#: libvirt/create.sh:64
+msgid "The storage is inactive."
+msgstr ""
+
+#: libvirt/create.sh:67
+msgid "The storage path does not match the manifest."
+msgstr ""
+
+#: deployment/host_agent.py:112
+msgid "The storage path must not contain a symbolic link."
+msgstr ""
+
+#: deployment/runtime.py:337
+msgid "The system check did not return the expected result."
+msgstr ""
+
+#: proxmox/lab/configure.sh:7
+msgid "The system disk does not have the expected serial."
+msgstr ""
+
+#: hyperv/reset.ps1:50
+msgid "The system disk does not match or an additional disk is attached."
+msgstr ""
+
+#: deployment/guest-install.sh:37
+msgid "The system is installed on disk, ready for shutdown and ISO detachment."
+msgstr ""
+
+#: deployment/guest-install.sh:34 libvirt/guest-install.sh:37
+msgid "The system profile does not match after installation."
+msgstr ""
+
+#: deployment/updater.py:128
+msgid "The target changed during transfer. Activation was not performed; run update again."
+msgstr ""
+
+#: deployment/updater.py:64
+msgid "The target declaration differs from the running CLI. Run the command again through the current nixberry launcher."
+msgstr ""
+
+#: libvirt/create.sh:70
+msgid "The target disk already exists in storage."
+msgstr ""
+
+#: libvirt/create.sh:73
+msgid "The target disk already exists. It will not be overwritten."
+msgstr ""
+
+#: rpi/install.py:64
+msgid "The target disk already has partitions or child devices."
+msgstr ""
+
+#: rpi/install.py:65
+msgid "The target disk contains signatures."
+msgstr ""
+
+#: rpi/install.py:59
+msgid "The target disk is mounted."
+msgstr ""
+
+#: libvirt/install.py:44 libvirt/reset.py:32
+msgid "The target disk is not vda."
+msgstr ""
+
+#: rpi/install.py:51
+msgid "The target disk is too small."
+msgstr ""
+
+#: deployment/runtime.py:250
+msgid "The target does not have exactly one usable IPv4 address. Details: probe TARGET."
+msgstr ""
+
+#: deployment/inspection.py:60
+msgid "The target identity matches the declaration."
+msgstr ""
+
+#: rpi/guest-install.sh:23
+msgid "The target is not a block device."
+msgstr ""
+
+#: deployment/campaign.py:471
+msgid "The target is not absent after cleanup."
+msgstr ""
+
+#: rpi/install.py:48
+msgid "The target is not an unambiguous physical disk."
+msgstr ""
+
+#: deployment/inspection.py:62
+#, python-brace-format
+msgid "The target is not running: {value1}"
+msgstr ""
+
+#: deployment/runtime.py:234
+msgid "The target is not running; login is unavailable."
+msgstr ""
+
+#: deployment/updater.py:17
+msgid "The target or build did not return a valid system generation path."
+msgstr ""
+
+#: deployment/diffing.py:85
+msgid "The target system changed during the build. Run diff again."
+msgstr ""
+
+#: deployment/updater.py:118
+msgid "The target system changed during the build. Run update again."
+msgstr ""
+
+#: deployment/diffing.py:94
+msgid "The target system changed during transfer. Run diff again."
+msgstr ""
+
+#: deployment/host_agent.py:959
+msgid "The target's managed ISO already exists; nothing will be overwritten."
+msgstr ""
+
+#: libvirt/create.sh:60
+msgid "The test VM already exists. It will not be overwritten or rebooted."
+msgstr ""
+
+#: deployment/campaign.py:432
+msgid "The test declaration does not have the expected default permission; stopping cleanup."
+msgstr ""
+
+#: deployment/campaign.py:161
+msgid "The test name exceeds the CLI limit."
+msgstr ""
+
+#: libvirt/create.sh:79
+msgid "The test network must use NAT."
+msgstr ""
+
+#: deployment/host_agent.py:986
+msgid "The transfer exceeded the declared length."
+msgstr ""
+
+#: deployment/campaign.py:284
+msgid "The update did not change the system generation."
+msgstr ""
+
+#: deployment/campaign.py:280
+msgid "The update preview changed the running system."
 msgstr ""
 
 #: hyperv/host.ps1:104
-msgid "Upload už existuje."
+msgid "The upload already exists."
+msgstr ""
+
+#: deployment/cleanup.py:87
+msgid "The volume did not report a size in bytes."
+msgstr ""
+
+#: libvirt/reset.py:56
+msgid "The volume does not have the dedicated test VM name."
+msgstr ""
+
+#: libvirt/reset.py:36
+msgid "The volume is not qcow2."
+msgstr ""
+
+#: libvirt/policy.py:28
+msgid "The volume name must match the declared VM."
+msgstr ""
+
+#: libvirt/reset.py:37
+msgid "The volume uses a backing image."
+msgstr ""
+
+#: deployment/host_agent.py:961
+msgid "There is not enough free space in the Proxmox ISO storage."
+msgstr ""
+
+#: deployment/host_agent.py:963
+msgid "There is not enough storage space for the image and declared VM capacity."
+msgstr ""
+
+#: deployment/runtime.py:144
+msgid "This adapter only supports local libvirt."
+msgstr ""
+
+#: rpi/local-install.py:26
+msgid "This command requires the prepared full-SD installation environment."
+msgstr ""
+
+#: proxmox/lab/create.py:45
+msgid "This lab is reserved for the local Nixon host."
+msgstr ""
+
+#: deployment/cli.py:226
+msgid "This operation does not accept --apply."
+msgstr ""
+
+#: hyperv/host.ps1:147
+msgid "This operation requires the image method."
+msgstr ""
+
+#: deployment/scaffold.py:53
+msgid "This procedure currently supports only local libvirt."
+msgstr ""
+
+#: rpi/local-install.py:27
+msgid "This target is not included on the installation SD."
+msgstr ""
+
+#: hyperv/manage.py:166
+#, python-brace-format
+msgid "Timed out waiting for the guest: {last_message}"
+msgstr ""
+
+#: deployment/portable.py:139
+#, python-brace-format
+msgid "Transferring and verifying installation media; method {method}…"
+msgstr ""
+
+#: deployment/updater.py:122
+#, python-brace-format
+msgid "Transferring the system to {host}…"
+msgstr ""
+
+#: hyperv/manage.py:137
+#, python-brace-format
+msgid "Transferring {bytes} media bytes to Windows; SHA256={sha256}"
+msgstr ""
+
+#: hyperv/host.ps1:11
+msgid "UEFI profile does not match."
+msgstr ""
+
+#: libvirt/policy.py:24
+msgid "UUID is not in canonical form."
+msgstr ""
+
+#: deployment/check_images.py:47
+msgid "Unexpected GPT layout."
+msgstr ""
+
+#: deployment/inspection.py:40
+msgid "Unexpected diagnostic response."
+msgstr ""
+
+#: deployment/check_images.py:63
+msgid "Unexpectedly large ESP."
+msgstr ""
+
+#: deployment/cli.py:124
+msgid "Unified management of declared RPi and VMs: operations, deployment and offline export."
+msgstr ""
+
+#: rpi/recovery-test.py:34
+msgid "Unknown RPi recovery target."
+msgstr ""
+
+#: rpi/install.py:94
+msgid "Unknown RPi target."
+msgstr ""
+
+#: deployment/host_agent.py:187
+msgid "Unknown VBoxManage list vms output."
+msgstr ""
+
+#: deployment/campaign_host.py:17
+msgid "Unknown campaign operation."
+msgstr ""
+
+#: deployment/scaffold.py:30
+#, python-brace-format
+msgid "Unknown configuration {name}. Available configurations: {names}."
+msgstr ""
+
+#: deployment/inspection.py:144
+#, python-brace-format
+msgid "Unknown df format: {line}"
+msgstr ""
+
+#: libvirt/create.sh:19
+#, c-format
+msgid "Unknown option: %s"
+msgstr ""
+
+#: deployment/cli.py:229 deployment/cli.py:271
+#, python-brace-format
+msgid "Unknown target. Available targets: {value1}"
+msgstr ""
+
+#: deployment/cleanup.py:69
+#, python-brace-format
+msgid "Unknown volume list line: {line}"
+msgstr ""
+
+#: deployment/messages.py:150
+#, python-brace-format
+msgid "Unrecognized arguments: {arguments}"
+msgstr ""
+
+#: deployment/scaffold.py:40
+msgid "Unsupported backend for a new declaration."
+msgstr ""
+
+#: deployment/host_agent.py:62
+msgid "Unsupported backend."
+msgstr ""
+
+#: deployment/host_agent.py:64
+msgid "Unsupported host system."
+msgstr ""
+
+#: deployment/campaign.py:764
+msgid "Unsupported test configuration value."
+msgstr ""
+
+#: deployment/updater.py:86
+msgid "Updates are not implemented for this platform."
+msgstr ""
+
+#: hyperv/host.ps1:117
+msgid "Upload hash does not match."
+msgstr ""
+
+#: hyperv/host.ps1:116
+msgid "Upload length does not match."
+msgstr ""
+
+#: deployment/messages.py:132
+msgid "Usage: "
+msgstr ""
+
+#: deployment/cli.py:298
+msgid "Usage: nixberry export TARGET --output NEW_DIRECTORY."
+msgstr ""
+
+#: libvirt/create.sh:15
+msgid "Usage: nixberry-vm-create [--dry-run|--apply]"
+msgstr ""
+
+#: hyperv/reset.ps1:52
+msgid "VHDX size or origin does not match."
+msgstr ""
+
+#: hyperv/host.ps1:65
+msgid "VHDX type or size does not match."
 msgstr ""
 
 #: deployment/cli.py:78
 msgid "VM"
 msgstr ""
 
-#: deployment/host_agent.py:905
-msgid "VM byla odstraněná, ale její svazek zůstal; záznamy ponechávám pro ruční kontrolu."
+#: hyperv/host.ps1:57
+msgid "VM ID does not match."
 msgstr ""
 
-#: deployment/portable.py:238
-#, python-brace-format
-msgid "VM byla spuštěna, ale instalaci se nepodařilo ověřit; nic nezastavuji ani neopakuji vytvoření: {value1}"
-msgstr ""
-
-#: libvirt/install.py:124
-#, python-brace-format
-msgid "VM byla spuštěna, ale ověření systému selhalo: {error}"
-msgstr ""
-
-#: hyperv/reset.ps1:45
-msgid "VM je v nepodporovaném stavu; reset odmítám."
-msgstr ""
-
-#: deployment/portable.py:148
-msgid "VM je vytvořená s hotovým systémovým diskem; zatím nebyla spuštěná."
-msgstr ""
-
-#: hyperv/manage.py:150
-msgid "VM ještě nemá IP adresu."
-msgstr ""
-
-#: hyperv/host.ps1:155
-msgid "VM musí být korektně vypnutá."
-msgstr ""
-
-#: libvirt/policy.py:22
-msgid "VM musí mít bezpečný název nixberry-… do 63 znaků."
-msgstr ""
-
-#: libvirt/install.py:42
-msgid "VM musí mít právě jeden cílový disk."
-msgstr ""
-
-#: libvirt/install.py:54
-msgid "VM musí mít právě jednu síťovou kartu."
-msgstr ""
-
-#: hyperv/reset.ps1:55
-msgid "VM má checkpointy; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:794
-msgid "VM má další disk nebo neočekávané diskové soubory; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:756
-msgid "VM má další nebo cizí médium; reset odmítám."
-msgstr ""
-
-#: deployment/host_agent.py:649
-msgid "VM má médium mimo vlastní adresář; celková alokace není známá."
-msgstr ""
-
-#: deployment/host_agent.py:797
-msgid "VM má snapshot, uložený stav nebo zámek; reset odmítám."
-msgstr ""
-
-#: deployment/campaign_host.py:29 deployment/campaign_host.py:33 deployment/campaign_host.py:43
-msgid "VM má snapshot; úklid byl zastaven."
-msgstr ""
-
-#: hyperv/host.ps1:70
-msgid "VM má snapshoty."
-msgstr ""
-
-#: libvirt/reset.py:83
-msgid "VM má snapshoty; odmítám odstranění."
-msgstr ""
-
-#: deployment/host_agent.py:753 deployment/host_agent.py:799 deployment/host_agent.py:834
-msgid "VM má snapshoty; reset odmítám."
-msgstr ""
-
-#: hyperv/manage.py:39
-msgid "VM má více možných IPv4 adres."
-msgstr ""
-
-#: deployment/campaign_host.py:22
-msgid "VM má zámek nebo snapshot; úklid byl zastaven."
-msgstr ""
-
-#: deployment/host_agent.py:898
-msgid "VM nebo její prostředky se během resetu změnily; nic nemažu."
-msgstr ""
-
-#: deployment/host_agent.py:664
-msgid "VM nebyla vytvořená pro instalaci z ISO."
-msgstr ""
-
-#: libvirt/install.py:144
-msgid "VM neběží."
-msgstr ""
-
-#: libvirt/policy.py:44
-msgid "VM nemá deklarovanou značku vlastníka."
-msgstr ""
-
-#: libvirt/reset.py:29
-msgid "VM nemá právě jeden disk."
-msgstr ""
-
-#: hyperv/host.ps1:148 libvirt/install.py:97
-msgid "VM není připravená ke spuštění z disku."
-msgstr ""
-
-#: libvirt/reset.py:79
-msgid "VM není v podporovaném stavu."
-msgstr ""
-
-#: deployment/host_agent.py:667
-msgid "VM není v požadovaném stavu pro práci s ISO."
-msgstr ""
-
-#: libvirt/reset.py:100
-msgid "VM není vypnutá; nic nemažeme."
-msgstr ""
-
-#: deployment/host_agent.py:672 deployment/host_agent.py:681 deployment/host_agent.py:695 hyperv/manage.py:182 libvirt/install.py:52
-msgid "VM nepoužívá očekávané ISO."
-msgstr ""
-
-#: deployment/campaign_host.py:26 deployment/campaign_host.py:37
-msgid "VM obsahuje neočekávané disky; úklid byl zastaven."
-msgstr ""
-
-#: hyperv/reset.ps1:33
-msgid "VM obsahuje rozdílový disk; reset odmítám."
-msgstr ""
-
-#: deployment/campaign.py:216
-msgid "VM při vypínání přešla do neočekávaného stavu."
-msgstr ""
-
-#: hyperv/reset.ps1:90
-msgid "VM se během resetu změnila; nic nemažu."
-msgstr ""
-
-#: hyperv/manage.py:196
-msgid "VM se korektně nevypnula."
-msgstr ""
-
-#: deployment/campaign.py:218
-msgid "VM se korektně nevypnula; další krok je zastaven."
-msgstr ""
-
-#: hyperv/reset.ps1:85
-msgid "VM se korektně nevypnula; nic nemažu."
-msgstr ""
-
-#: deployment/host_agent.py:894
-msgid "VM se korektně nevypnula; reset nic nemaže."
-msgstr ""
-
-#: deployment/portable.py:163 libvirt/install.py:188
-msgid "VM se nevypnula; ISO neodpojujeme."
-msgstr ""
-
-#: libvirt/reset.py:97
-msgid "VM se nevypnula; nic nemažeme."
-msgstr ""
-
-#: hyperv/host.ps1:42
-msgid "VM už existuje; nepřepisujeme ji."
-msgstr ""
-
-#: hyperv/manage.py:198
-msgid "VM vypnutá. Odpojuji ISO a nastavuji start z VHDX."
+#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:27
+msgid "VM UUID does not match."
 msgstr ""
 
 #: hyperv/manage.py:144
 #, python-brace-format
-msgid "VM vytvořená a spuštěná z ISO: {value1}"
+msgid "VM created and booted from ISO: {value1}"
 msgstr ""
 
 #: deployment/portable.py:146
-msgid "VM vytvořená a spuštěná z instalačního ISO."
+msgid "VM created and booted from the installation ISO."
 msgstr ""
 
 #: libvirt/create.sh:111
-msgid "VM vytvořená s hotovým diskem; install ji spustí a ověří."
+msgid "VM created with a prebuilt disk; install will start and verify it."
 msgstr ""
 
 #: hyperv/manage.py:146
-msgid "VM vytvořená s hotovým diskem; zatím není spuštěná."
+msgid "VM created with a prebuilt disk; it is not running yet."
 msgstr ""
 
-#: deployment/cli.py:437
-msgid "VM vytváří provozovatel; obraz lze připravit přes offline export."
+#: deployment/cli.py:137
+msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
+msgstr ""
+
+#: libvirt/install.py:39 libvirt/reset.py:26
+msgid "VM name does not match."
+msgstr ""
+
+#: hyperv/probe.py:57
+msgid "VM name for fast status; repeatable"
+msgstr ""
+
+#: hyperv/host.ps1:69 hyperv/reset.ps1:54
+msgid "VM network does not match."
+msgstr ""
+
+#: hyperv/reset.ps1:42
+msgid "VM ownership record does not match."
+msgstr ""
+
+#: hyperv/manage.py:198
+msgid "VM powered off. Detaching the ISO and configuring boot from VHDX."
+msgstr ""
+
+#: deployment/exporter.py:111 deployment/exporter.py:120
+msgid "VM system network: DHCP.\n"
 msgstr ""
 
 #: hyperv/manage.py:162
 #, python-brace-format
-msgid "VM {value1}; IP {address}; SSH dostupné."
+msgid "VM {value1}; IP {address}; SSH available."
 msgstr ""
 
-#: deployment/cli.py:432
+#: deployment/cli.py:362
 #, python-brace-format
 msgid "VM: {value1}"
 msgstr ""
@@ -2948,407 +3164,208 @@ msgstr ""
 
 #: libvirt/reset.py:88
 #, python-brace-format
-msgid "VM: {value1}; UUID: {value2}; stav: {state}"
-msgstr ""
-
-#: deployment/host_agent.py:219
-msgid "VMID nebo název Proxmox VM je obsazené v clusteru."
+msgid "VM: {value1}; UUID: {value2}; state: {state}"
 msgstr ""
 
 #: deployment/host_agent.py:319
-msgid "VMX nesmí být odkaz."
+msgid "VMX must not be a link."
 msgstr ""
 
-#: deployment/host_agent.py:791
-msgid "VMware VM má další nebo cizí médium; reset odmítám."
+#: deployment/reset.py:48
+msgid "Verified VM removal completed. The instance declaration was preserved."
 msgstr ""
 
-#: deployment/host_agent.py:326
-msgid "VMware konfigurace neodpovídá deklaraci."
+#: deployment/guest-install.sh:27
+msgid "Verified installation ISO, UUID, profile, UEFI, target system and blank disk."
 msgstr ""
 
-#: deployment/exporter.py:78
-msgid "Ve výsledku není právě jeden obraz očekávaného formátu."
+#: hyperv/guest-install.sh:30
+msgid "Verified: Hyper-V UUID, UEFI, manifest and blank disk."
 msgstr ""
 
-#: deployment/portable.py:128
+#: libvirt/install.py:203
+msgid "Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."
+msgstr ""
+
+#: libvirt/guest-install.sh:29
+msgid "Verified: installation VM, UUID, UEFI, pinned outputs and blank /dev/vda."
+msgstr ""
+
+#: deployment/cli.py:324 deployment/updater.py:156
 #, python-brace-format
-msgid "Ve výsledku sestavení chybí očekávaný obraz: {value1}"
+msgid "Verified: {name}, {hostname}, system on {root}."
 msgstr ""
 
-#: deployment/cli.py:66
-msgid "Velikost closure"
+#: deployment/cli.py:306
+msgid "Verify SHA256SUMS before transfer; instructions for the selected medium are in README.txt."
 msgstr ""
 
-#: deployment/cleanup.py:57
-msgid "Velikost disku VM nelze určit."
-msgstr ""
-
-#: deployment/inspection.py:206
-msgid "Velikosti zahrnují sdílené závislosti; nelze je sčítat ani považovat za uvolnitelné místo. review znamená ruční posouzení, nikoli povolení smazat. Všechny dochované generace drží GC roots."
-msgstr ""
-
-#: deployment/host_agent.py:385
-msgid "VirtualBox VM už existuje."
-msgstr ""
-
-#: deployment/host_agent.py:91
-msgid "VirtualBox potřebuje existující bridge adaptér."
-msgstr ""
-
-#: deployment/host_agent.py:531
-msgid "VirtualBox registr uživatele SSH, včetně médií a referencí snapshotů. review vyžaduje posouzení použití mimo tento registr. Sdílené disky nesčítej mezi VM."
+#: deployment/inspection.py:67
+msgid "Verify the SSH key and known host key; for a network error, also check the cable, port and declared MAC. Diagnostics do not scan the network or bypass identity checks."
 msgstr ""
 
 #: deployment/host_agent.py:264
-msgid "VirtualBox vlastník, disk, firmware nebo síť nesouhlasí."
+msgid "VirtualBox owner, disk, firmware or network does not match."
 msgstr ""
 
-#: deployment/messages.py:155
+#: deployment/host_agent.py:91
+msgid "VirtualBox requires an existing bridge adapter."
+msgstr ""
+
+#: libvirt/reset.py:33
+msgid "Volume name does not match."
+msgstr ""
+
+#: libvirt/reset.py:34
+msgid "Volume path does not match."
+msgstr ""
+
+#: libvirt/reset.py:35
+msgid "Volume size does not match."
+msgstr ""
+
+#: deployment/portable.py:227
+msgid "Waiting for the guest agent, SSH and verified boot from disk…"
+msgstr ""
+
+#: deployment/portable.py:180
+msgid "Waiting for the installation ISO, guest agent and SSH…"
+msgstr ""
+
+#: deployment/portable.py:208
+msgid "Waiting for the installation VM to shut down gracefully; the ISO remains attached."
+msgstr ""
+
+#: deployment/updater.py:161
 #, python-brace-format
-msgid "Volba {option} nepřijímá hodnotu {value}."
+msgid "When convenient: {command}"
 msgstr ""
 
-#: deployment/messages.py:153
+#: hyperv/probe.py:83
 #, python-brace-format
-msgid "Volba {option} potřebuje hodnotu."
+msgid "Windows and Hyper-V discovery did not finish within {seconds} seconds; check host availability."
 msgstr ""
 
-#: deployment/messages.py:143
-msgid "Volby"
+#: hyperv/probe.py:73
+msgid "Windows discovery failed."
 msgstr ""
 
-#: deployment/messages.py:157
-#, python-brace-format
-msgid "Volby {option} a {other} nelze kombinovat."
+#: deployment/cleanup.py:151 hyperv/host.ps1:8 hyperv/reset.ps1:9
+msgid "Windows host does not match."
 msgstr ""
 
-#: deployment/scaffold.py:48
-#, python-brace-format
-msgid "Vyber --host z deklarovaných hostitelů backendu {backend}: {hosts}. Pro přípravu bez hypervizoru použij --offline."
+#: deployment/portable.py:269
+msgid "With --apply, a prebuilt disk is imported; no existing VM is formatted. install starts and verifies the prebuilt system."
 msgstr ""
 
-#: deployment/cli.py:348
-#, python-brace-format
-msgid "Vyber cíl: {value1}. Libovolná adresa není povolená."
+#: libvirt/provision.py:23
+msgid "With --apply: create the VM and complete the selected deployment method, including verified boot from disk."
 msgstr ""
 
-#: deployment/scaffold.py:42
-msgid "Vyber nové jméno cíle: 1–40 malých písmen, číslic a pomlček, s písmenem na začátku."
+#: deployment/updater.py:103
+msgid "Without --apply, no target connection, build or system change is performed."
 msgstr ""
 
-#: deployment/scaffold.py:66
-msgid "Vygenerovaná MAC koliduje; spusť příkaz znovu."
-msgstr ""
-
-#: deployment/campaign.py:309
-msgid "Vyhodnocená síť testovací VM neodpovídá zadaným hodnotám."
-msgstr ""
-
-#: deployment/host_agent.py:109
-msgid "Vyhrazený storageDirectory musí být existující absolutní adresář mimo kořen disku."
-msgstr ""
-
-#: deployment/cleanup.py:46
-msgid "Vypnutá VM nemusí být nepoužívaná; může sloužit k obnově."
-msgstr ""
-
-#: deployment/campaign.py:223 deployment/campaign.py:665
-msgid "Vypnutí VM se nepodařilo vyžádat."
-msgstr ""
-
-#: hyperv/manage.py:193
-msgid "Vypnutí hosta selhalo."
-msgstr ""
-
-#: deployment/portable.py:207
-msgid "Vypnutí instalační VM selhalo; ISO zůstává připojené."
-msgstr ""
-
-#: deployment/cli.py:275
-#, python-brace-format
-msgid "Vytvořena deklarace: {path}"
-msgstr ""
-
-#: deployment/cli.py:66
-msgid "Vytvořeno (UTC)"
-msgstr ""
-
-#: libvirt/provision.py:14
-msgid "Vytvoření a instalace testovací VM jedním příkazem; bez --apply pouze plán."
-msgstr ""
-
-#: deployment/portable.py:143
-msgid "Vytvoření nevrátilo ověřenou vypnutou VM."
-msgstr ""
-
-#: proxmox/lab/create.py:144
-msgid "Vytvořit nový lab a spustit instalaci"
-msgstr ""
-
-#: deployment/extract_messages.py:65
-msgid "Vytvoří překladovou šablonu z Pythonu, Bashe i PowerShellu bez dalších závislostí."
-msgstr ""
-
-#: libvirt/create.sh:16
-msgid "Výchozí režim jen ověří plán. --apply vytvoří VM podle zvolené metody image nebo iso."
-msgstr ""
-
-#: deployment/inspection.py:159
-msgid "Výchozí trasa je přítomná."
-msgstr ""
-
-#: rpi/install.py:41
-msgid "Výpis disků není stromový; nelze bezpečně přiřadit oddíly."
-msgstr ""
-
-#: deployment/cli.py:310
-msgid "Výsledek"
-msgstr ""
-
-#: deployment/campaign.py:71
-msgid "Výsledky kampaně ukládej mimo recept."
-msgstr ""
-
-#: deployment/exporter.py:21
-msgid "Výstupní adresář už existuje; export jej nepřepíše."
-msgstr ""
-
-#: rpi/install.py:130
-msgid "Výstupy předané a ověřené. Oddíly, aktivní systém a start RPi se nezměnily."
-msgstr ""
-
-#: deployment/check_inventory.py:202
-msgid "Všechny zkoušky evidence prošly; VM ani hostitelé nebyli kontaktovaní."
-msgstr ""
-
-#: deployment/runtime.py:118
-msgid "Windows hostitel neodpovídá deklaraci."
-msgstr ""
-
-#: deployment/messages.py:152
-#, python-brace-format
-msgid "Zadej jednu z voleb: {arguments}"
-msgstr ""
-
-#: deployment/cli.py:261
-#, python-brace-format
-msgid "Zadej jméno nového cíle: {value1} JMÉNO."
-msgstr ""
-
-#: deployment/cli.py:210
-msgid "Zahrnout vymazání SSD při obnově RPi"
-msgstr ""
-
-#: rpi/install.py:90
-msgid "Zahrnout vymazání nepřipojených oddílů do plánu; provede se pouze s --apply"
-msgstr ""
-
-#: deployment/cleanup.py:154
-msgid "Zahrnuje běžící i vypnuté VM a jejich checkpointy; cizí disky nejsou kandidáty k mazání."
-msgstr ""
-
-#: deployment/host_agent.py:132
-msgid "Značka vlastníka nesmí být odkaz."
-msgstr ""
-
-#: deployment/messages.py:145
-msgid "Zobrazit nápovědu a skončit"
-msgstr ""
-
-#: deployment/cli.py:216
-msgid "Zobrazit plán bez zápisu; diff/diffg bez připojení a sestavení"
-msgstr ""
-
-#: deployment/host_agent.py:298
-msgid "Záznam disku nesmí být odkaz."
-msgstr ""
-
-#: deployment/runtime.py:96
-msgid "access podporuje offline VM bez správy hypervizoru."
+#: deployment/cli.py:33
+msgid "absent"
 msgstr ""
 
 #: deployment/runtime.py:75
-msgid "access přijímá pouze host, port, user, knownHostsFile a hostKeyAlias."
+msgid "access only accepts host, port, user, knownHostsFile and hostKeyAlias."
 msgstr ""
 
 #: deployment/runtime.py:78
-msgid "access vyžaduje host, celočíselný port a účet root."
+msgid "access requires a host, an integer port and the root account."
 msgstr ""
 
-#: deployment/cli.py:332 deployment/cli.py:427 rpi/local-install.py:37
-msgid "ano"
+#: deployment/runtime.py:96
+msgid "access supports offline VMs without hypervisor management."
 msgstr ""
 
-#: deployment/cli.py:33
-msgid "běží"
+#: deployment/cli.py:263 deployment/cli.py:354
+msgid "configured"
 msgstr ""
 
 #: deployment/cli.py:34
-msgid "chyba"
-msgstr ""
-
-#: deployment/diffing.py:59
-msgid "diff spusť přes spouštěč nixberry s úplným připnutým receptem."
+msgid "error"
 msgstr ""
 
 #: deployment/runtime.py:83
-msgid "knownHostsFile musí být absolutní cesta bez řídicích znaků."
+msgid "knownHostsFile must be an absolute path without control characters."
 msgstr ""
 
-#: deployment/cli.py:323
-msgid "list nepřijímá cíl ani režim zápisu."
-msgstr ""
-
-#: deployment/cli.py:332 deployment/cli.py:424
-msgid "nastavená"
-msgstr ""
-
-#: deployment/cli.py:427 rpi/local-install.py:37
-msgid "ne"
-msgstr ""
-
-#: deployment/cli.py:332 deployment/cli.py:424
-msgid "nenastavená"
-msgstr ""
-
-#: deployment/cli.py:333 deployment/cli.py:36 deployment/cli.py:421
-msgid "nespravovaný"
-msgstr ""
-
-#: deployment/cli.py:33
-msgid "nevytvořená"
-msgstr ""
-
-#: deployment/cli.py:259
-msgid "new-* vytvoří pouze místní deklaraci; tyto volby nepřijímá."
-msgstr ""
-
-#: deployment/cli.py:52
-msgid "neznámá"
-msgstr ""
-
-#: deployment/portable.py:253
-msgid "probe je pouze čtení."
-msgstr ""
-
-#: deployment/portable.py:44
-msgid "pythonCommand musí být název příkazu dostupný v PATH hostitele."
+#: deployment/cli.py:254
+msgid "list does not accept a target or write mode."
 msgstr ""
 
 #: deployment/cli.py:34
-msgid "správa nenastavená"
+msgid "management not configured"
 msgstr ""
 
-#: deployment/cli.py:455
-msgid "ssh nepřijímá --dry-run; stav zjistíš přes status."
+#: deployment/cli.py:190
+msgid "new-* only creates a local declaration; it does not accept these options."
 msgstr ""
 
-#: deployment/portable.py:38
-msgid "transport musí být local nebo ssh."
+#: deployment/cli.py:357 rpi/local-install.py:37
+msgid "no"
 msgstr ""
 
-#: deployment/updater.py:90
-msgid "update spusť přes spouštěč nixberry s úplným připnutým receptem."
+#: deployment/portable.py:253
+msgid "probe is read-only."
 msgstr ""
 
-#: deployment/cli.py:380
-msgid "verify spusť přes spouštěč nixberry z kořene projektu."
+#: deployment/portable.py:44
+msgid "pythonCommand must be a command name available in the host PATH."
 msgstr ""
 
 #: deployment/cli.py:33
-msgid "vypnutá"
+msgid "running"
+msgstr ""
+
+#: deployment/cli.py:385
+msgid "ssh does not accept --dry-run; use status to check the state."
+msgstr ""
+
+#: deployment/cli.py:33
+msgid "stopped"
+msgstr ""
+
+#: deployment/portable.py:38
+msgid "transport must be local or ssh."
+msgstr ""
+
+#: deployment/cli.py:263 deployment/cli.py:354
+msgid "unconfigured"
+msgstr ""
+
+#: deployment/cli.py:52
+msgid "unknown"
+msgstr ""
+
+#: deployment/cli.py:264 deployment/cli.py:351 deployment/cli.py:36
+msgid "unmanaged"
+msgstr ""
+
+#: deployment/cli.py:263 deployment/cli.py:357 rpi/local-install.py:37
+msgid "yes"
 msgstr ""
 
 #: deployment/inspection.py:103
 #, python-brace-format
-msgid "{actual} (očekáváno {value2})"
+msgid "{actual} (expected {value2})"
 msgstr ""
 
 #: deployment/reset.py:57
 #, python-brace-format
-msgid "{error} Po přerušení nebo částečném odstranění nejprve zkontroluj status a úložiště; operaci automaticky neopakuji."
+msgid "{error} After interruption or partial removal, inspect status and storage first; the operation will not be retried automatically."
 msgstr ""
 
 #: deployment/inspection.py:129
 #, python-brace-format
-msgid "{temperature:.1f} °C (orientační práh 80 °C)"
+msgid "{temperature:.1f} °C (indicative threshold 80 °C)"
 msgstr ""
 
 #: deployment/inspection.py:141
 #, python-brace-format
-msgid "{value1}: souborový systém neudává inody."
-msgstr ""
-
-#: deployment/campaign_host.py:14
-msgid "Úklid kampaně vyžaduje ověřenou vypnutou VM."
-msgstr ""
-
-#: deployment/cleanup.py:26
-msgid "Úklid libvirt podporuje pouze místní qemu:///system."
-msgstr ""
-
-#: deployment/campaign_host.py:46
-msgid "Úklid tohoto backendu kampaň nepodporuje."
-msgstr ""
-
-#: deployment/campaign.py:427
-#, python-brace-format
-msgid "Úklid vlastního testovacího cíle: {name}"
-msgstr ""
-
-#: deployment/host_agent.py:365
-#, python-brace-format
-msgid "Úložiště ISO {storage} není aktivní na cílovém uzlu."
-msgstr ""
-
-#: hyperv/host.ps1:35
-msgid "Úložiště je reparse point."
-msgstr ""
-
-#: proxmox/lab/create.py:54
-msgid "Úložiště labu nesmí vést přes symbolický odkaz."
-msgstr ""
-
-#: libvirt/policy.py:31
-msgid "Úložiště musí mít absolutní cestu bez nadřazených složek."
-msgstr ""
-
-#: libvirt/create.sh:64
-msgid "Úložiště není aktivní."
-msgstr ""
-
-#: deployment/campaign.py:115
-msgid "Časový limit kroku; stav prostředků vyžaduje kontrolu."
-msgstr ""
-
-#: deployment/portable.py:227
-msgid "Čekám na guest agenta, SSH a ověření startu z disku…"
-msgstr ""
-
-#: deployment/portable.py:180
-msgid "Čekám na instalační ISO, guest agenta a SSH…"
-msgstr ""
-
-#: deployment/portable.py:208
-msgid "Čekám na korektní vypnutí instalační VM; ISO zůstává připojené."
-msgstr ""
-
-#: hyperv/manage.py:166
-#, python-brace-format
-msgid "Čekání na hosta vypršelo: {last_message}"
-msgstr ""
-
-#: deployment/portable.py:97
-#, python-brace-format
-msgid "Čtení obrazu při přenosu selhalo: {value1}"
-msgstr ""
-
-#: deployment/cli.py:451
-#, python-brace-format
-msgid "Živý stav: {command}"
-msgstr ""
-
-#: deployment/inspection.py:106
-msgid "Žádné neúspěšné jednotky."
+msgid "{value1}: the filesystem does not report inodes."
 msgstr ""

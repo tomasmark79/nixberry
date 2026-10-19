@@ -1,5 +1,5 @@
 {
-  # Všechny VM profily používají UEFI; Secure Boot zde není nakonfigurovaný.
+  # All VM profiles use UEFI; Secure Boot is not configured here.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.availableKernelModules = [

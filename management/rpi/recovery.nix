@@ -1,4 +1,4 @@
-# Obnovovací prostředí v RAM pro ověření kexec. SSD se nepřipojuje ani nemění.
+# RAM recovery environment for kexec checks; the SSD is neither mounted nor changed.
 {
   config,
   lib,

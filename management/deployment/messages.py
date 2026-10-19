@@ -1,4 +1,4 @@
-"""Společné hlášky: český výchozí text, gettext, stderr a střídmé barvy."""
+"""Shared messages: English source text, gettext, stderr and restrained colors."""
 
 from functools import lru_cache
 import argparse
@@ -14,14 +14,14 @@ import sys
 def _catalog(language):
     return gettext.translation(
         "nixberry", localedir=Path(__file__).resolve().with_name("locales"),
-        languages=[language, "cs"] if language != "cs" else ["cs"], fallback=True,
+        languages=[language], fallback=True,
     )
 
 
 def _(message):
-    # Jazyk CLI je nezávislý na LC_ALL=C, které používáme k parsování cizích nástrojů.
-    language = os.environ.get("NIXBERRY_LANG", "cs")
-    return _catalog(language if language in ("cs", "en") else "cs").gettext(message)
+    # CLI language is independent of LC_ALL=C used to parse external tools.
+    language = os.environ.get("NIXBERRY_LANG", "en")
+    return _catalog(language if language in ("cs", "en") else "en").gettext(message)
 
 
 def color_enabled(stream):
@@ -37,12 +37,12 @@ def _prefix(kind, stream):
 
 
 def render(kind, template, /, *, stream=None, **values):
-    """Formátuj až přeloženou větu; obarvi pouze označení, nikoli vložené hodnoty."""
+    """Format after translation; color only the prefix, not substituted values."""
     return _prefix(kind, sys.stderr if stream is None else stream) + " " + template.format(**values)
 
 
 def _emit(kind, template, /, **values):
-    # Pole šablony nesmějí kolidovat s interními jmény parametrů ani s volbou proudu.
+    # Template fields must not collide with internal parameters or stream selection.
     print(_prefix(kind, sys.stderr) + " " + template.format(**values), file=sys.stderr, flush=True)
 
 
@@ -59,20 +59,20 @@ def warning(template, /, **values):
 
 
 def error(template, /, **values):
-    # Zachycená chyba vlastního podprocesu dostane označení jen jednou.
+    # An error forwarded from our subprocess receives the prefix only once.
     detail = template.format(**values).removeprefix("[nixberry] ")
     _emit("error", "{detail}", detail=detail)
 
 
 def forward_stderr(value):
-    """Předej diagnostiku cizího nástroje beze změn a bez označení nixberry."""
+    """Forward external tool diagnostics unchanged, without a NixBerry prefix."""
     if value:
         sys.stderr.write(value.decode("utf-8", errors="replace") if isinstance(value, bytes) else value)
         sys.stderr.flush()
 
 
 def script_messages(source, *, powershell=False):
-    """Najdi pouze vyznačené konstantní hlášky, nikdy příkazy nebo datové hodnoty."""
+    """Find only marked constant messages, never commands or data values."""
     if powershell:
         offset = 0
         for line in source.splitlines(keepends=True):
@@ -89,7 +89,7 @@ def script_messages(source, *, powershell=False):
 
 
 def localized_script(path):
-    """Přelož literal hlášky před přenosem; vzdálený host nepotřebuje gettext."""
+    """Translate message literals before transfer; the remote host does not need gettext."""
     path = Path(path)
     source = path.read_text()
     powershell = path.suffix == ".ps1"
@@ -101,17 +101,17 @@ def localized_script(path):
 
 
 def shell_script(path):
-    """Předej helper jednou pro celý skript a barvy zvol podle místního stderr."""
+    """Include the helper once per script and select colors using local stderr."""
     helper = Path(__file__).resolve().with_name("messages.sh").read_text()
     color = "always" if color_enabled(sys.stderr) else "never"
     return f"export NIXBERRY_COLOR={color}\n" + helper + "\n" + localized_script(path)
 
 
 def python_script(path):
-    """Samostatnému RPC procesu přibal modul i případný katalog; stdout zůstává JSON."""
+    """Bundle the module and optional catalogue for standalone RPC; stdout remains JSON."""
     root = Path(__file__).resolve().parent
-    language = os.environ.get("NIXBERRY_LANG", "cs")
-    language = language if language in ("cs", "en") else "cs"
+    language = os.environ.get("NIXBERRY_LANG", "en")
+    language = language if language in ("cs", "en") else "en"
     catalog = root / "locales" / language / "LC_MESSAGES/nixberry.mo"
     prelude = (
         "import sys, types, os, gettext, io\n"
@@ -129,34 +129,34 @@ def python_script(path):
 
 class _UsageFormatter:
     def _format_usage(self, usage, actions, groups, prefix):
-        return super()._format_usage(usage, actions, groups, _("Použití: ") if prefix is None else prefix)
+        return super()._format_usage(usage, actions, groups, _("Usage: ") if prefix is None else prefix)
 
 
 class ArgumentParser(argparse.ArgumentParser):
-    """Stejné chyby a české nadpisy také u samostatných ovládacích příkazů."""
+    """Use the same errors and translated headings in standalone management commands."""
     def __init__(self, *args, **kwargs):
         formatter = kwargs.get("formatter_class", argparse.HelpFormatter)
         kwargs["formatter_class"] = type("MessageFormatter", (_UsageFormatter, formatter), {})
         add_help = kwargs.pop("add_help", True)
         super().__init__(*args, add_help=False, **kwargs)
-        self._positionals.title = _("Argumenty")
-        self._optionals.title = _("Volby")
+        self._positionals.title = _("Arguments")
+        self._optionals.title = _("Options")
         if add_help:
-            self.add_argument("-h", "--help", action="help", help=_("Zobrazit nápovědu a skončit"))
+            self.add_argument("-h", "--help", action="help", help=_("Show help and exit"))
 
     def error(self, message):
-        # Běžné chyby argparse překládáme bez globální změny jeho gettext či locale.
+        # Translate common argparse errors without changing its global gettext or locale.
         patterns = (
-            (r"unrecognized arguments: (?P<arguments>.*)", _("Neznámé argumenty: {arguments}")),
-            (r"the following arguments are required: (?P<arguments>.*)", _("Chybí povinné argumenty: {arguments}")),
-            (r"one of the arguments (?P<arguments>.*) is required", _("Zadej jednu z voleb: {arguments}")),
-            (r"argument (?P<option>.*?): expected one argument", _("Volba {option} potřebuje hodnotu.")),
+            (r"unrecognized arguments: (?P<arguments>.*)", _("Unrecognized arguments: {arguments}")),
+            (r"the following arguments are required: (?P<arguments>.*)", _("Required arguments are missing: {arguments}")),
+            (r"one of the arguments (?P<arguments>.*) is required", _("Specify one of these options: {arguments}")),
+            (r"argument (?P<option>.*?): expected one argument", _("Option {option} requires a value.")),
             (r"argument (?P<option>.*?): ignored explicit argument (?P<value>.*)",
-             _("Volba {option} nepřijímá hodnotu {value}.")),
+             _("Option {option} does not accept a value {value}.")),
             (r"argument (?P<option>.*?): not allowed with argument (?P<other>.*)",
-             _("Volby {option} a {other} nelze kombinovat.")),
+             _("Options {option} and {other} cannot be combined.")),
             (r"argument (?P<option>.*?): invalid choice: (?P<value>.*?) \(choose from (?P<choices>.*)\)",
-             _("Argument {option}: nepovolená hodnota {value}. Možnosti: {choices}")),
+             _("Argument {option}: invalid value {value}. Choices: {choices}")),
         )
         for pattern, template in patterns:
             match = re.fullmatch(pattern, message)

@@ -39,7 +39,7 @@ class HypervMediaTests(unittest.TestCase):
 
     def test_default_image_does_not_use_iso_as_a_fallback(self):
         with patch.dict('os.environ', {'NIXBERRY_HYPERV_MODULE': str(self.path / 'probe.py')}):
-            with self.assertRaisesRegex(RuntimeError, 'Chybí cesta'):
+            with self.assertRaisesRegex(RuntimeError, 'media path'):
                 self.manager_class({'isoPath': '/unavailable.iso', 'sshUser': 'fixture', 'sshHost': '10.20.30.40'}, '.')
 
     def test_rpc_uses_neutral_media_size(self):

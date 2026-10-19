@@ -16,13 +16,13 @@ let
               "virtualbox"
               "vmware"
             ]
-            || throw "Instance ${name}: offline příprava vyžaduje podporovaný VM backend.";
+            || throw "Instance ${name}: offline preparation requires a supported VM backend.";
           {
             backend = instance.backend;
             connection.transport = "offline";
           }
         else
-          hosts.${instance.host} or (throw "Instance ${name}: hostitel ${instance.host} není deklarovaný.");
+          hosts.${instance.host} or (throw "Instance ${name}: host ${instance.host} is not declared.");
       expectedProfile =
         {
           libvirt = "nixberry-vm";
@@ -31,24 +31,24 @@ let
           virtualbox = "nixberry-virtualbox";
           vmware = "nixberry-vmware";
         }
-        .${host.backend} or (throw "Instance ${name}: nepodporovaný backend ${host.backend}.");
+        .${host.backend} or (throw "Instance ${name}: unsupported backend ${host.backend}.");
     in
     assert
       builtins.isBool (instance.allowReset or false)
-      || throw "Instance ${name}: allowReset musí být true nebo false v deklaraci VM.";
+      || throw "Instance ${name}: allowReset must be true or false in the VM declaration.";
     assert
       (instance.profile or expectedProfile) == expectedProfile
-      || throw "Instance ${name}: profil neodpovídá backendu ${host.backend}.";
+      || throw "Instance ${name}: the profile does not match backend ${host.backend}.";
     assert
       builtins.elem (instance.deploymentMethod or "image") [
         "iso"
         "image"
       ]
-      || throw "Instance ${name}: deploymentMethod musí být iso nebo image.";
+      || throw "Instance ${name}: deploymentMethod must be iso or image.";
     assert
       (instance.access or null) == null
       || offline
-      || throw "Instance ${name}: access podporuje offline VM bez správy hypervizoru.";
+      || throw "Instance ${name}: access supports offline VMs without hypervisor management.";
     assert builtins.all (key: !(builtins.hasAttr key instance.spec)) (
       builtins.attrNames host.connection
     );
@@ -103,6 +103,6 @@ in
 assert builtins.intersectAttrs instances rpiTargets == { };
 {
   inherit hosts instances;
-  # Jednotný seznam zahrnuje fyzické stroje i VM; údaje RPi se neduplikují.
+  # Unified inventory includes physical machines and VMs without duplicating RPi data.
   targets = instances // rpiTargets;
 }

@@ -1,4 +1,4 @@
-# Deklarace fyzických strojů obsahují místní síť a identifikátory zařízení.
+# Physical machine declarations contain local networking and device identifiers.
 *
 !.gitignore
 !default.nix

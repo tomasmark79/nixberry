@@ -1,4 +1,4 @@
-# Společný průzkum pro CLI i přímý balíček nástrojů, bez sestavení média.
+# Shared CLI and direct-tool discovery without building media.
 { pkgs, spec }:
 pkgs.writeShellApplication {
   name = "nixberry-libvirt-probe";

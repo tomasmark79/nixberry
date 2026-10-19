@@ -1,4 +1,4 @@
-# Rychlý stav vybraných VM; bez procházení disků, snapshotů a hostitelských úložišť.
+# Fast status for selected VMs without scanning disks, snapshots or host storage.
 $ErrorActionPreference = 'Stop'
 $hyperv = [bool](Get-Module -ListAvailable -Name Hyper-V)
 $result = [ordered]@{

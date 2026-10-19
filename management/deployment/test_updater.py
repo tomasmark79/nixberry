@@ -164,7 +164,7 @@ class UpdateChecks(unittest.TestCase):
     def test_system_change_during_build_stops_before_transfer(self):
         fixtures, runner = self.dependencies()
         fixtures["preflight"].side_effect = [OLD, NEW]
-        with self.assertRaisesRegex(RuntimeError, "Během sestavení"):
+        with self.assertRaisesRegex(RuntimeError, "during the build"):
             updater.update(self.recipe, "test", HYPERV, apply=True)
         runner.assert_not_called()
 
@@ -180,30 +180,30 @@ class UpdateChecks(unittest.TestCase):
         fixtures, runner = self.dependencies()
         fixtures["status"].side_effect = [SNAPSHOT, SNAPSHOT,
                                           {"state": "running", "addresses": ["10.0.0.3"]}]
-        with self.assertRaisesRegex(RuntimeError, "Během přenosu"):
+        with self.assertRaisesRegex(RuntimeError, "during transfer"):
             updater.update(self.recipe, "test", HYPERV, apply=True)
         self.assertEqual(runner.call_count, 1)
 
     def test_system_change_after_copy_prevents_activation(self):
         fixtures, runner = self.dependencies()
         fixtures["preflight"].side_effect = [OLD, OLD, NEW]
-        with self.assertRaisesRegex(RuntimeError, "Během přenosu"):
+        with self.assertRaisesRegex(RuntimeError, "during transfer"):
             updater.update(self.recipe, "test", HYPERV, apply=True)
         self.assertEqual(runner.call_count, 1)
 
     def test_activation_failure_reports_partial_state(self):
         fixtures, runner = self.dependencies()
         runner.side_effect = [Mock(returncode=0), Mock(returncode=1)]
-        with self.assertRaisesRegex(RuntimeError, "Generace již mohla být nastavena"):
+        with self.assertRaisesRegex(RuntimeError, "generation may already have been set"):
             updater.update(self.recipe, "test", HYPERV, apply=True)
         fixtures["verify"].assert_not_called()
 
     def test_failed_verification_does_not_claim_success(self):
         fixtures, runner = self.dependencies()
         fixtures["verify"].side_effect = RuntimeError("Neaktivní sshd")
-        with self.assertRaisesRegex(RuntimeError, "Aktivace doběhla.*Neaktivní sshd"):
+        with self.assertRaisesRegex(RuntimeError, "Activation completed.*Neaktivní sshd"):
             updater.update(self.recipe, "test", HYPERV, apply=True)
-        self.assertNotIn("Ověřeno:", self.messages.getvalue())
+        self.assertNotIn("Verified:", self.messages.getvalue())
         self.assertEqual(self.output.getvalue(), "")
 
     def test_protected_address_is_rejected_before_ssh_or_build(self):
@@ -218,8 +218,8 @@ class UpdateChecks(unittest.TestCase):
 
     def test_stale_cli_stops_before_connecting_or_building(self):
         fixtures, runner = self.dependencies()
-        fixtures["freeze_recipe"].side_effect = RuntimeError("Deklarace cíle se liší")
-        with self.assertRaisesRegex(RuntimeError, "Deklarace cíle se liší"):
+        fixtures["freeze_recipe"].side_effect = RuntimeError("The target declaration differs")
+        with self.assertRaisesRegex(RuntimeError, "The target declaration differs"):
             updater.update(self.recipe, "test", RPI, apply=True)
         fixtures["status"].assert_not_called()
         fixtures["build"].assert_not_called()
@@ -255,7 +255,7 @@ class UpdateChecks(unittest.TestCase):
                 "path:" + frozen + "#nixberryDeployment.targets.test"], text=True))
             self.assertEqual(declared, RPI)
             with tempfile.TemporaryDirectory() as second, self.assertRaisesRegex(
-                    RuntimeError, "Deklarace cíle se liší"):
+                    RuntimeError, "The target declaration differs"):
                 updater.freeze_recipe(frozen, "test", {**RPI, "host": "other"}, second)
 
     def test_preflight_checks_disk_and_architecture_without_new_hostname(self):

@@ -42,7 +42,7 @@ class VmNetworkChecks(unittest.TestCase):
         self.assertEqual(result["proxmox"]["dns"], ["10.0.1.1"])
         self.assertEqual(result["proxmox"], result["hyperv"])
         self.assertNotIn("MACAddress", result["proxmox"]["network"]["matchConfig"])
-        self.assertTrue(any(not item["assertion"] and "Pevná síť VM" in item["message"]
+        self.assertTrue(any(not item["assertion"] and "Static VM networking" in item["message"]
                             for item in result["incomplete"]))
 
 

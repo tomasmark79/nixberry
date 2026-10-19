@@ -1,4 +1,4 @@
-# Reset pracuje pouze s deklarací; nevynucuje sestavení systému ani média.
+# Reset only uses the declaration; it does not force system or media builds.
 {
   pkgs,
   target,

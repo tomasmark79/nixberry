@@ -1,4 +1,4 @@
-# Modern Midnight Commander se stejnými úpravami a náhledy jako na Nixonu.
+# Modern Midnight Commander with the same customizations and previews as Nixon.
 {
   pkgs,
   lib,
@@ -15,7 +15,7 @@ in
     pkgs.cdrtools
   ];
   programs.bash.interactiveShellInit = lib.mkAfter ''
-    # Wrapper po ukončení MC ponechá shell v naposledy procházeném adresáři.
+    # The wrapper leaves the shell in the last directory visited in MC.
     export MC_WRAPPER="${mc}/libexec/mc/mc-wrapper.sh"
     alias mc='. "$MC_WRAPPER"'
   '';

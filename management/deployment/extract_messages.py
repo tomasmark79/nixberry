@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vytvoří překladovou šablonu z Pythonu, Bashe i PowerShellu bez dalších závislostí."""
+"Extract a translation template from Python, Bash and PowerShell without extra dependencies."
 
 import ast
 import json
@@ -33,7 +33,7 @@ def collect(root):
                     if not isinstance(message, str):
                         if path.name == "messages.py":
                             continue
-                        raise ValueError(f"{path}:{node.lineno}: _() potřebuje konstantní celou větu.")
+                        raise ValueError(f"{path}:{node.lineno}: _() requires a complete constant sentence.")
                     add(message, path, node.lineno)
         else:
             for start, end, message in script_messages(source, powershell=path.suffix == ".ps1"):
@@ -43,7 +43,7 @@ def collect(root):
 
 def template(root):
     lines = [
-        '# Překladová šablona nixberry. Zdrojový jazyk: čeština.',
+        '# NixBerry translation template. Source language: English.',
         '# Generuje management/deployment/extract_messages.py.',
         'msgid ""', 'msgstr ""',
         '"Project-Id-Version: nixberry\\n"',

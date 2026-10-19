@@ -1,4 +1,4 @@
-"""Chráněné odstranění deklarované VM bez sestavování systému a instalačních médií."""
+"Safely remove a declared VM without building the system or installation media."
 
 import base64
 import json
@@ -24,7 +24,7 @@ def hyperv(target, apply):
         "--", api["destination"](spec), api["powershell_command"]()],
         input=api["powershell_input"](script), text=True, encoding="utf-8", capture_output=True, timeout=240)
     if result.returncode:
-        raise RuntimeError(result.stderr.strip() or _('Odstranění Hyper-V VM se nepodařilo potvrdit; zkontroluj status a stav úložiště.'))
+        raise RuntimeError(result.stderr.strip() or _("Could not confirm Hyper-V VM removal; check status and storage state."))
     forward_stderr(result.stderr)
     return json.loads(result.stdout.lstrip("\ufeff"))
 
@@ -37,22 +37,22 @@ def main(argv=None):
     args = parser.parse_args(argv)
     target = json.loads(Path(os.environ["NIXBERRY_RESET_TARGET"]).read_text())
     if target.get("allowReset") is not True or target.get("offline"):
-        raise RuntimeError(_('Reset vyžaduje allowReset = true; u této instance a deklarovaného hostitele hypervizoru.'))
-    info(_('Ověřuji vlastníka, disky, snapshoty a stav VM před odstraněním…'))
+        raise RuntimeError(_("Reset requires allowReset = true; for this instance and a declared hypervisor host."))
+    info(_("Checking owner, disks, snapshots and VM state before removal…"))
     if args.apply:
-        info(_('Po ověření korektně vypnu běžící VM a odstraním pouze její vlastní prostředky.'))
+        info(_("After verification, the running VM will be shut down gracefully and only its own resources removed."))
     result = hyperv(target, args.apply) if target["backend"] == "hyperv" else rpc(
         target, "reset", allowReset=True, apply=args.apply, timeout=300)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if args.apply:
-        success(_('Odstranění ověřené VM dokončeno. Instanční deklarace zůstala zachovaná.'))
+        success(_("Verified VM removal completed. The instance declaration was preserved."))
     else:
-        info(_('Plán odstranění ověřený; nic se nevypínalo ani nemazalo. S --apply se VM korektně vypne a po opětovné kontrole odstraní.'))
+        info(_("Removal plan verified; nothing was shut down or deleted. With --apply, the VM is gracefully shut down and removed after revalidation."))
 
 
 if __name__ == "__main__":
     try:
         main()
     except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as failure:
-        error(_('{error} Po přerušení nebo částečném odstranění nejprve zkontroluj status a úložiště; operaci automaticky neopakuji.'), error=failure)
+        error(_("{error} After interruption or partial removal, inspect status and storage first; the operation will not be retried automatically."), error=failure)
         raise SystemExit(1)

@@ -1,4 +1,4 @@
-# Instalační SD zachovává hardware a síťový základ připnutého upstreamu.
+# Installation SD preserves hardware and networking from the pinned upstream.
 { lib, pkgs, ... }:
 let
   commonSource = import ../messages.nix { inherit pkgs; };

@@ -1,0 +1,2569 @@
+# Czech translations for NixBerry. English is the source language.
+msgid ""
+msgstr ""
+"Project-Id-Version: nixberry\n"
+"Language: cs\n"
+"PO-Revision-Date: 2026-10-19 00:00+0000\n"
+"Last-Translator: Tomas Mark\n"
+"Language-Team: Czech\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+msgid "Compile Czech gettext and shell catalogues; --check verifies generated shell content."
+msgstr "Zkompiluje český gettext a shellové katalogy; --check ověří generovanou shellovou tabulku."
+
+msgid "Check catalogue coverage and generated shell content"
+msgstr "Zkontrolovat úplnost katalogu a generovanou shellovou tabulku"
+
+#, python-brace-format
+msgid "Missing Czech translations: {messages}"
+msgstr "Chybějící české překlady: {messages}"
+
+msgid "Regenerate shell catalogue with compile_locales.py"
+msgstr "Obnov shellový katalog pomocí compile_locales.py"
+
+#, python-brace-format
+msgid "\nGeneration: {name}"
+msgstr "\nGenerace: {name}"
+
+#, python-brace-format
+msgid "\nHost: {name}"
+msgstr "\nHostitel: {name}"
+
+msgid "\nImages in the selected directories:"
+msgstr "\nObrazy v zadaných adresářích:"
+
+msgid "\nProxmox handoff: see PROXMOX.txt.\n"
+msgstr "\nPředání pro Proxmox: viz PROXMOX.txt.\n"
+
+msgid "\nVirtualBox handoff: see VIRTUALBOX.txt.\n"
+msgstr "\nPředání pro VirtualBox: viz VIRTUALBOX.txt.\n"
+
+msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
+msgstr "--address a --erase-existing patří pouze k plan/reproduce cíle RPi."
+
+msgid "--artifact-root only applies to cleanup."
+msgstr "--artifact-root patří pouze k cleanup."
+
+msgid "--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."
+msgstr "--configuration patří pouze k new-*-vm; u existujícího cíle uprav configuration v deklaraci."
+
+msgid "--erase-existing cannot be combined with --stage."
+msgstr "--erase-existing nelze kombinovat s --stage."
+
+msgid "--json is available for list, show, status, verify, export, doctor and cleanup."
+msgstr "--json je dostupné pro list, show, status, verify, export, doctor a cleanup."
+
+msgid "--method applies to new-*, show, plan, create, install, provision, reproduce and export."
+msgstr "--method patří k new-*, show, plan, create, install, provision, reproduce a export."
+
+msgid "--method is for VMs; RPi uses a recovery SD card."
+msgstr "--method je určené pro VM; RPi používá obnovovací SD."
+
+msgid "--offline applies to new-*-vm without --host."
+msgstr "--offline patří k new-*-vm bez --host."
+
+msgid "--output only applies to export."
+msgstr "--output patří pouze k export."
+
+msgid "--ssh applies to server management and cannot be combined with --host or new-*."
+msgstr "--ssh patří ke správě serveru a nelze jej kombinovat s --host nebo new-*."
+
+#, python-brace-format
+msgid "{actual} (expected {value2})"
+msgstr "{actual} (očekáváno {value2})"
+
+#, python-brace-format
+msgid "{error} After interruption or partial removal, inspect status and storage first; the operation will not be retried automatically."
+msgstr "{error} Po přerušení nebo částečném odstranění nejprve zkontroluj status a úložiště; operaci automaticky neopakuji."
+
+#, python-brace-format
+msgid "{temperature:.1f} °C (indicative threshold 80 °C)"
+msgstr "{temperature:.1f} °C (orientační práh 80 °C)"
+
+#, python-brace-format
+msgid "{value1}: the filesystem does not report inodes."
+msgstr "{value1}: souborový systém neudává inody."
+
+msgid "/mnt is already mounted."
+msgstr "/mnt je již připojené."
+
+msgid "/mnt is mounted."
+msgstr "/mnt je připojené."
+
+msgid "A backing disk cycle was detected."
+msgstr "Cyklus podkladových disků."
+
+msgid "A command after -- is only available for ssh TARGET -- COMMAND."
+msgstr "Příkaz za -- je dostupný pouze pro ssh CÍL -- PŘÍKAZ."
+
+msgid "A default route is present."
+msgstr "Výchozí trasa je přítomná."
+
+msgid "A differencing image depends on this disk; refusing reset."
+msgstr "Na disk navazuje rozdílový obraz; reset odmítám."
+
+msgid "A disk, snapshot, backing image or recovery medium may be attached."
+msgstr "Může být připojený disk, snapshot, podkladový obraz nebo médium obnovy."
+
+msgid "A Hyper-V VM must have a safe nixberry-… name."
+msgstr "Hyper-V VM musí mít bezpečný název nixberry-…."
+
+msgid "A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."
+msgstr "Hyper-V VM musí mít vlastní ownerId ve tvaru nixberry-hyperv-UUID."
+
+msgid "A mounted disk already uses the target partition labels."
+msgstr "Označení cílových oddílů už používá připojený disk."
+
+msgid "A new VM must have a declared owner tied to its UUID."
+msgstr "Nová VM musí mít deklarovaného vlastníka svázaného s UUID."
+
+msgid "A partition extends beyond the disk."
+msgstr "Oddíl přesahuje disk."
+
+msgid "A static VMware MAC must be in the range 00:50:56:00:00:00–00:50:56:3f:ff:ff."
+msgstr "Statická VMware MAC musí být v rozsahu 00:50:56:00:00:00–00:50:56:3f:ff:ff."
+
+msgid "A stopped VM is not necessarily unused; it may be needed for recovery."
+msgstr "Vypnutá VM nemusí být nepoužívaná; může sloužit k obnově."
+
+msgid "A VM with the same name is present again after removal; keeping the directory."
+msgstr "Po odstranění je znovu přítomná VM stejného jména; adresář ponechávám."
+
+msgid "absent"
+msgstr "nevytvořená"
+
+msgid "access only accepts host, port, user, knownHostsFile and hostKeyAlias."
+msgstr "access přijímá pouze host, port, user, knownHostsFile a hostKeyAlias."
+
+msgid "access requires a host, an integer port and the root account."
+msgstr "access vyžaduje host, celočíselný port a účet root."
+
+msgid "access supports offline VMs without hypervisor management."
+msgstr "access podporuje offline VM bez správy hypervizoru."
+
+msgid "Activating the new generation without rebooting…"
+msgstr "Aktivuji novou generaci bez restartu…"
+
+#, python-brace-format
+msgid "Activation completed, but the subsequent check failed: {error}. Once SSH is restored, run {command}."
+msgstr "Aktivace doběhla, ale následná kontrola neprošla: {error}. Po obnovení SSH spusť {command}."
+
+#, python-brace-format
+msgid "Active system: {path}"
+msgstr "Aktivní systém: {path}"
+
+msgid "Actual VM ID or owner does not match."
+msgstr "Nesouhlasí skutečné VM ID nebo vlastník."
+
+#, c-format
+msgid "Address: virsh --connect %s domifaddr %s --source lease"
+msgstr "Adresa: virsh --connect %s domifaddr %s --source lease"
+
+#, python-brace-format
+msgid "After boot: {command}"
+msgstr "Po startu: {command}"
+
+#, python-brace-format
+msgid "After reviewing: {command}"
+msgstr "Po kontrole: {command}"
+
+msgid "After verification, the running VM will be shut down gracefully and only its own resources removed."
+msgstr "Po ověření korektně vypnu běžící VM a odstraním pouze její vlastní prostředky."
+
+msgid "All inventory checks passed; no VMs or hosts were contacted."
+msgstr "Všechny zkoušky evidence prošly; VM ani hostitelé nebyli kontaktovaní."
+
+#, python-brace-format
+msgid "All target statuses: {command}"
+msgstr "Stav všech cílů: {command}"
+
+msgid "Allocation"
+msgstr "Alokace"
+
+msgid "Another disk already uses the partition label."
+msgstr "Označení oddílu už používá jiný disk."
+
+msgid "Another disk uses the partition label."
+msgstr "Označení oddílu používá jiný disk."
+
+msgid "Another kernel is already loaded; it will not be overwritten."
+msgstr "Jiný kernel už je načtený; nepřepisujeme ho."
+
+msgid "Another process is already running this campaign."
+msgstr "Tuto kampaň už provádí jiný proces."
+
+msgid "Another VM or its snapshot uses a file belonging to this VM; refusing reset."
+msgstr "Soubor této VM používá jiná VM nebo její snapshot; reset odmítám."
+
+msgid "Another VM uses a file belonging to this VM; refusing reset."
+msgstr "Soubor této VM používá jiná VM; reset odmítám."
+
+msgid "Another VM, container or snapshot uses the volume or ISO; refusing reset."
+msgstr "Svazek nebo ISO používá jiná VM, kontejner či snapshot; reset odmítám."
+
+msgid "Another VMware image depends on this disk; refusing reset."
+msgstr "Na disk navazuje jiný obraz VMware; reset odmítám."
+
+msgid "Apply changes for update and deployment/recovery operations"
+msgstr "Provést změny u update a operací nasazení/obnovy"
+
+#, python-brace-format
+msgid "Argument {option}: invalid value {value}. Choices: {choices}"
+msgstr "Argument {option}: nepovolená hodnota {value}. Možnosti: {choices}"
+
+msgid "Arguments"
+msgstr "Argumenty"
+
+msgid "Assessment"
+msgstr "Posouzení"
+
+#, python-brace-format
+msgid "Available memory: {available:.1f} %"
+msgstr "Dostupná paměť: {available:.1f} %"
+
+msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
+msgstr "Před sestavením zkontroluj network: DHCP, nebo mode = \"static\" s address, gateway a dns."
+
+msgid "Boot of the prebuilt system from disk verified."
+msgstr "Start hotového systému z disku ověřený."
+
+msgid "Boot verification from VHDX failed."
+msgstr "Kontrola startu z VHDX selhala."
+
+msgid "Build/export"
+msgstr "Sestavení/export"
+
+#, python-brace-format
+msgid "Build/export: yes; system management: {value1}"
+msgstr "Sestavení/export: ano; správa systému: {value1}"
+
+msgid "Building the recipe for comparison…"
+msgstr "Sestavuji recept pro porovnání…"
+
+msgid "Building the target configuration…"
+msgstr "Sestavuji konfiguraci cíle…"
+
+msgid "Bulk status requires 1–128 VM declarations."
+msgstr "Hromadný stav vyžaduje 1–128 deklarací VM."
+
+#, python-brace-format
+msgid "Campaign case: {name}"
+msgstr "Případ kampaně: {name}"
+
+msgid "Campaign cleanup requires a verified powered-off VM."
+msgstr "Úklid kampaně vyžaduje ověřenou vypnutou VM."
+
+msgid "Campaign operations require a dedicated test name."
+msgstr "Operace kampaně vyžaduje vlastní testovací jméno."
+
+#, python-brace-format
+msgid "Cannot determine sizes: {error}"
+msgstr "Nelze zjistit velikosti: {error}"
+
+msgid "Cannot determine the VM disk size."
+msgstr "Velikost disku VM nelze určit."
+
+msgid "Cannot safely identify all protected generations."
+msgstr "Nelze bezpečně zjistit všechny chráněné generace."
+
+msgid "Cannot safely verify another VM's snapshot; refusing reset."
+msgstr "Nelze bezpečně ověřit snapshot jiné VM; reset odmítám."
+
+msgid "Cannot unambiguously determine the VM address."
+msgstr "Nelze jednoznačně zjistit adresu VM."
+
+msgid "Cannot unambiguously determine the VM BIOS UUID."
+msgstr "Nelze jednoznačně určit BIOS UUID VM."
+
+msgid "Cannot verify another VM's volume path; refusing writes or removal."
+msgstr "Nelze ověřit cestu svazku jiné VM; odmítám zápis nebo odstranění."
+
+msgid "Cannot verify the user SID for the private VM directory."
+msgstr "Nelze ověřit SID uživatele pro soukromý adresář VM."
+
+#, python-brace-format
+msgid "Cannot write to bundle location {path}. Relative paths are resolved from the working directory. Choose a writable directory, for example --output ~/{target}-offline."
+msgstr "Do umístění balíčku {path} nelze zapisovat. Relativní cesta se počítá od pracovního adresáře. Vyber zapisovatelný adresář, například --output ~/{target}-offline."
+
+msgid "CD-ROM does not match."
+msgstr "Nesouhlasí CD-ROM."
+
+msgid "Check"
+msgstr "Kontrola"
+
+msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
+msgstr "Kontrola formátů, GPT, ext4 a UEFI souborů hotových disků bez jejich startu."
+
+#, python-brace-format
+msgid "Check failed: {check}"
+msgstr "Kontrola neprošla: {check}"
+
+msgid "Checking owner, disks, snapshots and VM state before removal…"
+msgstr "Ověřuji vlastníka, disky, snapshoty a stav VM před odstraněním…"
+
+msgid "Checking target absence and host resources…"
+msgstr "Ověřuji nepřítomnost cíle a prostředky hostitele…"
+
+msgid "Checking VM readiness to complete the selected deployment method."
+msgstr "Ověřuji připravenost VM pro dokončení zvolené metody nasazení."
+
+msgid "Checks passed. No disk or VM was created."
+msgstr "Kontroly prošly. Nebyl vytvořen disk ani VM."
+
+msgid "Choose a new target name: 1–40 lowercase letters, digits and hyphens, starting with a letter."
+msgstr "Vyber nové jméno cíle: 1–40 malých písmen, číslic a pomlček, s písmenem na začátku."
+
+#, python-brace-format
+msgid "Cleaning up the dedicated test target: {name}"
+msgstr "Úklid vlastního testovacího cíle: {name}"
+
+msgid "Closure size"
+msgstr "Velikost closure"
+
+msgid "COMMAND"
+msgstr "PŘÍKAZ"
+
+msgid "Command from the list below (default: list)"
+msgstr "Příkaz z přehledu níže (výchozí: list)"
+
+msgid "Comparison is not implemented for this platform."
+msgstr "Porovnání této platformy není implementované."
+
+#, python-brace-format
+msgid "Comparison requires two retained system generations. Use {command} to compare with the recipe."
+msgstr "Pro porovnání jsou potřeba dvě dochované systémové generace. Pro porovnání s receptem použij {command}."
+
+#, python-brace-format
+msgid "Comparison: {name} ({backend})"
+msgstr "Porovnání: {name} ({backend})"
+
+msgid "Computing bundle checksums…"
+msgstr "Počítám kontrolní součty balíčku…"
+
+msgid "Configuration"
+msgstr "Konfigurace"
+
+msgid "Configuration directory does not match."
+msgstr "Nesouhlasí konfigurační adresář."
+
+msgid "Configuration directory or VM generation does not match."
+msgstr "Nesouhlasí konfigurační adresář nebo generace VM."
+
+#, python-brace-format
+msgid "Configuration: {configuration}"
+msgstr "Konfigurace: {configuration}"
+
+msgid "configured"
+msgstr "nastavená"
+
+msgid "Configuring the serial console to capture potential kernel panics…"
+msgstr "Nastavuji sériovou konzoli pro záznam případného kernel panicu…"
+
+#, python-brace-format
+msgid "Connecting: {command}"
+msgstr "Připojuji: {command}"
+
+#, c-format
+msgid "Console: virsh --connect %s console %s"
+msgstr "Konzole: virsh --connect %s console %s"
+
+msgid "Content checks do not prove boot on a hypervisor."
+msgstr "Kontrola obsahu není důkaz startu na hypervizoru."
+
+#, python-brace-format
+msgid "Copies and results: {value1}"
+msgstr "Kopie a výsledky: {value1}"
+
+#, python-brace-format
+msgid "Could not confirm activation (SSH or systemd-run). Check {logs} and {verify}. The generation may already have been set; no reboot was performed."
+msgstr "Aktivaci se nepodařilo potvrdit (SSH nebo systemd-run). Zkontroluj {logs} a {verify}. Generace již mohla být nastavena; restart jsem neprovedl."
+
+msgid "Could not confirm Hyper-V VM removal; check status and storage state."
+msgstr "Odstranění Hyper-V VM se nepodařilo potvrdit; zkontroluj status a stav úložiště."
+
+msgid "Could not confirm removal of the VM or its directory."
+msgstr "Odstranění VM nebo jejího adresáře se nepodařilo potvrdit."
+
+msgid "Could not confirm VM removal."
+msgstr "Odstranění VM se nepodařilo potvrdit."
+
+msgid "Could not determine whether a reboot is needed."
+msgstr "Nepodařilo se zjistit potřebu restartu."
+
+msgid "Could not prepare the SSH forward."
+msgstr "SSH forward se nepodařilo připravit."
+
+msgid "Could not request VM shutdown."
+msgstr "Vypnutí VM se nepodařilo vyžádat."
+
+msgid "CPU or RAM does not match."
+msgstr "Nesouhlasí CPU nebo RAM."
+
+msgid "Create a new lab and start installation"
+msgstr "Vytvořit nový lab a spustit instalaci"
+
+msgid "Create and install a test VM in one command; without --apply, only show the plan."
+msgstr "Vytvoření a instalace testovací VM jedním příkazem; bez --apply pouze plán."
+
+msgid "Create the VM first using create or reproduce."
+msgstr "Nejdřív vytvoř VM přes create nebo reproduce."
+
+msgid "Created (UTC)"
+msgstr "Vytvořeno (UTC)"
+
+msgid "Creation completed and verified: the VM is running the declared system from disk."
+msgstr "Celé vytvoření dokončené a ověřené: VM běží z deklarovaného systému na disku."
+
+msgid "Creation did not return a verified powered-off VM."
+msgstr "Vytvoření nevrátilo ověřenou vypnutou VM."
+
+msgid "Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."
+msgstr "Ctrl+C přerušuje vzdálený příkaz. Zaseknutou relaci odpojíš: Enter, potom ~."
+
+msgid "Current DHCP address of the installation environment, overriding the declaration"
+msgstr "Aktuální DHCP adresa instalačního prostředí místo adresy z deklarace"
+
+msgid "Current installation SD address, only for RPi reproduction"
+msgstr "Aktuální IP instalační SD, pouze pro reprodukci RPi"
+
+#, python-brace-format
+msgid "Declaration created: {path}"
+msgstr "Vytvořena deklarace: {path}"
+
+#, python-brace-format
+msgid "Declaration plan: {path}"
+msgstr "Plán deklarace: {path}"
+
+msgid "Declared disk capacity does not match."
+msgstr "Nesouhlasí deklarovaná kapacita disku."
+
+msgid "Declared UUID and owner do not match."
+msgstr "Nesouhlasí deklarované UUID a vlastník."
+
+msgid "Dedicated nested Proxmox for adapter testing; never takes over an existing VM."
+msgstr "Samostatný vnořený Proxmox pro zkoušení adaptéru; nikdy nepřebírá existující VM."
+
+msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
+msgstr "Nasazení z hotového disku nebo instalačního ISO přes jednotný adaptér."
+
+msgid "Deployment method must be iso or image."
+msgstr "Metoda nasazení musí být iso nebo image."
+
+#, python-brace-format
+msgid "Deployment method: {method}"
+msgstr "Metoda nasazení: {method}"
+
+msgid "Details"
+msgstr "Podrobnosti"
+
+msgid "Diagnose loading the RPi recovery kernel without rebooting or writing partitions."
+msgstr "Diagnostika načtení recovery kernelu RPi bez restartu a bez zápisu do oddílů."
+
+msgid "Direct SSH requires an offline VM declaration without hypervisor management."
+msgstr "Přímé SSH vyžaduje offline deklaraci VM bez správy hypervizoru."
+
+msgid "Direct SSH supports update, ssh, verify, status, doctor, diff and diffg."
+msgstr "Přímé SSH podporuje update, ssh, verify, status, doctor, diff a diffg."
+
+#, python-brace-format
+msgid "Direct SSH to VM: {endpoint}; verifying the SSH key and declared hostname."
+msgstr "Přímé SSH do VM: {endpoint}; ověřím SSH klíč a deklarovaný hostname."
+
+msgid "Disallowed exported target name."
+msgstr "Nepovolené jméno exportovaného cíle."
+
+msgid "Disallowed guest address."
+msgstr "Nepovolená adresa hosta."
+
+msgid "Disallowed installation address."
+msgstr "Nepovolená instalační adresa."
+
+msgid "Disallowed libvirt VM MAC address."
+msgstr "Nepovolená MAC libvirt VM."
+
+msgid "Disallowed operation."
+msgstr "Nepovolená operace."
+
+msgid "Disallowed path."
+msgstr "Nepovolená cesta."
+
+msgid "Disallowed SSH account."
+msgstr "Nepovolený SSH účet."
+
+msgid "Disallowed SSH host or account."
+msgstr "Nepovolený SSH hostitel nebo účet."
+
+msgid "Disallowed target disk."
+msgstr "Nepovolený cílový disk."
+
+msgid "Disallowed VM name."
+msgstr "Nepovolený název VM."
+
+msgid "Disallowed Windows host."
+msgstr "Nepovolený Windows hostitel."
+
+msgid "Discover Windows and Hyper-V over SSH without changing the host or VMs."
+msgstr "Průzkum Windows a Hyper-V přes SSH, bez změn hostitele a virtuálních strojů."
+
+msgid "Disk capacity does not match."
+msgstr "Nesouhlasí kapacita disku."
+
+msgid "Disk does not match."
+msgstr "Nesouhlasí disk."
+
+msgid "Disk path does not match."
+msgstr "Nesouhlasí cesta disku."
+
+msgid "Disk serial number does not match."
+msgstr "Nesouhlasí sériové číslo disku."
+
+msgid "Disk size does not match."
+msgstr "Nesouhlasí velikost disku."
+
+#, python-brace-format
+msgid "Disk: {value1}; serial: {value2}; root: {value3}"
+msgstr "Disk: {value1}; serial: {value2}; root: {value3}"
+
+#, python-brace-format
+msgid "Disk: {value1}; system: {value2}"
+msgstr "Disk: {value1}; systém: {value2}"
+
+#, c-format
+msgid "Disk: %s (%s GiB); network: %s"
+msgstr "Disk: %s (%s GiB); síť: %s"
+
+msgid "Disko does not match."
+msgstr "Nesouhlasí disko."
+
+msgid "Downloading the official Proxmox installation ISO…"
+msgstr "Stahuji oficiální instalační ISO Proxmoxu…"
+
+msgid "error"
+msgstr "chyba"
+
+msgid "Everyday management:\n  list                         Local target inventory and available management capabilities.\n  show TARGET                  Target declaration, capacity, network and available operations.\n  status [TARGET]              Live status; hosts are queried concurrently and rows appear as ready.\n  ssh TARGET [-- COMMAND ...]  Log in or run a command on the server.\n  verify TARGET                Check the running system against the recipe, disk and services.\n  doctor [TARGET]              Diagnose one or all targets.\n  probe TARGET                 Detailed platform discovery for troubleshooting.\n\nUpdates and comparisons:\n  update TARGET                Update plan; --apply builds and activates the system.\n  diff TARGET                  Running system against the current recipe BEFORE an update.\n  diffg TARGET                 The two highest retained server generations.\n                               diff builds locally; diffg runs on the server.\n\nNew VM declarations (write a local file, do not create a VM):\n  new-libvirt-vm NAME          VM declaration for QEMU/KVM (libvirt).\n  new-hyperv-vm NAME           VM declaration for Hyper-V.\n  new-proxmox-vm NAME          Proxmox VE VM declaration with editable networking.\n  new-virtualbox-vm NAME       VM declaration for VirtualBox.\n  new-vmware-vm NAME           VM declaration for VMware Workstation.\n                               --host selects a host; a sole matching host is selected automatically.\n                               --offline prepares any backend without a hypervisor.\n                               --configuration NAME selects a server configuration; default is default.\n                               --dry-run does not write the file. new-* names without -vm are aliases.\n\nDeployment, recovery and offline transfer (subject to platform capabilities):\n  plan TARGET                  Read-only VM creation or RPi recovery plan.\n  reproduce TARGET             Complete deployment/recovery; execution requires --apply.\n  create TARGET                Create a VM; execution requires --apply.\n  install TARGET               Complete the selected deployment method; requires --apply.\n  provision TARGET             Create and install; execution requires --apply.\n  reset TARGET                 Remove an authorized VM on any of the five backends.\n                               Requires allowReset = true in the instance; without --apply, verifies only.\n  export TARGET --output DIR   Offline bundle with disk or ISO and recipe in a new directory.\n  cleanup [TARGET]             Preview cleanup candidates; deletes nothing.\n                               --artifact-root DIR adds image inspection.\n\nUsage and modes:\n  Without a command, list is shown. TARGET is a declaration name, not an IP address.\n  show TARGET lists the operations available for a particular target.\n  update/create/install/provision/reproduce/reset only plan without --apply.\n  new-* and export normally write locally; --dry-run shows a plan without writing.\n  diff/diffg may read the server and diff builds the recipe; --dry-run only shows the plan.\n  --ssh root@HOST:PORT overrides SSH access to an offline VM of any backend.\n  --method image is the default for all VMs: import a prebuilt disk and verify boot.\n  --method iso installs to a blank disk, detaches the ISO and verifies system boot.\n  Set deploymentMethod in a declaration for a persistent default; --method overrides it.\n  Applies to new-*, show, plan, create, install, provision, reproduce and export.\n  --offline prepares without a hypervisor, independently of the method. RPi uses SD.\n  diff shows pending changes. After an update it is usually empty; use diffg.\n\nExamples:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOST\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan rpi-demo --address 192.168.50.20\n\nDetailed operating guide: README.md in the NixBerry recipe root.\nComplete command and option reference: docs/cli.md.\n"
+msgstr "Příkazy pro běžnou správu:\n  list                         Místní evidence cílů a dostupných možností správy.\n  show CÍL                     Deklarace, kapacita, síť a dostupné operace cíle.\n  status [CÍL]                 Živý stav; hostitelé se dotazují souběžně, řádky přibývají.\n  ssh CÍL [-- PŘÍKAZ ...]       Přihlášení nebo spuštění příkazu na serveru.\n  verify CÍL                   Shoda běžícího systému s receptem, disk a služby.\n  doctor [CÍL]                 Diagnostika jednoho nebo všech cílů.\n  probe CÍL                    Podrobný průzkum platformy pro řešení problémů.\n\nAktualizace a porovnání:\n  update CÍL                   Plán aktualizace; s --apply sestaví a aktivuje systém.\n  diff CÍL                     Běžící systém proti aktuálnímu receptu PŘED aktualizací.\n  diffg CÍL                    Dvě nejvyšší dochované generace na serveru.\n                               diff sestavuje místně; diffg běží na serveru.\n\nNové deklarace VM (zapisují místní soubor, nevytvářejí VM):\n  new-libvirt-vm JMÉNO          Deklarace VM pro libvirt.\n  new-hyperv-vm JMÉNO           Deklarace VM pro Hyper-V.\n  new-proxmox-vm JMÉNO          Deklarace Proxmox VM včetně upravitelné sítě.\n  new-virtualbox-vm JMÉNO       Deklarace VM pro VirtualBox.\n  new-vmware-vm JMÉNO           Deklarace VM pro VMware Workstation.\n                               --host vybírá hostitele; jediný dostupný se vybere automaticky.\n                               --offline připraví kterýkoli backend bez hypervizoru.\n                               --configuration JMÉNO vybírá konfiguraci serveru; výchozí je default.\n                               --dry-run soubor nezapíše. Názvy new-* bez -vm jsou aliasy.\n\nNasazení, obnova a offline přenos (podle možností platformy):\n  plan CÍL                     Plán vytvoření VM nebo obnovy RPi bez zápisu.\n  reproduce CÍL                Úplné nasazení/obnova; provedení vyžaduje --apply.\n  create CÍL                   Vytvoření VM; provedení vyžaduje --apply.\n  install CÍL                  Dokončení nasazení podle metody; vyžaduje --apply.\n  provision CÍL                Vytvoření a instalace; provedení vyžaduje --apply.\n  reset CÍL                    Odstranění povolené VM na všech pěti backendech.\n                               Vyžaduje allowReset = true v instanci; bez --apply jen ověřuje plán.\n  export CÍL --output ADRESÁŘ   Offline balíček s diskem nebo ISO a receptem do nového adresáře.\n  cleanup [CÍL]                Náhled kandidátů na úklid, nic nemaže.\n                               --artifact-root ADRESÁŘ přidá kontrolu obrazů.\n\nPoužití a režimy:\n  Bez příkazu se vypíše list. CÍL je jméno deklarace, nikoli IP adresa.\n  Dostupné operace konkrétního cíle ukáže show CÍL.\n  update/create/install/provision/reproduce/reset bez --apply pouze plánují.\n  new-* a export běžně zapisují místně; --dry-run zobrazí plán bez zápisu.\n  diff/diffg mohou číst server a diff sestavuje recept; --dry-run vypíše jen plán.\n  --ssh root@HOST:PORT přepíše SSH přístup k offline VM libovolného backendu.\n  --method image je výchozí pro všechny VM: import hotového disku a ověření startu.\n  --method iso instaluje na prázdný disk, potom ISO odpojí a ověří start systému.\n  Volbu lze uložit jako deploymentMethod v deklaraci; --method ji přepíše.\n  Platí pro new-*, show, plan, create, install, provision, reproduce a export.\n  --offline vybírá přípravu bez hypervizoru nezávisle na metodě. RPi používá SD.\n  diff ukáže připravené změny. Po aktualizaci je obvykle prázdný; použij diffg.\n\nPříklady:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOSTITEL\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan nixberry --address 192.168.50.20\n\nPodrobný provozní návod: README.md v kořeni receptu nixberry.\nÚplná reference příkazů a voleb: docs/cli.md.\n"
+
+#, python-brace-format
+msgid "Execute: {command}"
+msgstr "Provedení: {command}"
+
+msgid "Existing target name, or a new name for new-*"
+msgstr "Jméno existujícího cíle, u new-* nové jméno"
+
+msgid "Expected exactly one ESP and one Linux partition."
+msgstr "Očekávám právě jeden ESP a jeden linuxový oddíl."
+
+#, python-brace-format
+msgid "Export: {command}"
+msgstr "Export: {command}"
+
+msgid "Extract a translation template from Python, Bash and PowerShell without extra dependencies."
+msgstr "Vytvoří překladovou šablonu z Pythonu, Bashe i PowerShellu bez dalších závislostí."
+
+msgid "Generated RPi boot files are missing."
+msgstr "Chybí generované startovací soubory RPi."
+
+msgid "Generation"
+msgstr "Generace"
+
+msgid "GPT is missing."
+msgstr "Chybí GPT."
+
+msgid "Guest check or installation failed; leaving the VM boot configuration unchanged."
+msgstr "Kontrola nebo instalace hosta selhala; VM ponecháváme beze změny startu."
+
+msgid "Guest check or installation failed."
+msgstr "Kontrola nebo instalace hosta selhala."
+
+msgid "Guest installation failed; leaving the VM boot configuration unchanged."
+msgstr "Instalace hosta selhala; VM ponecháváme beze změny startu."
+
+msgid "Guest shutdown failed."
+msgstr "Vypnutí hosta selhalo."
+
+msgid "Guest UUID does not match."
+msgstr "Nesouhlasí UUID hosta."
+
+msgid "Hyper-V installation completed."
+msgstr "Instalace Hyper-V dokončená."
+
+msgid "Hyper-V is unavailable."
+msgstr "Hyper-V není dostupné."
+
+msgid "Hyper-V requires Generation 2 with Secure Boot disabled."
+msgstr "Hyper-V vyžaduje Generation 2 a vypnutý Secure Boot."
+
+msgid "Hyper-V storage must be an absolute path on a local drive without parent directory components."
+msgstr "Hyper-V úložiště musí být absolutní cesta na lokálním disku bez nadřazených složek."
+
+msgid "Hypervisor"
+msgstr "Hypervizor"
+
+msgid "Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"
+msgstr "Hostitel hypervizoru pro new-*; pro správu VM přímé SSH root@HOST[:PORT]"
+
+#, python-brace-format
+msgid "Hypervisor: {value1}"
+msgstr "Hypervizor: {value1}"
+
+msgid "Image"
+msgstr "Obraz"
+
+msgid "Image checksum does not match."
+msgstr "Nesouhlasí kontrolní součet obrazu."
+
+msgid "Image directory for cleanup preview; repeatable, links are not followed"
+msgstr "Adresář obrazů pro náhled cleanup; lze opakovat, odkazy se nepřecházejí"
+
+msgid "Image export is not implemented for this platform."
+msgstr "Export obrazu pro tuto platformu není implementovaný."
+
+msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
+msgstr "Metoda image: install spustí a ověří hotový systém; disk se neformátuje."
+
+msgid "Import created a volume at a different path."
+msgstr "Import vytvořil svazek na jiné cestě."
+
+msgid "Import would overwrite an existing volume."
+msgstr "Import by přepsal existující svazek."
+
+#, python-brace-format
+msgid "Import: VMID {value1}, storage {value2}, bridge {value3}"
+msgstr "Import: VMID {value1}, úložiště {value2}, bridge {value3}"
+
+msgid "Include erasing unmounted partitions in the plan; only executed with --apply"
+msgstr "Zahrnout vymazání nepřipojených oddílů do plánu; provede se pouze s --apply"
+
+msgid "Include SSD erasure during RPi recovery"
+msgstr "Zahrnout vymazání SSD při obnově RPi"
+
+msgid "Includes running and stopped VMs and their checkpoints; foreign disks are not deletion candidates."
+msgstr "Zahrnuje běžící i vypnuté VM a jejich checkpointy; cizí disky nejsou kandidáty k mazání."
+
+msgid "Incomplete diagnostic response."
+msgstr "Neúplná odpověď diagnostiky."
+
+#, python-brace-format
+msgid "Incomplete extraction of {name}: {value2} bytes instead of {value3}."
+msgstr "Neúplná extrakce {name}: {value2} bajtů místo {value3}."
+
+msgid "Incomplete RPi check response."
+msgstr "Neúplná odpověď při kontrole RPi."
+
+msgid "Install only into the dedicated VM; without --apply, only check the plan."
+msgstr "Instalace pouze do vyhrazené VM; bez --apply pouze kontrola plánu."
+
+msgid "Installation and boot from VHDX verified. The VM remains running."
+msgstr "Instalace a start z VHDX ověřené. VM zůstává běžet."
+
+#, python-brace-format
+msgid "Installation check failed: {check}"
+msgstr "Kontrola instalace neprošla: {check}"
+
+msgid "Installation completed; gracefully shutting down the test VM."
+msgstr "Instalace dokončená, korektně vypínám testovací VM."
+
+msgid "Installation completed. Detaching the ISO and booting the system from disk…"
+msgstr "Instalace dokončená. Odpojuji ISO a spouštím systém z disku…"
+
+msgid "Installation completed. The RPi remains in the installation environment; reboot and SD removal are separate steps."
+msgstr "Instalace dokončená. RPi zůstává v instalačním prostředí; restart a vyjmutí SD jsou samostatný krok."
+
+msgid "Installation completed. The VM can be shut down gracefully and the ISO detached."
+msgstr "Instalace dokončená. VM lze korektně vypnout a odpojit ISO."
+
+msgid "Installation DVD does not match."
+msgstr "Nesouhlasí instalační DVD."
+
+msgid "Installation environment check failed; the disk was not changed."
+msgstr "Kontrola instalačního prostředí selhala; disk nebyl změněný."
+
+msgid "Installation failed; the ISO remains attached and no automatic retry is performed."
+msgstr "Instalace selhala; ISO zůstává připojené, nic automaticky neopakuji."
+
+msgid "Installation ISO started. The target NixOS is not installed yet."
+msgstr "Spuštěno instalační ISO. Cílový NixOS ještě není nainstalovaný."
+
+msgid "Installation plan verified; nothing was changed."
+msgstr "Instalační plán ověřený, nic nebylo změněné."
+
+msgid "Installation VM shutdown failed; the ISO remains attached."
+msgstr "Vypnutí instalační VM selhalo; ISO zůstává připojené."
+
+msgid "Installation VM UUID does not match."
+msgstr "Nesouhlasí UUID instalační VM."
+
+msgid "Installed profile does not match."
+msgstr "Nesouhlasí instalovaný profil."
+
+#, python-brace-format
+msgid "Installed system check failed: {value1}"
+msgstr "Kontrola instalovaného systému selhala: {value1}"
+
+msgid "Installer disko does not match."
+msgstr "Nesouhlasí disko instalátoru."
+
+msgid "Installer profile does not match."
+msgstr "Nesouhlasí profil instalátoru."
+
+msgid "Installer target disk does not match."
+msgstr "Nesouhlasí cílový disk instalátoru."
+
+msgid "Installer target system does not match."
+msgstr "Nesouhlasí cílový systém instalátoru."
+
+#, python-brace-format
+msgid "Invalid capacity: {key}"
+msgstr "Neplatná kapacita: {key}"
+
+msgid "Invalid check key."
+msgstr "Neplatný klíč kontroly."
+
+msgid "Invalid format, capacity or unexpected backing file."
+msgstr "Neplatný formát, kapacita nebo neočekávaný backing file."
+
+msgid "Invalid host hostname."
+msgstr "Neplatný hostname hostitele."
+
+msgid "Invalid hostKeyAlias for SSH key verification."
+msgstr "Neplatný hostKeyAlias pro ověřování SSH klíče."
+
+#, python-brace-format
+msgid "Invalid Hyper-V capacity: {key}"
+msgstr "Neplatná kapacita Hyper-V: {key}"
+
+msgid "Invalid Hyper-V VM MAC address."
+msgstr "Neplatná MAC Hyper-V VM."
+
+msgid "Invalid installation mode."
+msgstr "Neplatný režim instalace."
+
+msgid "Invalid ip route response."
+msgstr "Neplatná odpověď ip route."
+
+msgid "Invalid MAC address."
+msgstr "Neplatná MAC."
+
+msgid "Invalid or incomplete generation inventory."
+msgstr "Neplatná nebo neúplná evidence generací."
+
+msgid "Invalid Proxmox ISO storage."
+msgstr "Neplatné úložiště ISO Proxmoxu."
+
+#, python-brace-format
+msgid "Invalid Proxmox resource: {key}"
+msgstr "Neplatný prostředek Proxmox: {key}"
+
+msgid "Invalid SSH host or port (1–65535)."
+msgstr "Neplatný SSH hostitel nebo port (1–65535)."
+
+msgid "Invalid SSH target DNS name."
+msgstr "Neplatné DNS jméno SSH cíle."
+
+msgid "Invalid SSH target IPv4 address."
+msgstr "Neplatná IPv4 adresa SSH cíle."
+
+msgid "Invalid storage path."
+msgstr "Neplatná cesta úložiště."
+
+msgid "Invalid target name for comparison."
+msgstr "Neplatné jméno cíle pro porovnání."
+
+msgid "Invalid target name for update."
+msgstr "Neplatné jméno cíle pro aktualizaci."
+
+msgid "Invalid test host name."
+msgstr "Neplatné jméno testovacího hostitele."
+
+msgid "Invalid upload identifier."
+msgstr "Neplatný identifikátor uploadu."
+
+msgid "Invalid UUID or owner marker."
+msgstr "Neplatné UUID nebo značka vlastníka."
+
+msgid "Invalid VM capacity."
+msgstr "Neplatná kapacita VM."
+
+msgid "Invalid VM name."
+msgstr "Neplatné jméno VM."
+
+msgid "Invalid VM owner."
+msgstr "Neplatný vlastník VM."
+
+msgid "Invalid VMID."
+msgstr "Neplatné VMID."
+
+msgid "Inventory is read-only. VMware: running VMs and files in the dedicated directory, not all stopped VMs on the host. unknown is not a deletion candidate. Snapshots and saved states in each VM directory are also protected. On Windows, allocation is read through GetCompressedFileSizeW; logicalBytes is the file length."
+msgstr "Inventura je pouze čtení. VMware: běžící VM a soubory vyhrazeného adresáře, nikoli všechny vypnuté VM hostitele. unknown není kandidát k mazání. Ve vlastním adresáři VM chráníme i snapshoty a uložené stavy. Na Windows se alokace čte pomocí GetCompressedFileSizeW; logicalBytes je délka souboru."
+
+msgid "ISO detached; waiting for SSH on the installed system."
+msgstr "ISO odpojené, čekám na SSH instalovaného systému."
+
+msgid "ISO installation requires vmware-vdiskmanager next to vmrun."
+msgstr "Pro instalaci z ISO chybí vmware-vdiskmanager vedle vmrun."
+
+msgid "ISO method: install boots the installation ISO and writes the system only to a verified blank disk."
+msgstr "Metoda iso: install spustí instalační ISO a zapíše systém pouze na ověřený prázdný disk."
+
+#, python-brace-format
+msgid "ISO storage {storage} is inactive on the target node."
+msgstr "Úložiště ISO {storage} není aktivní na cílovém uzlu."
+
+#, python-brace-format
+msgid "Key verification: strict known_hosts{value1}{value2}"
+msgstr "Ověření klíče: striktní known_hosts{value1}{value2}"
+
+msgid "knownHostsFile must be an absolute path without control characters."
+msgstr "knownHostsFile musí být absolutní cesta bez řídicích znaků."
+
+msgid "Lab configuration requires root and the expected UUID."
+msgstr "Konfigurace labu vyžaduje root a očekávané UUID."
+
+msgid "Lab storage must not traverse a symbolic link."
+msgstr "Úložiště labu nesmí vést přes symbolický odkaz."
+
+msgid "Libvirt cleanup only supports local qemu:///system."
+msgstr "Úklid libvirt podporuje pouze místní qemu:///system."
+
+#, c-format
+msgid "Libvirt created the disk at a different path: %s"
+msgstr "Libvirt vytvořil disk na jiné cestě: %s"
+
+msgid "list does not accept a target or write mode."
+msgstr "list nepřijímá cíl ani režim zápisu."
+
+#, python-brace-format
+msgid "Live status: {command}"
+msgstr "Živý stav: {command}"
+
+msgid "Load and unload the kernel without rebooting"
+msgstr "Načíst a znovu uvolnit kernel bez restartu"
+
+msgid "Loading and unloading verified. The RPi was not rebooted."
+msgstr "Načtení i uvolnění ověřené. RPi nebylo restartované."
+
+msgid "MAC address does not match."
+msgstr "Nesouhlasí MAC."
+
+msgid "Machine-readable output for inventory, diagnostics, verify and export"
+msgstr "Strojový výstup pro inventuru, diagnostiku, verify a export"
+
+msgid "Managed ISO checksum does not match."
+msgstr "Nesouhlasí kontrolní součet spravovaného ISO."
+
+msgid "management not configured"
+msgstr "správa nenastavená"
+
+msgid "Media hash does not match."
+msgstr "Nesouhlasí hash média."
+
+msgid "Media transfer failed."
+msgstr "Přenos média selhal."
+
+#, python-brace-format
+msgid "MemAvailable={available}; conservative requirement={needed}"
+msgstr "MemAvailable={available}; konzervativní požadavek={needed}"
+
+#, c-format
+msgid "Method: %s; ISO: %s; disk image: %s"
+msgstr "Metoda: %s; ISO: %s; diskový obraz: %s"
+
+#, c-format
+msgid "Mode: %s; URI: %s; VM: %s"
+msgstr "Režim: %s; URI: %s; VM: %s"
+
+msgid "Multicast MAC addresses are not allowed."
+msgstr "Multicast MAC není povolená."
+
+msgid "Name from rpi/targets/default.nix"
+msgstr "Název z rpi/targets/default.nix"
+
+msgid "Nested AMD KVM is not enabled."
+msgstr "Nested AMD KVM není zapnuté."
+
+msgid "Network does not match."
+msgstr "Nesouhlasí síť."
+
+#, python-brace-format
+msgid "Network: {value1}, gateway {value2}, DNS {value3}"
+msgstr "Síť: {value1}, brána {value2}, DNS {value3}"
+
+msgid "Network: DHCP"
+msgstr "Síť: DHCP"
+
+msgid "New offline bundle directory; relative paths are resolved from the working directory"
+msgstr "Nový adresář offline balíčku; relativní cesta se počítá od pracovního adresáře"
+
+#, python-brace-format
+msgid "New recipe: {system}"
+msgstr "Nový recept: {system}"
+
+msgid "new-* only creates a local declaration; it does not accept these options."
+msgstr "new-* vytvoří pouze místní deklaraci; tyto volby nepřijímá."
+
+#, python-brace-format
+msgid "Newer generation: {path}"
+msgstr "Novější generace: {path}"
+
+#, python-brace-format
+msgid "Next step: {command}"
+msgstr "Další krok: {command}"
+
+msgid "NixBerry: offline bundle\n\n1. Verify checksums: sha256sum -c SHA256SUMS\n2. Transfer and boot instructions: recipe/README.md\n3. Target and parameters: manifest.json\n\nThe image contains the system and its dependencies. VM disks boot directly;\nthe RPi SD card is a recovery environment with the prebuilt target system.\nInstalled services and applications may have their own network requirements.\n"
+msgstr "Nixberry: offline balíček\n\n1. Ověř kontrolní součty: sha256sum -c SHA256SUMS\n2. Postup přenosu a startu: recipe/README.md\n3. Cíl a parametry: manifest.json\n\nObraz obsahuje systém a jeho závislosti. VM disk startuje přímo;\nRPi SD je obnovovací prostředí s hotovým cílovým systémem.\nInstalované služby a aplikace mohou mít vlastní síťové nároky.\n"
+
+#, python-brace-format
+msgid "NixBerry: offline ISO installation\n\n1. Verify sha256sum -c SHA256SUMS.\n2. Create a new VM with UEFI, Secure Boot disabled and exactly one blank disk.\n   CPU, RAM, disk and network parameters are in manifest.json; the target disk must be {disk}.\n   Use the guest agent and controller for the platform described in recipe/README.md.\n3. Attach {filename} and boot the VM from it. The ISO already contains the system and disko.\n4. Transfer INSTALL-ISO.sh to the installation VM over SSH or another medium.\n   First verify the VM identity in the hypervisor console and its actual DMI UUID:\n   cat /sys/class/dmi/id/product_uuid\n5. Read-only check (replace UUID with the verified value):\n   bash INSTALL-ISO.sh dry-run UUID {system} {disko} {bytes} {profile} {disk}\n   After checking, repeat the same command with apply instead of dry-run.\n   Installation refuses disks with partitions or signatures; it does not reinstall an existing system.\n6. Shut down the VM gracefully, detach the ISO and boot from disk.\n   Verify networking and readlink -f /run/current-system against manifest.json.\n\nThe operator prepares the hypervisor network. System networking follows manifest.json.\n"
+msgstr "Nixberry: offline instalace z ISO\n\n1. Ověř sha256sum -c SHA256SUMS.\n2. Vytvoř novou VM s UEFI, vypnutým Secure Boot a právě jedním prázdným diskem.\n   Parametry CPU, RAM, disk a síť jsou v manifest.json; cílový disk musí být {disk}.\n   Použij guest agenta a řadič odpovídající platformě popsané v recipe/README.md.\n3. Připoj {filename} a spusť z něj VM. Systém i disko jsou již součástí ISO.\n4. Přenes INSTALL-ISO.sh do instalační VM přes SSH nebo další médium.\n   Nejdřív ověř identitu VM v konzoli hypervizoru a její skutečné DMI UUID:\n   cat /sys/class/dmi/id/product_uuid\n5. Kontrola bez zápisu (UUID nahraď ověřenou hodnotou):\n   bash INSTALL-ISO.sh dry-run UUID {system} {disko} {bytes} {profile} {disk}\n   Po kontrole zopakuj stejný příkaz s apply místo dry-run.\n   Instalace odmítá disk s oddíly nebo signaturami; existující systém nepřeinstaluje.\n6. Korektně vypni VM, odpoj ISO a spusť ji z disku.\n   Ověř síť a readlink -f /run/current-system proti manifest.json.\n\nSíť hypervizoru připravuje provozovatel. Síť systému je podle manifest.json.\n"
+
+msgid "no"
+msgstr "ne"
+
+msgid "No connection or build. Comparison does not change the remote system."
+msgstr "Bez připojení a sestavení. Vzdálený systém se při porovnání nemění."
+
+msgid "No default route; the network may be intentionally isolated."
+msgstr "Chybí výchozí trasa; může jít o záměrně izolovanou síť."
+
+msgid "No failed units."
+msgstr "Žádné neúspěšné jednotky."
+
+msgid "No targets are declared. Add a host and instance or an RPi target."
+msgstr "Nejsou deklarované žádné cíle. Přidej hostitele a instanci nebo cíl RPi."
+
+msgid "Not enough free RAM for the loading check."
+msgstr "Nedostatek volné RAM pro kontrolu načtení."
+
+msgid "Not enough free space."
+msgstr "Nedostatek místa."
+
+msgid "NVRAM still exists after removal."
+msgstr "NVRAM po odstranění stále existuje."
+
+#, python-brace-format
+msgid "Offline bundle ready: {path}"
+msgstr "Offline balíček připravený: {path}"
+
+msgid "Offline declaration: edit capacity and deployment parameters in the file before export."
+msgstr "Offline deklarace: před exportem uprav kapacitu a parametry nasazení v souboru."
+
+msgid "Offline preparation cannot be combined with --host."
+msgstr "Offline přípravu nelze kombinovat s --host."
+
+#, python-brace-format
+msgid "OK {case}: {value2}"
+msgstr "OK {case}: {value2}"
+
+msgid "OK empty CLI: build, list and status without hosts or targets"
+msgstr "OK empty CLI: build, list a status bez hostitelů a cílů"
+
+msgid "OK missing-host: clear configuration error"
+msgstr "OK missing-host: srozumitelná chyba konfigurace"
+
+msgid "One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"
+msgstr "Jednorázový SSH endpoint serveru root@HOST[:PORT]; přepíše access.host a access.port"
+
+msgid "Only local qemu:///system is allowed."
+msgstr "Povolený je pouze místní qemu:///system."
+
+msgid "Only report selected VM status without inspecting disks or snapshots"
+msgstr "Pouze stav vybraných VM bez průzkumu disků a snapshotů"
+
+msgid "Only the dedicated test VM, its disk and NVRAM were removed."
+msgstr "Odstraněna pouze vyhrazená testovací VM, její disk a NVRAM."
+
+msgid "Only transfer outputs to the Nix store, without installation"
+msgstr "Pouze předat výstupy do Nix store, bez instalace"
+
+msgid "Only verify the plan without writing"
+msgstr "Pouze ověřit plán bez zápisu"
+
+#, python-brace-format
+msgid "Operation {action} is not implemented for {value2}. Available: {value3}"
+msgstr "Operace {action} pro {value2} není implementovaná. Dostupné: {value3}"
+
+msgid "Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."
+msgstr "Operace není dostupná. Pro správu systému nastav access nebo použij --ssh root@HOST:PORT; ovládání hypervizoru vyžaduje deklarovaný host."
+
+#, python-brace-format
+msgid "Operation: {value1}"
+msgstr "Operace: {value1}"
+
+#, python-brace-format
+msgid "Option {option} does not accept a value {value}."
+msgstr "Volba {option} nepřijímá hodnotu {value}."
+
+#, python-brace-format
+msgid "Option {option} requires a value."
+msgstr "Volba {option} potřebuje hodnotu."
+
+msgid "Options"
+msgstr "Volby"
+
+#, python-brace-format
+msgid "Options {option} and {other} cannot be combined."
+msgstr "Volby {option} a {other} nelze kombinovat."
+
+msgid "Outputs transferred and verified. Partitions, the active system and RPi boot state were not changed."
+msgstr "Výstupy předané a ověřené. Oddíly, aktivní systém a start RPi se nezměnily."
+
+msgid "Ownership or media does not match."
+msgstr "Nesouhlasí vlastnictví nebo médium."
+
+msgid "Part of the diagnostic response is missing."
+msgstr "Chybí část odpovědi diagnostiky."
+
+msgid "Pinned installation manifest does not match."
+msgstr "Nesouhlasí připnutý instalační manifest."
+
+#, python-brace-format
+msgid "Plan verified. Method {method}; no media transfer, disk creation or VM creation."
+msgstr "Plán ověřený. Metoda {method}; bez přenosu média, vytvoření disku a VM."
+
+msgid "Plan verified. No copying, kernel loading or reboot."
+msgstr "Plán ověřený. Bez kopírování, načtení kernelu a restartu."
+
+#, python-brace-format
+msgid "Plan verified. Nothing changed. Erase SSD: {value1}"
+msgstr "Plán ověřený. Nic se nezměnilo. Vymazání SSD: {value1}"
+
+msgid "Plan verified. The disk was not changed and the VM was not shut down."
+msgstr "Plán ověřený. Disk nebyl změněný, VM nebyla vypnutá."
+
+#, python-brace-format
+msgid "Plan: {name}, 6 CPUs, 12 GiB RAM, 32 + 64 GiB disks, UEFI and a dedicated NAT network."
+msgstr "Plán: {name}, 6 CPU, 12 GiB RAM, disky 32 + 64 GiB, UEFI a samostatná NAT síť."
+
+msgid "Plan: verify installation → build recipe → retrieve missing old paths → nvd diff."
+msgstr "Plán: ověřit instalaci → sestavit recept → stáhnout chybějící staré cesty → nvd diff."
+
+msgid "Plan: verify installation → compare the two highest retained generations."
+msgstr "Plán: ověřit instalaci → porovnat dvě nejvyšší dochované generace."
+
+msgid "Plan: verify the running installation → build → transfer over SSH → activate → verify."
+msgstr "Plán: ověřit běžící instalaci → sestavit → přenést přes SSH → aktivovat → ověřit."
+
+msgid "Platform"
+msgstr "Platforma"
+
+#, python-brace-format
+msgid "Platform profile: {value1}"
+msgstr "Profil platformy: {value1}"
+
+msgid "Prepare any VM offline without a hypervisor; cannot be combined with --host"
+msgstr "Offline příprava libovolné VM bez hypervizoru; nelze kombinovat s --host"
+
+msgid "Prepare only the data disk and staging directory of an installed Proxmox lab."
+msgstr "Připraví pouze datový disk a staging již nainstalovaného Proxmox labu."
+
+msgid "Prepare or cleanly install a selected RPi5 from pinned declarations."
+msgstr "Příprava nebo čistá instalace vybraného RPi5 z připnutých deklarací."
+
+msgid "Prepare the data disk only for a verified new lab"
+msgstr "Připravit datový disk pouze ověřeného nového labu"
+
+msgid "Preparing automatic installation only onto the new VM system disk…"
+msgstr "Připravuji automatickou instalaci pouze na nový systémový disk VM…"
+
+msgid "Preparing the blank lab data disk as LVM thin storage…"
+msgstr "Připravuji prázdný datový disk labu jako LVM thin úložiště…"
+
+#, python-brace-format
+msgid "Preparing the offline bundle for target {target} in {path}."
+msgstr "Připravuji offline balíček cíle {target} do {path}."
+
+#, python-brace-format
+msgid "Previous generation: {path}"
+msgstr "Předchozí generace: {path}"
+
+#, python-brace-format
+msgid "Previous system: {system}"
+msgstr "Původní systém: {system}"
+
+msgid "Primary adapter MAC address does not match."
+msgstr "Nesouhlasí MAC hlavního adaptéru."
+
+msgid "probe is read-only."
+msgstr "probe je pouze čtení."
+
+msgid "Profile does not match."
+msgstr "Nesouhlasí profil."
+
+msgid "Protection"
+msgstr "Ochrana"
+
+msgid "Proxmox created a disk outside the declared storage."
+msgstr "Proxmox vytvořil disk mimo deklarované úložiště."
+
+msgid "Proxmox does not have the expected vmbr0 bridge."
+msgstr "Proxmox nemá očekávaný bridge vmbr0."
+
+msgid "Proxmox has no available KVM device."
+msgstr "Proxmox nemá dostupné zařízení KVM."
+
+#, python-brace-format
+msgid "Proxmox lab finalization failed: {error}"
+msgstr "Dokončení Proxmox labu selhalo: {error}"
+
+#, python-brace-format
+msgid "Proxmox lab preparation failed: {error}"
+msgstr "Příprava Proxmox labu selhala: {error}"
+
+#, python-brace-format
+msgid "Proxmox storage {storage} is not enabled for ISO content."
+msgstr "Proxmox úložiště {storage} není povolené pro ISO."
+
+msgid "Proxmox: node VMs and snapshots, images in the selected storage. Block/thin storage may not report physical allocation; null is not zero. Storage shared with other nodes prevents proof that orphaned volumes are unused."
+msgstr "Proxmox: VM a snapshoty uzlu, obrazy zadaného úložiště. Blokové/thin úložiště nemusí poskytovat fyzickou alokaci; null není nula. Sdílení úložiště s dalšími uzly brání potvrzení nepoužívání osiřelých svazků."
+
+msgid "pythonCommand must be a command name available in the host PATH."
+msgstr "pythonCommand musí být název příkazu dostupný v PATH hostitele."
+
+msgid "RAM mode does not match."
+msgstr "Nesouhlasí režim RAM."
+
+#, python-brace-format
+msgid "Reading the image during transfer failed: {value1}"
+msgstr "Čtení obrazu při přenosu selhalo: {value1}"
+
+msgid "Recover from the full SD card alone; no internet, SSH or builds on another computer."
+msgstr "Obnova ze samotné plné SD; bez internetu, SSH nebo sestavování na dalším počítači."
+
+#, python-brace-format
+msgid "Removal allowed: {value}"
+msgstr "Povolení odstranění: {value}"
+
+msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
+msgstr "Odstranění není povolené. Nastav allowReset = true; v deklaraci této VM v instances/, potom zkontroluj reset CÍL bez --apply."
+
+msgid "Removal of this instance is not declaratively allowed."
+msgstr "Odstranění této instance není deklarativně povolené."
+
+msgid "Removal plan verified; nothing was shut down or deleted. With --apply, the VM is gracefully shut down and removed after revalidation."
+msgstr "Plán odstranění ověřený; nic se nevypínalo ani nemazalo. S --apply se VM korektně vypne a po opětovné kontrole odstraní."
+
+msgid "Removal plan verified. Nothing was changed."
+msgstr "Plán odstranění ověřený. Nic nebylo změněné."
+
+msgid "Remove only the dedicated test VM and its disk; the default mode changes nothing."
+msgstr "Odstranění pouze vyhrazené testovací VM a jejího disku; výchozí režim nic nemění."
+
+#, python-brace-format
+msgid "Remove only: {disk} and {nvram}"
+msgstr "Odstranit pouze: {disk} a {nvram}"
+
+msgid "Repeated creation was incorrectly allowed."
+msgstr "Opakované vytvoření bylo nesprávně povoleno."
+
+#, python-brace-format
+msgid "Required arguments are missing: {arguments}"
+msgstr "Chybí povinné argumenty: {arguments}"
+
+msgid "Reset is not explicitly allowed."
+msgstr "Reset není výslovně povolený."
+
+msgid "Reset requires a declared NixBerry owner; a known UUID alone is not enough."
+msgstr "Reset vyžaduje deklarovaného vlastníka NixBerry; samotné známé UUID nestačí."
+
+msgid "Reset requires allowReset = true; for this instance and a declared hypervisor host."
+msgstr "Reset vyžaduje allowReset = true; u této instance a deklarovaného hostitele hypervizoru."
+
+msgid "Reset requires an existing running or stopped VM; partial operation remnants will not be deleted."
+msgstr "Reset vyžaduje existující VM v běžícím nebo vypnutém stavu; zbytky po částečné operaci nemažu."
+
+msgid "Reset requires an unambiguous apply mode."
+msgstr "Reset vyžaduje jednoznačný režim apply."
+
+msgid "Reset requires explicit permission and an unambiguous apply mode."
+msgstr "Reset vyžaduje výslovné povolení a jednoznačný režim apply."
+
+#, python-brace-format
+msgid "Resources: {value1} CPUs, {value2} MiB RAM, {value3} GiB disk"
+msgstr "Kapacita: {value1} CPU, {value2} MiB RAM, {value3} GiB disk"
+
+msgid "Result"
+msgstr "Výsledek"
+
+msgid "Retrieving missing parts of the running system into the local Nix store…"
+msgstr "Stahuji chybějící části běžícího systému do místní Nix store…"
+
+msgid "Root and boot partitions match the installation."
+msgstr "Kořenový a bootovací oddíl odpovídají instalaci."
+
+msgid "RPi does not match."
+msgstr "Nesouhlasí RPi."
+
+msgid "RPi serial number does not match."
+msgstr "Nesouhlasí sériové číslo RPi."
+
+#, python-brace-format
+msgid "RPi verified: {value1}; recovery: {value2}"
+msgstr "RPi ověřeno: {value1}; recovery: {value2}"
+
+#, python-brace-format
+msgid "RPi: {value1}\nAddress: {value2}"
+msgstr "RPi: {value1}\nAdresa: {value2}"
+
+#, python-brace-format
+msgid "RPi: {value1}; serial: {value2}; address: {address}"
+msgstr "RPi: {value1}; serial: {value2}; adresa: {address}"
+
+#, python-brace-format
+msgid "RPi: {value1}; SSD: {value2}; serial: {value3}"
+msgstr "RPi: {value1}; SSD: {value2}; serial: {value3}"
+
+msgid "Run diff through the nixberry launcher with a complete pinned recipe."
+msgstr "diff spusť přes spouštěč nixberry s úplným připnutým receptem."
+
+msgid "Run RPi reproduction through the nixberry launcher from the project root."
+msgstr "Reprodukci RPi spusť přes spouštěč nixberry z kořene projektu."
+
+msgid "Run the command from a complete project recipe."
+msgstr "Spusť příkaz z úplného projektového receptu."
+
+msgid "Run the operation through the nixberry launcher with a complete project recipe."
+msgstr "Operaci spusť přes spouštěč nixberry s úplným projektovým receptem."
+
+msgid "Run update through the nixberry launcher with a complete pinned recipe."
+msgstr "update spusť přes spouštěč nixberry s úplným připnutým receptem."
+
+msgid "Run verify through the nixberry launcher from the project root."
+msgstr "verify spusť přes spouštěč nixberry z kořene projektu."
+
+msgid "running"
+msgstr "běží"
+
+#, python-brace-format
+msgid "Running system: {system}"
+msgstr "Běžící systém: {system}"
+
+#, c-format
+msgid "Running system: %s"
+msgstr "Běžící systém: %s"
+
+msgid "Safely create and install a dedicated Hyper-V VM over Windows SSH."
+msgstr "Kontrolované vytvoření a instalace vyhrazené Hyper-V VM přes Windows SSH."
+
+msgid "Safely remove a declared VM without building the system or installation media."
+msgstr "Chráněné odstranění deklarované VM bez sestavování systému a instalačních médií."
+
+msgid "Scope: all VMs and snapshots in local libvirt, images in the declared pool. External consumers outside libvirt may be undetectable; review does not prove disuse."
+msgstr "Rozsah: všechny VM a snapshoty místního libvirt, obrazy deklarovaného poolu. Externí konzumenti mimo libvirt nemusí být zjistitelní; review není důkaz nepoužívání."
+
+msgid "Secure Boot does not match."
+msgstr "Nesouhlasí Secure Boot."
+
+msgid "Secure Boot is not disabled."
+msgstr "Secure Boot není vypnutý."
+
+#, python-brace-format
+msgid "Select --host from the declared {backend} hosts: {hosts}. Use --offline to prepare without a hypervisor."
+msgstr "Vyber --host z deklarovaných hostitelů backendu {backend}: {hosts}. Pro přípravu bez hypervizoru použij --offline."
+
+#, python-brace-format
+msgid "Select a target: {value1}. Arbitrary addresses are not allowed."
+msgstr "Vyber cíl: {value1}. Libovolná adresa není povolená."
+
+msgid "Sequential NixBerry integration campaign following docs/test-plan.md."
+msgstr "Sekvenční průřezová kampaň NixBerry podle docs/test-plan.md."
+
+#, python-brace-format
+msgid "Serial number: {value1}\nDisk: {value2}"
+msgstr "Sériové číslo: {value1}\nDisk: {value2}"
+
+msgid "Server address"
+msgstr "Adresa serveru"
+
+msgid "Server configuration for new-*; defaults to default, other names from configurations/"
+msgstr "Konfigurace serveru pro new-*; výchozí default, další názvy z configurations/"
+
+#, python-brace-format
+msgid "Server configuration: {configuration}"
+msgstr "Konfigurace serveru: {configuration}"
+
+#, python-brace-format
+msgid "Server SSH: {value1}@{value2}:{value3}"
+msgstr "SSH serveru: {value1}@{value2}:{value3}"
+
+msgid "Set --run-root outside the recipe to run the campaign."
+msgstr "Pro běh kampaně zadej --run-root mimo recept."
+
+msgid "Show help and exit"
+msgstr "Zobrazit nápovědu a skončit"
+
+msgid "Show the plan without writing; diff/diffg without connections or builds"
+msgstr "Zobrazit plán bez zápisu; diff/diffg bez připojení a sestavení"
+
+msgid "Sizes include shared dependencies; they cannot be added or treated as reclaimable space. review means manual assessment, not permission to delete. All retained generations have GC roots."
+msgstr "Velikosti zahrnují sdílené závislosti; nelze je sčítat ani považovat za uvolnitelné místo. review znamená ruční posouzení, nikoli povolení smazat. Všechny dochované generace drží GC roots."
+
+#, python-brace-format
+msgid "Specify a new target name: {value1} NAME."
+msgstr "Zadej jméno nového cíle: {value1} JMÉNO."
+
+msgid "Specify direct SSH as root@HOST[:PORT]."
+msgstr "Přímé SSH zadej jako root@HOST[:PORT]."
+
+#, python-brace-format
+msgid "Specify one of these options: {arguments}"
+msgstr "Zadej jednu z voleb: {arguments}"
+
+msgid "ssh does not accept --dry-run; use status to check the state."
+msgstr "ssh nepřijímá --dry-run; stav zjistíš přes status."
+
+msgid "SSH is not available yet."
+msgstr "SSH ještě není dostupné."
+
+msgid "SSH must connect directly to the declared Proxmox node."
+msgstr "SSH musí vést přímo na deklarovaný Proxmox uzel."
+
+msgid "SSH requires a specific host address."
+msgstr "SSH vyžaduje adresu konkrétního hostitele."
+
+msgid "SSH user's VirtualBox registry, including media and snapshot references. review requires checking usage outside this registry. Do not add shared disk sizes across VMs."
+msgstr "VirtualBox registr uživatele SSH, včetně médií a referencí snapshotů. review vyžaduje posouzení použití mimo tento registr. Sdílené disky nesčítej mezi VM."
+
+msgid "Staging, recovery or interrupted creation; review is required."
+msgstr "Staging, obnova nebo přerušené vytváření; vyžaduje posouzení."
+
+msgid "Starting requires an existing powered-off VM with a verified owner."
+msgstr "Start vyžaduje existující vypnutou VM s ověřeným vlastníkem."
+
+msgid "Starting the new Proxmox VM and its automatic installer…"
+msgstr "Spouštím novou Proxmox VM a její automatický instalátor…"
+
+msgid "State"
+msgstr "Stav"
+
+#, python-brace-format
+msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
+msgstr "Pevná IP: {address}\nBrána: {gateway}\nDNS: {dns}\n"
+
+msgid "Status queries are not implemented for this host type."
+msgstr "Pro tento typ hostitele není čtení stavu implementované."
+
+msgid "stopped"
+msgstr "vypnutá"
+
+msgid "Storage must have an absolute path without parent directory components."
+msgstr "Úložiště musí mít absolutní cestu bez nadřazených složek."
+
+msgid "Store campaign results outside the recipe."
+msgstr "Výsledky kampaně ukládej mimo recept."
+
+msgid "Store the bundle outside the NixBerry recipe root."
+msgstr "Balíček ukládej mimo kořen projektového receptu nixberry."
+
+msgid "Stored media hash does not match."
+msgstr "Nesouhlasí hash uloženého média."
+
+msgid "Switch does not match."
+msgstr "Nesouhlasí switch."
+
+msgid "Switch ID must be a canonical UUID."
+msgstr "Switch ID musí být kanonické UUID."
+
+msgid "System disk copy hash does not match."
+msgstr "Nesouhlasí hash kopie systémového disku."
+
+#, python-brace-format
+msgid "System disk handoff for VirtualBox on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux (64-bit) VM, skip unattended installation and do not attach an ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM. Enable UEFI and leave Secure Boot disabled.\n3. First copy the VDI outside the bundle; attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n   For another VM, use VBoxManage clonemedium disk to assign a unique media UUID.\n4. Attach exactly one Intel PRO/1000 MT Desktop network adapter to the chosen network.\n   For DHCP, use Bridged Adapter with DHCP or NAT.\n   For a static IP, the network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status virtualbox in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\nFor NAT, configure SSH port forwarding in the operator's environment.\nThe operator may assign a different VM UUID and MAC; networking is not tied to the MAC.\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
+msgstr "Předání systémového disku pro VirtualBox na Linuxu i Windows\n\nObraz: {filename}\nHostname: {hostname}\n{network}\n1. Ověř SHA256SUMS před importem. Na Linuxu: sha256sum -c SHA256SUMS.\n   Ve Windows porovnej Get-FileHash -Algorithm SHA256 '{filename}' s řádkem v SHA256SUMS.\n2. Vytvoř novou VM typu Linux (64-bit), přeskoč bezobslužnou instalaci a nepřipojuj ISO.\n   Kapacita: {vcpus} CPU, {memory} MiB RAM. Zapni UEFI, Secure Boot ponech vypnutý.\n3. VDI nejprve zkopíruj mimo balíček; k řadiči SATA připoj tento existující disk.\n   Obraz má kapacitu {disk} GiB a obsahuje nainstalovaný systém.\n   Kopii pro další VM vytvoř pomocí VBoxManage clonemedium disk, aby měla vlastní UUID média.\n4. Připoj jediný síťový adaptér Intel PRO/1000 MT Desktop do zvolené sítě.\n   Pro DHCP použij Bridged Adapter s DHCP nebo NAT.\n   Pro pevnou IP musí síť odpovídat uvedené podsíti a bráně.\n5. Spusť VM z disku a z konzole ověř ip -4 address, ip route a systemctl status virtualbox.\n   Očekávaný systém (readlink -f /run/current-system) je v manifest.json.\n\nPři NAT nastav v prostředí provozovatele přesměrování SSH portu.\nUUID a MAC VM může provozovatel přidělit vlastní; síť není vázaná na MAC.\nRuční import nepřebírá značky vlastníka automatické správy hypervizoru.\nServer spravuj přes access v offline deklaraci nebo --ssh root@HOST:PORT.\nSSH přijímá klíče z receptu; heslo je vypnuté.\n"
+
+#, python-brace-format
+msgid "System disk handoff for VM{vmid}\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify sha256sum -c SHA256SUMS.\n2. Prepare a powered-off VM with UEFI/OVMF and Secure Boot disabled.\n   Recommended resources: {vcpus} CPUs, {memory} MiB RAM, {disk} GiB disk.\n3. Import QCOW2 into the chosen storage and attach it as virtio0 or scsi0 (VirtIO SCSI).\n   Configure boot from the attached disk and enable QEMU Guest Agent.\n4. Attach exactly one VirtIO network adapter to the agreed network and start the VM.\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. In the console, verify ip -4 address, ip route and resolvectl status.\n   System: readlink -f /run/current-system; the expected value is in manifest.json.\n\nThe operator may assign a different MAC and UUID; system networking is not tied to the MAC.\nManual import does not adopt ownership markers required for hypervisor management.\nManage the server through access in its declaration or nixberry update TARGET --ssh root@HOST:PORT --apply.\nSSH access uses keys from the included recipe; password login is disabled.\nThe image supplies the system; the operator manages the host, bridge and firewall.\n"
+msgstr "Předání systémového disku pro VM{vmid}\n\nObraz: {filename}\nHostname: {hostname}\n{network}\n1. Ověř sha256sum -c SHA256SUMS.\n2. Připrav vypnutou VM s UEFI/OVMF a vypnutým Secure Boot.\n   Doporučená kapacita: {vcpus} CPU, {memory} MiB RAM, disk {disk} GiB.\n3. Importuj QCOW2 do zvoleného úložiště a připoj jej jako virtio0 nebo scsi0 (VirtIO SCSI).\n   Nastav bootování z připojeného disku a povol QEMU Guest Agent.\n4. Připoj jedinou síťovou kartu VirtIO do dohodnuté sítě a spusť VM.\n   Pro pevnou IP musí připojená síť odpovídat uvedené podsíti a bráně.\n5. Z konzole ověř ip -4 address, ip route a resolvectl status.\n   Systém: readlink -f /run/current-system; očekávaná hodnota je v manifest.json.\n\nMAC a UUID může provozovatel přidělit vlastní; systémová síť není vázaná na MAC.\nRuční import nepřebírá značky vlastnictví požadované správou přes hypervizor.\nSamotný server lze spravovat přes access v deklaraci nebo nixberry update CIL --ssh root@HOST:PORT --apply.\nPřístup přes SSH používá klíče z přiloženého receptu, heslo je vypnuté.\nObraz dodává systém; konfiguraci hostitele, bridge a firewall spravuje provozovatel.\n"
+
+msgid "System does not match."
+msgstr "Nesouhlasí systém."
+
+msgid "System management"
+msgstr "Správa systému"
+
+msgid "System management is not configured; add access or use --ssh."
+msgstr "Správa systému není nastavená; doplň access nebo použij --ssh."
+
+#, python-brace-format
+msgid "System update: {name} ({backend})"
+msgstr "Aktualizace systému: {name} ({backend})"
+
+msgid "System verification failed after the new boot."
+msgstr "Systém po novém startu neprošel ověřením."
+
+msgid "Target"
+msgstr "Cíl"
+
+msgid "TARGET"
+msgstr "CÍL"
+
+#, python-brace-format
+msgid "Target {name} verification failed: {error}\nDiagnostics: {doctor}\nRecipe comparison: {diff}"
+msgstr "Ověření cíle {name} neprošlo: {error}\nDiagnostika: {doctor}\nPorovnání s receptem: {diff}"
+
+#, python-brace-format
+msgid "Target details: {command}"
+msgstr "Podrobnosti cíle: {command}"
+
+msgid "Target disk size does not match."
+msgstr "Nesouhlasí velikost cílového disku."
+
+msgid "Target inventory regression checks in recipe copies; no host connections or VM changes."
+msgstr "Regrese evidence cílů v kopiích receptu; bez připojení k hostitelům nebo změn VM."
+
+msgid "Target VHDX does not match."
+msgstr "Nesouhlasí cílový VHDX."
+
+#, python-brace-format
+msgid "Target: {value1}\nPlatform: {value2}"
+msgstr "Cíl: {value1}\nPlatforma: {value2}"
+
+#, python-brace-format
+msgid "Target: Proxmox lab {address}; preparing the dedicated data disk and staging directory."
+msgstr "Cíl: Proxmox lab {address}; připravení vyhrazeného datového disku a stagingu."
+
+msgid "Test VM NVRAM path does not match."
+msgstr "Nesouhlasí cesta NVRAM testovací VM."
+
+msgid "The active and default systems differ; a reboot may start a different system."
+msgstr "Aktivní a výchozí systém se liší; po restartu může naběhnout jiný systém."
+
+msgid "The active and default systems match."
+msgstr "Aktivní a výchozí systém odpovídají."
+
+msgid "The active system is not the expected pinned system."
+msgstr "Aktivní systém není očekávaný připnutý systém."
+
+msgid "The actual image has a different format, capacity, backing image or internal snapshot; refusing reset."
+msgstr "Skutečný obraz má jiný formát, kapacitu, podklad nebo interní snapshot; reset odmítám."
+
+msgid "The adapter failed."
+msgstr "Adaptér selhal."
+
+msgid "The address is resolved from the declaration and live state; Hyper-V uses Windows as a jump host."
+msgstr "Adresa se zjistí z deklarace a živého stavu; Hyper-V použije Windows jako jump host."
+
+msgid "The backing image path is missing."
+msgstr "Chybí cesta podkladového obrazu."
+
+msgid "The boot configuration differs from the running system; a reboot is required."
+msgstr "Bootovací konfigurace se liší od běžícího systému; je potřeba restart."
+
+msgid "The boot configuration differs or cannot be compared; check whether a reboot is needed."
+msgstr "Bootovací konfigurace se liší nebo ji nelze porovnat; prověř potřebu restartu."
+
+msgid "The boot configuration matches."
+msgstr "Bootovací konfigurace odpovídá."
+
+msgid "The boot entry does not reference the kernel, initrd and system."
+msgstr "Bootovací záznam neodkazuje na kernel, initrd a systém."
+
+msgid "The build did not return exactly one image."
+msgstr "Sestavení nevrátilo právě jeden obraz."
+
+#, python-brace-format
+msgid "The build result is missing the expected image: {value1}"
+msgstr "Ve výsledku sestavení chybí očekávaný obraz: {value1}"
+
+#, python-brace-format
+msgid "The built installation ISO is missing: {path}"
+msgstr "Chybí sestavené instalační ISO: {path}"
+
+#, c-format
+msgid "The built installation ISO is missing: %s"
+msgstr "Chybí sestavené instalační ISO: %s"
+
+msgid "The campaign does not support cleanup for this backend."
+msgstr "Úklid tohoto backendu kampaň nepodporuje."
+
+msgid "The case has retained resources; inspect its state first."
+msgstr "Případ má zachované prostředky; nejprve je nutná kontrola stavu."
+
+#, python-brace-format
+msgid "The check failed: {value1}"
+msgstr "Kontrola se nezdařila: {value1}"
+
+msgid "The checksum did not detect the corrupted copy."
+msgstr "Kontrolní součet nerozpoznal poškozenou kopii."
+
+msgid "The command accepts at most one option."
+msgstr "Příkaz přijímá nejvýše jednu volbu."
+
+msgid "The configuration has both a file and a directory; keep only one definition."
+msgstr "Konfigurace má současně soubor i adresář; ponech pouze jednu definici."
+
+msgid "The corresponding offline export must pass first."
+msgstr "Nejprve musí projít odpovídající offline export."
+
+msgid "The data disk contains recognized data; nothing will be erased."
+msgstr "Datový disk obsahuje rozpoznaná data; nic nemažu."
+
+msgid "The data disk does not belong to the expected LVM group."
+msgstr "Datový disk nepatří do očekávané LVM skupiny."
+
+msgid "The data disk does not have the expected serial."
+msgstr "Datový disk nemá očekávaný serial."
+
+msgid "The data disk has partitions or other attached devices."
+msgstr "Datový disk má oddíly nebo další připojená zařízení."
+
+msgid "The data disk is mounted."
+msgstr "Datový disk je připojený."
+
+msgid "The declaration already exists; refusing to overwrite it."
+msgstr "Deklarace už existuje; nepřepisuji ji."
+
+msgid "The declared host is unavailable over verified SSH."
+msgstr "Deklarovaný hostitel není dostupný přes ověřené SSH."
+
+msgid "The declared IPv4 address is not enabled on the RPi."
+msgstr "RPi nemá povolenou deklarovanou IPv4 adresu."
+
+msgid "The declared VirtualBox bridge adapter does not exist."
+msgstr "Deklarovaný VirtualBox bridge adaptér neexistuje."
+
+msgid "The dedicated storageDirectory must be an existing absolute directory outside the drive root."
+msgstr "Vyhrazený storageDirectory musí být existující absolutní adresář mimo kořen disku."
+
+msgid "The default mode only verifies the plan. --apply creates a VM using the selected image or iso method."
+msgstr "Výchozí režim jen ověří plán. --apply vytvoří VM podle zvolené metody image nebo iso."
+
+msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
+msgstr "Adresář cíle už existuje; existující ani částečný výsledek nepřepisuji."
+
+msgid "The direct SSH target does not match the declared VM architecture and hostname."
+msgstr "Přímý SSH cíl neodpovídá deklarované architektuře a hostname VM."
+
+msgid "The disk already contains child devices."
+msgstr "Disk už obsahuje podřízená zařízení."
+
+msgid "The disk already contains partitions."
+msgstr "Disk už obsahuje oddíly."
+
+msgid "The disk already contains signatures."
+msgstr "Disk už obsahuje signatury."
+
+msgid "The disk contains signatures."
+msgstr "Disk obsahuje signatury."
+
+msgid "The disk does not belong to the declared storage."
+msgstr "Disk nepatří do deklarovaného úložiště."
+
+msgid "The disk file still exists after removal."
+msgstr "Soubor disku po odstranění stále existuje."
+
+msgid "The disk has a backing image or unverified origin; refusing reset."
+msgstr "Disk má podkladový obraz nebo neověřený původ; reset odmítám."
+
+msgid "The disk has child devices other than regular partitions."
+msgstr "Disk má podřízená zařízení jiná než běžné oddíly."
+
+msgid "The disk is mounted."
+msgstr "Disk je připojený."
+
+msgid "The disk is shared with another VM."
+msgstr "Disk je sdílený jinou VM."
+
+msgid "The disk is too small."
+msgstr "Disk je příliš malý."
+
+msgid "The disk is used by another VM or snapshot; refusing reset."
+msgstr "Disk používá jiná VM nebo snapshot; reset odmítám."
+
+msgid "The disk listing is not a tree; partitions cannot be assigned safely."
+msgstr "Výpis disků není stromový; nelze bezpečně přiřadit oddíly."
+
+msgid "The disk name does not match the test VM."
+msgstr "Název disku neodpovídá testovací VM."
+
+msgid "The disk or environment does not match the installation; this may be an installation ISO or recovery SD."
+msgstr "Disk nebo prostředí neodpovídá instalaci; může jít o instalační ISO či obnovovací SD."
+
+msgid "The disk or NVRAM is missing, is a link or is a shared file; refusing reset."
+msgstr "Disk nebo NVRAM chybí, je odkazem nebo sdíleným souborem; reset odmítám."
+
+msgid "The disk or NVRAM is shared with another VM; refusing writes or removal."
+msgstr "Disk nebo NVRAM sdílí jiná VM; odmítám zápis nebo odstranění."
+
+msgid "The disk record must not be a link."
+msgstr "Záznam disku nesmí být odkaz."
+
+msgid "The EFI bootloader is missing."
+msgstr "Chybí EFI zavaděč."
+
+msgid "The evaluated test VM network does not match the specified values."
+msgstr "Vyhodnocená síť testovací VM neodpovídá zadaným hodnotám."
+
+msgid "The export does not match the selected platform and method."
+msgstr "Export neodpovídá zvolené platformě a metodě."
+
+msgid "The export overwrote an existing bundle."
+msgstr "Export přepsal existující balíček."
+
+msgid "The export preview wrote a bundle."
+msgstr "Náhled exportu zapsal balíček."
+
+msgid "The exported disk has an incorrect format or capacity."
+msgstr "Exportovaný disk má nesprávný formát nebo kapacitu."
+
+msgid "The exported lock does not match the manifest."
+msgstr "Exportovaný lock neodpovídá manifestu."
+
+msgid "The generated MAC conflicts with an existing one; run the command again."
+msgstr "Vygenerovaná MAC koliduje; spusť příkaz znovu."
+
+msgid "The guest address is outside the expected network."
+msgstr "Adresa hosta není v očekávané síti."
+
+msgid "The guest address must differ from the Windows host address."
+msgstr "Adresa guest systému nesmí být adresa Windows hostitele."
+
+msgid "The guest did not boot through UEFI."
+msgstr "Host nenaběhl přes UEFI."
+
+msgid "The guest is not a Raspberry Pi 5."
+msgstr "Host není Raspberry Pi 5."
+
+msgid "The guest is not an installation environment."
+msgstr "Host není instalační prostředí."
+
+msgid "The guest is not ARM64."
+msgstr "Host není ARM64."
+
+msgid "The guest is not running the prepared installation environment."
+msgstr "Host neběží z připraveného instalačního prostředí."
+
+msgid "The guest is not running the prepared installation environment. Only --stage is available."
+msgstr "Host neběží z připraveného instalačního prostředí. Lze použít pouze --stage."
+
+msgid "The guest is not x86_64."
+msgstr "Host není x86_64."
+
+msgid "The handed-off VM did not start verified SSH within the timeout."
+msgstr "Předaná VM nespustila ověřené SSH v časovém limitu."
+
+msgid "The handed-off VM has no verified address."
+msgstr "Předaná VM nemá ověřenou adresu."
+
+msgid "The handoff bundle's working declaration must not be a symbolic link."
+msgstr "Pracovní deklarace předaného balíčku nesmí být symbolický odkaz."
+
+msgid "The handoff target already exists; import is not allowed."
+msgstr "Cíl pro předání už existuje; import se nepovoluje."
+
+#, python-brace-format
+msgid "The host adapter did not return JSON: {value1}"
+msgstr "Hostitelský adaptér nevrátil JSON: {value1}"
+
+msgid "The host did not respond."
+msgstr "Hostitel neodpověděl."
+
+msgid "The host did not return the state of all requested VMs."
+msgstr "Hostitel nevrátil stav všech požadovaných VM."
+
+msgid "The host does not match the selected backend."
+msgstr "Hostitel neodpovídá zvolenému backendu."
+
+msgid "The host hostname does not match the declaration."
+msgstr "Hostname hostitele neodpovídá deklaraci."
+
+msgid "The host operating system does not match the declaration."
+msgstr "Operační systém hostitele neodpovídá deklaraci."
+
+msgid "The Hyper-V operation timed out. Check the target's status and probe before retrying."
+msgstr "Operace Hyper-V překročila časový limit. Před opakováním zkontroluj status a probe cíle."
+
+msgid "The Hyper-V VM does not have the declared owner."
+msgstr "Hyper-V VM nemá deklarovaného vlastníka."
+
+msgid "The Hyper-V VM does not match the declared adapter and generation."
+msgstr "Hyper-V VM neodpovídá deklaraci adaptéru a generace."
+
+msgid "The hypervisor tool path is missing."
+msgstr "Chybí cesta k nástroji hypervizoru."
+
+msgid "The image method must not have an installation ISO attached."
+msgstr "Metoda image nesmí mít připojené instalační ISO."
+
+#, python-brace-format
+msgid "The image root must be a directory: {value1}"
+msgstr "Kořen obrazů musí být adresář: {value1}"
+
+msgid "The image SHA256 is missing."
+msgstr "Chybí SHA256 obrazu."
+
+msgid "The image transfer is incomplete or corrupted."
+msgstr "Přenos obrazu je neúplný nebo poškozený."
+
+#, python-brace-format
+msgid "The installation environment is not ready: {value1}"
+msgstr "Instalační prostředí není připravené: {value1}"
+
+msgid "The installation ISO is not attached."
+msgstr "Instalační ISO není připojené."
+
+msgid "The installation ISO is unreachable; leaving the VM unchanged."
+msgstr "Instalační ISO není dosažitelné; VM ponechávám beze změny."
+
+msgid "The installation ISO must not be a symbolic link."
+msgstr "Instalační ISO nesmí být symbolický odkaz."
+
+msgid "The installation media contains different pinned outputs."
+msgstr "Instalační médium obsahuje jiné připnuté výstupy."
+
+msgid "The installation VM did not boot through UEFI."
+msgstr "Instalační VM neběží přes UEFI."
+
+#, python-brace-format
+msgid "The installer is running. The password is in {path}; verify the installation result separately."
+msgstr "Instalátor běží. Heslo je v souboru {path}; výsledek instalace ještě ověř samostatně."
+
+msgid "The ISO bundle does not include installation instructions."
+msgstr "ISO balíček neobsahuje instalační postup."
+
+msgid "The ISO is not attached."
+msgstr "ISO není připojené."
+
+msgid "The ISO is still attached."
+msgstr "ISO zůstalo připojené."
+
+msgid "The iso method creates a new VM with a blank disk; install verifies the installation environment, writes the system and detaches the ISO."
+msgstr "Metoda iso vytvoří novou VM s prázdným diskem; install ověří instalační prostředí, zapíše systém a odpojí ISO."
+
+msgid "The kernel is not loaded."
+msgstr "Kernel není načtený."
+
+msgid "The kernel was not unloaded."
+msgstr "Kernel se neuvolnil."
+
+msgid "The kernel, initrd and boot parameters match the running system; no reboot is needed."
+msgstr "Kernel, initrd a parametry startu odpovídají běžícímu systému; restart není potřeba."
+
+#, python-brace-format
+msgid "The lab disk already exists: {path}"
+msgstr "Disk labu už existuje: {path}"
+
+msgid "The lab network already exists; partial state requires inspection."
+msgstr "Síť labu už existuje; částečný stav vyžaduje kontrolu."
+
+msgid "The lab requires at least 100 GiB of free storage."
+msgstr "Lab vyžaduje alespoň 100 GiB volné kapacity úložiště."
+
+msgid "The lab subnet overlaps an existing route."
+msgstr "Podsíť labu koliduje s existující trasou."
+
+msgid "The libvirt VM identity does not match the declaration."
+msgstr "Identita libvirt VM neodpovídá deklaraci."
+
+msgid "The libvirt VM identity does not match the dedicated Proxmox lab."
+msgstr "Identita libvirt VM neodpovídá vlastnímu Proxmox labu."
+
+msgid "The libvirt VM is missing the declared owner marker."
+msgstr "Libvirt VM nemá deklarovanou značku vlastníka."
+
+msgid "The local manager currently supports Linux; use SSH for Windows."
+msgstr "Místní správce nyní podporuje Linux; Windows používej přes SSH."
+
+msgid "The LVM group uses another disk."
+msgstr "LVM skupina používá další disk."
+
+msgid "The MAC address already has a declaration in this network."
+msgstr "MAC má v síti již existující deklaraci."
+
+#, c-format
+msgid "The MAC address is already used by %s."
+msgstr "MAC je již použita strojem %s."
+
+msgid "The MAC address is already used by another VM."
+msgstr "MAC už používá jiná VM."
+
+msgid "The managed installation ISO is missing."
+msgstr "Chybí spravované instalační ISO."
+
+msgid "The managed ISO has different content; refusing reset."
+msgstr "Spravované ISO má jiný obsah; reset odmítám."
+
+msgid "The managed ISO is not verified; refusing reset."
+msgstr "Spravované ISO není ověřené; reset odmítám."
+
+msgid "The managed ISO path is not a safe existing directory."
+msgstr "Cesta spravovaného ISO není bezpečný existující adresář."
+
+msgid "The manually created VM did not obtain an address."
+msgstr "Ručně vytvořená VM nezískala adresu."
+
+msgid "The matching VMware VM is already running."
+msgstr "Odpovídající VMware VM už běží."
+
+msgid "The media directory is a reparse point."
+msgstr "Adresář médií je reparse point."
+
+msgid "The media hash is missing."
+msgstr "Chybí hash média."
+
+msgid "The media path for the selected deployment method is missing."
+msgstr "Chybí cesta k médiu zvolené metody nasazení."
+
+msgid "The method differs from the created VM; use the original --method."
+msgstr "Metoda neodpovídá vytvořené VM; použij původní --method."
+
+msgid "The network has no NAT."
+msgstr "Síť nemá NAT."
+
+msgid "The network is inactive."
+msgstr "Síť není aktivní."
+
+msgid "The new test target already exists; it will not be taken over."
+msgstr "Nový testovací cíl už existuje; nic nepřebírám."
+
+#, c-format
+msgid "The NixBerry recipe is incomplete or unavailable: %s"
+msgstr "Recept NixBerry není úplný nebo dostupný: %s"
+
+msgid "The official ISO checksum does not match."
+msgstr "Kontrolní součet oficiálního ISO nesouhlasí."
+
+msgid "The offline target has no connected host; use show or export."
+msgstr "Offline cíl nemá připojeného hostitele; použij show nebo export."
+
+#, python-brace-format
+msgid "The operational target has findings: {checks}. All checks were read-only."
+msgstr "Provozní cíl má nálezy: {checks}. Kontroly byly pouze pro čtení."
+
+msgid "The operator creates the VM; prepare the image through offline export."
+msgstr "VM vytváří provozovatel; obraz lze připravit přes offline export."
+
+msgid "The orphaned host declaration was not rejected."
+msgstr "Osiřelá deklarace hostitele nebyla odmítnutá."
+
+msgid "The output directory already exists; export will not overwrite it."
+msgstr "Výstupní adresář už existuje; export jej nepřepíše."
+
+msgid "The owner marker must not be a link."
+msgstr "Značka vlastníka nesmí být odkaz."
+
+msgid "The plan changed hypervisor state."
+msgstr "Plán změnil stav hypervizoru."
+
+msgid "The plan includes erasing existing partitions; this only happens with --apply."
+msgstr "Plán zahrnuje smazání existujících oddílů; provede se pouze s --apply."
+
+msgid "The prebuilt image is missing."
+msgstr "Chybí hotový obraz."
+
+#, c-format
+msgid "The prebuilt system disk is missing: %s"
+msgstr "Chybí hotový systémový disk: %s"
+
+msgid "The prepared ISO already exists; nothing will be overwritten."
+msgstr "Připravené ISO už existuje; nic nepřepisuji."
+
+msgid "The preview cannot prove whether files are used outside this directory."
+msgstr "Použití mimo tento adresář nelze z náhledu prokázat."
+
+msgid "The preview deletes nothing. A stopped VM or old file is not proof of disuse. Do not add shared disk and generation sizes as reclaimable space."
+msgstr "Náhled nic nemaže. Vypnutí ani stáří neprokazuje nepoužívání. Velikosti sdílených disků a generací nesčítej jako uvolnitelné místo."
+
+msgid "The Proxmox bridge does not exist."
+msgstr "Proxmox bridge neexistuje."
+
+msgid "The Proxmox configuration does not match the owner or hardware."
+msgstr "Proxmox konfigurace neodpovídá vlastníkovi nebo hardwaru."
+
+msgid "The Proxmox import path must not contain a comma."
+msgstr "Cesta pro Proxmox import nesmí obsahovat čárku."
+
+msgid "The Proxmox lab already exists; nothing will be overwritten or rebooted."
+msgstr "Proxmox lab už existuje; nic nepřepisuji ani nerestartuji."
+
+msgid "The Proxmox lab data resources are ready."
+msgstr "Datové prostředky Proxmox labu jsou připravené."
+
+msgid "The Proxmox lab has lab-vm storage, vmbr0 bridge and KVM ready."
+msgstr "Proxmox lab má připravené úložiště lab-vm, bridge vmbr0 a KVM."
+
+msgid "The Proxmox lab identity does not match the declaration."
+msgstr "Identita Proxmox labu neodpovídá deklaraci."
+
+msgid "The Proxmox storage is inactive."
+msgstr "Proxmox úložiště není aktivní."
+
+msgid "The Proxmox storage lacks space for the declared disk capacity and EFI."
+msgstr "Proxmox úložiště nemá místo pro deklarovanou kapacitu disku a EFI."
+
+msgid "The Proxmox system disk was changed outside the declared creation."
+msgstr "Proxmox systémový disk byl změněn mimo deklarované vytvoření."
+
+msgid "The Proxmox VM already exists."
+msgstr "Proxmox VM už existuje."
+
+msgid "The Proxmox VM disk is not a verified volume of this instance; refusing reset."
+msgstr "Disk Proxmox VM není ověřený svazek této instance; reset odmítám."
+
+msgid "The Proxmox VM has an additional disk or foreign medium; refusing reset."
+msgstr "Proxmox VM má další disk nebo cizí médium; reset odmítám."
+
+msgid "The Proxmox VM identity or node does not match."
+msgstr "Identita nebo uzel Proxmox VM nesouhlasí."
+
+msgid "The Proxmox VM is locked, protected or a template; refusing reset."
+msgstr "Proxmox VM je zamčená, chráněná nebo je šablonou; reset odmítám."
+
+msgid "The Proxmox VMID or name is already in use in the cluster."
+msgstr "VMID nebo název Proxmox VM je obsazené v clusteru."
+
+msgid "The reserved static address for the test NAT network is missing."
+msgstr "Chybí vyhrazená statická adresa testovací NAT sítě."
+
+msgid "The result does not contain exactly one image of the expected format."
+msgstr "Ve výsledku není právě jeden obraz očekávaného formátu."
+
+msgid "The root filesystem is not the installation tmpfs."
+msgstr "Kořen není instalační tmpfs."
+
+msgid "The root partition is not ext4."
+msgstr "Kořenový oddíl není ext4."
+
+msgid "The RPi hardware does not match the declared machine."
+msgstr "Hardware RPi neodpovídá deklarovanému stroji."
+
+msgid "The RPi network adapter does not match the declaration."
+msgstr "Síťový adaptér RPi neodpovídá deklaraci."
+
+#, python-brace-format
+msgid "The running system does not match the recipe.\nExpected system: {system}"
+msgstr "Běžící systém neodpovídá receptu.\nOčekávaný systém: {system}"
+
+msgid "The running VM does not have the expected static address, prefix or default gateway."
+msgstr "Běžící VM nemá očekávanou pevnou adresu, prefix nebo výchozí bránu."
+
+msgid "The running VM is not using the expected DNS servers."
+msgstr "Běžící VM nepoužívá očekávané DNS servery."
+
+msgid "The saved VM declaration differs from the current one; nothing will be overwritten."
+msgstr "Uložená deklarace VM neodpovídá aktuální; nic nepřepisuji."
+
+msgid "The script contains a reserved input terminator."
+msgstr "Skript obsahuje vyhrazenou koncovou značku vstupu."
+
+msgid "The SSH forward did not start listening."
+msgstr "SSH forward nezačal naslouchat."
+
+msgid "The state after create does not match the method."
+msgstr "Stav po create neodpovídá metodě."
+
+msgid "The static network test did not change exactly one declaration to static configuration."
+msgstr "Test pevné sítě nezměnil právě jednu deklaraci na statickou konfiguraci."
+
+#, python-brace-format
+msgid "The step exited with code {code}: {detail}"
+msgstr "Krok skončil kódem {code}: {detail}"
+
+msgid "The step timed out; resource state requires inspection."
+msgstr "Časový limit kroku; stav prostředků vyžaduje kontrolu."
+
+msgid "The storage is a reparse point."
+msgstr "Úložiště je reparse point."
+
+msgid "The storage is inactive."
+msgstr "Úložiště není aktivní."
+
+msgid "The storage path does not match the manifest."
+msgstr "Cesta úložiště neodpovídá manifestu."
+
+msgid "The storage path must not contain a symbolic link."
+msgstr "Cesta úložiště nesmí obsahovat symbolický odkaz."
+
+msgid "The system check did not return the expected result."
+msgstr "Kontrola systému nevrátila očekávaný výsledek."
+
+msgid "The system disk does not have the expected serial."
+msgstr "Systémový disk nemá očekávaný serial."
+
+msgid "The system disk does not match or an additional disk is attached."
+msgstr "Nesouhlasí systémový disk nebo je připojen další disk."
+
+msgid "The system is installed on disk, ready for shutdown and ISO detachment."
+msgstr "Systém je nainstalovaný na disku; připravený k vypnutí a odpojení ISO."
+
+msgid "The system profile does not match after installation."
+msgstr "Po instalaci nesouhlasí systémový profil."
+
+msgid "The target changed during transfer. Activation was not performed; run update again."
+msgstr "Během přenosu se cíl změnil. Aktivace neproběhla; spusť update znovu."
+
+msgid "The target declaration differs from the running CLI. Run the command again through the current nixberry launcher."
+msgstr "Deklarace cíle se liší od spuštěného CLI. Spusť příkaz znovu přes aktuální spouštěč nixberry."
+
+msgid "The target disk already exists in storage."
+msgstr "Cílový disk již existuje v úložišti."
+
+msgid "The target disk already exists. It will not be overwritten."
+msgstr "Cílový disk již existuje. Příkaz jej nepřepíše."
+
+msgid "The target disk already has partitions or child devices."
+msgstr "Cílový disk již má oddíly nebo podřízená zařízení."
+
+msgid "The target disk contains signatures."
+msgstr "Cílový disk obsahuje signatury."
+
+msgid "The target disk is mounted."
+msgstr "Cílový disk je připojený."
+
+msgid "The target disk is not vda."
+msgstr "Cílový disk není vda."
+
+msgid "The target disk is too small."
+msgstr "Cílový disk je příliš malý."
+
+msgid "The target does not have exactly one usable IPv4 address. Details: probe TARGET."
+msgstr "Cíl nemá právě jednu použitelnou IPv4. Podrobnosti: probe CÍL."
+
+msgid "The target identity matches the declaration."
+msgstr "Identita cíle odpovídá deklaraci."
+
+msgid "The target is not a block device."
+msgstr "Cíl není blokové zařízení."
+
+msgid "The target is not absent after cleanup."
+msgstr "Po úklidu cíl není nepřítomný."
+
+msgid "The target is not an unambiguous physical disk."
+msgstr "Cíl není jednoznačný fyzický disk."
+
+msgid "The target is not running; login is unavailable."
+msgstr "Cíl neběží; přihlášení není dostupné."
+
+#, python-brace-format
+msgid "The target is not running: {value1}"
+msgstr "Cíl neběží: {value1}"
+
+msgid "The target or build did not return a valid system generation path."
+msgstr "Cíl nebo sestavení nevrátilo platnou cestu systémové generace."
+
+msgid "The target system changed during the build. Run diff again."
+msgstr "Během sestavení se systém cíle změnil. Spusť diff znovu."
+
+msgid "The target system changed during the build. Run update again."
+msgstr "Během sestavení se systém cíle změnil. Spusť update znovu."
+
+msgid "The target system changed during transfer. Run diff again."
+msgstr "Během přenosu se systém cíle změnil. Spusť diff znovu."
+
+msgid "The target's managed ISO already exists; nothing will be overwritten."
+msgstr "Spravované ISO cíle už existuje; nic nepřepisuji."
+
+msgid "The test declaration does not have the expected default permission; stopping cleanup."
+msgstr "Testovací deklarace nemá očekávané výchozí oprávnění; úklid zastavuji."
+
+msgid "The test name exceeds the CLI limit."
+msgstr "Testovací jméno překračuje limit CLI."
+
+msgid "The test network must use NAT."
+msgstr "Testovací síť musí používat NAT."
+
+msgid "The test VM already exists. It will not be overwritten or rebooted."
+msgstr "Testovací VM již existuje. Příkaz ji nepřepíše ani nerestartuje."
+
+msgid "The transfer exceeded the declared length."
+msgstr "Přenos překročil deklarovanou délku."
+
+msgid "The update did not change the system generation."
+msgstr "Aktualizace nezměnila systémovou generaci."
+
+msgid "The update preview changed the running system."
+msgstr "Náhled aktualizace změnil běžící systém."
+
+msgid "The upload already exists."
+msgstr "Upload už existuje."
+
+msgid "The VirtualBox VM already exists."
+msgstr "VirtualBox VM už existuje."
+
+msgid "The VirtualBox VM configuration is outside its dedicated directory; refusing reset."
+msgstr "Konfigurace VirtualBox VM není ve vlastním adresáři; reset odmítám."
+
+msgid "The VirtualBox VM identity does not match."
+msgstr "Identita VirtualBox VM nesouhlasí."
+
+msgid "The VirtualBox VM name or UUID is already in use."
+msgstr "Název nebo UUID VirtualBox VM je obsazené."
+
+msgid "The VM already exists; it will not be overwritten."
+msgstr "VM už existuje; nepřepisujeme ji."
+
+msgid "The VM changed during reset; nothing will be deleted."
+msgstr "VM se během resetu změnila; nic nemažu."
+
+msgid "The VM contains a differencing disk; refusing reset."
+msgstr "VM obsahuje rozdílový disk; reset odmítám."
+
+msgid "The VM contains unexpected disks; cleanup was stopped."
+msgstr "VM obsahuje neočekávané disky; úklid byl zastaven."
+
+msgid "The VM did not shut down gracefully; nothing will be deleted."
+msgstr "VM se korektně nevypnula; nic nemažu."
+
+msgid "The VM did not shut down gracefully; reset will delete nothing."
+msgstr "VM se korektně nevypnula; reset nic nemaže."
+
+msgid "The VM did not shut down gracefully; the next step was stopped."
+msgstr "VM se korektně nevypnula; další krok je zastaven."
+
+msgid "The VM did not shut down gracefully."
+msgstr "VM se korektně nevypnula."
+
+msgid "The VM did not shut down; nothing will be deleted."
+msgstr "VM se nevypnula; nic nemažeme."
+
+msgid "The VM did not shut down; the ISO will not be detached."
+msgstr "VM se nevypnula; ISO neodpojujeme."
+
+msgid "The VM directory already exists."
+msgstr "Adresář VM už existuje."
+
+msgid "The VM directory contains a link, mount point or shared file; refusing reset."
+msgstr "Adresář VM obsahuje odkaz, připojený svazek nebo sdílený soubor; reset odmítám."
+
+msgid "The VM directory contains a link; manual inspection is required."
+msgstr "Adresář VM obsahuje odkaz; ruční kontrola je nutná."
+
+msgid "The VM directory contains a link; refusing reset."
+msgstr "Adresář VM obsahuje odkaz; reset odmítám."
+
+msgid "The VM directory is missing or is a link."
+msgstr "Adresář VM chybí nebo je odkaz."
+
+msgid "The VM directory remains after removal."
+msgstr "Adresář VM po odstranění zůstal."
+
+msgid "The VM disk has no target for a size query."
+msgstr "Disk VM nemá cíl pro dotaz na velikost."
+
+msgid "The VM does not have exactly one disk."
+msgstr "VM nemá právě jeden disk."
+
+msgid "The VM entered an unexpected state during shutdown."
+msgstr "VM při vypínání přešla do neočekávaného stavu."
+
+msgid "The VM has a lock or snapshot; cleanup was stopped."
+msgstr "VM má zámek nebo snapshot; úklid byl zastaven."
+
+msgid "The VM has a snapshot, saved state or lock; refusing reset."
+msgstr "VM má snapshot, uložený stav nebo zámek; reset odmítám."
+
+msgid "The VM has a snapshot; cleanup was stopped."
+msgstr "VM má snapshot; úklid byl zastaven."
+
+msgid "The VM has additional disks or unexpected disk files; refusing reset."
+msgstr "VM má další disk nebo neočekávané diskové soubory; reset odmítám."
+
+msgid "The VM has additional or foreign media; refusing reset."
+msgstr "VM má další nebo cizí médium; reset odmítám."
+
+msgid "The VM has checkpoints; refusing reset."
+msgstr "VM má checkpointy; reset odmítám."
+
+msgid "The VM has media outside its own directory; total allocation is unknown."
+msgstr "VM má médium mimo vlastní adresář; celková alokace není známá."
+
+msgid "The VM has multiple possible IPv4 addresses."
+msgstr "VM má více možných IPv4 adres."
+
+msgid "The VM has no IP address yet."
+msgstr "VM ještě nemá IP adresu."
+
+msgid "The VM has snapshots; refusing removal."
+msgstr "VM má snapshoty; odmítám odstranění."
+
+msgid "The VM has snapshots; refusing reset."
+msgstr "VM má snapshoty; reset odmítám."
+
+msgid "The VM has snapshots."
+msgstr "VM má snapshoty."
+
+msgid "The VM is in an unsupported state; refusing reset."
+msgstr "VM je v nepodporovaném stavu; reset odmítám."
+
+msgid "The VM is missing the declared owner marker."
+msgstr "VM nemá deklarovanou značku vlastníka."
+
+msgid "The VM is not in a supported state."
+msgstr "VM není v podporovaném stavu."
+
+msgid "The VM is not in the required state for ISO operations."
+msgstr "VM není v požadovaném stavu pro práci s ISO."
+
+msgid "The VM is not powered off; nothing will be deleted."
+msgstr "VM není vypnutá; nic nemažeme."
+
+msgid "The VM is not ready to boot from disk."
+msgstr "VM není připravená ke spuštění z disku."
+
+msgid "The VM is not running."
+msgstr "VM neběží."
+
+msgid "The VM is not using the expected ISO."
+msgstr "VM nepoužívá očekávané ISO."
+
+msgid "The VM must be shut down gracefully."
+msgstr "VM musí být korektně vypnutá."
+
+msgid "The VM must have a safe nixberry-… name of up to 63 characters."
+msgstr "VM musí mít bezpečný název nixberry-… do 63 znaků."
+
+msgid "The VM must have exactly one network adapter."
+msgstr "VM musí mít právě jednu síťovou kartu."
+
+msgid "The VM must have exactly one target disk."
+msgstr "VM musí mít právě jeden cílový disk."
+
+msgid "The VM name is ambiguous."
+msgstr "Název VM není jednoznačný."
+
+msgid "The VM network adapter does not match the declaration."
+msgstr "Síťový adaptér VM neodpovídá deklaraci."
+
+msgid "The VM or its resources changed during reset; nothing will be deleted."
+msgstr "VM nebo její prostředky se během resetu změnily; nic nemažu."
+
+msgid "The VM ownership record is missing."
+msgstr "Chybí záznam vlastnictví VM."
+
+msgid "The VM path contains a reparse point."
+msgstr "Cesta VM obsahuje reparse point."
+
+msgid "The VM was created with a prebuilt system disk; it has not been started yet."
+msgstr "VM je vytvořená s hotovým systémovým diskem; zatím nebyla spuštěná."
+
+msgid "The VM was not created for ISO installation."
+msgstr "VM nebyla vytvořená pro instalaci z ISO."
+
+msgid "The VM was removed, but its volume remains; keeping records for manual inspection."
+msgstr "VM byla odstraněná, ale její svazek zůstal; záznamy ponechávám pro ruční kontrolu."
+
+#, python-brace-format
+msgid "The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}"
+msgstr "VM byla spuštěna, ale instalaci se nepodařilo ověřit; nic nezastavuji ani neopakuji vytvoření: {value1}"
+
+#, python-brace-format
+msgid "The VM was started, but system verification failed: {error}"
+msgstr "VM byla spuštěna, ale ověření systému selhalo: {error}"
+
+msgid "The VMware configuration does not match the declaration."
+msgstr "VMware konfigurace neodpovídá deklaraci."
+
+msgid "The VMware disk has a backing image or unverified origin; refusing reset."
+msgstr "Disk VMware má podkladový obraz nebo neověřený původ; reset odmítám."
+
+msgid "The VMware disk references additional or unverified files; refusing reset."
+msgstr "Disk VMware odkazuje na další nebo neověřené soubory; reset odmítám."
+
+msgid "The VMware VM has additional or foreign media; refusing reset."
+msgstr "VMware VM má další nebo cizí médium; reset odmítám."
+
+msgid "The volume did not report a size in bytes."
+msgstr "Svazek nevrátil velikost v bajtech."
+
+msgid "The volume does not have the dedicated test VM name."
+msgstr "Svazek nemá vyhrazený název testovací VM."
+
+msgid "The volume is not qcow2."
+msgstr "Svazek není qcow2."
+
+msgid "The volume name must match the declared VM."
+msgstr "Název svazku musí odpovídat deklarované VM."
+
+msgid "The volume uses a backing image."
+msgstr "Svazek používá podkladový obraz."
+
+msgid "The Windows host does not match the declaration."
+msgstr "Windows hostitel neodpovídá deklaraci."
+
+msgid "The Windows operation failed."
+msgstr "Operace na Windows selhala."
+
+msgid "There is not enough free space in the Proxmox ISO storage."
+msgstr "Na úložišti ISO Proxmoxu není dost volného místa."
+
+msgid "There is not enough storage space for the image and declared VM capacity."
+msgstr "Na úložišti není dost místa pro obraz a deklarovanou kapacitu VM."
+
+msgid "This adapter only supports local libvirt."
+msgstr "Tento adaptér podporuje pouze místní libvirt."
+
+msgid "This command requires the prepared full-SD installation environment."
+msgstr "Tento příkaz patří do připraveného instalačního prostředí plné SD."
+
+msgid "This lab is reserved for the local Nixon host."
+msgstr "Tento lab je vyhrazený pro místní Nixon."
+
+msgid "This operation does not accept --apply."
+msgstr "Tato operace nepřijímá --apply."
+
+msgid "This operation requires the image method."
+msgstr "Tato operace vyžaduje metodu image."
+
+msgid "This procedure currently supports only local libvirt."
+msgstr "Tento postup zatím podporuje pouze místní libvirt."
+
+msgid "This target is not included on the installation SD."
+msgstr "Tento cíl není součástí instalační SD."
+
+#, python-brace-format
+msgid "Timed out waiting for the guest: {last_message}"
+msgstr "Čekání na hosta vypršelo: {last_message}"
+
+#, python-brace-format
+msgid "Transferring {bytes} media bytes to Windows; SHA256={sha256}"
+msgstr "Přenáším {bytes} bajtů média na Windows; SHA256={sha256}"
+
+#, python-brace-format
+msgid "Transferring and verifying installation media; method {method}…"
+msgstr "Přenáším a ověřuji instalační médium; metoda {method}…"
+
+#, python-brace-format
+msgid "Transferring the system to {host}…"
+msgstr "Přenáším systém na {host}…"
+
+msgid "transport must be local or ssh."
+msgstr "transport musí být local nebo ssh."
+
+msgid "UEFI profile does not match."
+msgstr "Nesouhlasí profil UEFI."
+
+msgid "unconfigured"
+msgstr "nenastavená"
+
+msgid "Unexpected diagnostic response."
+msgstr "Neočekávaná odpověď diagnostiky."
+
+msgid "Unexpected GPT layout."
+msgstr "Neočekávané rozložení GPT."
+
+msgid "Unexpectedly large ESP."
+msgstr "Neočekávaně velký ESP."
+
+msgid "Unified management of declared RPi and VMs: operations, deployment and offline export."
+msgstr "Společné ovládání deklarovaných RPi a VM: správa, nasazení a offline export."
+
+msgid "unknown"
+msgstr "neznámá"
+
+msgid "Unknown campaign operation."
+msgstr "Neznámá operace kampaně."
+
+#, python-brace-format
+msgid "Unknown configuration {name}. Available configurations: {names}."
+msgstr "Neznámá konfigurace {name}. Dostupné konfigurace: {names}."
+
+#, python-brace-format
+msgid "Unknown df format: {line}"
+msgstr "Neznámý formát df: {line}"
+
+#, c-format
+msgid "Unknown option: %s"
+msgstr "Neznámá volba: %s"
+
+msgid "Unknown RPi recovery target."
+msgstr "Neznámý cíl obnovy RPi."
+
+msgid "Unknown RPi target."
+msgstr "Neznámý cíl RPi."
+
+#, python-brace-format
+msgid "Unknown target. Available targets: {value1}"
+msgstr "Neznámý cíl. Dostupné cíle: {value1}"
+
+msgid "Unknown VBoxManage list vms output."
+msgstr "Neznámý výstup VBoxManage list vms."
+
+#, python-brace-format
+msgid "Unknown volume list line: {line}"
+msgstr "Neznámý řádek seznamu svazků: {line}"
+
+msgid "unmanaged"
+msgstr "nespravovaný"
+
+#, python-brace-format
+msgid "Unrecognized arguments: {arguments}"
+msgstr "Neznámé argumenty: {arguments}"
+
+msgid "Unsupported backend for a new declaration."
+msgstr "Nepodporovaný backend nové deklarace."
+
+msgid "Unsupported backend."
+msgstr "Nepodporovaný backend."
+
+msgid "Unsupported host system."
+msgstr "Nepodporovaný systém hostitele."
+
+msgid "Unsupported test configuration value."
+msgstr "Nepodporovaná hodnota testovací konfigurace."
+
+msgid "Updates are not implemented for this platform."
+msgstr "Aktualizace této platformy není implementovaná."
+
+msgid "Upload hash does not match."
+msgstr "Nesouhlasí hash uploadu."
+
+msgid "Upload length does not match."
+msgstr "Nesouhlasí délka uploadu."
+
+msgid "Usage: "
+msgstr "Použití: "
+
+msgid "Usage: nixberry export TARGET --output NEW_DIRECTORY."
+msgstr "Použití: nixberry export CÍL --output NOVÝ_ADRESÁŘ."
+
+msgid "Usage: nixberry-vm-create [--dry-run|--apply]"
+msgstr "Použití: nixberry-vm-create [--dry-run|--apply]"
+
+msgid "UUID is not in canonical form."
+msgstr "UUID není v kanonickém tvaru."
+
+msgid "Verified installation ISO, UUID, profile, UEFI, target system and blank disk."
+msgstr "Ověřeno instalační ISO, UUID, profil, UEFI, cílový systém a prázdný disk."
+
+msgid "Verified VM removal completed. The instance declaration was preserved."
+msgstr "Odstranění ověřené VM dokončeno. Instanční deklarace zůstala zachovaná."
+
+#, python-brace-format
+msgid "Verified: {name}, {hostname}, system on {root}."
+msgstr "Ověřeno: {name}, {hostname}, systém z {root}."
+
+msgid "Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."
+msgstr "Ověřeno: start z ext4 disku bez ISO, UEFI, přesný systém a SSH."
+
+msgid "Verified: Hyper-V UUID, UEFI, manifest and blank disk."
+msgstr "Ověřeno: Hyper-V UUID, UEFI, manifest a prázdný disk."
+
+msgid "Verified: installation VM, UUID, UEFI, pinned outputs and blank /dev/vda."
+msgstr "Ověřeno: instalační VM, UUID, UEFI, připnuté výstupy a prázdný /dev/vda."
+
+msgid "Verify SHA256SUMS before transfer; instructions for the selected medium are in README.txt."
+msgstr "Před přenosem ověř SHA256SUMS; postup pro zvolené médium je v README.txt."
+
+msgid "Verify the SSH key and known host key; for a network error, also check the cable, port and declared MAC. Diagnostics do not scan the network or bypass identity checks."
+msgstr "Ověř SSH klíč a známý klíč hostitele; při síťové chybě také kabel, port a MAC v deklaraci. Diagnostika neskenuje síť ani neobchází kontrolu identity."
+
+msgid "VHDX size or origin does not match."
+msgstr "Nesouhlasí velikost nebo původ VHDX."
+
+msgid "VHDX type or size does not match."
+msgstr "Nesouhlasí typ nebo velikost VHDX."
+
+msgid "VirtualBox owner, disk, firmware or network does not match."
+msgstr "VirtualBox vlastník, disk, firmware nebo síť nesouhlasí."
+
+msgid "VirtualBox requires an existing bridge adapter."
+msgstr "VirtualBox potřebuje existující bridge adaptér."
+
+msgid "VM"
+msgstr "VM"
+
+#, python-brace-format
+msgid "VM {value1}; IP {address}; SSH available."
+msgstr "VM {value1}; IP {address}; SSH dostupné."
+
+#, python-brace-format
+msgid "VM created and booted from ISO: {value1}"
+msgstr "VM vytvořená a spuštěná z ISO: {value1}"
+
+msgid "VM created and booted from the installation ISO."
+msgstr "VM vytvořená a spuštěná z instalačního ISO."
+
+msgid "VM created with a prebuilt disk; install will start and verify it."
+msgstr "VM vytvořená s hotovým diskem; install ji spustí a ověří."
+
+msgid "VM created with a prebuilt disk; it is not running yet."
+msgstr "VM vytvořená s hotovým diskem; zatím není spuštěná."
+
+msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
+msgstr "Metoda nasazení VM: instalace z ISO, nebo import hotového disku; přepíše deploymentMethod z deklarace"
+
+msgid "VM ID does not match."
+msgstr "Nesouhlasí VM ID."
+
+msgid "VM name does not match."
+msgstr "Nesouhlasí název VM."
+
+msgid "VM name for fast status; repeatable"
+msgstr "Jméno VM pro rychlý stav; lze opakovat"
+
+msgid "VM network does not match."
+msgstr "Nesouhlasí síť VM."
+
+msgid "VM ownership record does not match."
+msgstr "Nesouhlasí záznam vlastnictví VM."
+
+msgid "VM powered off. Detaching the ISO and configuring boot from VHDX."
+msgstr "VM vypnutá. Odpojuji ISO a nastavuji start z VHDX."
+
+msgid "VM system network: DHCP.\n"
+msgstr "Síť uvnitř VM: DHCP.\n"
+
+msgid "VM UUID does not match."
+msgstr "Nesouhlasí UUID VM."
+
+#, python-brace-format
+msgid "VM: {value1}"
+msgstr "VM: {value1}"
+
+#, python-brace-format
+msgid "VM: {value1}; UUID: {value2}; IP: {address}"
+msgstr "VM: {value1}; UUID: {value2}; IP: {address}"
+
+#, python-brace-format
+msgid "VM: {value1}; UUID: {value2}; state: {state}"
+msgstr "VM: {value1}; UUID: {value2}; stav: {state}"
+
+msgid "VMX must not be a link."
+msgstr "VMX nesmí být odkaz."
+
+msgid "Volume name does not match."
+msgstr "Nesouhlasí název svazku."
+
+msgid "Volume path does not match."
+msgstr "Nesouhlasí cesta svazku."
+
+msgid "Volume size does not match."
+msgstr "Nesouhlasí velikost svazku."
+
+msgid "Waiting for the guest agent, SSH and verified boot from disk…"
+msgstr "Čekám na guest agenta, SSH a ověření startu z disku…"
+
+msgid "Waiting for the installation ISO, guest agent and SSH…"
+msgstr "Čekám na instalační ISO, guest agenta a SSH…"
+
+msgid "Waiting for the installation VM to shut down gracefully; the ISO remains attached."
+msgstr "Čekám na korektní vypnutí instalační VM; ISO zůstává připojené."
+
+#, python-brace-format
+msgid "When convenient: {command}"
+msgstr "Až bude vhodná chvíle: {command}"
+
+#, python-brace-format
+msgid "Windows and Hyper-V discovery did not finish within {seconds} seconds; check host availability."
+msgstr "Průzkum Windows a Hyper-V nedoběhl do {seconds} sekund; zkontroluj dostupnost hostitele."
+
+msgid "Windows discovery failed."
+msgstr "Průzkum Windows selhal."
+
+msgid "Windows host does not match."
+msgstr "Nesouhlasí Windows hostitel."
+
+msgid "With --apply, a prebuilt disk is imported; no existing VM is formatted. install starts and verifies the prebuilt system."
+msgstr "S --apply se importuje hotový disk, neformátuje se existující VM. install spustí a ověří hotový systém."
+
+msgid "With --apply: create the VM and complete the selected deployment method, including verified boot from disk."
+msgstr "S --apply: vytvoření VM a dokončení zvolené metody nasazení včetně ověření startu z disku."
+
+msgid "Without --apply, no target connection, build or system change is performed."
+msgstr "Bez --apply se nepřipojuji k cíli, nesestavuji ani neměním systém."
+
+msgid "yes"
+msgstr "ano"

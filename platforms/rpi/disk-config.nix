@@ -3,7 +3,7 @@ let
   cfg = config.nixberry.rpi;
 in
 {
-  # Tento popis smaže pouze schválený SSD. SD karta zde není uvedená.
+  # This layout erases only the authorized SSD; the SD card is not included.
   disko.devices.disk.ssd = {
     type = "disk";
     device = cfg.diskDevice;
@@ -15,7 +15,7 @@ in
           size = "512M";
           type = "EF00";
           label = cfg.bootLabel;
-          # Příznak umožní U-Bootu vybrat oddíl se startovacími soubory.
+          # This flag lets U-Boot select the partition containing boot files.
           attributes = [ 2 ];
           content = {
             type = "filesystem";

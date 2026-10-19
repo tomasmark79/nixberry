@@ -1,11 +1,11 @@
-# Místní přístupy a identita správce nepatří do veřejného repozitáře.
+# Local connections and administrator identity stay outside the public repository.
 /hosts.local.nix
 /admin.pub
 /secrets/
 *.secret
 *.key
 
-# Sestavení, média a provozní data.
+# Builds, media and operational data.
 /result
 /result-*
 *.qcow2
@@ -16,6 +16,7 @@
 *.iso
 __pycache__/
 *.py[cod]
+*.mo
 *~
 *.swp
 .DS_Store

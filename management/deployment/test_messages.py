@@ -19,6 +19,13 @@ import messages
 BASH = shutil.which("bash")
 
 
+def czech_catalogue():
+    source = Path(messages.__file__).resolve().parent / 'locales/cs/LC_MESSAGES/nixberry.po'
+    compiled = subprocess.run(['msgfmt', '--check', '-o', '-', str(source)],
+                              capture_output=True, check=True)
+    return gettext.GNUTranslations(io.BytesIO(compiled.stdout))
+
+
 class Stream(io.StringIO):
     def __init__(self, terminal=False):
         super().__init__()
@@ -44,13 +51,13 @@ class MessageChecks(unittest.TestCase):
                           message='{"vm": "lab"}', level="{running}", template="test", stream="stdout")
         self.assertEqual(stderr.getvalue(), '[nixberry] VM: {"vm": "lab"}; stav {running}; šablona test; proud stdout\n')
 
-    def test_parser_errors_are_czech_on_stderr_and_keep_exit_code_two(self):
+    def test_parser_errors_default_to_english_on_stderr_and_keep_exit_code_two(self):
         cases = (
-            (["--unknown"], "Neznámé argumenty"),
-            (["--host"], "potřebuje hodnotu"),
-            (["--apply=yes"], "nepřijímá hodnotu"),
-            (["--apply", "--dry-run"], "nelze kombinovat"),
-            (["invalid"], "nepovolená hodnota"),
+            (["--unknown"], "Unrecognized arguments"),
+            (["--host"], "requires a value"),
+            (["--apply=yes"], "does not accept a value"),
+            (["--apply", "--dry-run"], "cannot be combined"),
+            (["invalid"], "invalid value"),
         )
         for argv, expected in cases:
             parser = messages.ArgumentParser(prog="test")
@@ -66,7 +73,7 @@ class MessageChecks(unittest.TestCase):
             self.assertEqual(failure.exception.code, 2)
             self.assertEqual(stdout.getvalue(), "")
             self.assertIn(expected, stderr.getvalue())
-            self.assertIn("Použití:", stderr.getvalue())
+            self.assertIn("Usage:", stderr.getvalue())
             self.assertEqual(stderr.getvalue().count("[nixberry]"), 1)
 
     def test_nested_own_error_has_one_prefix_and_preserves_braces(self):
@@ -114,6 +121,21 @@ class MessageChecks(unittest.TestCase):
         self.assertIn("($value -eq 'technical')", script)
         self.assertEqual(script.count("'Don''t change $value or $(exit 99)'"), 2)
 
+    @unittest.skipUnless(BASH, 'Bash is required')
+    def test_czech_remote_shell_runs_with_nounset_without_local_catalogue_files(self):
+        catalog = czech_catalogue()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'guest.sh'
+            path.write_text("nb_info 'The disk is mounted.'\n")
+            with patch.dict(os.environ, {'NIXBERRY_LANG': 'cs'}, clear=True), \
+                    patch.object(messages, '_catalog', return_value=catalog):
+                script = messages.shell_script(path)
+            result = subprocess.run([BASH, '-u', '-s'], input=script, cwd=directory,
+                                    env={'PATH': '', 'NIXBERRY_LANG': 'cs'}, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, '')
+        self.assertEqual(result.stderr, '[nixberry] Disk je připojený.\n')
+
     def test_levels_use_only_stderr_and_flush(self):
         stdout, stderr = Stream(), Stream()
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr), \
@@ -137,10 +159,29 @@ class MessageChecks(unittest.TestCase):
                     if colored:
                         self.assertEqual(result, f"\033[{color}m[nixberry]\033[0m Cíl: lab")
 
-    def test_czech_default_and_missing_catalog_fallback(self):
-        for environment in ({"LANG": "en_US.UTF-8"}, {"NIXBERRY_LANG": "en"}, {"NIXBERRY_LANG": "xx"}):
+    def test_english_default_and_missing_catalog_fallback(self):
+        for environment in ({"LANG": "cs_CZ.UTF-8"}, {"NIXBERRY_LANG": "en"}, {"NIXBERRY_LANG": "xx"}):
             with patch.dict(os.environ, environment, clear=True):
-                self.assertEqual(messages._("Přenáším systém…"), "Přenáším systém…")
+                self.assertEqual(messages._("Transferring the system…"), "Transferring the system…")
+
+    def test_packaged_czech_catalogue_and_local_shell_errors(self):
+        catalog = czech_catalogue()
+        with patch.dict(os.environ, {"NIXBERRY_LANG": "cs"}, clear=True), \
+                patch.object(messages, '_catalog', return_value=catalog):
+            self.assertEqual(messages._("Target"), "Cíl")
+            stderr = Stream()
+            with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit) as failure:
+                messages.ArgumentParser(prog="test").parse_args(["--unknown"])
+            self.assertEqual(failure.exception.code, 2)
+            self.assertIn("Použití:", stderr.getvalue())
+            self.assertIn("Neznámé argumenty", stderr.getvalue())
+        script = Path(messages.__file__).resolve().with_name('shell-path.sh')
+        if BASH and script.is_file():
+            result = subprocess.run([BASH, '-c', 'source "$1"; _nixberry_recipe_dir /missing', 'test', str(script)],
+                                    env={**os.environ, 'NIXBERRY_LANG': 'cs', 'NIXBERRY_RECIPE': '/missing'},
+                                    text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('není úplný', result.stderr)
 
     def test_translation_precedes_named_substitution(self):
         class English(gettext.NullTranslations):
@@ -157,8 +198,8 @@ class MessageChecks(unittest.TestCase):
     def test_real_gettext_catalog_and_untranslated_fallback(self):
         # Malý binární GNU MO katalog: ověřujeme skutečné načtení, nikoli jen mock překladače.
         entries = sorted({
-            "": "Content-Type: text/plain; charset=UTF-8\nLanguage: en\n",
-            "Cíl: {name}": "Target: {name}",
+            "": "Content-Type: text/plain; charset=UTF-8\nLanguage: cs\n",
+            "Target: {name}": "Cíl: {name}",
         }.items())
         originals = b"".join(key.encode() + b"\0" for key, _ in entries)
         translations = b"".join(value.encode() + b"\0" for _, value in entries)
@@ -175,23 +216,23 @@ class MessageChecks(unittest.TestCase):
         module_source = Path(messages.__file__).resolve().read_text()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            target = root / "locales/en/LC_MESSAGES/nixberry.mo"
+            target = root / "locales/cs/LC_MESSAGES/nixberry.mo"
             target.parent.mkdir(parents=True)
             target.write_bytes(catalog + b"".join(tables) + originals + translations)
             (root / "messages.py").write_text(module_source)
             agent = root / "agent.py"
-            agent.write_text('from messages import _\nimport json\nprint(json.dumps({"label": _("Cíl: {name}").format(name="lab")}))\n')
+            agent.write_text('from messages import _\nimport json\nprint(json.dumps({"label": _("Target: {name}").format(name="lab")}))\n')
             messages._catalog.cache_clear()
             try:
                 with patch.object(messages, "__file__", str(root / "messages.py")), \
-                        patch.dict(os.environ, {"NIXBERRY_LANG": "en"}):
-                    self.assertEqual(messages._("Cíl: {name}").format(name="lab"), "Target: lab")
-                    self.assertEqual(messages._("Chybějící překlad"), "Chybějící překlad")
+                        patch.dict(os.environ, {"NIXBERRY_LANG": "cs"}):
+                    self.assertEqual(messages._("Target: {name}").format(name="lab"), "Cíl: lab")
+                    self.assertEqual(messages._("Missing translation"), "Missing translation")
                     remote = messages.python_script(agent)
                 result = subprocess.run([sys.executable, "-I", "-c", remote], cwd=directory,
                                         text=True, capture_output=True)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertEqual(json.loads(result.stdout), {"label": "Target: lab"})
+                self.assertEqual(json.loads(result.stdout), {"label": "Cíl: lab"})
                 self.assertEqual(result.stderr, "")
             finally:
                 messages._catalog.cache_clear()

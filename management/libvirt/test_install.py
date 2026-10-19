@@ -52,7 +52,7 @@ class InstallChecks(unittest.TestCase):
 
     def test_image_allows_empty_optical_drive_but_rejects_attached_installer(self):
         manifest = {**MANIFEST, "deploymentMethod": "image"}
-        with self.assertRaisesRegex(RuntimeError, "připojené instalační ISO"):
+        with self.assertRaisesRegex(RuntimeError, "installation ISO attached"):
             validate_domain(DOMAIN, manifest)
         root = ET.fromstring(DOMAIN)
         cd = root.find("./devices/disk[@device='cdrom']")
@@ -102,7 +102,7 @@ class InstallChecks(unittest.TestCase):
                     patch.object(MODULE["policy"], "validate"), \
                     patch.object(subprocess, "check_output", side_effect=virsh), \
                     patch.object(subprocess, "run", side_effect=guest) as ssh, \
-                    contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(RuntimeError, "sdílí jiná VM"):
+                    contextlib.redirect_stdout(io.StringIO()), self.assertRaisesRegex(RuntimeError, "shared with another VM"):
                 MODULE["main"]()
             return commands, ssh.call_args_list
 

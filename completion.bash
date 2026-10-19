@@ -1,4 +1,4 @@
-# Načti přes source; umístění receptu se určí jednou, nezávisle na pracovním adresáři.
+# Source this file; resolve the recipe independently of the working directory.
 _nixberry_completion_recipe=${BASH_SOURCE[0]}
 if [[ $_nixberry_completion_recipe == */* ]]; then
     _nixberry_completion_recipe=${_nixberry_completion_recipe%/*}
@@ -22,7 +22,7 @@ _nixberry_complete() {
     local -A used=()
     COMPREPLY=()
 
-    # Přeskoč hodnoty voleb; za oddělovačem SSH příkazu už nic místního nenabízej.
+    # Skip option values; offer no local completions after an SSH command separator.
     for ((i = 1; i < COMP_CWORD; i++)); do
         word=${COMP_WORDS[i]}
         if ((skip_value)); then
@@ -51,7 +51,7 @@ _nixberry_complete() {
             local backend=${action#new-} line host=
             local host_pattern='^[[:space:]]*([a-z][a-z0-9-]*)[[:space:]]*=[[:space:]]*\{'
             local backend_pattern='^[[:space:]]*backend[[:space:]]*=[[:space:]]*"([a-z]+)"[[:space:]]*;'
-            # Stejně jako ostatní seznamy čti deklarace přímo, bez Nixu a sítě.
+            # Read host declarations directly, without Nix or network access.
             while IFS= read -r line || [[ -n $line ]]; do
                 if [[ $line =~ $host_pattern ]]; then
                     host=${BASH_REMATCH[1]}
@@ -110,7 +110,7 @@ _nixberry_complete() {
         fi
         for word in "${options[@]}"; do
             [[ $word == --method && -n $target && -f $recipe/management/rpi/targets/$target.nix ]] && continue
-            # Opakovatelné jsou jen kořeny obrazů; vzájemně výlučné volby nenabízej.
+            # Only image roots are repeatable; do not offer mutually exclusive options.
             [[ $word != --artifact-root && ${used[$word]-} ]] && continue
             case $word in
                 --apply) [[ ${used[--dry-run]-} ]] && continue ;;
@@ -137,8 +137,8 @@ _nixberry_complete() {
         case $action in
             list|show|export|status|doctor) ;;
             *)
-                # Schopnosti čti Nixem, nikoli parsováním deklarací přes regex.
-                # Bez Nixu nebo při chybě deklarace raději nenabízej nejisté cíle.
+                # Read capabilities through Nix rather than parsing declarations with regex.
+                # Without Nix or with invalid declarations, do not guess target capabilities.
                 [[ -f $recipe/management/deployment/completion-targets.nix ]] || return 0
                 command -v nix >/dev/null 2>&1 || return 0
                 local direct=0
@@ -150,7 +150,7 @@ _nixberry_complete() {
                     --file "$recipe/management/deployment/completion-targets.nix" 2>/dev/null)
                 return 0 ;;
         esac
-        # Pouze běžné deklarace, stejně jako v Nix loaderech; seznam se neukládá do cache.
+        # Only regular declarations, matching Nix loaders; never cache this inventory.
         for file in "$recipe"/instances/*.nix "$recipe"/management/rpi/targets/*.nix; do
             [[ -f $file && ! -L $file ]] || continue
             name=${file##*/}
@@ -164,7 +164,7 @@ _nixberry_complete() {
 
 complete -F _nixberry_complete nixberry
 
-# Alias doplníme jako skutečný příkaz CLI, včetně jeho implicitních argumentů.
+# Complete aliases as real CLI commands, including their implicit arguments.
 _nixberry_complete_shortcut() {
     local -a original_words=("${COMP_WORDS[@]}") prefix=(nixberry)
     local original_cword=$COMP_CWORD

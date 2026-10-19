@@ -1,4 +1,4 @@
-# Dostupné operace se odvozují pouze ze schopností cíle, bez systémů a médií.
+# Available operations depend only on capabilities, not systems or media.
 target:
 let
   optional = condition: values: if condition then values else [ ];

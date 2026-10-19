@@ -1,4 +1,4 @@
-# Společný základ, který jednotlivé konfigurace výslovně vybírají.
+# Shared base explicitly selected by each configuration.
 {
   imports = [
     ./system

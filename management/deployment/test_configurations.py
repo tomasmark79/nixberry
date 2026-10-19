@@ -40,11 +40,11 @@ class ConfigurationChecks(unittest.TestCase):
 
     def test_unknown_or_invalid_configuration_is_rejected_before_write(self):
         for name in ("typo", "../web", "", "${builtins.abort}"):
-            with self.subTest(name=name), self.assertRaisesRegex(RuntimeError, "Dostupné konfigurace: default, web"):
+            with self.subTest(name=name), self.assertRaisesRegex(RuntimeError, "Available configurations: default, web"):
                 new_vm(self.root, {}, {}, "demo", "libvirt", offline=True, configuration=name)
         self.assertFalse((self.root / "instances/demo.nix").exists())
         for value in ('"typo"', '"../web"', 'null', '[ "web" ]'):
-            self.assertIn("Dostupné konfigurace: default, web", self.nix("c.select { configuration = " + value + "; }", success=False))
+            self.assertIn("Available configurations: default, web", self.nix("c.select { configuration = " + value + "; }", success=False))
 
     def test_backend_independent_selection_including_local_libvirt(self):
         for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
@@ -61,9 +61,9 @@ class ConfigurationChecks(unittest.TestCase):
 
     def test_duplicate_definitions_fail_in_nix_and_scaffold(self):
         (self.root / "configurations/web.nix").write_text("{}")
-        with self.assertRaisesRegex(RuntimeError, "soubor i adresář"):
+        with self.assertRaisesRegex(RuntimeError, "file and a directory"):
             configuration_name(self.root, "web")
-        self.assertIn("soubor i adresář", self.nix("c.select {}", success=False))
+        self.assertIn("file and a directory", self.nix("c.select {}", success=False))
 
     def test_symlinks_and_nonmodule_directories_are_not_configurations(self):
         (self.root / "configurations/link.nix").symlink_to("default.nix")

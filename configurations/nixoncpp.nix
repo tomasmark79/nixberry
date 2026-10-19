@@ -1,4 +1,4 @@
-# Společný základ a hotový balíček NixonCpp z jeho vlastního flake.
+# Shared base and the upstream NixonCpp flake package.
 { pkgs, nixoncpp, ... }:
 {
   imports = [ ../modules/common.nix ];

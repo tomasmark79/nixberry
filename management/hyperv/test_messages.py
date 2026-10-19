@@ -19,7 +19,7 @@ class HyperVOutputChecks(unittest.TestCase):
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             manager.create(True)
         self.assertEqual(json.loads(stdout.getvalue()), {"readOnly": True})
-        self.assertIn('[nixberry] VM vytvořená a spuštěná z ISO: {"id": "vm-id", "state": "Running"}', stderr.getvalue())
+        self.assertIn('[nixberry] VM created and booted from ISO: {"id": "vm-id", "state": "Running"}', stderr.getvalue())
 
     def test_image_install_starts_and_verifies_without_guest_installer(self):
         manager = object.__new__(Manager)

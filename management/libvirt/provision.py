@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vytvoření a instalace testovací VM jedním příkazem; bez --apply pouze plán."""
+"Create and install a test VM in one command; without --apply, only show the plan."
 
 from messages import _, ArgumentParser, info, success, error as report_error
 
@@ -11,7 +11,7 @@ import time
 
 
 def main():
-    parser = ArgumentParser(description=_('Vytvoření a instalace testovací VM jedním příkazem; bez --apply pouze plán.'))
+    parser = ArgumentParser(description=_("Create and install a test VM in one command; without --apply, only show the plan."))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--apply", action="store_true")
     modes.add_argument("--dry-run", action="store_true")
@@ -20,10 +20,10 @@ def main():
     install = os.environ["NIXBERRY_INSTALL"]
     if not args.apply:
         subprocess.run([create, "--dry-run"], check=True)
-        info(_('S --apply: vytvoření VM a dokončení zvolené metody nasazení včetně ověření startu z disku.'))
+        info(_("With --apply: create the VM and complete the selected deployment method, including verified boot from disk."))
         return
     subprocess.run([create, "--apply"], check=True)
-    info(_('Ověřuji připravenost VM pro dokončení zvolené metody nasazení.'))
+    info(_("Checking VM readiness to complete the selected deployment method."))
     deadline = time.monotonic() + 180
     while True:
         result = subprocess.run([install, "--dry-run"], text=True,
@@ -33,10 +33,10 @@ def main():
             print(result.stderr, file=sys.stderr, end="", flush=True)
             break
         if time.monotonic() >= deadline:
-            raise RuntimeError(_('Instalační prostředí není připravené: {value1}').format(value1=result.stderr))
+            raise RuntimeError(_("The installation environment is not ready: {value1}").format(value1=result.stderr))
         time.sleep(2)
     subprocess.run([install, "--apply"], check=True)
-    success(_('Celé vytvoření dokončené a ověřené: VM běží z deklarovaného systému na disku.'))
+    success(_("Creation completed and verified: the VM is running the declared system from disk."))
 
 
 if __name__ == "__main__":

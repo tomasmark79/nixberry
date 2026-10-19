@@ -1,112 +1,111 @@
-# VM platformy, hostitelé a SSH
+# VM platforms, hosts and SSH
 
-[← Hlavní návod](../README.md) · [CLI](cli.md) · [Offline předání](offline.md)
+[← Main guide](../README.md) · [CLI](cli.md) · [Offline handoff](offline.md)
 
 <a id="hostitele"></a>
 <a id="podpora"></a>
+<a id="hosts"></a>
 
-## Připravit hostitele
+## Prepare a host
 
-Připojení a existující prostředky zapiš do místního `hosts.local.nix`;
-[hosts.nix](../hosts.nix) jej načítá a bez něj vrací prázdnou evidenci.
-Šablony pro všech pět hypervizorů jsou v
-[management/examples/hosts.nix](../management/examples/hosts.nix).
-Přidání záznamu samo neinstaluje hypervizor, nevytváří síť ani úložiště.
+Declare connections and existing resources in local `hosts.local.nix`.
+[hosts.nix](../hosts.nix) loads it, or returns an empty inventory when absent.
+[Host templates](../management/examples/hosts.nix) cover all five hypervisors.
+Adding an entry does not install a hypervisor or create networks or storage.
 
-| Platforma (backend) | Hostitelské prostředí | Systémový disk a síť |
+| Platform (backend) | Host environment | System disk and network |
 | --- | --- | --- |
-| QEMU/KVM (libvirt), `libvirt` | Místní Linux, KVM, `qemu:///system` | QCOW2, VirtIO Block, deklarovaná NAT síť s DHCP. |
-| Hyper-V, `hyperv` | Windows s Hyper-V a SSH | VHDX, Generation 2, SCSI, deklarovaný switch. |
-| Proxmox VE, `proxmox` | Proxmox VE, SSH na deklarovaný uzel | VirtIO disk, existující bridge, QEMU Guest Agent. |
-| VirtualBox, `virtualbox` | Linux místně nebo Linux/Windows přes SSH | VDI, SATA, existující bridged adaptér, Guest Additions. |
-| VMware Workstation, `vmware` | Workstation na Linuxu místně nebo Linux/Windows přes SSH | VMDK monolithicSparse, SATA, NAT s DHCP, VMware Tools. |
+| QEMU/KVM (libvirt), `libvirt` | Local Linux, KVM, `qemu:///system` | QCOW2, VirtIO Block, declared NAT network with DHCP. |
+| Hyper-V, `hyperv` | Windows with Hyper-V and SSH | VHDX, Generation 2, SCSI, declared switch. |
+| Proxmox VE, `proxmox` | Proxmox VE, SSH to the declared node | VirtIO disk, existing bridge, QEMU Guest Agent. |
+| VirtualBox, `virtualbox` | Local Linux or Linux/Windows over SSH | VDI, SATA, existing bridged adapter, Guest Additions. |
+| VMware Workstation, `vmware` | Local Linux or Linux/Windows over SSH | monolithicSparse VMDK, SATA, NAT with DHCP, VMware Tools. |
 
-Všechny VM používají UEFI a vypnutý Secure Boot. Adaptéry spravují nové vlastní
-VM; nepřebírají existující cizí stroje. Libvirt podporuje místní URI,
-VMware adaptér podporuje Workstation, nikoli ESXi, vCenter nebo Fusion.
+All VMs use UEFI with Secure Boot disabled. Adapters manage new owned VMs;
+they do not take over existing foreign machines. Libvirt supports local URIs.
+The VMware adapter targets Workstation, not ESXi, vCenter or Fusion.
 
-Automatický přístup k hostitelům používá soukromé IPv4. Adresa
-`192.168.79.1` je chráněná a nesmí být spravovaným cílem ani jump hostitelem.
+Automatic host access uses private IPv4. Address `192.168.79.1` is protected
+and cannot be a managed target or jump host.
 
 ### QEMU/KVM (libvirt)
 
-QEMU/KVM je virtualizační platforma; NixBerry ji spravuje přes libvirt.
-V CLI a deklaracích se používá technický identifikátor `libvirt`.
+QEMU/KVM is the virtualization platform; NixBerry manages it through libvirt.
+The CLI and declarations use backend identifier `libvirt`.
 
-Připrav KVM, oprávnění k `qemu:///system`, aktivní storage pool, síť s DHCP,
-dostatek místa a podporovaný machine type. Parametry jsou v připojení
-hostitele; OVMF a médium dodává recept.
+Prepare KVM, access to `qemu:///system`, an active storage pool, a DHCP network,
+sufficient space and a supported machine type. The host connection specifies
+these parameters; the recipe supplies OVMF and deployment media.
 
-`image` importuje QCOW2 do nového svazku, `iso` vytváří prázdný disk
-`/dev/vda`. Přístup do VM používá její adresu z DHCP deklarované sítě.
+`image` imports QCOW2 into a new volume. `iso` creates a blank `/dev/vda` disk.
+Guest access uses a DHCP lease from the declared network.
 
 ### Hyper-V
 
-Účet SSH potřebuje oprávnění spravovat Hyper-V a zapisovat do vyhrazeného
-úložiště. Připrav OpenSSH, ověřený host klíč a TCP forwarding pro jump host.
-Připojení určuje `windowsComputerName`, `switchName`, `switchId` a úložiště.
+The SSH account needs Hyper-V management permission and write access to dedicated
+storage. Prepare OpenSSH, a verified host key and TCP forwarding for jump access.
+The connection declares `windowsComputerName`, `switchName`, `switchId` and storage.
 
-VM má Generation 2, vypnutý Secure Boot a pevnou kapacitu RAM.
-Hyper-V přiděluje skutečné VM ID i BIOSGUID; adaptér kontroluje jejich vazbu
-na owner záznam. SSH do VM může vést přes Windows hostitele.
-Služby v cílovém systému jsou `hv-kvp` a `hv-vss`.
+VMs use Generation 2, disabled Secure Boot and fixed RAM capacity.
+Hyper-V assigns actual VM IDs and BIOSGUIDs; the adapter verifies their link
+to the owner record. Guest SSH may pass through the Windows host.
+The guest services are `hv-kvp` and `hv-vss`.
 
 ### Proxmox VE
 
-Hostitel potřebuje Python 3, `qm`, `pvesh`, příslušná oprávnění a existující
-`storageDirectory`, `storage`, `bridge` a `node`. SSH musí směřovat
-na deklarovaný uzel. Připrav QEMU Guest Agent a jeho komunikační kanál ve VM.
+The host needs Python 3, `qm`, `pvesh`, permissions and existing
+`storageDirectory`, `storage`, `bridge` and `node`. SSH must connect to the
+declared node. Enable QEMU Guest Agent and its communication channel in the VM.
 
-`image` používá import hotového disku. Pro `iso` je navíc nutné úložiště
-s obsahem `iso`; určuje jej `isoStorage`, výchozí je `local`.
-Instalační ISO se připojuje jako spravovaný svazek, nikoli libovolná cesta.
-Po instalaci a vypnutí adaptér odpojí a odstraní vlastní kopii média.
-Plán kontroluje místo pro staging, disk i EFI svazek; nepovoluje automatické
-přealokování thin úložiště.
-
-Pro integrační zkoušky lze připravit [vnořený Proxmox lab](proxmox-lab.md).
+`image` imports a prebuilt disk. `iso` also needs storage with `iso` content,
+selected by `isoStorage` (default `local`). The installation ISO is attached
+as a managed volume, not an arbitrary filesystem path. After installation and
+shutdown, the adapter detaches and removes its own media copy.
+Plans check staging, disk and EFI volume space; thin overcommit is not enabled
+automatically. A [nested Proxmox lab](proxmox-lab.md) is available for integration tests.
 
 ### VirtualBox
 
-Hostitel potřebuje Python 3, funkční `VBoxManage`, registr VM stejného uživatele
-a bridged adaptér uvedený v deklaraci. Ověř například:
+Prepare Python 3, working `VBoxManage`, the same user's VM registry and the
+declared bridged adapter:
 
 ```sh
 VBoxManage --version
 VBoxManage list bridgedifs
 ```
 
-Na NixOS jsou potřeba hostitelský modul a oprávnění uživatele k VirtualBoxu.
-Ve Windows používej pro SSH i GUI stejný účet. Adaptér přidává oprávnění SID
-tohoto účtu jen do nového soukromého adresáře VM.
+NixOS needs its VirtualBox host module and user permissions. On Windows, use
+the same account for SSH and GUI. The adapter grants that account's SID access
+only to the newly created private VM directory.
 
 ### VMware Workstation
 
-Připrav Python 3, funkční `vmrun`, vyhrazené úložiště a NAT síť s DHCP.
-Metoda `iso` potřebuje také `vmware-vdiskmanager` vedle `vmrun`.
-Na Windows používej pro SSH a GUI stejný účet; na NixOS musí fungovat
-hostitelské moduly VMware i NAT/DHCP.
+Prepare Python 3, working `vmrun`, dedicated storage and NAT with DHCP.
+The `iso` method also needs `vmware-vdiskmanager` beside `vmrun`.
+Use the same SSH and GUI account on Windows. VMware host modules and NAT/DHCP
+must work on NixOS.
 
-`toolPath` může obsahovat úplnou cestu s mezerami. `vmrun` spravuje VMX
-v deklarovaném úložišti; správa nezaručuje její zobrazení v seznamu GUI.
-Vlastní VMX lze otevřít přímo ve Workstation.
+`toolPath` may be a full path containing spaces. `vmrun` manages the declared
+VMX path; this does not guarantee its appearance in Workstation's GUI inventory.
+Open the owned VMX directly in Workstation if needed.
 
-### Společné požadavky přenosného adaptéru
+### Shared portable adapter requirements
 
-Proxmox, VirtualBox a VMware používají Python pod `pythonCommand`.
-Ve Windows ověř interpreter přímo v SSH relaci; alias Microsoft Store nestačí.
-`hostName` musí odpovídat `socket.gethostname()`.
+Proxmox, VirtualBox and VMware use Python selected by `pythonCommand`.
+On Windows, verify it from the SSH session; a Microsoft Store alias is insufficient.
+`hostName` must match `socket.gethostname()`.
 
-`storageDirectory` musí existovat a umožňovat zápis. Nástroj vytváří jen nový
-podadresář VM; odmítá kořen disku, přesměrování odkazy a přepis cizího obsahu.
-Nix běží na správci, nikoli na vzdáleném hostiteli. Vzdálené SSH vyžaduje
-ověřený klíč a forwarding pro přístup do VM přes jump host.
+`storageDirectory` must exist and be writable. The adapter only creates a new
+VM subdirectory and refuses drive roots, redirected paths and foreign content.
+Nix runs on the manager, not the remote host. Remote SSH requires a verified
+host key and forwarding when guest access uses a jump host.
 
 <a id="prime-ssh"></a>
+<a id="direct-ssh"></a>
 
-## Spravovat server bez hypervizoru
+## Manage a server without its hypervisor
 
-Offline VM může používat přímou správu systému. Do deklarace vedle `spec` přidej:
+An offline VM declaration can enable direct system management. Add beside `spec`:
 
 ```nix
 access = {
@@ -118,81 +117,83 @@ access = {
 };
 ```
 
-Fungují `status`, `ssh`, `doctor`, `verify`, `diff`, `diffg` a `update`.
-Jednorázový endpoint vybírá `--ssh`:
+This enables `status`, `ssh`, `doctor`, `verify`, `diff`, `diffg` and `update`.
+Use `--ssh` for a one-time endpoint:
 
 ```sh
 nixberry doctor vm-demo-proxmox --ssh root@server.example:2030
 ```
 
-`access` ani `--ssh` nemění IP v obrazu, systémovou konfiguraci nebo
-vlastnictví VM. Podporovaný účet je `root`. Pro tyto příkazy lze místo
-`--ssh` použít také `--host root@HOST:PORT`; u `new-*` má `--host`
-význam hostitele hypervizoru.
+Neither `access` nor `--ssh` changes image IPs, system configuration or VM ownership.
+Only the `root` account is supported. These commands also accept
+`--host root@HOST:PORT` as an alternative; for `new-*`, `--host` selects a hypervisor.
 
-Vlastní `knownHostsFile` musí být absolutní cesta; `null` používá běžný
-SSH soubor. Ověřený klíč u vlastního portu ulož pod `[HOST]:PORT`.
-`hostKeyAlias` dává stabilní jméno při změně endpointu. Změna adresy nepřijímá
-nový klíč automaticky a jednorázové SSH zachovává deklarované ověřování klíče.
+A custom `knownHostsFile` must be absolute; `null` uses the standard SSH file.
+For a custom port, store its verified key as `[HOST]:PORT`.
+`hostKeyAlias` supplies a stable identity when endpoints change.
+An address change never accepts a new key automatically, and one-time SSH
+preserves declared key verification.
 
-Offline cíl bez SSH přístupu má `show` a `export`; `status` a `doctor`
-vysvětlí chybějící nastavení. Přímé SSH nepovoluje vytvoření ani reset VM.
-Pro automatické vytvoření nové VM použij deklarovaný `host` místo
-`backend` a odstraň `access`; existující ruční import se tím nepřevezme.
+Without SSH configuration, offline targets offer `show` and `export`;
+`status` and `doctor` explain missing access. Direct SSH cannot create or reset VMs.
+For automatic creation of a new VM, replace `backend` with a declared `host`
+and remove `access`; this does not adopt an existing manual import.
 
-## SSH a guest agenti při potížích
+## SSH and guest agent troubleshooting
 
-Klíč správce odpovídá `admin.pub`. Automatické nasazení ukládá ověřený
-SSH klíč cílového systému do `~/.local/state/nixberry/portable/UUID/known_hosts`
-a respektuje `XDG_STATE_HOME`. Instalační prostředí používá dočasný soubor.
-Hyper-V navíc používá stabilní alias při změně IP.
+The administrator key comes from `admin.pub`. Automatic deployment stores the
+verified installed-system host key at
+`~/.local/state/nixberry/portable/UUID/known_hosts`, honoring `XDG_STATE_HOME`.
+Installation environments use temporary files. Hyper-V also keeps a stable alias
+across IP changes.
 
-Při `HOST IDENTIFICATION HAS CHANGED` ověř otisk nezávisle. Starý klíč se
-automaticky nemaže. Navázání SSH má limit 10 sekund; při ztrátě odezvy
-navázaného serveru se spojení obvykle ukončí přibližně za 45 sekund.
-Interaktivní relaci odpojí sekvence Enter, `~`, `.`.
+For `HOST IDENTIFICATION HAS CHANGED`, independently verify the fingerprint.
+Old keys are not removed automatically. Connecting has a 10-second timeout;
+an established but unresponsive server normally disconnects in about 45 seconds.
+Disconnect an interactive session with Enter, `~`, `.`.
 
-QEMU Guest Agent potřebuje ve VM port `/dev/virtio-ports/org.qemu.guest_agent.0`.
-Když chybí, provozovatel Proxmoxu nejprve ověří identitu stroje a zapne
-**Options → QEMU Guest Agent**. Změna virtuálního zařízení může vyžadovat
-úplné vypnutí a nový start VM. Uvnitř serveru ověř:
+QEMU Guest Agent needs `/dev/virtio-ports/org.qemu.guest_agent.0` in the guest.
+If absent, the Proxmox operator first verifies machine identity and enables
+**Options → QEMU Guest Agent**. The virtual device change may need a full
+power-off and fresh start. Inside the server, check:
 
 ```sh
 ls -l /dev/virtio-ports/
 systemctl status qemu-guest-agent
 ```
 
-Samotná instalace služby nevytvoří chybějící virtuální port.
-Při přímém SSH do Proxmox VM je guest agent volitelný; neaktivní službu
-`doctor` hlásí jako upozornění. Hostname, architektura a systémové oddíly se kontrolují dál.
+Installing the service alone does not create the missing virtual port.
+For direct SSH to a Proxmox VM, the guest agent is optional; `doctor` warns
+if inactive while still checking hostname, architecture and system partitions.
 
 <a id="reset"></a>
 
-## Odstranit spravovanou VM
+## Remove a managed VM
 
-V její místní deklaraci nastav `allowReset = true;`, potom:
+Set `allowReset = true;` in its local declaration, then:
 
 ```sh
 nixberry reset vm-demo-libvirt
 nixberry reset vm-demo-libvirt --apply
 ```
 
-První příkaz jen ověřuje plán. Druhý **odstraní VM a její ověřené vlastní
-prostředky**. Deklarace zůstává na disku. Reset nepotřebuje sestavení systému
-ani média a neplatí pro offline VM nebo RPi.
+The first command only verifies the plan. The second **removes the VM and its
+verified owned resources**. The declaration remains on disk.
+Reset needs no system or media build and does not apply to offline VMs or RPi.
 
-Kontroluje vlastníka, skutečnou identitu, disky, sdílení, snapshoty a odkazy.
-Běžící VM vypne korektně s časovým limitem, před odstraněním vše znovu ověří.
-Při nejistotě skončí chybou; nepřechází na tvrdé vypnutí a nemaže zbytky naslepo.
+It verifies owner, actual identity, disks, sharing, snapshots and links.
+A running VM is shut down gracefully with a deadline, then revalidated.
+Uncertainty causes failure; there is no forced shutdown or blind remnant deletion.
 
-| Platforma | Prostředky a hranice kontroly |
+| Platform | Resources and verification boundaries |
 | --- | --- |
-| QEMU/KVM (libvirt) | Vlastní QCOW2, NVRAM, vazby domén, podkladové obrazy a snapshoty. |
-| Hyper-V | Owner, skutečné VM ID, disk a checkpointy; sdílené médium v `media/` ponechá. |
-| Proxmox VE | VMID/uzel, systémový a EFI svazek, vlastní ISO, snapshoty a reference VM i kontejnerů. |
-| VirtualBox | VM, disk a vlastní adresář; prověřuje registr médií a snapshoty. |
-| VMware Workstation | Vlastní adresář, VMX a samostatný VMDK; kontroluje běžící VM a soubory pod vyhrazeným úložištěm. Vypnuté VMX mimo něj neprochází a seznam GUI neupravuje. |
+| QEMU/KVM (libvirt) | Owned QCOW2, NVRAM, domain references, backing images and snapshots. |
+| Hyper-V | Owner, actual VM ID, disk and checkpoints; shared media in `media/` remains. |
+| Proxmox VE | VMID/node, system and EFI volumes, own ISO, snapshots and VM/container references. |
+| VirtualBox | VM, disk and dedicated directory; media registry and snapshots are checked. |
+| VMware Workstation | Dedicated directory, VMX and standalone VMDK; running VMs and managed storage are checked. Stopped VMX files elsewhere are not scanned and GUI inventory is not changed. |
 
-Po přerušení nejprve prohlédni `status` a úložiště; operace se automaticky
-neopakuje. `cleanup` zůstává pouze náhledem. Smazání souboru deklarace samo
-VM ani disk neodstraní. [Testovací matice a bezpečnostní kontroly](test-plan.md).
+After interruption, inspect `status` and storage before continuing.
+Operations are not retried automatically. `cleanup` remains a preview.
+Deleting a declaration file does not remove the VM or disk.
+See [tests and safety checks](test-plan.md).

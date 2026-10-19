@@ -20,7 +20,7 @@ class CompletionTests(unittest.TestCase):
         (self.root / "instances/kozlonix.nix").write_text('{ host = "local"; spec.name = "kozlonix"; }')
         (self.root / "management/rpi/targets/nixberry.nix").write_text('{ hostName = "pi"; }')
         (self.root / "instances/adresar.nix").mkdir()
-        (self.root / "instances/odkaz.nix").symlink_to("kozlonix.nix")
+        (self.root / "instances/link.nix").symlink_to("kozlonix.nix")
         self.recipe = Path(__file__).resolve().parents[2]
         shutil.copyfile(self.recipe / "completion.bash", self.root / "completion.bash")
         (self.root / 'management/deployment').mkdir(parents=True)

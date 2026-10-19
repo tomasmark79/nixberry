@@ -1,4 +1,4 @@
-"""Ochrana místních disků před zápisem nebo odstraněním při sdílení mezi VM."""
+"""Protect local disks from writes or removal when shared between VMs."""
 
 from messages import _
 
@@ -22,18 +22,18 @@ def reject_shared(peer_xml, disk, nvram=None, *, virsh=None):
         paths.extend(node.get(key) for key in ("file", "dev") if node.get(key))
         if node.get("pool") or node.get("volume"):
             if not virsh or not node.get("pool") or not node.get("volume"):
-                raise RuntimeError(_('Nelze ověřit cestu svazku jiné VM; odmítám zápis nebo odstranění.'))
+                raise RuntimeError(_("Cannot verify another VM's volume path; refusing writes or removal."))
             paths.append(virsh("vol-path", node.get("volume"), "--pool", node.get("pool")))
     paths.append(root.findtext("./os/nvram"))
     paths.extend(node.get("file") for node in root.findall("./os/nvram/source"))
     protected = [path for path in (disk, nvram) if path]
     if any(path and same_path(path, target) for path in paths for target in protected):
-        raise RuntimeError(_('Disk nebo NVRAM sdílí jiná VM; odmítám zápis nebo odstranění.'))
+        raise RuntimeError(_("The disk or NVRAM is shared with another VM; refusing writes or removal."))
 
 
 def reject_shared_domains(virsh, name, disk, nvram=None):
-    # dumpxml vrátí živé XML běžící VM a konfiguraci vypnuté VM.
-    # Trvalá konfigurace běžící VM může odkazovat na jiné disky než živé XML.
+    # dumpxml returns live XML for running VMs and configuration for stopped VMs.
+    # A running VM's persistent configuration may reference different disks than live XML.
     persistent = set(virsh("list", "--all", "--persistent", "--name").splitlines())
     for peer in virsh("list", "--all", "--name").splitlines():
         if not peer or peer == name:

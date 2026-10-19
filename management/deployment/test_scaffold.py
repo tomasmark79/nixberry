@@ -187,7 +187,7 @@ class ScaffoldChecks(unittest.TestCase):
             new_vm(self.root, hosts, {"example": {}}, "example", "hyperv", "one")
         with patch("scaffold.uuid.uuid4") as identity:
             identity.return_value.hex = "0" * 26 + "abcdef"
-            with self.assertRaisesRegex(RuntimeError, "MAC koliduje"):
+            with self.assertRaisesRegex(RuntimeError, "MAC conflicts"):
                 new_vm(self.root, hosts, {"other": {"spec": {"mac": "02:79:81:AB:CD:EF"}}},
                        "example", "hyperv", "one")
 

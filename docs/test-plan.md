@@ -1,16 +1,18 @@
-# Testování NixBerry
+# Testing NixBerry
 
-[← Hlavní návod](../README.md) · [Společný kontrakt](platform-consistency.md)
+[← Main guide](../README.md) · [Platform contract](platform-consistency.md)
 
-Testování rozlišuje statickou kontrolu, izolované regresní testy, sestavení,
-živé nasazení a ověření běžícího systému. Sestavený obraz nepotvrzuje boot;
-úspěch mocku nepotvrzuje skutečný hypervizor.
+Separate static review, isolated regression tests, builds, live deployment and
+running-system verification. A built image does not prove boot; a mock does
+not prove a real hypervisor works.
 
-## Izolované kontroly
+## Isolated checks
 
-Z kořene receptu:
+From the recipe root, with Nix, Python, Bash and GNU gettext available:
 
 ```sh
+python3 management/deployment/compile_locales.py
+python3 management/deployment/compile_locales.py --check
 python3 -m unittest discover -s management/deployment -p 'test_*.py'
 python3 -m unittest discover -s management/libvirt -p 'test_*.py'
 python3 -m unittest discover -s management/hyperv -p 'test_*.py'
@@ -18,39 +20,41 @@ python3 -m unittest discover -s management/rpi -p 'test_*.py'
 python3 management/deployment/check_inventory.py
 ```
 
-Testy používají dočasné deklarace a náhrady transportů. Některé spouštějí
-Nix s malými testovacími artefakty a ověřují skutečný přenos mezi Python
-procesy. Nepotřebují reinstalaci běžícího serveru.
+Use English defaults for the regression suite; individual translation tests
+select Czech explicitly. Tests use temporary declarations and mocked transports.
+Some invoke Nix with small fixture artifacts or test real Python-to-Python
+transport. They do not require reinstalling a live server. Recipe fixtures use
+test keys rather than the administrator's local identity.
 
-| Oblast | Kontroly v `management/deployment/` |
+| Area | Checks in `management/deployment/` |
 | --- | --- |
-| CLI, dostupné operace a odmítnuté kombinace voleb | `test_cli.py`, `test_platform_contract.py` |
-| Konfigurace a deklarace všech backendů | `test_configurations.py`, `test_scaffold.py`, `test_methods.py` |
-| Balíčky nástrojů, manifesty image/ISO a reset bez média | `test_platform_contract.py` |
-| Přenosný adaptér, identity, disky a přenos dat | `test_portable.py` |
-| Hyper-V výběr a přenos média | `test_hyperv_media.py` a `management/hyperv/test_*.py` |
-| Reset a odmítnuté nebezpečné kroky | `test_reset.py` a backendové kontroly |
-| Doplňování a aliasy, online/offline a přímé SSH | `test_completion.py` |
-| Výstupy, diagnostika, barvy a katalog | `test_diagnostics.py`, `test_messages.py`, `test_message_contract.py` |
-| Izolace, evidence a řízení kampaně | `test_campaign.py` |
+| CLI capabilities and rejected options | `test_cli.py`, `test_platform_contract.py` |
+| Configurations and all backend declarations | `test_configurations.py`, `test_scaffold.py`, `test_methods.py` |
+| Tool packages, image/ISO manifests, reset without media | `test_platform_contract.py` |
+| Portable adapter, identities, disks, transfer | `test_portable.py` |
+| Hyper-V media selection and transport | `test_hyperv_media.py`, `management/hyperv/test_*.py` |
+| Reset and rejected unsafe steps | `test_reset.py` and backend checks |
+| Completion, aliases, online/offline and direct SSH | `test_completion.py` |
+| Output, diagnostics, colors, languages and catalogues | `test_diagnostics.py`, `test_messages.py`, `test_message_contract.py` |
+| Campaign isolation and resource tracking | `test_campaign.py` |
 
-Shellovou integraci Nixonu ověřuje z kořene notebookového projektu
+Nixon's separate shell integration check is run from its own repository:
 `nix build --no-link path:.#checks.x86_64-linux.nixberry-shell`.
-Používá náhrady Nixu, editoru a nasazení, včetně vygenerovaného spouštěče a loaderu.
+It substitutes Nix, editors and deployment, including generated launchers/loaders.
 
-## Kontrola hotových médií
+## Prebuilt media checks
 
-Pro obrazy QCOW2, VDI a VMDK, s dostupnými `qemu-img` a mtools:
+With `qemu-img` and mtools, inspect QCOW2, VDI and VMDK:
 
 ```sh
-python3 management/deployment/check_images.py /cesta/system.qcow2 /cesta/system.vdi /cesta/system.vmdk
+python3 management/deployment/check_images.py /path/system.qcow2 /path/system.vdi /path/system.vmdk
 ```
 
-Kontrola čte formát, kapacitu, GPT, ext4, UEFI fallback a bootovací záznam
-s kernelem, initrd a systémovou cestou. Obrazy nepřipojuje ani nemění.
-Nenahrazuje skutečný start.
+Checks read format, capacity, GPT, ext4, UEFI fallback and boot entries referencing
+kernel, initrd and system. Images are neither mounted nor changed.
+This does not replace a real boot test.
 
-Samostatné aplikační testy:
+Application checks:
 
 ```sh
 nix build --no-link path:.#mc
@@ -58,59 +62,59 @@ nix run path:.#mc-tests
 nix build --no-link path:.#hstr path:.#packages.x86_64-linux.hstr.tests.scroll
 ```
 
-MC testy vyžadují `unshare -Ur` a používají TUI v tmuxu. HSTR používá
-dočasnou historii. Pro ARM balíčky vyber příslušnou architekturu.
+MC needs `unshare -Ur` and runs TUI checks in tmux. HSTR uses temporary history.
+Select the appropriate architecture for ARM packages.
 
-## Matice živých scénářů
+## Live scenario matrix
 
-Pro každou podporovanou kombinaci hostitele a VM backendu prověř obě metody.
-Windows používá SSH; místní libvirt, VirtualBox a VMware běží na Linuxu.
+Test both methods for each supported backend/host combination.
+Windows uses SSH; local libvirt, VirtualBox and VMware run on Linux.
 
-| Skupina | Co ověřit |
+| Group | Scope |
 | --- | --- |
-| ON | Nová deklarace, plán, nasazení, start z disku, SSH, `doctor`, `verify`, aktualizace, generace a úklid. |
-| OFF | Export image/ISO každého backendu a plné SD RPi; manifest, recept, návod, kontrolní součty. |
-| HAND | Skutečný ruční import disku nebo instalace z exportovaného ISO, potom správa přes SSH. |
-| NET | DHCP i pevná IP, brána, DNS a dosažitelnost ve vyhrazené síti. |
-| NATIVE | Existující server a RPi pouze čtecími kontrolami. |
+| ON | Declaration, plan, deployment, disk boot, SSH, doctor/verify, update, generations and cleanup. |
+| OFF | Every backend's image/ISO and full RPi SD export, manifests, recipe, instructions and checksums. |
+| HAND | Real manual disk import or exported ISO installation, then SSH management. |
+| NET | DHCP and static IP, gateway, DNS and reachability in a dedicated network. |
+| NATIVE | Existing servers and RPi, read-only checks only. |
 
-U ON střídej vstupy `reproduce`, `provision` a oddělené `create/install`.
-Ověř také přepsání deklarované metody přes `--method` a výběr konfigurace.
+Alternate ON entry points: `reproduce`, `provision` and separate `create/install`.
+Check method override with `--method` and configuration selection.
 
-Každý případ musí doložit:
+Each case must demonstrate:
 
-1. Nepřítomný cíl a vlastní vyhrazené prostředky před vytvořením.
-2. Správný formát, kapacitu, UEFI, řadič, síť a guest agenta.
-3. U image hotový disk bez formátování; u ISO prázdný disk a instalační prostředí.
-4. Start přesné systémové cesty z disku bez připojeného ISO.
-5. SSH, identitu, síť, služby, `doctor` a `verify`.
-6. `diff` před aktualizací, plán bez zápisu, aktivaci a `diffg` po ní.
-7. Odmítnutí opakovaného vytvoření existující VM.
-8. Náhled úklidu a bezpečné odstranění jen vlastních testovacích prostředků.
+1. Target absence and dedicated owned resources before creation.
+2. Correct format, capacity, UEFI, controller, network and agent.
+3. Prebuilt disk without formatting for image; blank disk and installer for ISO.
+4. Boot of the exact system path from disk without an attached ISO.
+5. SSH, identity, network, services, `doctor` and `verify`.
+6. `diff` before update, a read-only plan, activation, then `diffg`.
+7. Rejection of repeated creation of an existing VM.
+8. Cleanup preview and safe removal of only owned test resources.
 
-U RPi samostatně ověř obnovu ze SD, identitu SSD, start bez karty a běžnou
-aktualizaci. Živý zápis vyžaduje určený cíl a výslovně povolený rozsah.
-Samotná dostupnost serveru nebo RPi není pokyn k aktualizaci či obnově.
+Separately test RPi SD recovery, SSD identity, boot without the card and normal
+updates. Live writes need a specific target and explicitly authorized scope.
+Availability alone is not permission to update or recover a machine.
 
-## Chybové a bezpečnostní případy
+## Error and safety cases
 
-- Kolize jména, UUID, MAC, VMID a cizí owner musí zastavit zápis.
-- Nesprávný hostitel, disk, součet, profil nebo kapacita nesmí vést k instalaci.
-- Pro reset ověř snapshoty, podkladové obrazy, sdílení, odkazy a změnu identity
-  mezi plánem a odstraněním. Bez oprávnění ani bez `--apply` nesmí mazat.
-- Nekorektní vypnutí nesmí přejít na tvrdé vypnutí; neúspěšná ISO instalace
-  nesmí předčasně odpojit médium nebo restartovat do neověřeného systému.
-- Nedostupné SSH, chybějící nástroj a guest agent musí skončit ohraničeně
-  s použitelnou diagnostikou.
-- Přerušení přenosu nebo ztráta odpovědi nesmí slepě opakovat vytvoření.
-- Ověř stdout/stderr, JSON, návratový kód, TTY, `NO_COLOR`, `TERM=dumb`
-  a chybějící překlad.
+- Name, UUID, MAC, VMID and foreign-owner collisions must stop writes.
+- Incorrect host, disk, checksum, profile or capacity must prevent installation.
+- Reset checks snapshots, backing images, sharing, links and identity changes
+  between plan and removal. No permission or no `--apply` means no deletion.
+- Failed graceful shutdown must not escalate to forced power-off.
+  Failed ISO installation must not detach media early or reboot into an unverified system.
+- Unreachable SSH, missing tools and missing agents must fail within bounded
+  time with actionable diagnostics.
+- Interrupted transfer or lost responses must not blindly repeat creation.
+- Check English and Czech output, fallback, stdout/stderr, JSON, exit codes,
+  TTY, `NO_COLOR` and `TERM=dumb`.
 
-## Runner kampaně
+## Campaign runner
 
 [management/deployment/campaign.py](../management/deployment/campaign.py)
-bez `--apply` vypíše matici. Živý běh vyžaduje připravené hostitele,
-vyhrazené prostředky a konkrétní nastavení:
+prints its matrix without `--apply`. Live runs require prepared hosts,
+dedicated resources and explicit settings:
 
 ```sh
 python3 management/deployment/campaign.py
@@ -119,29 +123,28 @@ python3 management/deployment/campaign.py --apply \
   --settings /home/shared/tmp/nixberry-campaign-settings.json
 ```
 
-`--case ID` vybírá případ, `--resume` pokračuje v existujícím reportu.
-Nastavení může obsahovat `hostOverrides` a vyhrazené `networks`.
-Podporovaný vnořený hostitel je popsaný v [návodu Proxmox labu](proxmox-lab.md).
+`--case ID` selects a case; `--resume` continues an existing report.
+Settings may include `hostOverrides` and dedicated `networks`.
+See the [nested lab guide](proxmox-lab.md) for that host.
 
-Runner pracuje se soukromou kopií receptu a výslovně ji připíná, aby ji
-nepřesměrovalo prostředí shellu. Výsledky a logy ukládá mimo zdrojový projekt.
-Používá vlastní jména `vm-demo-test-*`, UUID a evidenci prostředků.
+The runner explicitly pins a private recipe copy so shell settings cannot
+redirect it. Results and logs live outside the source repository.
+It uses `vm-demo-test-*` names, unique UUIDs and resource evidence.
 
-Online VM uklízí veřejným `reset`: ve vlastní deklaraci povolí odstranění,
-zkontroluje plán a pak předá `--apply`. HAND import se ověřuje proti evidenci
-ručního vytvoření; u VMware má vlastní interní úklid, protože import nemá
-marker automatické správy. Nejisté zbytky zachová k posouzení.
+Online cleanup uses public `reset`: enable removal in the private declaration,
+check the plan, then pass `--apply`.
+HAND import is verified against manual-creation evidence. VMware uses internal
+cleanup because its manual imports have no automatic-management marker.
+Uncertain remnants are retained for review.
 
-## Evidence výsledků
+## Evidence
 
-Pro každý běh ulož revizi receptu, deklaraci a konfiguraci, hostitele, identitu
-VM, metodu, očekávaný systém, příkazy, návratové kódy a oba výstupní proudy.
-Nekopíruj tajné klíče, hesla ani tokeny. Zaznamenej zvlášť sestavení,
-aktivaci, boot a živé kontroly.
+Record recipe revision, declaration/configuration, host, VM identity, method,
+expected system, commands, exit codes and both streams. Never copy private keys,
+passwords or tokens. Record build, activation, boot and live checks separately.
 
-Výsledky patří do adresáře běhu, nikoli do uživatelské dokumentace.
-Runner používá stavy `NOT_RUN`, `RUNNING`, `PASS`, `FAIL` a `BLOCKED`.
-U neúspěšného nebo blokovaného případu uveď konkrétní důvod.
-Nevyzkoušený scénář neoznačuj za úspěšný.
-Při nejasné identitě nebo částečném zápisu zastav další zápisy a nejprve
-ověř stav; úspěšné případy se při pokračování automaticky neopakují.
+Keep evidence in the run directory, not user documentation.
+Runner states are `NOT_RUN`, `RUNNING`, `PASS`, `FAIL` and `BLOCKED`.
+Explain specific failures or blocks and never mark untested scenarios successful.
+If identity is uncertain or writes are partial, stop further writes and inspect
+state. Resuming does not automatically repeat passing cases.

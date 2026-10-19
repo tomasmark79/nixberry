@@ -1,15 +1,15 @@
-# Samostatný reset nepotřebuje původní ISO ani sestavení cílového systému.
+# Standalone reset needs neither the original ISO nor target system builds.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $s = $Request.spec
 function Require($condition, [string]$message) { if (-not $condition) { throw $message } }
 function Canonical([string]$path) { [IO.Path]::GetFullPath($path).TrimEnd('\') }
-Require ($Request.allowReset -is [bool] -and $Request.allowReset -eq $true) 'Reset není výslovně povolený.'
-Require ($Request.apply -is [bool]) 'Reset vyžaduje jednoznačný režim apply.'
-Require ($env:COMPUTERNAME -eq $s.windowsComputerName) 'Nesouhlasí Windows hostitel.'
-Require ($s.name -cmatch '^nixberry-[a-z0-9][a-z0-9-]{0,52}$') 'Nepovolený název VM.'
-Require ($s.ownerId -ceq ('nixberry-hyperv-' + $s.uuid)) 'Nesouhlasí deklarované UUID a vlastník.'
-Require ($s.storageDirectory -match '^[A-Za-z]:\\' -and $s.storageDirectory -notmatch '\.\.') 'Nepovolená cesta.'
+Require ($Request.allowReset -is [bool] -and $Request.allowReset -eq $true) 'Reset is not explicitly allowed.'
+Require ($Request.apply -is [bool]) 'Reset requires an unambiguous apply mode.'
+Require ($env:COMPUTERNAME -eq $s.windowsComputerName) 'Windows host does not match.'
+Require ($s.name -cmatch '^nixberry-[a-z0-9][a-z0-9-]{0,52}$') 'Disallowed VM name.'
+Require ($s.ownerId -ceq ('nixberry-hyperv-' + $s.uuid)) 'Declared UUID and owner do not match.'
+Require ($s.storageDirectory -match '^[A-Za-z]:\\' -and $s.storageDirectory -notmatch '\.\.') 'Disallowed path.'
 Import-Module Hyper-V -ErrorAction Stop
 $base = Canonical $s.storageDirectory
 $root = Join-Path $base $s.name
@@ -20,7 +20,7 @@ function CheckTree {
     $ancestor = $root
     while ($ancestor) {
         $item = Get-Item -LiteralPath $ancestor -Force -ErrorAction Stop
-        Require (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) 'Cesta VM obsahuje reparse point.'
+        Require (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) 'The VM path contains a reparse point.'
         $parent = Split-Path -Parent $ancestor
         if ($parent -eq $ancestor) { break }
         $ancestor = $parent
@@ -29,8 +29,8 @@ function CheckTree {
     $pending.Push($root)
     while ($pending.Count) {
         foreach ($item in Get-ChildItem -LiteralPath ($pending.Pop()) -Force -ErrorAction Stop) {
-            Require (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -and -not $item.LinkType) 'Adresář VM obsahuje odkaz; reset odmítám.'
-            Require ($item.Extension -ne '.avhdx') 'VM obsahuje rozdílový disk; reset odmítám.'
+            Require (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -and -not $item.LinkType) 'The VM directory contains a link; refusing reset.'
+            Require ($item.Extension -ne '.avhdx') 'The VM contains a differencing disk; refusing reset.'
             if ($item.PSIsContainer) { $pending.Push($item.FullName) }
         }
     }
@@ -39,20 +39,20 @@ function CheckTree {
 function OwnedVm {
     CheckTree
     $owner = Get-Content -LiteralPath $ownerPath -Raw -ErrorAction Stop | ConvertFrom-Json
-    Require ($owner.ownerId -ceq $s.ownerId -and $owner.vmId) 'Nesouhlasí záznam vlastnictví VM.'
+    Require ($owner.ownerId -ceq $s.ownerId -and $owner.vmId) 'VM ownership record does not match.'
     $vm = Get-VM -Name $s.name -ErrorAction Stop
-    Require ($vm.Id.ToString() -eq $owner.vmId -and $vm.Notes -ceq $s.ownerId) 'Nesouhlasí skutečné VM ID nebo vlastník.'
-    Require ($vm.State.ToString() -in @('Running', 'Off')) 'VM je v nepodporovaném stavu; reset odmítám.'
-    Require ($vm.Generation -eq 2 -and (Canonical $vm.Path).StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) 'Nesouhlasí konfigurační adresář nebo generace VM.'
-    Require ($vm.ProcessorCount -eq $s.vcpus -and $vm.MemoryStartup -eq ([int64]$s.memoryMiB * 1MB)) 'Nesouhlasí CPU nebo RAM.'
-    Require ((Get-VMFirmware -VM $vm).SecureBoot.ToString() -eq 'Off') 'Nesouhlasí Secure Boot.'
+    Require ($vm.Id.ToString() -eq $owner.vmId -and $vm.Notes -ceq $s.ownerId) 'Actual VM ID or owner does not match.'
+    Require ($vm.State.ToString() -in @('Running', 'Off')) 'The VM is in an unsupported state; refusing reset.'
+    Require ($vm.Generation -eq 2 -and (Canonical $vm.Path).StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) 'Configuration directory or VM generation does not match.'
+    Require ($vm.ProcessorCount -eq $s.vcpus -and $vm.MemoryStartup -eq ([int64]$s.memoryMiB * 1MB)) 'CPU or RAM does not match.'
+    Require ((Get-VMFirmware -VM $vm).SecureBoot.ToString() -eq 'Off') 'Secure Boot does not match.'
     $disks = @(Get-VMHardDiskDrive -VM $vm)
-    Require ($disks.Count -eq 1 -and (Canonical $disks[0].Path) -eq $diskPath) 'Nesouhlasí systémový disk nebo je připojen další disk.'
+    Require ($disks.Count -eq 1 -and (Canonical $disks[0].Path) -eq $diskPath) 'The system disk does not match or an additional disk is attached.'
     $vhd = Get-VHD -Path $diskPath -ErrorAction Stop
-    Require ($vhd.Size -eq ([int64]$s.diskGiB * 1GB) -and -not $vhd.ParentPath -and $vhd.VhdType.ToString() -eq 'Dynamic') 'Nesouhlasí velikost nebo původ VHDX.'
+    Require ($vhd.Size -eq ([int64]$s.diskGiB * 1GB) -and -not $vhd.ParentPath -and $vhd.VhdType.ToString() -eq 'Dynamic') 'VHDX size or origin does not match.'
     $nics = @(Get-VMNetworkAdapter -VM $vm)
-    Require ($nics.Count -eq 1 -and $nics[0].MacAddress -eq $s.mac -and $nics[0].SwitchId.ToString() -eq $s.switchId) 'Nesouhlasí síť VM.'
-    Require (@(Get-VMSnapshot -VM $vm).Count -eq 0) 'VM má checkpointy; reset odmítám.'
+    Require ($nics.Count -eq 1 -and $nics[0].MacAddress -eq $s.mac -and $nics[0].SwitchId.ToString() -eq $s.switchId) 'VM network does not match.'
+    Require (@(Get-VMSnapshot -VM $vm).Count -eq 0) 'The VM has checkpoints; refusing reset.'
     foreach ($peer in Get-VM) {
         if ($peer.Id -eq $vm.Id) { continue }
         $references = @($peer.Path, $peer.ConfigurationLocation, $peer.SnapshotFileLocation, $peer.SmartPagingFilePath)
@@ -63,7 +63,7 @@ function OwnedVm {
         }
         foreach ($reference in $references) {
             if ($reference) {
-                Require (-not (Canonical $reference).StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -and (Canonical $reference) -ne $root) 'Soubor této VM používá jiná VM; reset odmítám.'
+                Require (-not (Canonical $reference).StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -and (Canonical $reference) -ne $root) 'Another VM uses a file belonging to this VM; refusing reset.'
             }
         }
     }
@@ -78,21 +78,21 @@ if (-not $Request.apply) {
     return
 }
 if ($vm.State.ToString() -eq 'Running') {
-    # Bez TurnOff a Force: nefunkční korektní vypnutí nesmí přejít na tvrdé.
+    # No TurnOff or Force: failed graceful shutdown must not escalate to power-off.
     $null = Stop-VM -VM $vm -Confirm:$false -ErrorAction Stop
     $deadline = [DateTime]::UtcNow.AddSeconds(120)
     while ((Get-VM -Id $expectedId -ErrorAction Stop).State.ToString() -ne 'Off') {
-        Require ([DateTime]::UtcNow -lt $deadline) 'VM se korektně nevypnula; nic nemažu.'
+        Require ([DateTime]::UtcNow -lt $deadline) 'The VM did not shut down gracefully; nothing will be deleted.'
         Start-Sleep -Seconds 2
     }
 }
 $vm = OwnedVm
-Require ($vm.State.ToString() -eq 'Off' -and $vm.Id.ToString() -eq $expectedId) 'VM se během resetu změnila; nic nemažu.'
+Require ($vm.State.ToString() -eq 'Off' -and $vm.Id.ToString() -eq $expectedId) 'The VM changed during reset; nothing will be deleted.'
 $null = Remove-VM -VM $vm -Force -ErrorAction Stop
-Require (-not (Get-VM -Id $expectedId -ErrorAction SilentlyContinue)) 'Odstranění VM se nepodařilo potvrdit.'
-Require (-not (Get-VM -Name $s.name -ErrorAction SilentlyContinue)) 'Po odstranění je znovu přítomná VM stejného jména; adresář ponechávám.'
+Require (-not (Get-VM -Id $expectedId -ErrorAction SilentlyContinue)) 'Could not confirm VM removal.'
+Require (-not (Get-VM -Name $s.name -ErrorAction SilentlyContinue)) 'A VM with the same name is present again after removal; keeping the directory.'
 CheckTree
 Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction Stop
-Require (-not (Test-Path -LiteralPath $root)) 'Adresář VM po odstranění zůstal.'
-# Sdílený adresář media není součástí resetu jedné VM.
+Require (-not (Test-Path -LiteralPath $root)) 'The VM directory remains after removal.'
+# Shared media storage is outside a single VM reset.
 [ordered]@{ removed = $s.uuid; vmId = $expectedId; directory = $root; sharedMediaRetained = $true } | ConvertTo-Json -Compress

@@ -1,4 +1,4 @@
-"""Porovnání receptu a systémových generací bez změny vzdáleného systému."""
+"""Compare recipes and system generations without changing the remote system."""
 
 import os
 from pathlib import Path
@@ -13,7 +13,7 @@ from updater import build, connection, freeze_recipe, preflight
 from messages import _, color_enabled, info, render
 
 
-# Stejně jako nvdiffg na Nixonu vybíráme dvě nejvyšší dochovaná čísla generací.
+# As with Nixon's nvdiffg, select the two highest retained generation numbers.
 GENERATION_DIFF = r'''set -eu
 generations=$(find /nix/var/nix/profiles -maxdepth 1 -type l -name 'system-*-link' -print | sort -V | tail -n 2)
 count=$(printf '%s\n' "$generations" | grep -c '/system-[0-9][0-9]*-link$' || true)
@@ -31,17 +31,16 @@ exec /run/current-system/sw/bin/nvd --color "${NIXBERRY_DIFF_COLOR:-never}" diff
 
 
 def generation_script(name):
-    # Věty přeložíme a obarvíme místně; server potřebuje pouze svůj shell a nvd.
-    missing = render("error", _("Pro porovnání jsou potřeba dvě dochované systémové generace. "
-                               "Pro porovnání s receptem použij {command}."),
+    # Translate and color labels locally; the server only needs its shell and nvd.
+    missing = render("error", _("Comparison requires two retained system generations. Use {command} to compare with the recipe."),
                      command=f"nixberry diff {name}")
     replacements = {"@MISSING@": missing}
     for token, message in (
-        ("@PREVIOUS@", _("Předchozí generace: {path}")),
-        ("@CURRENT@", _("Novější generace: {path}")),
-        ("@ACTIVE@", _("Aktivní systém: {path}")),
+        ("@PREVIOUS@", _("Previous generation: {path}")),
+        ("@CURRENT@", _("Newer generation: {path}")),
+        ("@ACTIVE@", _("Active system: {path}")),
     ):
-        # printf smí interpretovat pouze náš zástupný %s, nikoli procenta z překladu.
+        # printf may interpret only our %s placeholder, not percent signs in translations.
         replacements[token] = render("info", message.replace("\\", "\\\\").replace("%", "%%"), path="%s") + "\n"
     script = GENERATION_DIFF
     for token, message in replacements.items():
@@ -51,24 +50,24 @@ def generation_script(name):
 
 def compare(recipe, name, target, *, generations=False, dry_run=False):
     if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]*", name):
-        raise RuntimeError(_("Neplatné jméno cíle pro porovnání."))
+        raise RuntimeError(_("Invalid target name for comparison."))
     if target["backend"] not in ("rpi", "libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
-        raise RuntimeError(_("Porovnání této platformy není implementované."))
+        raise RuntimeError(_("Comparison is not implemented for this platform."))
     if not generations and (not recipe or not Path(recipe, "flake.nix").is_file()
                             or not Path(recipe, "flake.lock").is_file()):
-        raise RuntimeError(_("diff spusť přes spouštěč nixberry s úplným připnutým receptem."))
-    info(_("Porovnání: {name} ({backend})"), name=name, backend=target["backend"])
+        raise RuntimeError(_("Run diff through the nixberry launcher with a complete pinned recipe."))
+    info(_("Comparison: {name} ({backend})"), name=name, backend=target["backend"])
     if dry_run:
-        info(_("Plán: ověřit instalaci → porovnat dvě nejvyšší dochované generace.") if generations else
-             _("Plán: ověřit instalaci → sestavit recept → stáhnout chybějící staré cesty → nvd diff."))
-        info(_("Bez připojení a sestavení. Vzdálený systém se při porovnání nemění."))
+        info(_("Plan: verify installation → compare the two highest retained generations.") if generations else
+             _("Plan: verify installation → build recipe → retrieve missing old paths → nvd diff."))
+        info(_("No connection or build. Comparison does not change the remote system."))
         return 0
 
     if generations:
         snapshot = status(target)
         preflight(target, snapshot)
         command = connection(target, snapshot)
-        # SSH bez TTY skryje místní terminál před nvd; barvy volíme podle místního výstupu.
+        # SSH without a TTY hides the local terminal from nvd; use local output policy.
         script = generation_script(name)
         if color_enabled(sys.stdout):
             script = "NIXBERRY_DIFF_COLOR=always\n" + script
@@ -78,20 +77,20 @@ def compare(recipe, name, target, *, generations=False, dry_run=False):
         frozen = freeze_recipe(recipe, name, target, directory)
         snapshot = status(target)
         previous = preflight(target, snapshot)
-        info(_("Běžící systém: {system}"), system=previous)
-        info(_("Sestavuji recept pro porovnání…"))
+        info(_("Running system: {system}"), system=previous)
+        info(_("Building the recipe for comparison…"))
         expected = build(frozen, name, directory)
         current_snapshot = status(target)
         if preflight(target, current_snapshot) != previous:
-            raise RuntimeError(_("Během sestavení se systém cíle změnil. Spusť diff znovu."))
+            raise RuntimeError(_("The target system changed during the build. Run diff again."))
         command = connection(target, current_snapshot)
-        info(_("Stahuji chybějící části běžícího systému do místní Nix store…"))
+        info(_("Retrieving missing parts of the running system into the local Nix store…"))
         subprocess.run(["nix", "copy", "--from", "ssh://" + command[-1], previous], check=True,
                        env={**os.environ, "NIX_SSHOPTS": shlex.join(command[1:command.index("--")])})
-        # Starý systém držíme po dobu nvd stejně jako nově sestavený systém.
+        # Protect the old system from GC during nvd, as with the newly built system.
         subprocess.run(["nix-store", "--add-root", str(Path(directory) / "previous"),
                         "--indirect", "--realise", previous], check=True, stdout=subprocess.DEVNULL)
         if preflight(target, status(target)) != previous:
-            raise RuntimeError(_("Během přenosu se systém cíle změnil. Spusť diff znovu."))
-        info(_("Nový recept: {system}"), system=expected)
+            raise RuntimeError(_("The target system changed during transfer. Run diff again."))
+        info(_("New recipe: {system}"), system=expected)
         return subprocess.run(["nvd", "diff", previous, expected], check=False).returncode

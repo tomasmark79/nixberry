@@ -1,4 +1,4 @@
-"""Vyhodnocení instalačních nástrojů až při operaci, která je potřebuje."""
+"""Evaluate deployment tools only when an operation needs them."""
 
 import os
 import json
@@ -18,11 +18,11 @@ def launch(target, command, arguments):
         index = arguments.index("--method")
         method = arguments[index + 1]
         if method not in ("iso", "image"):
-            raise ValueError(_('Metoda nasazení musí být iso nebo image.'))
+            raise ValueError(_("Deployment method must be iso or image."))
         del arguments[index:index + 2]
     recipe = os.environ.get("NIXBERRY_RECIPE")
     if not recipe or not (Path(recipe) / "flake.nix").is_file():
-        raise RuntimeError(_('Operaci spusť přes spouštěč nixberry s úplným projektovým receptem.'))
+        raise RuntimeError(_("Run the operation through the nixberry launcher with a complete project recipe."))
     expected = json.loads(Path(os.environ["NIXBERRY_DISPATCH_TARGET"]).read_text())
     with tempfile.TemporaryDirectory(prefix="nixberry-tools-") as directory:
         frozen = freeze_recipe(str(Path(recipe).resolve()), target, expected, directory)

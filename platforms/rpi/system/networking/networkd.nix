@@ -6,7 +6,7 @@ in
 {
   networking.useDHCP = false;
   networking.useNetworkd = true;
-  # Názvy odpovídají MAC adresám a nezávisí na pořadí připojení adaptérů.
+  # Names follow MAC addresses and do not depend on adapter attachment order.
   systemd.network = {
     enable = true;
     links = {
@@ -34,7 +34,7 @@ in
       };
     }
     // lib.optionalAttrs (cfg.reserveMac != null) {
-      # Rezervní karta nemá IP ani bránu a nečekáme na její kabel.
+      # The spare adapter has no IP or gateway; do not wait for its cable.
       "20-reserve" = {
         matchConfig.MACAddress = cfg.reserveMac;
         linkConfig.RequiredForOnline = "no";

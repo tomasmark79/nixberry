@@ -1,66 +1,70 @@
-# Společný kontrakt platforem
+# Shared platform contract
 
-[← Hlavní návod](../README.md) · [CLI](cli.md) · [Testování](test-plan.md)
+[← Main guide](../README.md) · [CLI](cli.md) · [Testing](test-plan.md)
 
-Stejný význam příkazů a deklarací platí napříč VM backendy.
-Rozdíly vyplývající z hypervizoru jsou v [návodu platforem](vm.md).
-Pravidla vývoje stanovuje [AGENTS.md](../AGENTS.md).
+Commands and declarations retain the same meaning across VM backends.
+Hypervisor-specific differences are in the [platform guide](vm.md).
+[AGENTS.md](../AGENTS.md) defines development rules.
 
-## Matice rozhraní
+## Interface matrix
 
-| Oblast | libvirt | Hyper-V | Proxmox | VirtualBox | VMware | RPi |
+| Area | libvirt | Hyper-V | Proxmox | VirtualBox | VMware | RPi |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pojmenovaná konfigurace | ano | ano | ano | ano | ano | ano |
-| Image a ISO | ano | ano | ano | ano | ano | obnova ze SD |
-| `new-*-vm` a `--offline` | ano | ano | ano | ano | ano | vlastní deklarace |
-| Síť v deklaraci cíle | ano | ano | ano | ano | ano | ano |
-| Export systému a receptu | ano | ano | ano | ano | ano | ano |
-| Správa systému přes SSH | ano | ano | ano | ano | ano | ano |
-| Online `probe/create/install/provision/reset` | ano | ano | ano | ano | ano | vlastní sonda a obnova |
-| Výchozí `allowReset = false;` | ano | ano | ano | ano | ano | nepoužije se |
+| Named configuration | yes | yes | yes | yes | yes | yes |
+| Image and ISO | yes | yes | yes | yes | yes | SD recovery |
+| `new-*-vm` and `--offline` | yes | yes | yes | yes | yes | separate declaration |
+| Target network declaration | yes | yes | yes | yes | yes | yes |
+| System and recipe export | yes | yes | yes | yes | yes | yes |
+| System management over SSH | yes | yes | yes | yes | yes | yes |
+| Online `probe/create/install/provision/reset` | yes | yes | yes | yes | yes | own probe/recovery |
+| Default `allowReset = false;` | yes | yes | yes | yes | yes | not applicable |
+| English default, optional Czech | yes | yes | yes | yes | yes | yes |
 
-Tabulka popisuje rozhraní, nikoli potvrzení živého průchodu každou kombinací.
-Offline VM získá přístup ke správě systému přes `access` nebo `--ssh`,
-nikoli správu hypervizoru. `status` a `doctor` mohou také oznámit chybějící
-nastavení přístupu.
+This describes implemented interfaces, not proof of every live combination.
+Offline VMs can gain system management through `access` or `--ssh`, not
+hypervisor management. `status` and `doctor` may explain missing access settings.
 
-## Pravidla společného chování
+## Shared behavior
 
-- Nové deklarace používají společný generátor. Kapacita, síť, konfigurace,
-  metoda a oprávnění mají stejný význam pro všechny backendy.
-- Výchozí metoda VM je `image`; `iso` je rovnocenná podporovaná volba.
-  `--offline` je nezávislé na metodě.
-- Přímé balíčky nástrojů mají stejnou sadu operací. Reset lze sestavit
-  samostatně bez systému a média; oprávnění ani kontroly se tím neobcházejí.
-- Manifest médií rozlišuje `imagePath` a `isoPath`, nepoužité pole je `null`.
-- Data patří na stdout, diagnostika na stderr. Zachovává se také stderr
-  úspěšných podprocesů, bez překladu a dodatečného označení.
-- Doplňování vychází z aktuálních místních deklarací a dostupných operací,
-  bez cache výsledků, sestavení systému nebo dotazů na hostitele.
-- Konkrétní deklarace VM jsou místní data a v Gitu se nesledují.
-  Spouštěč a export používají `path:` a zahrnují je i bez `git add`.
+- New declarations use one generator. Resources, networking, configuration,
+  methods and permissions have the same meaning on every backend.
+- VM default is `image`; `iso` is an equally supported choice.
+  `--offline` is independent of the method.
+- Direct tool packages provide the same operations. Reset builds separately
+  without systems/media, without bypassing permissions or verification.
+- Media manifests distinguish `imagePath` and `isoPath`; the unused field is `null`.
+- Data goes to stdout and diagnostics to stderr. Successful child stderr is
+  retained without translation or added prefixes.
+- English source messages use a common Czech catalogue. Language never changes
+  JSON schemas, identity checks or technical operations.
+- Completion reads fresh local declarations and available operations, without
+  cached results, system builds or host queries.
+- Concrete declarations are local, ignored data. Launchers and exports use
+  `path:` and include them without `git add`.
 
-## Záměrné rozdíly
+## Intentional differences
 
-RPi má vlastní obnovu ze SD. Libvirt podporuje místní `qemu:///system`;
-podporované systémy a transporty ostatních hostitelů určuje jejich adaptér.
-Formát disku, řadič, guest agent a úložiště odpovídají konkrétnímu hypervizoru.
+RPi recovers from SD. Libvirt supports local `qemu:///system`;
+other adapters define their supported host operating systems and transports.
+Disk formats, controllers, agents and storage match each hypervisor.
 
-Hyper-V uchovává v owner záznamu pole `isoSha256` i pro hotový disk.
-Je to uložená identita média; význam manifestových `imagePath` a `isoPath`
-ani přenosového `mediaBytes` tím není změněn.
+Hyper-V retains owner field `isoSha256` for prebuilt disks as well.
+It identifies stored media and does not change manifest `imagePath`,
+`isoPath` or transport `mediaBytes` semantics.
 
-Ruční import nemá značky automatické správy a veřejný reset jej nepřebírá.
-Testovací runner u HAND VMware ověřuje vlastní evidenci importu a používá
-interní úklid. Online spravované VM uklízí přes veřejný reset.
+Manual imports do not carry automatic-management markers and public reset
+does not adopt them. The HAND VMware runner verifies its own import evidence
+and uses internal cleanup. Online managed VMs use public reset.
 
-## Kontrola při změně
+Pure Nix evaluation errors and generated code comments remain English.
+External diagnostics preserve the originating tool's language.
 
-Projdi celou související cestu: deklarace, výchozí hodnoty, validaci,
-generátor, registr schopností, CLI a aliasy, adaptéry, export, nápovědu
-a doplňování. Porovnej všech pět VM backendů, RPi a příslušné online/offline,
-image/ISO i hostitelské varianty.
+## Review changes
 
-Rozliš implementaci, izolovaný test, sestavení a živé ověření.
-Jeden úspěšný test nepotvrzuje ostatní platformy nebo všechny ochrany resetu.
-Přehled regresních kontrol a živých scénářů je v [testovacím postupu](test-plan.md).
+Follow declarations, defaults, validation, scaffolding, capabilities, CLI/aliases,
+adapters, export, help and completion. Compare five VM backends, RPi and the
+applicable online/offline, image/ISO and host variants.
+
+Separate implementation, isolated tests, builds and live verification.
+One passing test does not prove other platforms or every reset protection.
+See the [test guide](test-plan.md) for regression and live scenarios.

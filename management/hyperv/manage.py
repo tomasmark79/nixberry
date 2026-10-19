@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kontrolované vytvoření a instalace vyhrazené Hyper-V VM přes Windows SSH."""
+"Safely create and install a dedicated Hyper-V VM over Windows SSH."
 
 from messages import _, ArgumentParser, info, success, localized_script, shell_script, forward_stderr, error as report_error
 
@@ -34,9 +34,9 @@ def choose_address(addresses, host):
             continue
         if address.version == 4 and any(address in ipaddress.ip_network(network)
                 for network in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")):
-            require(str(address) not in ("192.168.79.1", host), _('Nepovolená adresa hosta.'))
+            require(str(address) not in ("192.168.79.1", host), _("Disallowed guest address."))
             candidates.add(str(address))
-    require(len(candidates) <= 1, _('VM má více možných IPv4 adres.'))
+    require(len(candidates) <= 1, _("The VM has multiple possible IPv4 addresses."))
     return next(iter(candidates), None)
 
 
@@ -69,7 +69,7 @@ class Manager:
         return self.spec["uuid"] if "uuid" in self.spec else self.spec["ownerId"]
 
     def remember_host_key(self):
-        # Klíč instalátoru se nepřenáší; ukládáme pouze ověřený cílový systém.
+        # Never retain the installer key; store only the verified target system key.
         root = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
         destination = root / "nixberry/portable" / self.key_identity() / "known_hosts"
         destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -86,9 +86,9 @@ class Manager:
         self.bootstrap = api["powershell_command"]()
         self.frame_input = api["powershell_input"]
         self.state = Path(state)
-        require(self.method in ("image", "iso"), _('Metoda nasazení musí být iso nebo image.'))
+        require(self.method in ("image", "iso"), _("Deployment method must be iso or image."))
         media = manifest.get("imagePath" if self.method == "image" else "isoPath")
-        require(isinstance(media, str) and bool(media), _('Chybí cesta k médiu zvolené metody nasazení.'))
+        require(isinstance(media, str) and bool(media), _("The media path for the selected deployment method is missing."))
         self.media_path = Path(media)
         digest = hashlib.sha256()
         with self.media_path.open("rb") as source:
@@ -107,7 +107,7 @@ class Manager:
             ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15", "--", self.host, self.bootstrap],
             input=self.frame_input(script), text=True, encoding="utf-8", capture_output=True, timeout=90,
         )
-        require(result.returncode == 0, (result.stderr.strip() or _('Operace na Windows selhala.')))
+        require(result.returncode == 0, (result.stderr.strip() or _("The Windows operation failed.")))
         forward_stderr(result.stderr)
         return json.loads(result.stdout.lstrip("\ufeff"))
 
@@ -128,26 +128,26 @@ class Manager:
         plan = self.remote("plan")
         print(json.dumps(plan, ensure_ascii=False, indent=2), flush=True)
         if not apply:
-            info(_('Plán ověřený. Metoda {method}; bez přenosu média, vytvoření disku a VM.'), method=self.method)
+            info(_("Plan verified. Method {method}; no media transfer, disk creation or VM creation."), method=self.method)
             return
         token = uuid.uuid4().hex
         upload = self.remote("prepare", token=token)
         if not upload["cached"]:
             destination = self.host + ":" + upload["uploadPath"].replace("\\", "/")
-            info(_('Přenáším {bytes} bajtů média na Windows; SHA256={sha256}'), bytes=self.media_bytes, sha256=self.sha256)
+            info(_("Transferring {bytes} media bytes to Windows; SHA256={sha256}"), bytes=self.media_bytes, sha256=self.sha256)
             result = subprocess.run(["scp", "-q", "-o", "BatchMode=yes", "--",
                                      str(self.media_path), destination], capture_output=True, text=True, timeout=1200)
-            require(result.returncode == 0, (result.stderr or _('Přenos média selhal.')))
+            require(result.returncode == 0, (result.stderr or _("Media transfer failed.")))
             forward_stderr(result.stderr)
         snapshot = self.remote("create", token=token)
         if self.method == "iso":
-            info(_('VM vytvořená a spuštěná z ISO: {value1}'), value1=json.dumps(snapshot))
+            info(_("VM created and booted from ISO: {value1}"), value1=json.dumps(snapshot))
         else:
-            info(_('VM vytvořená s hotovým diskem; zatím není spuštěná.'))
+            info(_("VM created with a prebuilt disk; it is not running yet."))
 
     def wait_guest(self, *, installed=False):
         deadline = time.monotonic() + 240
-        last_message = _("VM ještě nemá IP adresu.")
+        last_message = _("The VM has no IP address yet.")
         while time.monotonic() < deadline:
             snapshot = self.remote("status")
             address = choose_address(snapshot["ips"], self.spec["sshHost"])
@@ -159,55 +159,55 @@ class Manager:
                     command = "test \"$(hostname)\" = nixberry-installer"
                 result = self.guest(address, command, installed=installed)
                 if result.returncode == 0:
-                    info(_('VM {value1}; IP {address}; SSH dostupné.'), value1=snapshot['id'], address=address)
+                    info(_("VM {value1}; IP {address}; SSH available."), value1=snapshot['id'], address=address)
                     return snapshot, address
-                last_message = (result.stderr or _("SSH ještě není dostupné.")).strip()[-500:]
+                last_message = (result.stderr or _("SSH is not available yet.")).strip()[-500:]
             time.sleep(4)
-        raise RuntimeError(_('Čekání na hosta vypršelo: {last_message}').format(last_message=last_message))
+        raise RuntimeError(_("Timed out waiting for the guest: {last_message}").format(last_message=last_message))
 
     def install(self, apply):
         if self.method == "image":
             self.remote("status")
             if not apply:
-                info(_('Metoda image: install spustí a ověří hotový systém; disk se neformátuje.'))
+                info(_("Image method: install starts and verifies the prebuilt system; the disk is not formatted."))
                 return
             self.remote("start-disk")
             snapshot, address = self.wait_guest(installed=True)
             result = self.guest(address, installed_check(snapshot, self.spec), installed=True, capture=False)
-            require(result.returncode == 0, _('Kontrola startu z VHDX selhala.'))
+            require(result.returncode == 0, _("Boot verification from VHDX failed."))
             self.remember_host_key()
-            success(_('Start hotového systému z disku ověřený.'))
+            success(_("Boot of the prebuilt system from disk verified."))
             return
         snapshot, address = self.wait_guest()
-        require(snapshot["dvd"] == [snapshot["isoPath"]], _('VM nepoužívá očekávané ISO.'))
+        require(snapshot["dvd"] == [snapshot["isoPath"]], _("The VM is not using the expected ISO."))
         arguments = ["bash", "-s", "--", "apply" if apply else "dry-run",
                      snapshot["biosGuid"].lower(), self.spec["systemPath"], self.spec["diskoPath"],
                      str(self.spec["diskGiB"] * 1024**3)]
         result = self.guest(address, shlex.join(arguments),
                             input_text=shell_script(os.environ["NIXBERRY_HYPERV_GUEST"]),
                             capture=False, timeout=1800)
-        require(result.returncode == 0, _('Kontrola nebo instalace hosta selhala.'))
+        require(result.returncode == 0, _("Guest check or installation failed."))
         if not apply:
             return
         result = self.guest(address, "sync; systemctl poweroff --no-block")
-        require(result.returncode in (0, 255), (result.stderr or _('Vypnutí hosta selhalo.')))
+        require(result.returncode in (0, 255), (result.stderr or _("Guest shutdown failed.")))
         deadline = time.monotonic() + 90
         while self.remote("status")["state"] != "Off":
-            require(time.monotonic() < deadline, _('VM se korektně nevypnula.'))
+            require(time.monotonic() < deadline, _("The VM did not shut down gracefully."))
             time.sleep(3)
-        info(_('VM vypnutá. Odpojuji ISO a nastavuji start z VHDX.'))
+        info(_("VM powered off. Detaching the ISO and configuring boot from VHDX."))
         self.remote("boot-disk")
         snapshot, address = self.wait_guest(installed=True)
-        require(snapshot["dvd"] == [None] or snapshot["dvd"] == [""], _('ISO zůstalo připojené.'))
+        require(snapshot["dvd"] == [None] or snapshot["dvd"] == [""], _("The ISO is still attached."))
         check = installed_check(snapshot, self.spec)
         result = self.guest(address, check, installed=True, capture=False)
-        require(result.returncode == 0, _('Kontrola startu z VHDX selhala.'))
+        require(result.returncode == 0, _("Boot verification from VHDX failed."))
         self.remember_host_key()
-        success(_('Instalace a start z VHDX ověřené. VM zůstává běžet.'))
+        success(_("Installation and boot from VHDX verified. The VM remains running."))
 
 
 def main():
-    parser = ArgumentParser(description=_('Kontrolované vytvoření a instalace vyhrazené Hyper-V VM přes Windows SSH.'))
+    parser = ArgumentParser(description=_("Safely create and install a dedicated Hyper-V VM over Windows SSH."))
     parser.add_argument("mode", choices=("create", "install", "provision"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--apply", action="store_true")
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     try:
         main()
     except subprocess.TimeoutExpired:
-        report_error(_('Operace Hyper-V překročila časový limit. Před opakováním zkontroluj status a probe cíle.'))
+        report_error(_("The Hyper-V operation timed out. Check the target's status and probe before retrying."))
         raise SystemExit(1)
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         report_error("{error}", error=error)

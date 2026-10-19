@@ -1,4 +1,4 @@
-# Hotový disk pro přenos a první start bez instalačního ISO nebo internetu.
+# Prebuilt disk for transfer and first boot without installation ISO or internet.
 { ... }:
 {
   disko.imageBuilder.imageFormat = "qcow2";

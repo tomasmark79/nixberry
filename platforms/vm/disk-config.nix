@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  # Profil hypervizoru volí konkrétní virtuální disk. Instalace jeho obsah smaže.
+  # The hypervisor profile selects the virtual disk; installation erases its content.
   disko.devices.disk.system = {
     type = "disk";
     device = lib.mkDefault "/dev/vda";

@@ -1,107 +1,99 @@
-# Obnova Raspberry Pi 5 ze SD
+# Raspberry Pi 5 recovery from SD
 
-[← Hlavní návod](../README.md) · [Offline balíček](offline.md)
+[← Main guide](../README.md) · [Offline bundle](offline.md)
 
-Postup obnovuje SSD z plné SD. Samotný start SD nic nemaže.
-Příkazy mají vždy uvedeno, zda běží na správcovském počítači, nebo na RPi.
+This procedure restores an SSD from a full SD image. Booting the card alone
+erases nothing. Steps distinguish the management computer from the RPi.
 
-<a id="obnova-rpi-1-ověřit-deklaraci-a-připravit-sd--nixon"></a>
+## 1. Check the declaration and prepare SD — management computer
 
-## 1. Ověřit deklaraci a připravit SD — správcovský počítač
+Copy the [RPi template](../management/examples/rpi.nix) into
+`management/rpi/targets/rpi-demo.nix`. Replace its fictional identifiers with
+the actual RPi and SSD values, and prepare your own `admin.pub`.
 
-Nejprve zkopíruj [šablonu RPi](../management/examples/rpi.nix) do
-`management/rpi/targets/rpi-demo.nix`. Uprav ji podle skutečného zařízení;
-šablona obsahuje smyšlené identifikátory. Připrav také vlastní `admin.pub`.
-
-Název souboru bez `.nix` určuje cíl příkazů, například `nixberry show rpi-demo`.
-`hostName` určuje hostname systému. Při jeho změně zachovej `bootLabel` a
-`rootLabel` podle existujících oddílů; bez výslovného nastavení se odvozují
-z `hostName`. `rootLabel` má limit 16 znaků pro ext4. Běžný `update` oddíly
-nepřejmenovává. Jejich označení ověříš příkazem
+The filename without `.nix` determines the CLI target, for example
+`nixberry show rpi-demo`. `hostName` determines the system hostname.
+When changing it, preserve `bootLabel` and `rootLabel` for existing partitions;
+otherwise they default from `hostName`. ext4 limits `rootLabel` to 16 characters.
+Normal `update` does not rename partitions. Inspect them with
 `nixberry ssh rpi-demo -- lsblk -o NAME,FSTYPE,LABEL,PARTLABEL,MOUNTPOINTS`.
 
-| Údaj | Příklad; dosaď skutečné hodnoty |
+| Field | Example; replace with actual values |
 | --- | --- |
 | RPi serial | `0000000000000000` |
 | LAN MAC | `02:00:00:00:00:20` |
-| Adresa systému na SSD | `192.168.50.20/24` |
+| SSD system address | `192.168.50.20/24` |
 | SSD serial | `EXAMPLE_SERIAL` |
-| SSD by-id | `/dev/disk/by-id/ata-EXAMPLE_EXAMPLE_SERIAL` |
+| SSD by-id | `/dev/disk/by-id/ata-EXAMPLE_SERIAL` |
 
-Jiné RPi nebo SSD potřebuje vlastní deklaraci a nové médium.
-Firmware musí umožňovat USB start; EEPROM nástroj nenastavuje.
+Another RPi or SSD needs its own declaration and newly built media.
+Firmware must permit USB boot; this tool does not configure EEPROM.
 
-Exportuj současný recept z kořene projektu:
+Export from the project root:
 
 ```sh
-nixberry export rpi-demo --output ~/nixberry-rpi-offline
+nixberry export rpi-demo --output ~/rpi-demo-offline
 ```
 
-Velikost rozbaleného obrazu se mění s konfigurací. Zjisti ji pomocí `zstd -l`
-a porovnej s kapacitou karty z `lsblk -b`.
+Uncompressed image size varies. Inspect with `zstd -l` and compare with
+card capacity from `lsblk -b`.
 
-Zápis smaže kartu. Identifikuj ji podle kapacity, čtečky a oddílů,
-odpoj její oddíly a zapiš **celý rozbalený obraz**. Dokonči `fsync`,
-vyprázdni diskovou cache a porovnej všechny zapsané bajty s obrazem;
-potom kartu bezpečně odpoj. Původní funkční instalační SD zachovej.
-Pevný příklad typu `/dev/sda` není bezpečný výběr zařízení.
+Writing erases the selected card. Identify it by capacity, reader and partitions,
+unmount its partitions and write the **entire uncompressed image**. Complete
+`fsync`, flush disk caches and compare all written bytes against the image
+before safely removing the card. Preserve the previous working installer SD.
+A fixed example such as `/dev/sda` is not safe device identification.
 
-<a id="obnova-rpi-2-spustit-sd-a-obnovit-ssd--rpi"></a>
+## 2. Boot SD and restore SSD — RPi
 
-## 2. Spustit SD a obnovit SSD — RPi
+Power off the RPi, insert SD and boot. If firmware prefers SSD, leave SSD
+disconnected during boot and connect it inside the installation environment.
+`findmnt /` must show SD, usually `/dev/mmcblk0p2`.
 
-Vypni RPi, vlož SD a zapni ho. Pokud firmware preferuje SSD, nech SSD
-při startu odpojené a připoj ho až v instalačním prostředí.
-`findmnt /` musí ukazovat SD, obvykle `/dev/mmcblk0p2`.
-
-Na konzoli **RPi běžícího ze SD**:
+On the console of the **RPi booted from SD**:
 
 ```sh
 sudo nixberry-install-local --target rpi-demo --dry-run --erase-existing
 sudo nixberry-install-local --target rpi-demo --apply --erase-existing
 ```
 
-Nejprve musí projít první příkaz. Druhý **smaže ověřený SSD** a nainstaluje
-systém z místního store bez internetu. `--target` je povinný i přímo na RPi.
-Kontroluje se model, serial, MAC, SSD, kapacita, manifest a připojené oddíly.
-Připojený systémový SSD nelze přepsat; `--erase-existing` ochranu neobchází.
+The first command must pass before the second. The second **erases the verified
+SSD** and installs from the local store without internet.
+`--target` is mandatory even on the RPi. Checks cover model, serial, MAC, SSD,
+capacity, manifest and mounted partitions. A mounted system SSD cannot be
+overwritten; `--erase-existing` does not bypass this protection.
 
-<a id="obnova-rpi-alternativa-řídit-stejnou-obnovu-z-nixonu-přes-ssh"></a>
+### Alternative: control the same recovery over SSH
 
-### Alternativa: řídit stejnou obnovu ze správcovského počítače přes SSH
-
-Zjisti aktuální DHCP adresu SD a dosaď ji za `IP_SD`:
+Read the SD environment's current DHCP address and substitute `SD_IP`:
 
 ```sh
-nixberry plan rpi-demo --address IP_SD --erase-existing
-nixberry reproduce rpi-demo --address IP_SD --erase-existing --apply
+nixberry plan rpi-demo --address SD_IP --erase-existing
+nixberry reproduce rpi-demo --address SD_IP --erase-existing --apply
 ```
 
-Používají se stejné kontroly i instalační skript.
-Adresa SD nemusí být budoucí adresa systému na SSD.
+This uses the same checks and installer. The SD address need not equal the
+future SSD system address.
 
-<a id="obnova-rpi-3-dokončit-startem-z-ssd"></a>
+## 3. Finish by booting from SSD
 
-## 3. Dokončit startem z SSD
-
-Instalátor automaticky nerestartuje. Na RPi spusť `sudo poweroff`,
-po vypnutí vyjmi SD a zapni ho s připojeným SSD. **Na správcovském počítači** ověř:
+The installer does not reboot automatically. Run `sudo poweroff` on the RPi,
+remove SD after shutdown and power on with SSD connected.
+On the **management computer**:
 
 ```sh
 nixberry verify rpi-demo
 ```
 
-Přihlášení a nové SSH host klíče řeší [provozní návod](../README.md#potize).
-Heslo konzole instalovaného systému není nastavené.
-Úspěšný výsledek zahrnuje systém z receptu, kořen na správném SSD
-a aktivní SSH a networkd bez selhaných jednotek.
+See [troubleshooting](../README.md#troubleshooting) for login and new SSH keys.
+The installed system has no configured console password.
+Success includes the declared system, root on the correct SSD, active SSH and
+networkd, and no failed units.
 
-<a id="obnova-rpi-technické-poznámky"></a>
+## Technical notes
 
-## Technické poznámky
-
-Instalace používá připnuté disko a `nixos-install --system`.
-`nixberry-rpi-install --stage` pouze přenáší store bez změny oddílů.
-Menší `nixberry-rpi-network-installer` vyžaduje přenos cílového store.
-Pro místní offline obnovu použij plnou SD. Rozsah kontrol a oddělení
-sestavení od živého startu popisuje [testovací postup](test-plan.md).
+Installation uses pinned disko and `nixos-install --system`.
+`nixberry-rpi-install --stage` transfers the store without changing partitions.
+The smaller `nixberry-rpi-network-installer` needs a target store transfer;
+use the full SD for local offline recovery.
+See [testing](test-plan.md) for content checks versus verified live boot.

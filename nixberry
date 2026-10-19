@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Přímé ovládání receptu funguje i při spuštění z jiného pracovního adresáře.
+# Direct recipe management works from any working directory.
 set -euo pipefail
 launcher_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 source "$launcher_dir/management/deployment/shell-path.sh"

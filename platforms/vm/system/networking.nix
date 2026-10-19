@@ -5,7 +5,7 @@ let
 in
 {
   options.nixberry.vm.network = lib.mkOption {
-    description = "Síť konkrétní VM nezávislá na způsobu doručení obrazu.";
+    description = "Per-VM networking independent of image delivery.";
     default = { };
     type = lib.types.submodule {
       options = {
@@ -15,22 +15,22 @@ in
             "static"
           ];
           default = "dhcp";
-          description = "Automatická nebo pevná IPv4 adresa.";
+          description = "Automatic or static IPv4 address.";
         };
         address = lib.mkOption {
           type = lib.types.str;
           default = "";
-          description = "Pevná IPv4 adresa včetně prefixu, například 10.0.1.19/24.";
+          description = "Static IPv4 address including prefix, for example 10.0.1.19/24.";
         };
         gateway = lib.mkOption {
           type = lib.types.str;
           default = "";
-          description = "Výchozí IPv4 brána.";
+          description = "Default IPv4 gateway.";
         };
         dns = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
-          description = "Adresy DNS serverů pro pevnou konfiguraci.";
+          description = "DNS server addresses for static configuration.";
         };
       };
     };
@@ -40,7 +40,7 @@ in
     assertions = [
       {
         assertion = !static || (network.address != "" && network.gateway != "" && network.dns != [ ]);
-        message = "Pevná síť VM vyžaduje address s prefixem, gateway a neprázdné dns.";
+        message = "Static VM networking requires address with prefix, gateway and nonempty dns.";
       }
     ];
     networking.useDHCP = false;
@@ -49,7 +49,7 @@ in
     systemd.network = {
       enable = true;
       networks."10-lan" = {
-        # Jedna síťová karta; MAC volí provozovatel při vytvoření VM.
+        # One network adapter; the operator selects its MAC during VM creation.
         matchConfig.Name = "en* eth*";
         networkConfig = {
           DHCP = if static then "no" else "ipv4";

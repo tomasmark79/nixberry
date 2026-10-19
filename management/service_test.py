@@ -1,4 +1,4 @@
-"""Zkouška skutečného kontrolního shellu s věrnou sémantikou systemctl is-active."""
+"""Test the actual check shell with faithful systemctl is-active semantics."""
 
 import os
 from pathlib import Path
@@ -7,7 +7,7 @@ import tempfile
 
 
 def assert_services(testcase, script, services):
-    # Izolujeme kontroly služeb; identitu a disky ověřují samostatné testy.
+    # Isolate service checks; separate tests verify identity and disks.
     setup = """
 test() { return 0; }
 mountpoint() { return 1; }

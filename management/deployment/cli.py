@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Společné ovládání deklarovaných RPi a VM: správa, nasazení a offline export."""
+"Unified management of declared RPi and VMs: operations, deployment and offline export."
 
 import argparse
 from datetime import datetime, timezone
@@ -29,11 +29,11 @@ def table(headers, rows):
 
 
 def status_printer(registry, names):
-    """Pevné šířky známých sloupců dovolí vypisovat řádky hned po odpovědi."""
-    labels = {"running": _("běží"), "shut off": _("vypnutá"), "absent": _("nevytvořená"),
-              "error": _("chyba"), "unconfigured": _("správa nenastavená")}
-    headers = [_("Cíl"), _("Hypervizor"), _("Stav"), _("Adresa serveru")]
-    hosts = {name: registry[name]["host"] if registry[name]["capabilities"]["hypervisor"] else _("nespravovaný")
+    """Fixed widths for known columns allow rows to appear as responses arrive."""
+    labels = {"running": _("running"), "shut off": _("stopped"), "absent": _("absent"),
+              "error": _("error"), "unconfigured": _("management not configured")}
+    headers = [_("Target"), _("Hypervisor"), _("State"), _("Server address")]
+    hosts = {name: registry[name]["host"] if registry[name]["capabilities"]["hypervisor"] else _("unmanaged")
              for name in names}
     columns = [names, list(hosts.values()), list(labels.values())]
     widths = [max([len(headers[index]), *(len(value) for value in column)]) for index, column in enumerate(columns)]
@@ -49,7 +49,7 @@ def status_printer(registry, names):
 
 def size(value):
     if value is None:
-        return _("neznámá")
+        return _("unknown")
     for unit in ("B", "KiB", "MiB", "GiB", "TiB"):
         if value < 1024 or unit == "TiB":
             return f"{value:.1f} {unit}"
@@ -59,23 +59,23 @@ def size(value):
 def cleanup_table(report):
     info("{note}", note=report["note"])
     for name, result in report["targets"].items():
-        print(_('\nGenerace: {name}').format(name=name))
+        print(_("\nGeneration: {name}").format(name=name))
         if "error" in result:
             report_error("{error}", error=result["error"])
             continue
-        table([_("Generace"), _("Vytvořeno (UTC)"), _("Velikost closure"), _("Posouzení"), _("Ochrana")], [
+        table([_("Generation"), _("Created (UTC)"), _("Closure size"), _("Assessment"), _("Protection")], [
             [row["generation"], datetime.fromtimestamp(row["timestamp"], timezone.utc).strftime("%Y-%m-%d %H:%M"),
              size(row["closureBytes"]), row["classification"], ", ".join(row["protectedBy"]) or "—"]
             for row in result["generations"]])
         info("{note}", note=result["note"])
         if result.get("sizeError"):
-            warning(_("Nelze zjistit velikosti: {error}"), error=result["sizeError"])
+            warning(_("Cannot determine sizes: {error}"), error=result["sizeError"])
     for name, result in report["hosts"].items():
-        print(_('\nHostitel: {name}').format(name=name))
+        print(_("\nHost: {name}").format(name=name))
         if "error" in result:
             report_error("{error}", error=result["error"])
             continue
-        table([_("VM"), _("Stav"), _("Alokace"), _("Posouzení")], [
+        table([_("VM"), _("State"), _("Allocation"), _("Assessment")], [
             [vm.get("name", vm.get("path", "—")), vm.get("state", "unknown"),
              size(vm.get("allocatedBytes")), vm.get("classification", "unknown")]
             for vm in result.get("machines", [])])
@@ -85,14 +85,14 @@ def cleanup_table(report):
         for error in result.get("errors", []):
             report_error("{error}", error=error)
     if report["artifacts"]["images"]:
-        print(_('\nObrazy v zadaných adresářích:'))
+        print(_("\nImages in the selected directories:"))
         image_table(report["artifacts"]["images"])
     for error in report["artifacts"]["errors"]:
         report_error("{error}", error=error)
 
 
 def image_table(images):
-    table([_("Obraz"), _("Alokace"), _("Posouzení"), _("Ochrana")], [
+    table([_("Image"), _("Allocation"), _("Assessment"), _("Protection")], [
         [item["path"], size(item.get("allocatedBytes")), item.get("classification", "unknown"),
          ", ".join(item.get("protectedBy", [])) or "—"] for item in images])
 
@@ -111,76 +111,7 @@ def operations(target):
     return result
 
 
-HELP_COMMANDS = """Příkazy pro běžnou správu:
-  list                         Místní evidence cílů a dostupných možností správy.
-  show CÍL                     Deklarace, kapacita, síť a dostupné operace cíle.
-  status [CÍL]                 Živý stav; hostitelé se dotazují souběžně, řádky přibývají.
-  ssh CÍL [-- PŘÍKAZ ...]       Přihlášení nebo spuštění příkazu na serveru.
-  verify CÍL                   Shoda běžícího systému s receptem, disk a služby.
-  doctor [CÍL]                 Diagnostika jednoho nebo všech cílů.
-  probe CÍL                    Podrobný průzkum platformy pro řešení problémů.
-
-Aktualizace a porovnání:
-  update CÍL                   Plán aktualizace; s --apply sestaví a aktivuje systém.
-  diff CÍL                     Běžící systém proti aktuálnímu receptu PŘED aktualizací.
-  diffg CÍL                    Dvě nejvyšší dochované generace na serveru.
-                               diff sestavuje místně; diffg běží na serveru.
-
-Nové deklarace VM (zapisují místní soubor, nevytvářejí VM):
-  new-libvirt-vm JMÉNO          Deklarace VM pro libvirt.
-  new-hyperv-vm JMÉNO           Deklarace VM pro Hyper-V.
-  new-proxmox-vm JMÉNO          Deklarace Proxmox VM včetně upravitelné sítě.
-  new-virtualbox-vm JMÉNO       Deklarace VM pro VirtualBox.
-  new-vmware-vm JMÉNO           Deklarace VM pro VMware Workstation.
-                               --host vybírá hostitele; jediný dostupný se vybere automaticky.
-                               --offline připraví kterýkoli backend bez hypervizoru.
-                               --configuration JMÉNO vybírá konfiguraci serveru; výchozí je default.
-                               --dry-run soubor nezapíše. Názvy new-* bez -vm jsou aliasy.
-
-Nasazení, obnova a offline přenos (podle možností platformy):
-  plan CÍL                     Plán vytvoření VM nebo obnovy RPi bez zápisu.
-  reproduce CÍL                Úplné nasazení/obnova; provedení vyžaduje --apply.
-  create CÍL                   Vytvoření VM; provedení vyžaduje --apply.
-  install CÍL                  Dokončení nasazení podle metody; vyžaduje --apply.
-  provision CÍL                Vytvoření a instalace; provedení vyžaduje --apply.
-  reset CÍL                    Odstranění povolené VM na všech pěti backendech.
-                               Vyžaduje allowReset = true v instanci; bez --apply jen ověřuje plán.
-  export CÍL --output ADRESÁŘ   Offline balíček s diskem nebo ISO a receptem do nového adresáře.
-  cleanup [CÍL]                Náhled kandidátů na úklid, nic nemaže.
-                               --artifact-root ADRESÁŘ přidá kontrolu obrazů.
-
-Použití a režimy:
-  Bez příkazu se vypíše list. CÍL je jméno deklarace, nikoli IP adresa.
-  Dostupné operace konkrétního cíle ukáže show CÍL.
-  update/create/install/provision/reproduce/reset bez --apply pouze plánují.
-  new-* a export běžně zapisují místně; --dry-run zobrazí plán bez zápisu.
-  diff/diffg mohou číst server a diff sestavuje recept; --dry-run vypíše jen plán.
-  --ssh root@HOST:PORT přepíše SSH přístup k offline VM libovolného backendu.
-  --method image je výchozí pro všechny VM: import hotového disku a ověření startu.
-  --method iso instaluje na prázdný disk, potom ISO odpojí a ověří start systému.
-  Volbu lze uložit jako deploymentMethod v deklaraci; --method ji přepíše.
-  Platí pro new-*, show, plan, create, install, provision, reproduce a export.
-  --offline vybírá přípravu bez hypervizoru nezávisle na metodě. RPi používá SD.
-  diff ukáže připravené změny. Po aktualizaci je obvykle prázdný; použij diffg.
-
-Příklady:
-  nixberry list
-  nixberry show vm-demo-libvirt
-  nixberry diff vm-demo-libvirt
-  nixberry update vm-demo-libvirt --apply
-  nixberry diffg vm-demo-libvirt
-  nixberry ssh vm-demo-libvirt -- uname -r
-  nixberry new-proxmox-vm vm-demo-proxmox --host HOSTITEL
-  nixberry plan vm-demo-proxmox
-  nixberry reproduce vm-demo-proxmox --apply
-  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline
-  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline
-  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply
-  nixberry plan nixberry --address 192.168.50.20
-
-Podrobný provozní návod: README.md v kořeni receptu nixberry.
-Úplná reference příkazů a voleb: docs/cli.md.
-"""
+HELP_COMMANDS = "Everyday management:\n  list                         Local target inventory and available management capabilities.\n  show TARGET                  Target declaration, capacity, network and available operations.\n  status [TARGET]              Live status; hosts are queried concurrently and rows appear as ready.\n  ssh TARGET [-- COMMAND ...]  Log in or run a command on the server.\n  verify TARGET                Check the running system against the recipe, disk and services.\n  doctor [TARGET]              Diagnose one or all targets.\n  probe TARGET                 Detailed platform discovery for troubleshooting.\n\nUpdates and comparisons:\n  update TARGET                Update plan; --apply builds and activates the system.\n  diff TARGET                  Running system against the current recipe BEFORE an update.\n  diffg TARGET                 The two highest retained server generations.\n                               diff builds locally; diffg runs on the server.\n\nNew VM declarations (write a local file, do not create a VM):\n  new-libvirt-vm NAME          VM declaration for QEMU/KVM (libvirt).\n  new-hyperv-vm NAME           VM declaration for Hyper-V.\n  new-proxmox-vm NAME          Proxmox VE VM declaration with editable networking.\n  new-virtualbox-vm NAME       VM declaration for VirtualBox.\n  new-vmware-vm NAME           VM declaration for VMware Workstation.\n                               --host selects a host; a sole matching host is selected automatically.\n                               --offline prepares any backend without a hypervisor.\n                               --configuration NAME selects a server configuration; default is default.\n                               --dry-run does not write the file. new-* names without -vm are aliases.\n\nDeployment, recovery and offline transfer (subject to platform capabilities):\n  plan TARGET                  Read-only VM creation or RPi recovery plan.\n  reproduce TARGET             Complete deployment/recovery; execution requires --apply.\n  create TARGET                Create a VM; execution requires --apply.\n  install TARGET               Complete the selected deployment method; requires --apply.\n  provision TARGET             Create and install; execution requires --apply.\n  reset TARGET                 Remove an authorized VM on any of the five backends.\n                               Requires allowReset = true in the instance; without --apply, verifies only.\n  export TARGET --output DIR   Offline bundle with disk or ISO and recipe in a new directory.\n  cleanup [TARGET]             Preview cleanup candidates; deletes nothing.\n                               --artifact-root DIR adds image inspection.\n\nUsage and modes:\n  Without a command, list is shown. TARGET is a declaration name, not an IP address.\n  show TARGET lists the operations available for a particular target.\n  update/create/install/provision/reproduce/reset only plan without --apply.\n  new-* and export normally write locally; --dry-run shows a plan without writing.\n  diff/diffg may read the server and diff builds the recipe; --dry-run only shows the plan.\n  --ssh root@HOST:PORT overrides SSH access to an offline VM of any backend.\n  --method image is the default for all VMs: import a prebuilt disk and verify boot.\n  --method iso installs to a blank disk, detaches the ISO and verifies system boot.\n  Set deploymentMethod in a declaration for a persistent default; --method overrides it.\n  Applies to new-*, show, plan, create, install, provision, reproduce and export.\n  --offline prepares without a hypervisor, independently of the method. RPi uses SD.\n  diff shows pending changes. After an update it is usually empty; use diffg.\n\nExamples:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOST\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan rpi-demo --address 192.168.50.20\n\nDetailed operating guide: README.md in the NixBerry recipe root.\nComplete command and option reference: docs/cli.md.\n"
 
 
 def main(argv=None):
@@ -190,52 +121,52 @@ def main(argv=None):
         delimiter = argv.index("--")
         argv, remote_command = argv[:delimiter], argv[delimiter + 1:]
     parser = ArgumentParser(
-        prog="nixberry", description=_('Společné ovládání deklarovaných RPi a VM: správa, nasazení a offline export.'), epilog=_(HELP_COMMANDS),
+        prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."), epilog=_(HELP_COMMANDS),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version",
                         version="nixberry " + os.environ.get("NIXBERRY_VERSION", "development"))
-    parser.add_argument("action", metavar=_("PŘÍKAZ"), help=_('Příkaz z přehledu níže (výchozí: list)'), nargs="?", default="list",
+    parser.add_argument("action", metavar=_("COMMAND"), help=_("Command from the list below (default: list)"), nargs="?", default="list",
                         type=lambda value: value + "-vm" if value in ("new-libvirt", "new-hyperv", "new-proxmox", "new-virtualbox", "new-vmware") else value, choices=(
         "list", "show", "status", "ssh", "probe", "plan", "create", "install", "provision", "reset",
         "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup"))
-    parser.add_argument("target", metavar=_("CÍL"), nargs="?", help=_('Jméno existujícího cíle, u new-* nové jméno'))
-    parser.add_argument("--host", help=_('Hostitel hypervizoru pro new-*; pro správu VM přímé SSH root@HOST[:PORT]'))
-    parser.add_argument("--offline", action="store_true", help=_('Offline příprava libovolné VM bez hypervizoru; nelze kombinovat s --host'))
-    parser.add_argument("--configuration", help=_('Konfigurace serveru pro new-*; výchozí default, další názvy z configurations/'))
-    parser.add_argument("--method", choices=("iso", "image"), help=_('Metoda nasazení VM: instalace z ISO, nebo import hotového disku; přepíše deploymentMethod z deklarace'))
-    parser.add_argument("--ssh", help=_('Jednorázový SSH endpoint serveru root@HOST[:PORT]; přepíše access.host a access.port'))
-    parser.add_argument("--output", help=_('Nový adresář offline balíčku; relativní cesta se počítá od pracovního adresáře'))
-    parser.add_argument("--address", help=_('Aktuální IP instalační SD, pouze pro reprodukci RPi'))
-    parser.add_argument("--erase-existing", action="store_true", help=_('Zahrnout vymazání SSD při obnově RPi'))
-    parser.add_argument("--json", action="store_true", help=_('Strojový výstup pro inventuru, diagnostiku, verify a export'))
+    parser.add_argument("target", metavar=_("TARGET"), nargs="?", help=_("Existing target name, or a new name for new-*"))
+    parser.add_argument("--host", help=_("Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"))
+    parser.add_argument("--offline", action="store_true", help=_("Prepare any VM offline without a hypervisor; cannot be combined with --host"))
+    parser.add_argument("--configuration", help=_("Server configuration for new-*; defaults to default, other names from configurations/"))
+    parser.add_argument("--method", choices=("iso", "image"), help=_("VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"))
+    parser.add_argument("--ssh", help=_("One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"))
+    parser.add_argument("--output", help=_("New offline bundle directory; relative paths are resolved from the working directory"))
+    parser.add_argument("--address", help=_("Current installation SD address, only for RPi reproduction"))
+    parser.add_argument("--erase-existing", action="store_true", help=_("Include SSD erasure during RPi recovery"))
+    parser.add_argument("--json", action="store_true", help=_("Machine-readable output for inventory, diagnostics, verify and export"))
     parser.add_argument("--artifact-root", action="append", default=[],
-                        help=_('Adresář obrazů pro náhled cleanup; lze opakovat, odkazy se nepřecházejí'))
+                        help=_("Image directory for cleanup preview; repeatable, links are not followed"))
     modes = parser.add_mutually_exclusive_group()
-    modes.add_argument("--apply", action="store_true", help=_('Provést změny u update a operací nasazení/obnovy'))
-    modes.add_argument("--dry-run", action="store_true", help=_('Zobrazit plán bez zápisu; diff/diffg bez připojení a sestavení'))
+    modes.add_argument("--apply", action="store_true", help=_("Apply changes for update and deployment/recovery operations"))
+    modes.add_argument("--dry-run", action="store_true", help=_("Show the plan without writing; diff/diffg without connections or builds"))
     args = parser.parse_args(argv)
-    # Staré názvy zůstávají aliasy; adaptéry dál dostávají původní název backendu.
+    # Short names remain aliases; adapters keep the original backend identifier.
     if args.action.startswith("new-") and args.action.endswith("-vm"):
         args.action = args.action[:-3]
     if args.offline and (not args.action.startswith("new-") or args.host):
-        parser.error(_('--offline patří k new-*-vm bez --host.'))
+        parser.error(_("--offline applies to new-*-vm without --host."))
     if args.configuration is not None and not args.action.startswith("new-"):
-        parser.error(_('--configuration patří pouze k new-*-vm; u existujícího cíle uprav configuration v deklaraci.'))
+        parser.error(_("--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."))
     if args.method and not (args.action.startswith("new-") or args.action in ("show", "plan", "create", "install", "provision", "reproduce", "export")):
-        parser.error(_('--method patří k new-*, show, plan, create, install, provision, reproduce a export.'))
+        parser.error(_("--method applies to new-*, show, plan, create, install, provision, reproduce and export."))
     if remote_command and args.action != "ssh":
-        parser.error(_('Příkaz za -- je dostupný pouze pro ssh CÍL -- PŘÍKAZ.'))
+        parser.error(_("A command after -- is only available for ssh TARGET -- COMMAND."))
     registry = json.loads(Path(os.environ["NIXBERRY_DEPLOYMENT"]).read_text())
     if args.ssh and (args.host or args.action.startswith("new-")):
-        parser.error(_('--ssh patří ke správě serveru a nelze jej kombinovat s --host nebo new-*.'))
+        parser.error(_("--ssh applies to server management and cannot be combined with --host or new-*."))
     override = args.ssh or (args.host if not args.action.startswith("new-") else None)
     if override:
         if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg"):
-            parser.error(_('Přímé SSH podporuje update, ssh, verify, status, doctor, diff a diffg.'))
+            parser.error(_("Direct SSH supports update, ssh, verify, status, doctor, diff and diffg."))
         if (args.target not in registry or registry[args.target]["backend"] not in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware")
                 or not registry[args.target].get("offline")):
-            parser.error(_('Přímé SSH vyžaduje offline deklaraci VM bez správy hypervizoru.'))
+            parser.error(_("Direct SSH requires an offline VM declaration without hypervisor management."))
         try:
             direct = guest_connection(override)
         except ValueError as error:
@@ -249,16 +180,16 @@ def main(argv=None):
             parser.error(str(error))
     if (args.target in registry and args.action not in ("list", "show", "export", "status", "doctor")
             and not args.action.startswith("new-") and args.action not in registry[args.target]["operations"]):
-        parser.error(_('Operace není dostupná. Pro správu systému nastav access nebo použij --ssh root@HOST:PORT; ovládání hypervizoru vyžaduje deklarovaný host.'))
+        parser.error(_("Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."))
     if args.artifact_root and args.action != "cleanup":
-        parser.error(_('--artifact-root patří pouze k cleanup.'))
+        parser.error(_("--artifact-root only applies to cleanup."))
     if args.output and args.action != "export":
-        parser.error(_('--output patří pouze k export.'))
+        parser.error(_("--output only applies to export."))
     if args.action.startswith("new-"):
         if args.apply or args.json or args.address or args.erase_existing:
-            parser.error(_('new-* vytvoří pouze místní deklaraci; tyto volby nepřijímá.'))
+            parser.error(_("new-* only creates a local declaration; it does not accept these options."))
         if not args.target:
-            parser.error(_('Zadej jméno nového cíle: {value1} JMÉNO.').format(value1=args.action + "-vm"))
+            parser.error(_("Specify a new target name: {value1} NAME.").format(value1=args.action + "-vm"))
         hosts = json.loads(Path(os.environ["NIXBERRY_DEPLOYMENT_HOSTS"]).read_text())
         if args.action == "new-libvirt" and not args.offline:
             path, text = new_libvirt(os.environ.get("NIXBERRY_RECIPE", ""), hosts, registry,
@@ -270,32 +201,32 @@ def main(argv=None):
                                 **({"method": args.method} if args.method else {}),
                                 **({"configuration": args.configuration} if args.configuration is not None else {}))
         if args.dry_run:
-            info(_("Plán deklarace: {path}"), path=path)
+            info(_("Declaration plan: {path}"), path=path)
         else:
-            success(_("Vytvořena deklarace: {path}"), path=path)
+            success(_("Declaration created: {path}"), path=path)
             print(path)
-        info(_('Konfigurace serveru: {configuration}'), configuration=args.configuration or "default")
+        info(_("Server configuration: {configuration}"), configuration=args.configuration or "default")
         if args.dry_run:
             print(text)
-        info(_('Před sestavením zkontroluj network: DHCP, nebo mode = "static" s address, gateway a dns.'))
+        info(_("Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."))
         if args.offline:
-            info(_("Offline deklarace: před exportem uprav kapacitu a parametry nasazení v souboru."))
-            info(_("Další krok: {command}"), command=f"nixberry export {args.target} --output ~/{args.target}-offline")
+            info(_("Offline declaration: edit capacity and deployment parameters in the file before export."))
+            info(_("Next step: {command}"), command=f"nixberry export {args.target} --output ~/{args.target}-offline")
         else:
-            info(_("Další krok: {command}"), command=f"nixberry plan {args.target}")
-            info(_("Po kontrole: {command}"), command=f"nixberry reproduce {args.target} --apply")
+            info(_("Next step: {command}"), command=f"nixberry plan {args.target}")
+            info(_("After reviewing: {command}"), command=f"nixberry reproduce {args.target} --apply")
         return 0
     if (args.address or args.erase_existing) and not (
             args.action in ("plan", "reproduce") and args.target in registry
             and registry[args.target]["backend"] == "rpi"):
-        parser.error(_('--address a --erase-existing patří pouze k plan/reproduce cíle RPi.'))
+        parser.error(_("--address and --erase-existing only apply to plan/reproduce for RPi targets."))
     if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup"):
-        parser.error(_('--json je dostupné pro list, show, status, verify, export, doctor a cleanup.'))
+        parser.error(_("--json is available for list, show, status, verify, export, doctor and cleanup."))
     if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup") and args.apply:
-        parser.error(_('Tato operace nepřijímá --apply.'))
+        parser.error(_("This operation does not accept --apply."))
     if args.action in ("doctor", "cleanup"):
         if args.target and args.target not in registry:
-            parser.error(_('Neznámý cíl. Dostupné cíle: {value1}').format(value1=", ".join(sorted(registry))))
+            parser.error(_("Unknown target. Available targets: {value1}").format(value1=", ".join(sorted(registry))))
         names = [args.target] if args.target else sorted(registry)
         if args.action == "doctor":
             report = {}
@@ -307,7 +238,7 @@ def main(argv=None):
             if args.json:
                 print(json.dumps(report, ensure_ascii=False, indent=2))
             else:
-                table([_("Cíl"), _("Kontrola"), _("Výsledek"), _("Podrobnosti")], [
+                table([_("Target"), _("Check"), _("Result"), _("Details")], [
                     [name, check["name"], check["level"], check["message"] +
                      (" " + check["hint"] if "hint" in check else "")]
                     for name, result in report.items() for check in result["checks"]])
@@ -320,24 +251,24 @@ def main(argv=None):
         return int(failed(report))
     if args.action == "list":
         if args.target or args.apply or args.dry_run:
-            parser.error(_('list nepřijímá cíl ani režim zápisu.'))
+            parser.error(_("list does not accept a target or write mode."))
         if args.json:
             print(json.dumps({name: {key: value for key, value in target.items() if key != "commands"}
                               for name, target in registry.items()}, ensure_ascii=False, indent=2))
         else:
             if not registry:
-                info(_("Nejsou deklarované žádné cíle. Přidej hostitele a instanci nebo cíl RPi."))
+                info(_("No targets are declared. Add a host and instance or an RPi target."))
                 return 0
-            table([_("Cíl"), _("Platforma"), _("Konfigurace"), _("Sestavení/export"), _("Správa systému"), _("Hypervizor")], [
-                [name, target["backend"], target.get("configuration", "default"), _("ano"), _("nastavená") if target["capabilities"]["system"] else _("nenastavená"),
-                 target["host"] if target["capabilities"]["hypervisor"] else _("nespravovaný")]
+            table([_("Target"), _("Platform"), _("Configuration"), _("Build/export"), _("System management"), _("Hypervisor")], [
+                [name, target["backend"], target.get("configuration", "default"), _("yes"), _("configured") if target["capabilities"]["system"] else _("unconfigured"),
+                 target["host"] if target["capabilities"]["hypervisor"] else _("unmanaged")]
                 for name, target in sorted(registry.items())])
-            info(_("Stav všech cílů: {command}"), command="nixberry status")
-            info(_("Podrobnosti cíle: {command}"), command="nixberry show CÍL")
+            info(_("All target statuses: {command}"), command="nixberry status")
+            info(_("Target details: {command}"), command="nixberry show TARGET")
         return 0
     if args.action == "status":
         if args.target and args.target not in registry:
-            parser.error(_('Neznámý cíl. Dostupné cíle: {value1}').format(value1=", ".join(sorted(registry))))
+            parser.error(_("Unknown target. Available targets: {value1}").format(value1=", ".join(sorted(registry))))
         names = [args.target] if args.target else sorted(registry)
         snapshots = collect_status(registry, names, status,
                                    on_result=None if args.json else status_printer(registry, names))
@@ -345,62 +276,61 @@ def main(argv=None):
             print(json.dumps(snapshots, ensure_ascii=False, indent=2))
         return int(any("error" in data for data in snapshots.values()))
     if args.target not in registry:
-        parser.error(_('Vyber cíl: {value1}. Libovolná adresa není povolená.').format(value1=", ".join(sorted(registry))))
+        parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
     if args.method and target["backend"] == "rpi":
-        parser.error(_('--method je určené pro VM; RPi používá obnovovací SD.'))
+        parser.error(_("--method is for VMs; RPi uses a recovery SD card."))
     if args.action == "show" and args.method:
         target = {**target, "deploymentMethod": args.method}
     if args.action in ("diff", "diffg"):
         return compare(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target,
                        generations=args.action == "diffg", dry_run=args.dry_run)
     if args.action == "reset" and target.get("allowReset", target["spec"].get("allowReset", False)) is not True:
-        parser.error(_('Odstranění není povolené. Nastav allowReset = true; v deklaraci této VM v instances/, potom zkontroluj reset CÍL bez --apply.'))
+        parser.error(_("Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."))
     if args.action == "update":
-        info(_('Konfigurace serveru: {configuration}'), configuration=target.get("configuration", "default"))
+        info(_("Server configuration: {configuration}"), configuration=target.get("configuration", "default"))
         update(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target, apply=args.apply)
         return 0
     if args.action == "export":
-        info(_('Konfigurace serveru: {configuration}'), configuration=target.get("configuration", "default"))
+        info(_("Server configuration: {configuration}"), configuration=target.get("configuration", "default"))
         recipe = os.environ.get("NIXBERRY_RECIPE")
         if not recipe or not args.output:
-            parser.error(_('Použití: nixberry export CÍL --output NOVÝ_ADRESÁŘ.'))
+            parser.error(_("Usage: nixberry export TARGET --output NEW_DIRECTORY."))
         result = export(recipe, args.target, target, args.output, dry_run=args.dry_run,
                         **({"method": args.method} if args.method else {}))
         if args.json or args.dry_run:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:
-            success(_("Offline balíček připravený: {path}"), path=result["destination"])
+            success(_("Offline bundle ready: {path}"), path=result["destination"])
             print(result["destination"])
-            info(_("Před přenosem ověř SHA256SUMS; postup pro zvolené médium je v README.txt."))
+            info(_("Verify SHA256SUMS before transfer; instructions for the selected medium are in README.txt."))
         return 0
     if args.action == "verify":
         recipe = os.environ.get("NIXBERRY_RECIPE")
         if not recipe:
-            parser.error(_('verify spusť přes spouštěč nixberry z kořene projektu.'))
+            parser.error(_("Run verify through the nixberry launcher from the project root."))
         expected = read(["nix", "eval", "--raw", "--no-write-lock-file",
                          "path:" + recipe + "#nixberrySystems." + args.target + ".config.system.build.toplevel.outPath"])
         try:
             result = verify(target, expected)
         except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
-            raise RuntimeError(_("Ověření cíle {name} neprošlo: {error}\n"
-                                 "Diagnostika: {doctor}\nPorovnání s receptem: {diff}").format(
+            raise RuntimeError(_("Target {name} verification failed: {error}\nDiagnostics: {doctor}\nRecipe comparison: {diff}").format(
                                      name=args.target, error=error,
                                      doctor=f"nixberry doctor {args.target}{guest_host_option(target)}",
                                      diff=f"nixberry diff {args.target}{guest_host_option(target)}")) from error
         if args.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:
-            success(_("Ověřeno: {name}, {hostname}, systém z {root}."),
+            success(_("Verified: {name}, {hostname}, system on {root}."),
                     name=args.target, hostname=result["hostname"], root=result["root"])
             print(result["system"])
         return 0
     if args.action in ("plan", "create", "install", "provision", "reproduce"):
-        info(_('Konfigurace serveru: {configuration}'), configuration=target.get("configuration", "default"))
+        info(_("Server configuration: {configuration}"), configuration=target.get("configuration", "default"))
     if args.action in ("plan", "reproduce") and target["backend"] == "rpi":
         recipe = os.environ.get("NIXBERRY_RECIPE")
         if not recipe:
-            parser.error(_('Reprodukci RPi spusť přes spouštěč nixberry z kořene projektu.'))
+            parser.error(_("Run RPi reproduction through the nixberry launcher from the project root."))
         command = ["nix", "run", "--no-write-lock-file", "path:" + recipe + "#nixberry-rpi-install",
                    "--", "--target", args.target,
                    "--apply" if args.apply else "--dry-run"]
@@ -416,48 +346,48 @@ def main(argv=None):
         else:
             spec = target["spec"]
             caps = target["capabilities"]
-            print(_('Cíl: {value1}\nPlatforma: {value2}').format(value1=args.target, value2=target["backend"]))
-            print(_('Konfigurace: {configuration}').format(configuration=target.get("configuration", "default")))
-            print(_('Hypervizor: {value1}').format(value1=target["host"] if caps["hypervisor"] else _("nespravovaný")))
+            print(_("Target: {value1}\nPlatform: {value2}").format(value1=args.target, value2=target["backend"]))
+            print(_("Configuration: {configuration}").format(configuration=target.get("configuration", "default")))
+            print(_("Hypervisor: {value1}").format(value1=target["host"] if caps["hypervisor"] else _("unmanaged")))
             if target["backend"] != "rpi":
-                print(_('Metoda nasazení: {method}').format(method=args.method or deployment_method(target)))
-            print(_('Sestavení/export: ano; správa systému: {value1}').format(value1=_("nastavená") if caps["system"] else _("nenastavená")))
-            print(_('Profil platformy: {value1}').format(value1=target["profile"]))
+                print(_("Deployment method: {method}").format(method=args.method or deployment_method(target)))
+            print(_("Build/export: yes; system management: {value1}").format(value1=_("configured") if caps["system"] else _("unconfigured")))
+            print(_("Platform profile: {value1}").format(value1=target["profile"]))
             if target["backend"] != "rpi":
-                print(_('Povolení odstranění: {value}').format(value=_("ano") if target.get("allowReset", False) else _("ne")))
+                print(_("Removal allowed: {value}").format(value=_("yes") if target.get("allowReset", False) else _("no")))
             if target["backend"] == "rpi":
-                print(_('RPi: {value1}\nAdresa: {value2}').format(value1=spec["hostName"], value2=spec["address"]))
-                print(_('Sériové číslo: {value1}\nDisk: {value2}').format(value1=spec["hardwareSerial"], value2=spec["diskDevice"]))
+                print(_("RPi: {value1}\nAddress: {value2}").format(value1=spec["hostName"], value2=spec["address"]))
+                print(_("Serial number: {value1}\nDisk: {value2}").format(value1=spec["hardwareSerial"], value2=spec["diskDevice"]))
             else:
                 print(_('VM: {value1}').format(value1=spec["name"]))
-                print(_('Kapacita: {value1} CPU, {value2} MiB RAM, {value3} GiB disk').format(value1=spec["vcpus"], value2=spec["memoryMiB"], value3=spec["diskGiB"]))
+                print(_("Resources: {value1} CPUs, {value2} MiB RAM, {value3} GiB disk").format(value1=spec["vcpus"], value2=spec["memoryMiB"], value3=spec["diskGiB"]))
                 if target["backend"] == "proxmox":
-                    print(_('Import: VMID {value1}, úložiště {value2}, bridge {value3}').format(value1=spec["vmid"], value2=spec["storage"], value3=spec["bridge"]))
+                    print(_("Import: VMID {value1}, storage {value2}, bridge {value3}").format(value1=spec["vmid"], value2=spec["storage"], value3=spec["bridge"]))
                 if target.get("offline"):
-                    info(_("VM vytváří provozovatel; obraz lze připravit přes offline export."))
+                    info(_("The operator creates the VM; prepare the image through offline export."))
                 direct = direct_connection(target)
                 if direct:
-                    print(_('SSH serveru: {value1}@{value2}:{value3}').format(value1=direct["user"], value2=direct["host"], value3=direct["port"]))
-                    print(_('Ověření klíče: striktní known_hosts{value1}{value2}').format(value1=", soubor " + direct["knownHostsFile"] if direct.get("knownHostsFile") else "", value2=", alias " + direct["hostKeyAlias"] if direct.get("hostKeyAlias") else ""))
+                    print(_("Server SSH: {value1}@{value2}:{value3}").format(value1=direct["user"], value2=direct["host"], value3=direct["port"]))
+                    print(_("Key verification: strict known_hosts{value1}{value2}").format(value1=", soubor " + direct["knownHostsFile"] if direct.get("knownHostsFile") else "", value2=", alias " + direct["hostKeyAlias"] if direct.get("hostKeyAlias") else ""))
                 network = target.get("network", {"mode": "dhcp"})
                 if network.get("mode", "dhcp") == "static":
-                    print(_('Síť: {value1}, brána {value2}, DNS {value3}').format(value1=network["address"], value2=network["gateway"], value3=", ".join(network["dns"])))
+                    print(_("Network: {value1}, gateway {value2}, DNS {value3}").format(value1=network["address"], value2=network["gateway"], value3=", ".join(network["dns"])))
                 else:
-                    print(_('Síť: DHCP'))
-            print(_('Operace: {value1}').format(value1=", ".join(operations(target))))
+                    print(_("Network: DHCP"))
+            print(_("Operation: {value1}").format(value1=", ".join(operations(target))))
             if not caps["system"]:
                 info(_("Export: {command}"), command=f"nixberry export {args.target} --output ~/{args.target}-offline")
             else:
-                info(_("Živý stav: {command}"), command="nixberry status " + args.target)
+                info(_("Live status: {command}"), command="nixberry status " + args.target)
         return 0
     if args.action == "ssh":
         if args.dry_run:
-            parser.error(_('ssh nepřijímá --dry-run; stav zjistíš přes status.'))
+            parser.error(_("ssh does not accept --dry-run; use status to check the state."))
         command = ssh_command(target, status(target))
         if not remote_command and sys.stdin.isatty():
             command[1:1] = ["-e", "~"]
-            info(_("Ctrl+C přerušuje vzdálený příkaz. Zaseknutou relaci odpojíš: Enter, potom ~."))
-        info(_("Připojuji: {command}"), command=" ".join(command))
+            info(_("Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."))
+        info(_("Connecting: {command}"), command=" ".join(command))
         try:
             return subprocess.run(command + remote_command, check=False).returncode
         except KeyboardInterrupt:
@@ -467,12 +397,12 @@ def main(argv=None):
         return 0
     action = "provision" if args.action in ("plan", "reproduce") else args.action
     if action not in target["commands"]:
-        parser.error(_('Operace {action} pro {value2} není implementovaná. Dostupné: {value3}').format(action=action, value2=args.target, value3=", ".join(target["commands"])))
+        parser.error(_("Operation {action} is not implemented for {value2}. Available: {value3}").format(action=action, value2=args.target, value3=", ".join(target["commands"])))
     command = [target["commands"][action]]
     if args.method:
         command += ["--method", args.method]
     if action not in ("probe", "reset") and target["backend"] != "rpi":
-        info(_('Metoda nasazení: {method}'), method=args.method or deployment_method(target))
+        info(_("Deployment method: {method}"), method=args.method or deployment_method(target))
     if action != "probe":
         command.append("--apply" if args.apply else "--dry-run")
     return subprocess.run(command, check=False).returncode

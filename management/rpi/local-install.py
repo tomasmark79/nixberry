@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Obnova ze samotné plné SD; bez internetu, SSH nebo sestavování na dalším počítači."""
+"Recover from the full SD card alone; no internet, SSH or builds on another computer."
 
 from messages import _, ArgumentParser, info, shell_script, error as report_error
 
@@ -12,7 +12,7 @@ import subprocess
 
 
 def main(argv=None):
-    parser = ArgumentParser(description=_('Obnova ze samotné plné SD; bez internetu, SSH nebo sestavování na dalším počítači.'))
+    parser = ArgumentParser(description=_("Recover from the full SD card alone; no internet, SSH or builds on another computer."))
     parser.add_argument("--target", required=True)
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--apply", action="store_true")
@@ -23,8 +23,8 @@ def main(argv=None):
     try:
         manifests = json.loads(Path("/etc/nixberry-rpi-targets.json").read_text())
     except FileNotFoundError:
-        raise RuntimeError(_('Tento příkaz patří do připraveného instalačního prostředí plné SD.')) from None
-    api["require"](args.target in manifests, _('Tento cíl není součástí instalační SD.'))
+        raise RuntimeError(_("This command requires the prepared full-SD installation environment.")) from None
+    api["require"](args.target in manifests, _("This target is not included on the installation SD."))
     target = manifests[args.target]
     probe = subprocess.check_output(["bash", os.environ["NIXBERRY_RPI_PROBE"], target["diskDevice"]], text=True)
     snapshot = api["parse_probe"](probe)
@@ -34,7 +34,7 @@ def main(argv=None):
                     target["systemPath"], target["diskoPath"], jq], check=True)
     info(_('RPi: {value1}; SSD: {value2}; serial: {value3}'), value1=snapshot['serial'], value2=target['diskDevice'], value3=target['diskSerial'])
     if not args.apply:
-        info(_('Plán ověřený. Nic se nezměnilo. Vymazání SSD: {value1}'), value1=_('ano') if args.erase_existing else _('ne'))
+        info(_("Plan verified. Nothing changed. Erase SSD: {value1}"), value1=_("yes") if args.erase_existing else _("no"))
         return 0
     arguments = ["bash", "-s", "--", target["hardwareSerial"],
                  target["diskDevice"], target["diskSerial"], str(target["minimumDiskBytes"]),
