@@ -13,13 +13,13 @@ Připojení a existující prostředky zapiš do místního `hosts.local.nix`;
 [management/examples/hosts.nix](../management/examples/hosts.nix).
 Přidání záznamu samo neinstaluje hypervizor, nevytváří síť ani úložiště.
 
-| Backend | Hostitelské prostředí | Systémový disk a síť |
+| Platforma (backend) | Hostitelské prostředí | Systémový disk a síť |
 | --- | --- | --- |
-| `libvirt` | Místní Linux, KVM, `qemu:///system` | QCOW2, VirtIO Block, deklarovaná NAT síť s DHCP. |
-| `hyperv` | Windows s Hyper-V a SSH | VHDX, Generation 2, SCSI, deklarovaný switch. |
-| `proxmox` | Proxmox VE, SSH na deklarovaný uzel | VirtIO disk, existující bridge, QEMU Guest Agent. |
-| `virtualbox` | Linux místně nebo Linux/Windows přes SSH | VDI, SATA, existující bridged adaptér, Guest Additions. |
-| `vmware` | Workstation na Linuxu místně nebo Linux/Windows přes SSH | VMDK monolithicSparse, SATA, NAT s DHCP, VMware Tools. |
+| QEMU/KVM (libvirt), `libvirt` | Místní Linux, KVM, `qemu:///system` | QCOW2, VirtIO Block, deklarovaná NAT síť s DHCP. |
+| Hyper-V, `hyperv` | Windows s Hyper-V a SSH | VHDX, Generation 2, SCSI, deklarovaný switch. |
+| Proxmox VE, `proxmox` | Proxmox VE, SSH na deklarovaný uzel | VirtIO disk, existující bridge, QEMU Guest Agent. |
+| VirtualBox, `virtualbox` | Linux místně nebo Linux/Windows přes SSH | VDI, SATA, existující bridged adaptér, Guest Additions. |
+| VMware Workstation, `vmware` | Workstation na Linuxu místně nebo Linux/Windows přes SSH | VMDK monolithicSparse, SATA, NAT s DHCP, VMware Tools. |
 
 Všechny VM používají UEFI a vypnutý Secure Boot. Adaptéry spravují nové vlastní
 VM; nepřebírají existující cizí stroje. Libvirt podporuje místní URI,
@@ -28,7 +28,10 @@ VMware adaptér podporuje Workstation, nikoli ESXi, vCenter nebo Fusion.
 Automatický přístup k hostitelům používá soukromé IPv4. Adresa
 `192.168.79.1` je chráněná a nesmí být spravovaným cílem ani jump hostitelem.
 
-### Libvirt
+### QEMU/KVM (libvirt)
+
+QEMU/KVM je virtualizační platforma; NixBerry ji spravuje přes libvirt.
+V CLI a deklaracích se používá technický identifikátor `libvirt`.
 
 Připrav KVM, oprávnění k `qemu:///system`, aktivní storage pool, síť s DHCP,
 dostatek místa a podporovaný machine type. Parametry jsou v připojení
@@ -48,7 +51,7 @@ Hyper-V přiděluje skutečné VM ID i BIOSGUID; adaptér kontroluje jejich vazb
 na owner záznam. SSH do VM může vést přes Windows hostitele.
 Služby v cílovém systému jsou `hv-kvp` a `hv-vss`.
 
-### Proxmox
+### Proxmox VE
 
 Hostitel potřebuje Python 3, `qm`, `pvesh`, příslušná oprávnění a existující
 `storageDirectory`, `storage`, `bridge` a `node`. SSH musí směřovat
@@ -182,13 +185,13 @@ Kontroluje vlastníka, skutečnou identitu, disky, sdílení, snapshoty a odkazy
 Běžící VM vypne korektně s časovým limitem, před odstraněním vše znovu ověří.
 Při nejistotě skončí chybou; nepřechází na tvrdé vypnutí a nemaže zbytky naslepo.
 
-| Backend | Prostředky a hranice kontroly |
+| Platforma | Prostředky a hranice kontroly |
 | --- | --- |
-| libvirt | Vlastní QCOW2, NVRAM, vazby domén, podkladové obrazy a snapshoty. |
+| QEMU/KVM (libvirt) | Vlastní QCOW2, NVRAM, vazby domén, podkladové obrazy a snapshoty. |
 | Hyper-V | Owner, skutečné VM ID, disk a checkpointy; sdílené médium v `media/` ponechá. |
-| Proxmox | VMID/uzel, systémový a EFI svazek, vlastní ISO, snapshoty a reference VM i kontejnerů. |
+| Proxmox VE | VMID/uzel, systémový a EFI svazek, vlastní ISO, snapshoty a reference VM i kontejnerů. |
 | VirtualBox | VM, disk a vlastní adresář; prověřuje registr médií a snapshoty. |
-| VMware | Vlastní adresář, VMX a samostatný VMDK; kontroluje běžící VM a soubory pod vyhrazeným úložištěm. Vypnuté VMX mimo něj neprochází a seznam GUI neupravuje. |
+| VMware Workstation | Vlastní adresář, VMX a samostatný VMDK; kontroluje běžící VM a soubory pod vyhrazeným úložištěm. Vypnuté VMX mimo něj neprochází a seznam GUI neupravuje. |
 
 Po přerušení nejprve prohlédni `status` a úložiště; operace se automaticky
 neopakuje. `cleanup` zůstává pouze náhledem. Smazání souboru deklarace samo

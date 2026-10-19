@@ -1,7 +1,8 @@
 # NixBerry
 
-NixBerry sestavuje a spravuje NixOS servery na **libvirtu, Hyper-V, Proxmoxu,
-VirtualBoxu, VMware Workstation a Raspberry Pi 5**. Jeden recept určuje systém;
+NixBerry sestavuje a spravuje NixOS servery na platformách **QEMU/KVM (libvirt),
+Hyper-V, Proxmox VE, VirtualBox, VMware Workstation a Raspberry Pi 5**.
+Jeden recept určuje systém;
 deklarace každého stroje vybírá konfiguraci, platformu, síť a prostředky.
 
 Výchozí nasazení VM používá hotový disk (`image`). Na všech VM platformách
@@ -122,9 +123,9 @@ nixberry verify vm-demo-libvirt
 
 | Platforma | Příkaz pro deklaraci |
 | --- | --- |
-| libvirt | `new-libvirt-vm` |
+| QEMU/KVM (libvirt) | `new-libvirt-vm` |
 | Hyper-V | `new-hyperv-vm` |
-| Proxmox | `new-proxmox-vm` |
+| Proxmox VE | `new-proxmox-vm` |
 | VirtualBox | `new-virtualbox-vm` |
 | VMware Workstation | `new-vmware-vm` |
 
@@ -201,7 +202,7 @@ SSH přístup nepřidává správu hypervizoru. [Předání disku, ISO a Proxmox
 
 <a id="obnova-rpi"></a>
 
-## Raspberry Pi
+## Raspberry Pi 5
 
 RPi má deklaraci v `management/rpi/targets/`; běžná správa používá stejné
 `status`, `ssh`, `diff`, `update` a `verify`. Plnou obnovu zajišťuje SD:

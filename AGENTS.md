@@ -8,6 +8,8 @@
 
 ## Dokumentace
 
+- V přehledech platforem používej názvy QEMU/KVM (libvirt), Hyper-V, Proxmox VE, VirtualBox, VMware Workstation a Raspberry Pi 5. Technické identifikátory backendů a příkazy zůstávají `libvirt`, `hyperv`, `proxmox`, `virtualbox`, `vmware` a `rpi`.
+
 - Jediný vstupní uživatelský návod je kořenový `README.md`; podrobnosti patří do `docs/`. `AGENTS.md` je interní pravidlo pro práci na projektu. Udržuj aktuální postupy podle CLI a zdrojů, jednotné názvy příkazů, ukázkové VM `vm-demo-*` a platné odkazy včetně kotev. Nepřidávej kroniku úprav, datované výsledky, archiv, roadmapu ani diagramy. Logy a výsledky testů ukládej mimo uživatelskou dokumentaci; testovací návod má popisovat způsob ověření a jeho hranice.
 
 ## Jednotnost platforem
