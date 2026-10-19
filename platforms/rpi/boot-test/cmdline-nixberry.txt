@@ -1,0 +1,1 @@
+init=/nix/store/hbnr159sm3x81lb4miwb0y48dd3zvj36-nixos-system-nixberry-26.11.20260928.7a0f122/init console=tty0 root=fstab loglevel=7 ignore_loglevel lsm=landlock,yama,bpf

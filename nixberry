@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Přímé ovládání receptu funguje i při spuštění z jiného pracovního adresáře.
+set -euo pipefail
+launcher_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+source "$launcher_dir/management/deployment/shell-path.sh"
+recipe=$(_nixberry_recipe_dir "$launcher_dir")
+export NIXBERRY_RECIPE="$recipe"
+exec nix run --no-write-lock-file "path:$recipe#nixberry" -- "$@"

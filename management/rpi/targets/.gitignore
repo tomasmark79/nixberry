@@ -1,0 +1,4 @@
+# Deklarace fyzických strojů obsahují místní síť a identifikátory zařízení.
+*
+!.gitignore
+!default.nix

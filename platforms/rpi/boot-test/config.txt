@@ -1,0 +1,8 @@
+# Dočasný test přímého startu ze SSD bez U-Bootu.
+[all]
+arm_64bit=1
+kernel=nixberry-kernel.img
+initramfs nixberry-initrd followkernel
+device_tree=nixberry-mainline.dtb
+cmdline=cmdline-nixberry.txt
+enable_uart=0

@@ -1,0 +1,21 @@
+# Místní přístupy a identita správce nepatří do veřejného repozitáře.
+/hosts.local.nix
+/admin.pub
+/secrets/
+*.secret
+*.key
+
+# Sestavení, média a provozní data.
+/result
+/result-*
+*.qcow2
+*.vmdk
+*.vhdx
+*.vdi
+*.img
+*.iso
+__pycache__/
+*.py[cod]
+*~
+*.swp
+.DS_Store
