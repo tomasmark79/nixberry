@@ -1,5 +1,7 @@
 # NixBerry
 
+<img src="assets/NixBerryLogo.svg" alt="NixBerry logo" width="240">
+
 [Matrix Channel](https://matrix.to/#/#nixberry:matrix.org)
 
 NixBerry builds and manages NixOS servers on **QEMU/KVM (libvirt), Hyper-V,
