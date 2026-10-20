@@ -101,6 +101,8 @@ nixberry diffg vm-demo-libvirt
 ```
 
 - `diff` compares the running system with the current recipe and may build locally.
+  It imports missing running-system paths from the verified SSH target, including
+  unsigned local builds; see [transfer trust and permissions](docs/reference.md#comparison-transfer).
 - `update` without `--apply` shows a plan without connecting or building.
 - `update --apply` builds, transfers and activates the system. It does not resize the VM or repartition disks.
 - `diffg` compares the two highest retained server generations. After an update,

@@ -58,7 +58,7 @@ class DiffChecks(unittest.TestCase):
     def test_recipe_comparison_only_copies_from_server_and_keeps_jump_host(self):
         self.assertEqual(diffing.compare(self.recipe, "test", TARGET), 0)
         commands = [call.args[0] for call in self.run.call_args_list]
-        self.assertEqual(commands[0], ["nix", "copy", "--from", "ssh://root@172.21.222.76", OLD])
+        self.assertEqual(commands[0], ["nix", "copy", "--no-check-sigs", "--from", "ssh://root@172.21.222.76", OLD])
         options = shlex.split(self.run.call_args_list[0].kwargs["env"]["NIX_SSHOPTS"])
         self.assertEqual(options, SSH[1:SSH.index("--")])
         self.assertEqual(commands[-1], ["nvd", "diff", OLD, NEW])
@@ -66,6 +66,25 @@ class DiffChecks(unittest.TestCase):
         self.assertNotIn("--to", sum(commands, []))
         self.assertEqual(len(commands), 3)
         self.assertEqual(self.dependencies["build"].call_args.args[0], "/nix/store/frozen-recipe")
+
+    def test_unsigned_copy_is_scoped_to_verified_source_on_every_platform(self):
+        for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware", "rpi"):
+            with self.subTest(backend=backend):
+                self.run.reset_mock()
+                self.assertEqual(diffing.compare(self.recipe, "test", {**TARGET, "backend": backend}), 0)
+                commands = [call.args[0] for call in self.run.call_args_list]
+                self.assertEqual(commands[0], ["nix", "copy", "--no-check-sigs", "--from",
+                                               "ssh://root@172.21.222.76", OLD])
+                self.assertEqual(shlex.split(self.run.call_args_list[0].kwargs["env"]["NIX_SSHOPTS"]),
+                                 SSH[1:SSH.index("--")])
+                self.assertEqual(sum("--no-check-sigs" in command for command in commands), 1)
+                self.assertEqual(commands[-1], ["nvd", "diff", OLD, NEW])
+
+    def test_identity_failure_never_reaches_unsigned_copy(self):
+        self.dependencies["preflight"].side_effect = [OLD, RuntimeError("Identity mismatch")]
+        with self.assertRaisesRegex(RuntimeError, "Identity mismatch"):
+            diffing.compare(self.recipe, "test", TARGET)
+        self.run.assert_not_called()
 
     def test_stale_cli_stops_before_connecting(self):
         self.dependencies["freeze_recipe"].side_effect = RuntimeError("The target declaration differs")

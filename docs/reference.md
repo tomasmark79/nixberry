@@ -115,6 +115,19 @@ It then checks system and services. Interrupted SSH does not prove activation
 stopped. `diffg` compares the highest retained generations, which need not be
 the active and previously booted generations.
 
+<a id="comparison-transfer"></a>
+
+`diff` imports missing running-system paths into the local Nix store for `nvd`.
+For all five VM backends and RPi, target identity and installation are checked
+before transfer, and SSH requires a known host key, including through jump hosts.
+The copy uses `--no-check-sigs` only for that verified SSH source because locally
+built paths may have no binary-cache signature. This trusts the managed target's
+store contents; use `diff` only with targets trusted to supply local store paths.
+Global signature settings and trusted keys are not changed. For a daemon-backed
+local store, the caller must already have permission to import unsigned paths;
+otherwise the comparison stops with the daemon's error. The tool does not retry
+through `sudo` or change daemon settings. No system is activated remotely.
+
 <a id="diagnostika"></a>
 <a id="diagnostics"></a>
 

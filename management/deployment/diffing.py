@@ -85,7 +85,10 @@ def compare(recipe, name, target, *, generations=False, dry_run=False):
             raise RuntimeError(_("The target system changed during the build. Run diff again."))
         command = connection(target, current_snapshot)
         info(_("Retrieving missing parts of the running system into the local Nix store…"))
-        subprocess.run(["nix", "copy", "--from", "ssh://" + command[-1], previous], check=True,
+        # Trust this identity-checked SSH source for this copy only: locally built
+        # system paths need not carry a binary-cache signature. Keep strict SSH
+        # host-key checks and let the local daemon enforce the caller's permissions.
+        subprocess.run(["nix", "copy", "--no-check-sigs", "--from", "ssh://" + command[-1], previous], check=True,
                        env={**os.environ, "NIX_SSHOPTS": shlex.join(command[1:command.index("--")])})
         # Protect the old system from GC during nvd, as with the newly built system.
         subprocess.run(["nix-store", "--add-root", str(Path(directory) / "previous"),
