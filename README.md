@@ -1,5 +1,7 @@
 # NixBerry
 
+[Matrix Channel](https://matrix.to/#/#nixberry:matrix.org)
+
 NixBerry builds and manages NixOS servers on **QEMU/KVM (libvirt), Hyper-V,
 Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5**. One recipe
 defines the system; each machine declaration selects its configuration,
