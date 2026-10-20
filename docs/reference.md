@@ -24,8 +24,10 @@ networking and resources.
 
 NixBerry has its own recipe and lock and works independently of notebook configuration.
 Declaration directories track only loaders and ignore rules. Back up VM/RPi
-declarations, `hosts.local.nix` and `admin.pub` separately. Use `path:` inputs to
-include them without `git add`. Empty inventory is valid; an unknown host is an error.
+declarations, `hosts.local.nix`, `admin.pub` and any ignored private configurations
+separately. A commit of the public recipe does not include ignored configuration
+files. Use `path:` inputs to include them without `git add`.
+Empty inventory is valid; an unknown host is an error.
 
 ## Named configurations
 
