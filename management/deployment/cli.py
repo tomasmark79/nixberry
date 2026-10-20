@@ -121,7 +121,8 @@ def main(argv=None):
         delimiter = argv.index("--")
         argv, remote_command = argv[:delimiter], argv[delimiter + 1:]
     parser = ArgumentParser(
-        prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."), epilog=_(HELP_COMMANDS),
+        prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."),
+        epilog=_(HELP_COMMANDS) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version",

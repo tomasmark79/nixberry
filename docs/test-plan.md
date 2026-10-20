@@ -34,6 +34,7 @@ test keys rather than the administrator's local identity.
 | Portable adapter, identities, disks, transfer | `test_portable.py` |
 | Hyper-V media selection and transport | `test_hyperv_media.py`, `management/hyperv/test_*.py` |
 | Reset and rejected unsafe steps | `test_reset.py` and backend checks |
+| libvirt directory-symlink confirmation and revalidation | `management/libvirt/test_reset_symlinks.py`: temporary files and mocked hypervisor operations; no live VM removal |
 | Completion, aliases, online/offline and direct SSH | `test_completion.py` |
 | Output, diagnostics, colors, languages and catalogues | `test_diagnostics.py`, `test_messages.py`, `test_message_contract.py` |
 | Metadata comparisons without importing unsigned paths | `test_diffing.py`, `test_closure_metadata.py` (real local `nvd` when available) |

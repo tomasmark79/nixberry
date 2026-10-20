@@ -279,7 +279,8 @@ NixBerry maintains its own `flake.lock`.
 | SSH interrupted an update | Check server `journalctl -u nixberry-update`, then run `verify`. |
 | Assess disk usage | `cleanup TARGET` previews findings without deleting. |
 | Remove a managed VM | [Protected reset](docs/vm.md#reset): review the plan and set `allowReset = true;`. |
-| libvirt reset reports a symbolic link | Disk and NVRAM paths, including parent directories, must contain no symlinks. The diagnostic identifies the rejected component. |
+| libvirt storage uses directory symlinks | Reset shows resolved disk/NVRAM paths; `--apply` requires interactive `[y/N]` confirmation. Links replacing the files themselves remain unsupported. See [protected reset](docs/vm.md#reset). |
+| libvirt reset reports `qemu-img` permission denied | The local account needs read access to verify the QCOW2. Reset stops without changing permissions or elevating privileges. |
 | Hypervisor reports nearly full RAM | Check cache, `MemAvailable` and memory pressure; [details](docs/reference.md#memory). |
 
 Disconnect a stuck interactive SSH session with **Enter, `~`, `.`**.

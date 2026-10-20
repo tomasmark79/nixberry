@@ -185,13 +185,36 @@ It verifies owner, actual identity, disks, sharing, snapshots and links.
 A running VM is shut down gracefully with a deadline, then revalidated.
 Uncertainty causes failure; there is no forced shutdown or blind remnant deletion.
 
+For QEMU/KVM (libvirt), parent directories of the disk and NVRAM may be symlinks.
+The preview lists the links and resolved file paths without prompting. With
+`--apply`, an interactive terminal and an explicit `y` (or `yes`) are required
+before shutdown; Enter, `n` or end of input cancels without changes. Piped input
+does not satisfy this confirmation. Paths without directory symlinks retain
+the usual noninteractive `--apply` behavior. There is no confirmation bypass.
+
+Reset verifies the resolved paths and file identities again after confirmation
+and graceful shutdown. A changed link target or replaced file stops further
+changes. Links replacing the disk or NVRAM file itself, hard-linked files,
+snapshots and shared resources remain rejected. Only the verified VM files are
+removed; directory symlinks and their target directories remain. If a change
+or failure occurs after the VM definition has been removed, inspect VM and
+storage state before retrying; remaining files are not blindly cleaned up.
+The local account also needs read access to the QCOW2 for `qemu-img` verification.
+Permission errors stop before confirmation or shutdown; reset does not retry
+with elevated privileges or change filesystem permissions.
+
 | Platform | Resources and verification boundaries |
 | --- | --- |
-| QEMU/KVM (libvirt) | Owned QCOW2, NVRAM, domain references, backing images and snapshots. |
+| QEMU/KVM (libvirt) | Owned QCOW2, NVRAM, domain references, backing images and snapshots; parent-directory symlinks require resolved-path verification and interactive confirmation. |
 | Hyper-V | Owner, actual VM ID, disk and checkpoints; shared media in `media/` remains. |
 | Proxmox VE | VMID/node, system and EFI volumes, own ISO, snapshots and VM/container references. |
 | VirtualBox | VM, disk and dedicated directory; media registry and snapshots are checked. |
 | VMware Workstation | Dedicated directory, VMX and standalone VMDK; running VMs and managed storage are checked. Stopped VMX files elsewhere are not scanned and GUI inventory is not changed. |
+
+Directory-symlink confirmation is currently specific to local libvirt storage.
+Hyper-V, Proxmox VE, VirtualBox and VMware Workstation retain their existing
+link and storage checks. This applies to both image and ISO VM installations;
+offline declarations and RPi have no reset operation.
 
 After interruption, inspect `status` and storage before continuing.
 Operations are not retried automatically. `cleanup` remains a preview.

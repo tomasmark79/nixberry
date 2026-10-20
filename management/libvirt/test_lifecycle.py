@@ -113,12 +113,13 @@ class ResetFileChecks(unittest.TestCase):
         RESET["validate_file"](self.disk)
         self.assertEqual(self.disk.read_bytes(), b"fixture")
 
-    def test_linked_storage_directory_reports_the_parent_link(self):
+    def test_linked_storage_directory_records_resolved_file_and_link(self):
         link = self.root / "images"
         link.symlink_to(self.root, target_is_directory=True)
-        with self.assertRaisesRegex(RuntimeError, "symbolic link") as failure:
-            RESET["validate_file"](link / self.disk.name)
-        self.assertIn(str(link) + ";", str(failure.exception))
+        result = RESET["validate_file"](link / self.disk.name)
+        self.assertEqual(result["resolved"], str(self.disk))
+        self.assertEqual(result["links"], ((str(link), str(self.root)),))
+        self.assertEqual(result["identity"], (self.disk.stat().st_dev, self.disk.stat().st_ino))
         self.assertEqual(self.disk.read_bytes(), b"fixture")
 
     def test_leaf_link_is_rejected_even_when_broken(self):

@@ -1597,6 +1597,42 @@ msgstr "Soubor pro reset má více pevných odkazů: {path}; reset odmítám."
 msgid "Cannot inspect reset path {path}: {error}"
 msgstr "Nelze prověřit cestu pro reset {path}: {error}"
 
+msgid "Cannot verify disk image {path}. Check read access and qemu-img diagnostics; nothing was removed."
+msgstr "Nelze ověřit obraz disku {path}. Prověř oprávnění ke čtení a diagnostiku qemu-img; nic nebylo odstraněno."
+
+msgid "Reset paths changed during verification; refusing further changes."
+msgstr "Během ověřování se cesty pro reset změnily; další změny odmítám."
+
+msgid "Directory symlinks are present in the reset paths."
+msgstr "Cesty pro reset obsahují symbolické odkazy na adresáře."
+
+msgid "Directory symlink: {path} → {target}"
+msgstr "Symbolický odkaz na adresář: {path} → {target}"
+
+msgid "Resolved reset path: {path} → {resolved}"
+msgstr "Skutečná cesta pro reset: {path} → {resolved}"
+
+msgid "Reset through directory symlinks requires an interactive terminal; nothing was changed."
+msgstr "Reset přes symbolické odkazy na adresáře vyžaduje interaktivní terminál; nic se nezměnilo."
+
+msgid "Remove this VM and only its verified files through these directory symlinks? [y/N]"
+msgstr "Odstranit tuto VM a pouze její ověřené soubory přes tyto symbolické odkazy na adresáře? [y/N]"
+
+msgid "Removal cancelled; nothing was changed."
+msgstr "Odstranění zrušeno; nic se nezměnilo."
+
+msgid "Reset paths changed since verification; refusing further changes. Inspect VM and storage state before retrying."
+msgstr "Cesty pro reset se od ověření změnily; další změny odmítám. Před dalším pokusem prověř stav VM a úložiště."
+
+msgid "Remove the verified VM; directory symlinks require interactive confirmation"
+msgstr "Odstranit ověřenou VM; symbolické odkazy na adresáře vyžadují interaktivní potvrzení"
+
+msgid "The VM definition and NVRAM were removed; verifying the disk before removal."
+msgstr "Definice VM a NVRAM byly odstraněny; před odstraněním ověřuji disk."
+
+msgid "Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."
+msgstr "Reset pro libvirt podporuje symbolické odkazy na adresáře; --apply vyžaduje interaktivní potvrzení jejich skutečných cest pomocí [y/N]."
+
 msgid "The disk or NVRAM is shared with another VM; refusing writes or removal."
 msgstr "Disk nebo NVRAM sdílí jiná VM; odmítám zápis nebo odstranění."
 

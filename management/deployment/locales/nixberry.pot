@@ -28,15 +28,15 @@ msgstr ""
 msgid "\nVirtualBox handoff: see VIRTUALBOX.txt.\n"
 msgstr ""
 
-#: deployment/cli.py:222
+#: deployment/cli.py:223
 msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
 msgstr ""
 
-#: deployment/cli.py:185
+#: deployment/cli.py:186
 msgid "--artifact-root only applies to cleanup."
 msgstr ""
 
-#: deployment/cli.py:155
+#: deployment/cli.py:156
 msgid "--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."
 msgstr ""
 
@@ -44,27 +44,27 @@ msgstr ""
 msgid "--erase-existing cannot be combined with --stage."
 msgstr ""
 
-#: deployment/cli.py:224
+#: deployment/cli.py:225
 msgid "--json is available for list, show, status, verify, export, doctor and cleanup."
 msgstr ""
 
-#: deployment/cli.py:157
+#: deployment/cli.py:158
 msgid "--method applies to new-*, show, plan, create, install, provision, reproduce and export."
 msgstr ""
 
-#: deployment/cli.py:282
+#: deployment/cli.py:283
 msgid "--method is for VMs; RPi uses a recovery SD card."
 msgstr ""
 
-#: deployment/cli.py:153
+#: deployment/cli.py:154
 msgid "--offline applies to new-*-vm without --host."
 msgstr ""
 
-#: deployment/cli.py:187
+#: deployment/cli.py:188
 msgid "--output only applies to export."
 msgstr ""
 
-#: deployment/cli.py:162
+#: deployment/cli.py:163
 msgid "--ssh applies to server management and cannot be combined with --host or new-*."
 msgstr ""
 
@@ -92,7 +92,7 @@ msgstr ""
 msgid "A backing disk cycle was detected."
 msgstr ""
 
-#: deployment/cli.py:159
+#: deployment/cli.py:160
 msgid "A command after -- is only available for ssh TARGET -- COMMAND."
 msgstr ""
 
@@ -156,7 +156,7 @@ msgstr ""
 msgid "After boot: {command}"
 msgstr ""
 
-#: deployment/cli.py:217
+#: deployment/cli.py:218
 #, python-brace-format
 msgid "After reviewing: {command}"
 msgstr ""
@@ -169,7 +169,7 @@ msgstr ""
 msgid "All inventory checks passed; no VMs or hosts were contacted."
 msgstr ""
 
-#: deployment/cli.py:266
+#: deployment/cli.py:267
 #, python-brace-format
 msgid "All target statuses: {command}"
 msgstr ""
@@ -210,7 +210,7 @@ msgstr ""
 msgid "Another process is already running this campaign."
 msgstr ""
 
-#: deployment/cli.py:146
+#: deployment/cli.py:147
 msgid "Apply changes for update and deployment/recovery operations"
 msgstr ""
 
@@ -232,7 +232,7 @@ msgstr ""
 msgid "Available memory: {available:.1f} %"
 msgstr ""
 
-#: deployment/cli.py:211
+#: deployment/cli.py:212
 msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
 msgstr ""
 
@@ -244,11 +244,11 @@ msgstr ""
 msgid "Boot verification from VHDX failed."
 msgstr ""
 
-#: deployment/cli.py:262
+#: deployment/cli.py:263
 msgid "Build/export"
 msgstr ""
 
-#: deployment/cli.py:354
+#: deployment/cli.py:355
 #, python-brace-format
 msgid "Build/export: yes; system management: {value1}"
 msgstr ""
@@ -269,7 +269,7 @@ msgstr ""
 msgid "CD-ROM does not match."
 msgstr ""
 
-#: deployment/cli.py:129
+#: deployment/cli.py:130
 msgid "COMMAND"
 msgstr ""
 
@@ -299,7 +299,7 @@ msgstr ""
 msgid "Cannot determine the VM disk size."
 msgstr ""
 
-#: libvirt/reset.py:33
+#: libvirt/reset.py:39
 #, python-brace-format
 msgid "Cannot inspect reset path {path}: {error}"
 msgstr ""
@@ -324,6 +324,11 @@ msgstr ""
 msgid "Cannot verify another VM's volume path; refusing writes or removal."
 msgstr ""
 
+#: libvirt/reset.py:141
+#, python-brace-format
+msgid "Cannot verify disk image {path}. Check read access and qemu-img diagnostics; nothing was removed."
+msgstr ""
+
 #: deployment/host_agent.py:55
 msgid "Cannot verify the user SID for the private VM directory."
 msgstr ""
@@ -333,7 +338,7 @@ msgstr ""
 msgid "Cannot write to bundle location {path}. Relative paths are resolved from the working directory. Choose a writable directory, for example --output ~/{target}-offline."
 msgstr ""
 
-#: deployment/cli.py:241
+#: deployment/cli.py:242
 msgid "Check"
 msgstr ""
 
@@ -379,7 +384,7 @@ msgstr ""
 msgid "Closure size"
 msgstr ""
 
-#: deployment/cli.py:129
+#: deployment/cli.py:130
 msgid "Command from the list below (default: list)"
 msgstr ""
 
@@ -405,7 +410,7 @@ msgstr ""
 msgid "Computing bundle checksums…"
 msgstr ""
 
-#: deployment/cli.py:262
+#: deployment/cli.py:263
 msgid "Configuration"
 msgstr ""
 
@@ -417,7 +422,7 @@ msgstr ""
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
-#: deployment/cli.py:350 deployment/updater.py:92
+#: deployment/cli.py:351 deployment/updater.py:92
 #, python-brace-format
 msgid "Configuration: {configuration}"
 msgstr ""
@@ -426,7 +431,7 @@ msgstr ""
 msgid "Configuring the serial console to capture potential kernel panics…"
 msgstr ""
 
-#: deployment/cli.py:390
+#: deployment/cli.py:391
 #, python-brace-format
 msgid "Connecting: {command}"
 msgstr ""
@@ -498,7 +503,7 @@ msgstr ""
 msgid "Creation did not return a verified powered-off VM."
 msgstr ""
 
-#: deployment/cli.py:389
+#: deployment/cli.py:390
 msgid "Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."
 msgstr ""
 
@@ -506,16 +511,16 @@ msgstr ""
 msgid "Current DHCP address of the installation environment, overriding the declaration"
 msgstr ""
 
-#: deployment/cli.py:140
+#: deployment/cli.py:141
 msgid "Current installation SD address, only for RPi reproduction"
 msgstr ""
 
-#: deployment/cli.py:206
+#: deployment/cli.py:207
 #, python-brace-format
 msgid "Declaration created: {path}"
 msgstr ""
 
-#: deployment/cli.py:204
+#: deployment/cli.py:205
 #, python-brace-format
 msgid "Declaration plan: {path}"
 msgstr ""
@@ -540,12 +545,12 @@ msgstr ""
 msgid "Deployment method must be iso or image."
 msgstr ""
 
-#: deployment/cli.py:353 deployment/cli.py:405
+#: deployment/cli.py:354 deployment/cli.py:406
 #, python-brace-format
 msgid "Deployment method: {method}"
 msgstr ""
 
-#: deployment/cli.py:241
+#: deployment/cli.py:242
 msgid "Details"
 msgstr ""
 
@@ -553,17 +558,26 @@ msgstr ""
 msgid "Diagnose loading the RPi recovery kernel without rebooting or writing partitions."
 msgstr ""
 
-#: deployment/cli.py:169
+#: deployment/cli.py:170
 msgid "Direct SSH requires an offline VM declaration without hypervisor management."
 msgstr ""
 
-#: deployment/cli.py:166
+#: deployment/cli.py:167
 msgid "Direct SSH supports update, ssh, verify, status, doctor, diff and diffg."
 msgstr ""
 
 #: deployment/updater.py:99
 #, python-brace-format
 msgid "Direct SSH to VM: {endpoint}; verifying the SSH key and declared hostname."
+msgstr ""
+
+#: libvirt/reset.py:59
+#, python-brace-format
+msgid "Directory symlink: {path} → {target}"
+msgstr ""
+
+#: libvirt/reset.py:57
+msgid "Directory symlinks are present in the reset paths."
 msgstr ""
 
 #: hyperv/probe.py:31
@@ -622,7 +636,7 @@ msgstr ""
 msgid "Disk does not match."
 msgstr ""
 
-#: libvirt/install.py:43 libvirt/reset.py:52
+#: libvirt/install.py:43 libvirt/reset.py:101
 msgid "Disk path does not match."
 msgstr ""
 
@@ -657,7 +671,7 @@ msgstr ""
 msgid "Downloading the official Proxmox installation ISO…"
 msgstr ""
 
-#: deployment/cli.py:124
+#: deployment/cli.py:125
 msgid "Everyday management:\n  list                         Local target inventory and available management capabilities.\n  show TARGET                  Target declaration, capacity, network and available operations.\n  status [TARGET]              Live status; hosts are queried concurrently and rows appear as ready.\n  ssh TARGET [-- COMMAND ...]  Log in or run a command on the server.\n  verify TARGET                Check the running system against the recipe, disk and services.\n  doctor [TARGET]              Diagnose one or all targets.\n  probe TARGET                 Detailed platform discovery for troubleshooting.\n\nUpdates and comparisons:\n  update TARGET                Update plan; --apply builds and activates the system.\n  diff TARGET                  Running system against the current recipe BEFORE an update.\n  diffg TARGET                 The two highest retained server generations.\n                               diff builds locally; diffg runs on the server.\n\nNew VM declarations (write a local file, do not create a VM):\n  new-libvirt-vm NAME          VM declaration for QEMU/KVM (libvirt).\n  new-hyperv-vm NAME           VM declaration for Hyper-V.\n  new-proxmox-vm NAME          Proxmox VE VM declaration with editable networking.\n  new-virtualbox-vm NAME       VM declaration for VirtualBox.\n  new-vmware-vm NAME           VM declaration for VMware Workstation.\n                               --host selects a host; a sole matching host is selected automatically.\n                               --offline prepares any backend without a hypervisor.\n                               --configuration NAME selects a server configuration; default is default.\n                               --dry-run does not write the file. new-* names without -vm are aliases.\n\nDeployment, recovery and offline transfer (subject to platform capabilities):\n  plan TARGET                  Read-only VM creation or RPi recovery plan.\n  reproduce TARGET             Complete deployment/recovery; execution requires --apply.\n  create TARGET                Create a VM; execution requires --apply.\n  install TARGET               Complete the selected deployment method; requires --apply.\n  provision TARGET             Create and install; execution requires --apply.\n  reset TARGET                 Remove an authorized VM on any of the five backends.\n                               Requires allowReset = true in the instance; without --apply, verifies only.\n  export TARGET --output DIR   Offline bundle with disk or ISO and recipe in a new directory.\n  cleanup [TARGET]             Preview cleanup candidates; deletes nothing.\n                               --artifact-root DIR adds image inspection.\n\nUsage and modes:\n  Without a command, list is shown. TARGET is a declaration name, not an IP address.\n  show TARGET lists the operations available for a particular target.\n  update/create/install/provision/reproduce/reset only plan without --apply.\n  new-* and export normally write locally; --dry-run shows a plan without writing.\n  diff/diffg may read the server and diff builds the recipe; --dry-run only shows the plan.\n  --ssh root@HOST:PORT overrides SSH access to an offline VM of any backend.\n  --method image is the default for all VMs: import a prebuilt disk and verify boot.\n  --method iso installs to a blank disk, detaches the ISO and verifies system boot.\n  Set deploymentMethod in a declaration for a persistent default; --method overrides it.\n  Applies to new-*, show, plan, create, install, provision, reproduce and export.\n  --offline prepares without a hypervisor, independently of the method. RPi uses SD.\n  diff shows pending changes. After an update it is usually empty; use diffg.\n\nExamples:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOST\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan rpi-demo --address 192.168.50.20\n\nDetailed operating guide: README.md in the NixBerry recipe root.\nComplete command and option reference: docs/cli.md.\n"
 msgstr ""
 
@@ -666,7 +680,7 @@ msgstr ""
 msgid "Execute: {command}"
 msgstr ""
 
-#: deployment/cli.py:133
+#: deployment/cli.py:134
 msgid "Existing target name, or a new name for new-*"
 msgstr ""
 
@@ -674,7 +688,7 @@ msgstr ""
 msgid "Expected exactly one ESP and one Linux partition."
 msgstr ""
 
-#: deployment/cli.py:379
+#: deployment/cli.py:380
 #, python-brace-format
 msgid "Export: {command}"
 msgstr ""
@@ -731,15 +745,15 @@ msgstr ""
 msgid "Hyper-V storage must be an absolute path on a local drive without parent directory components."
 msgstr ""
 
-#: deployment/cli.py:262 deployment/cli.py:35
+#: deployment/cli.py:263 deployment/cli.py:35
 msgid "Hypervisor"
 msgstr ""
 
-#: deployment/cli.py:134
+#: deployment/cli.py:135
 msgid "Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"
 msgstr ""
 
-#: deployment/cli.py:351
+#: deployment/cli.py:352
 #, python-brace-format
 msgid "Hypervisor: {value1}"
 msgstr ""
@@ -769,7 +783,7 @@ msgstr ""
 msgid "Image checksum does not match."
 msgstr ""
 
-#: deployment/cli.py:144
+#: deployment/cli.py:145
 msgid "Image directory for cleanup preview; repeatable, links are not followed"
 msgstr ""
 
@@ -789,12 +803,12 @@ msgstr ""
 msgid "Import would overwrite an existing volume."
 msgstr ""
 
-#: deployment/cli.py:365
+#: deployment/cli.py:366
 #, python-brace-format
 msgid "Import: VMID {value1}, storage {value2}, bridge {value3}"
 msgstr ""
 
-#: deployment/cli.py:141
+#: deployment/cli.py:142
 msgid "Include SSD erasure during RPi recovery"
 msgstr ""
 
@@ -1016,7 +1030,7 @@ msgstr ""
 msgid "Inventory is read-only. VMware: running VMs and files in the dedicated directory, not all stopped VMs on the host. unknown is not a deletion candidate. Snapshots and saved states in each VM directory are also protected. On Windows, allocation is read through GetCompressedFileSizeW; logicalBytes is the file length."
 msgstr ""
 
-#: deployment/cli.py:371
+#: deployment/cli.py:372
 #, python-brace-format
 msgid "Key verification: strict known_hosts{value1}{value2}"
 msgstr ""
@@ -1038,7 +1052,11 @@ msgstr ""
 msgid "Libvirt created the disk at a different path: %s"
 msgstr ""
 
-#: deployment/cli.py:381
+#: deployment/cli.py:125
+msgid "Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."
+msgstr ""
+
+#: deployment/cli.py:382
 #, python-brace-format
 msgid "Live status: {command}"
 msgstr ""
@@ -1055,7 +1073,7 @@ msgstr ""
 msgid "MAC address does not match."
 msgstr ""
 
-#: deployment/cli.py:142
+#: deployment/cli.py:143
 msgid "Machine-readable output for inventory, diagnostics, verify and export"
 msgstr ""
 
@@ -1095,7 +1113,7 @@ msgstr ""
 msgid "Multicast MAC addresses are not allowed."
 msgstr ""
 
-#: libvirt/reset.py:122
+#: libvirt/reset.py:186 libvirt/reset.py:192
 msgid "NVRAM still exists after removal."
 msgstr ""
 
@@ -1111,16 +1129,16 @@ msgstr ""
 msgid "Network does not match."
 msgstr ""
 
-#: deployment/cli.py:376
+#: deployment/cli.py:377
 msgid "Network: DHCP"
 msgstr ""
 
-#: deployment/cli.py:374
+#: deployment/cli.py:375
 #, python-brace-format
 msgid "Network: {value1}, gateway {value2}, DNS {value3}"
 msgstr ""
 
-#: deployment/cli.py:139
+#: deployment/cli.py:140
 msgid "New offline bundle directory; relative paths are resolved from the working directory"
 msgstr ""
 
@@ -1134,7 +1152,7 @@ msgstr ""
 msgid "Newer generation: {path}"
 msgstr ""
 
-#: deployment/cli.py:214 deployment/cli.py:216
+#: deployment/cli.py:215 deployment/cli.py:217
 #, python-brace-format
 msgid "Next step: {command}"
 msgstr ""
@@ -1160,7 +1178,7 @@ msgstr ""
 msgid "No failed units."
 msgstr ""
 
-#: deployment/cli.py:260
+#: deployment/cli.py:261
 msgid "No targets are declared. Add a host and instance or an RPi target."
 msgstr ""
 
@@ -1185,12 +1203,12 @@ msgstr ""
 msgid "OK {case}: {value2}"
 msgstr ""
 
-#: deployment/cli.py:304
+#: deployment/cli.py:305
 #, python-brace-format
 msgid "Offline bundle ready: {path}"
 msgstr ""
 
-#: deployment/cli.py:213
+#: deployment/cli.py:214
 msgid "Offline declaration: edit capacity and deployment parameters in the file before export."
 msgstr ""
 
@@ -1198,7 +1216,7 @@ msgstr ""
 msgid "Offline preparation cannot be combined with --host."
 msgstr ""
 
-#: deployment/cli.py:138
+#: deployment/cli.py:139
 msgid "One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"
 msgstr ""
 
@@ -1210,7 +1228,7 @@ msgstr ""
 msgid "Only report selected VM status without inspecting disks or snapshots"
 msgstr ""
 
-#: libvirt/reset.py:123
+#: libvirt/reset.py:193
 msgid "Only the dedicated test VM, its disk and NVRAM were removed."
 msgstr ""
 
@@ -1222,16 +1240,16 @@ msgstr ""
 msgid "Only verify the plan without writing"
 msgstr ""
 
-#: deployment/cli.py:183
+#: deployment/cli.py:184
 msgid "Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."
 msgstr ""
 
-#: deployment/cli.py:400
+#: deployment/cli.py:401
 #, python-brace-format
 msgid "Operation {action} is not implemented for {value2}. Available: {value3}"
 msgstr ""
 
-#: deployment/cli.py:377
+#: deployment/cli.py:378
 #, python-brace-format
 msgid "Operation: {value1}"
 msgstr ""
@@ -1306,16 +1324,16 @@ msgstr ""
 msgid "Plan: {name}, 6 CPUs, 12 GiB RAM, 32 + 64 GiB disks, UEFI and a dedicated NAT network."
 msgstr ""
 
-#: deployment/cli.py:262
+#: deployment/cli.py:263
 msgid "Platform"
 msgstr ""
 
-#: deployment/cli.py:355
+#: deployment/cli.py:356
 #, python-brace-format
 msgid "Platform profile: {value1}"
 msgstr ""
 
-#: deployment/cli.py:135
+#: deployment/cli.py:136
 msgid "Prepare any VM offline without a hypervisor; cannot be combined with --host"
 msgstr ""
 
@@ -1414,7 +1432,7 @@ msgstr ""
 msgid "RPi verified: {value1}; recovery: {value2}"
 msgstr ""
 
-#: deployment/cli.py:359
+#: deployment/cli.py:360
 #, python-brace-format
 msgid "RPi: {value1}\nAddress: {value2}"
 msgstr ""
@@ -1446,20 +1464,24 @@ msgstr ""
 msgid "Regenerate shell catalogue with compile_locales.py"
 msgstr ""
 
-#: deployment/cli.py:357
+#: deployment/cli.py:358
 #, python-brace-format
 msgid "Removal allowed: {value}"
 msgstr ""
 
-#: deployment/cli.py:289
+#: libvirt/reset.py:75
+msgid "Removal cancelled; nothing was changed."
+msgstr ""
+
+#: deployment/cli.py:290
 msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
 msgstr ""
 
-#: libvirt/reset.py:73
+#: libvirt/reset.py:119
 msgid "Removal of this instance is not declaratively allowed."
 msgstr ""
 
-#: libvirt/reset.py:109
+#: libvirt/reset.py:162
 msgid "Removal plan verified. Nothing was changed."
 msgstr ""
 
@@ -1467,13 +1489,21 @@ msgstr ""
 msgid "Removal plan verified; nothing was shut down or deleted. With --apply, the VM is gracefully shut down and removed after revalidation."
 msgstr ""
 
-#: libvirt/reset.py:66
+#: libvirt/reset.py:111
 msgid "Remove only the dedicated test VM and its disk; the default mode changes nothing."
 msgstr ""
 
-#: libvirt/reset.py:107
+#: libvirt/reset.py:159
 #, python-brace-format
 msgid "Remove only: {disk} and {nvram}"
+msgstr ""
+
+#: libvirt/reset.py:114
+msgid "Remove the verified VM; directory symlinks require interactive confirmation"
+msgstr ""
+
+#: libvirt/reset.py:69
+msgid "Remove this VM and only its verified files through these directory symlinks? [y/N]"
 msgstr ""
 
 #: deployment/campaign.py:341
@@ -1485,12 +1515,12 @@ msgstr ""
 msgid "Required arguments are missing: {arguments}"
 msgstr ""
 
-#: libvirt/reset.py:40
+#: libvirt/reset.py:46
 #, python-brace-format
 msgid "Reset file has multiple hard links: {path}; refusing reset."
 msgstr ""
 
-#: libvirt/reset.py:38
+#: libvirt/reset.py:44
 #, python-brace-format
 msgid "Reset file is a mount point: {path}; refusing reset."
 msgstr ""
@@ -1499,17 +1529,25 @@ msgstr ""
 msgid "Reset is not explicitly allowed."
 msgstr ""
 
-#: libvirt/reset.py:29
+#: libvirt/reset.py:33
 #, python-brace-format
 msgid "Reset path contains a symbolic link: {path}; refusing reset."
 msgstr ""
 
-#: libvirt/reset.py:36
+#: libvirt/reset.py:42
 #, python-brace-format
 msgid "Reset path is not a regular file: {path}; refusing reset."
 msgstr ""
 
-#: libvirt/reset.py:75
+#: libvirt/reset.py:49
+msgid "Reset paths changed during verification; refusing further changes."
+msgstr ""
+
+#: libvirt/reset.py:81
+msgid "Reset paths changed since verification; refusing further changes. Inspect VM and storage state before retrying."
+msgstr ""
+
+#: libvirt/reset.py:121
 msgid "Reset requires a declared NixBerry owner; a known UUID alone is not enough."
 msgstr ""
 
@@ -1529,12 +1567,21 @@ msgstr ""
 msgid "Reset requires explicit permission and an unambiguous apply mode."
 msgstr ""
 
-#: deployment/cli.py:363
+#: libvirt/reset.py:68
+msgid "Reset through directory symlinks requires an interactive terminal; nothing was changed."
+msgstr ""
+
+#: libvirt/reset.py:61
+#, python-brace-format
+msgid "Resolved reset path: {path} → {resolved}"
+msgstr ""
+
+#: deployment/cli.py:364
 #, python-brace-format
 msgid "Resources: {value1} CPUs, {value2} MiB RAM, {value3} GiB disk"
 msgstr ""
 
-#: deployment/cli.py:241
+#: deployment/cli.py:242
 msgid "Result"
 msgstr ""
 
@@ -1542,7 +1589,7 @@ msgstr ""
 msgid "Root and boot partitions match the installation."
 msgstr ""
 
-#: deployment/cli.py:333
+#: deployment/cli.py:334
 msgid "Run RPi reproduction through the nixberry launcher from the project root."
 msgstr ""
 
@@ -1562,7 +1609,7 @@ msgstr ""
 msgid "Run update through the nixberry launcher with a complete pinned recipe."
 msgstr ""
 
-#: deployment/cli.py:311
+#: deployment/cli.py:312
 msgid "Run verify through the nixberry launcher from the project root."
 msgstr ""
 
@@ -1617,7 +1664,7 @@ msgstr ""
 msgid "Select --host from the declared {backend} hosts: {hosts}. Use --offline to prepare without a hypervisor."
 msgstr ""
 
-#: deployment/cli.py:279
+#: deployment/cli.py:280
 #, python-brace-format
 msgid "Select a target: {value1}. Arbitrary addresses are not allowed."
 msgstr ""
@@ -1626,12 +1673,12 @@ msgstr ""
 msgid "Sequential NixBerry integration campaign following docs/test-plan.md."
 msgstr ""
 
-#: deployment/cli.py:360
+#: deployment/cli.py:361
 #, python-brace-format
 msgid "Serial number: {value1}\nDisk: {value2}"
 msgstr ""
 
-#: deployment/cli.py:370
+#: deployment/cli.py:371
 #, python-brace-format
 msgid "Server SSH: {value1}@{value2}:{value3}"
 msgstr ""
@@ -1640,11 +1687,11 @@ msgstr ""
 msgid "Server address"
 msgstr ""
 
-#: deployment/cli.py:136
+#: deployment/cli.py:137
 msgid "Server configuration for new-*; defaults to default, other names from configurations/"
 msgstr ""
 
-#: deployment/cli.py:208 deployment/cli.py:291 deployment/cli.py:295 deployment/cli.py:329
+#: deployment/cli.py:209 deployment/cli.py:292 deployment/cli.py:296 deployment/cli.py:330
 #, python-brace-format
 msgid "Server configuration: {configuration}"
 msgstr ""
@@ -1657,7 +1704,7 @@ msgstr ""
 msgid "Show help and exit"
 msgstr ""
 
-#: deployment/cli.py:147
+#: deployment/cli.py:148
 msgid "Show the plan without writing; diff/diffg without connections or builds"
 msgstr ""
 
@@ -1665,7 +1712,7 @@ msgstr ""
 msgid "Sizes include shared dependencies; they cannot be added or treated as reclaimable space. review means manual assessment, not permission to delete. All retained generations have GC roots."
 msgstr ""
 
-#: deployment/cli.py:192
+#: deployment/cli.py:193
 #, python-brace-format
 msgid "Specify a new target name: {value1} NAME."
 msgstr ""
@@ -1746,7 +1793,7 @@ msgstr ""
 msgid "System does not match."
 msgstr ""
 
-#: deployment/cli.py:262
+#: deployment/cli.py:263
 msgid "System management"
 msgstr ""
 
@@ -1763,11 +1810,11 @@ msgstr ""
 msgid "System verification failed after the new boot."
 msgstr ""
 
-#: deployment/cli.py:133
+#: deployment/cli.py:134
 msgid "TARGET"
 msgstr ""
 
-#: deployment/cli.py:241 deployment/cli.py:262 deployment/cli.py:35
+#: deployment/cli.py:242 deployment/cli.py:263 deployment/cli.py:35
 msgid "Target"
 msgstr ""
 
@@ -1775,7 +1822,7 @@ msgstr ""
 msgid "Target VHDX does not match."
 msgstr ""
 
-#: deployment/cli.py:267
+#: deployment/cli.py:268
 #, python-brace-format
 msgid "Target details: {command}"
 msgstr ""
@@ -1788,7 +1835,7 @@ msgstr ""
 msgid "Target inventory regression checks in recipe copies; no host connections or VM changes."
 msgstr ""
 
-#: deployment/cli.py:317
+#: deployment/cli.py:318
 #, python-brace-format
 msgid "Target {name} verification failed: {error}\nDiagnostics: {doctor}\nRecipe comparison: {diff}"
 msgstr ""
@@ -1798,12 +1845,12 @@ msgstr ""
 msgid "Target: Proxmox lab {address}; preparing the dedicated data disk and staging directory."
 msgstr ""
 
-#: deployment/cli.py:349
+#: deployment/cli.py:350
 #, python-brace-format
 msgid "Target: {value1}\nPlatform: {value2}"
 msgstr ""
 
-#: libvirt/reset.py:61
+#: libvirt/reset.py:106
 msgid "Test VM NVRAM path does not match."
 msgstr ""
 
@@ -1949,6 +1996,10 @@ msgstr ""
 msgid "The VM contains unexpected disks; cleanup was stopped."
 msgstr ""
 
+#: libvirt/reset.py:179
+msgid "The VM definition and NVRAM were removed; verifying the disk before removal."
+msgstr ""
+
 #: hyperv/manage.py:196
 msgid "The VM did not shut down gracefully."
 msgstr ""
@@ -1965,7 +2016,7 @@ msgstr ""
 msgid "The VM did not shut down gracefully; the next step was stopped."
 msgstr ""
 
-#: libvirt/reset.py:115
+#: libvirt/reset.py:173
 msgid "The VM did not shut down; nothing will be deleted."
 msgstr ""
 
@@ -2001,7 +2052,7 @@ msgstr ""
 msgid "The VM disk has no target for a size query."
 msgstr ""
 
-#: libvirt/reset.py:50
+#: libvirt/reset.py:99
 msgid "The VM does not have exactly one disk."
 msgstr ""
 
@@ -2049,7 +2100,7 @@ msgstr ""
 msgid "The VM has snapshots."
 msgstr ""
 
-#: libvirt/reset.py:101
+#: libvirt/reset.py:152
 msgid "The VM has snapshots; refusing removal."
 msgstr ""
 
@@ -2065,7 +2116,7 @@ msgstr ""
 msgid "The VM is missing the declared owner marker."
 msgstr ""
 
-#: libvirt/reset.py:97
+#: libvirt/reset.py:148
 msgid "The VM is not in a supported state."
 msgstr ""
 
@@ -2073,7 +2124,7 @@ msgstr ""
 msgid "The VM is not in the required state for ISO operations."
 msgstr ""
 
-#: libvirt/reset.py:118
+#: libvirt/reset.py:177
 msgid "The VM is not powered off; nothing will be deleted."
 msgstr ""
 
@@ -2199,7 +2250,7 @@ msgstr ""
 msgid "The active system is not the expected pinned system."
 msgstr ""
 
-#: libvirt/reset.py:95
+#: libvirt/reset.py:146
 msgid "The actual image has a different format, capacity, backing image or internal snapshot; refusing reset."
 msgstr ""
 
@@ -2351,7 +2402,7 @@ msgstr ""
 msgid "The disk does not belong to the declared storage."
 msgstr ""
 
-#: libvirt/reset.py:121
+#: libvirt/reset.py:190
 msgid "The disk file still exists after removal."
 msgstr ""
 
@@ -2669,7 +2720,7 @@ msgstr ""
 msgid "The operational target has findings: {checks}. All checks were read-only."
 msgstr ""
 
-#: deployment/cli.py:367
+#: deployment/cli.py:368
 msgid "The operator creates the VM; prepare the image through offline export."
 msgstr ""
 
@@ -2832,7 +2883,7 @@ msgstr ""
 msgid "The target disk is mounted."
 msgstr ""
 
-#: libvirt/install.py:44 libvirt/reset.py:53
+#: libvirt/install.py:44 libvirt/reset.py:102
 msgid "The target disk is not vda."
 msgstr ""
 
@@ -2925,11 +2976,11 @@ msgstr ""
 msgid "The volume did not report a size in bytes."
 msgstr ""
 
-#: libvirt/reset.py:77
+#: libvirt/reset.py:123
 msgid "The volume does not have the dedicated test VM name."
 msgstr ""
 
-#: libvirt/reset.py:57
+#: libvirt/reset.py:89
 msgid "The volume is not qcow2."
 msgstr ""
 
@@ -2937,7 +2988,7 @@ msgstr ""
 msgid "The volume name must match the declared VM."
 msgstr ""
 
-#: libvirt/reset.py:58
+#: libvirt/reset.py:90
 msgid "The volume uses a backing image."
 msgstr ""
 
@@ -2961,7 +3012,7 @@ msgstr ""
 msgid "This lab is reserved for the local Nixon host."
 msgstr ""
 
-#: deployment/cli.py:226
+#: deployment/cli.py:227
 msgid "This operation does not accept --apply."
 msgstr ""
 
@@ -3052,7 +3103,7 @@ msgstr ""
 msgid "Unknown option: %s"
 msgstr ""
 
-#: deployment/cli.py:229 deployment/cli.py:271
+#: deployment/cli.py:230 deployment/cli.py:272
 #, python-brace-format
 msgid "Unknown target. Available targets: {value1}"
 msgstr ""
@@ -3103,7 +3154,7 @@ msgstr ""
 msgid "Usage: "
 msgstr ""
 
-#: deployment/cli.py:298
+#: deployment/cli.py:299
 msgid "Usage: nixberry export TARGET --output NEW_DIRECTORY."
 msgstr ""
 
@@ -3127,7 +3178,7 @@ msgstr ""
 msgid "VM ID does not match."
 msgstr ""
 
-#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:48
+#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:97
 msgid "VM UUID does not match."
 msgstr ""
 
@@ -3148,11 +3199,11 @@ msgstr ""
 msgid "VM created with a prebuilt disk; it is not running yet."
 msgstr ""
 
-#: deployment/cli.py:137
+#: deployment/cli.py:138
 msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
 msgstr ""
 
-#: libvirt/install.py:39 libvirt/reset.py:47
+#: libvirt/install.py:39 libvirt/reset.py:96
 msgid "VM name does not match."
 msgstr ""
 
@@ -3181,7 +3232,7 @@ msgstr ""
 msgid "VM {value1}; IP {address}; SSH available."
 msgstr ""
 
-#: deployment/cli.py:362
+#: deployment/cli.py:363
 #, python-brace-format
 msgid "VM: {value1}"
 msgstr ""
@@ -3191,7 +3242,7 @@ msgstr ""
 msgid "VM: {value1}; UUID: {value2}; IP: {address}"
 msgstr ""
 
-#: libvirt/reset.py:106
+#: libvirt/reset.py:158
 #, python-brace-format
 msgid "VM: {value1}; UUID: {value2}; state: {state}"
 msgstr ""
@@ -3220,12 +3271,12 @@ msgstr ""
 msgid "Verified: installation VM, UUID, UEFI, pinned outputs and blank /dev/vda."
 msgstr ""
 
-#: deployment/cli.py:324 deployment/updater.py:156
+#: deployment/cli.py:325 deployment/updater.py:156
 #, python-brace-format
 msgid "Verified: {name}, {hostname}, system on {root}."
 msgstr ""
 
-#: deployment/cli.py:306
+#: deployment/cli.py:307
 msgid "Verify SHA256SUMS before transfer; instructions for the selected medium are in README.txt."
 msgstr ""
 
@@ -3241,15 +3292,15 @@ msgstr ""
 msgid "VirtualBox requires an existing bridge adapter."
 msgstr ""
 
-#: libvirt/reset.py:54
+#: libvirt/reset.py:86
 msgid "Volume name does not match."
 msgstr ""
 
-#: libvirt/reset.py:55
+#: libvirt/reset.py:87
 msgid "Volume path does not match."
 msgstr ""
 
-#: libvirt/reset.py:56
+#: libvirt/reset.py:88
 msgid "Volume size does not match."
 msgstr ""
 
@@ -3311,7 +3362,7 @@ msgstr ""
 msgid "access supports offline VMs without hypervisor management."
 msgstr ""
 
-#: deployment/cli.py:263 deployment/cli.py:354
+#: deployment/cli.py:264 deployment/cli.py:355
 msgid "configured"
 msgstr ""
 
@@ -3323,7 +3374,7 @@ msgstr ""
 msgid "knownHostsFile must be an absolute path without control characters."
 msgstr ""
 
-#: deployment/cli.py:254
+#: deployment/cli.py:255
 msgid "list does not accept a target or write mode."
 msgstr ""
 
@@ -3331,11 +3382,11 @@ msgstr ""
 msgid "management not configured"
 msgstr ""
 
-#: deployment/cli.py:190
+#: deployment/cli.py:191
 msgid "new-* only creates a local declaration; it does not accept these options."
 msgstr ""
 
-#: deployment/cli.py:357 rpi/local-install.py:37
+#: deployment/cli.py:358 rpi/local-install.py:37
 msgid "no"
 msgstr ""
 
@@ -3351,7 +3402,7 @@ msgstr ""
 msgid "running"
 msgstr ""
 
-#: deployment/cli.py:385
+#: deployment/cli.py:386
 msgid "ssh does not accept --dry-run; use status to check the state."
 msgstr ""
 
@@ -3363,7 +3414,7 @@ msgstr ""
 msgid "transport must be local or ssh."
 msgstr ""
 
-#: deployment/cli.py:263 deployment/cli.py:354
+#: deployment/cli.py:264 deployment/cli.py:355
 msgid "unconfigured"
 msgstr ""
 
@@ -3371,11 +3422,11 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
-#: deployment/cli.py:264 deployment/cli.py:351 deployment/cli.py:36
+#: deployment/cli.py:265 deployment/cli.py:352 deployment/cli.py:36
 msgid "unmanaged"
 msgstr ""
 
-#: deployment/cli.py:263 deployment/cli.py:357 rpi/local-install.py:37
+#: deployment/cli.py:264 deployment/cli.py:358 rpi/local-install.py:37
 msgid "yes"
 msgstr ""
 
