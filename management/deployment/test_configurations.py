@@ -65,12 +65,13 @@ class ConfigurationChecks(unittest.TestCase):
             configuration_name(self.root, "web")
         self.assertIn("file and a directory", self.nix("c.select {}", success=False))
 
-    def test_symlinks_and_nonmodule_directories_are_not_configurations(self):
+    def test_directory_links_are_configurations_but_file_links_are_not(self):
         (self.root / "configurations/link.nix").symlink_to("default.nix")
         (self.root / "configurations/empty").mkdir()
         (self.root / "configurations/linked").symlink_to("web", target_is_directory=True)
-        self.assertEqual(self.nix("builtins.attrNames c.modules"), ["default", "web"])
-        for name in ("link", "empty", "linked"):
+        self.assertEqual(self.nix("builtins.attrNames c.modules"), ["default", "linked", "web"])
+        self.assertEqual(configuration_name(self.root, "linked"), "linked")
+        for name in ("link", "empty"):
             with self.assertRaises(RuntimeError):
                 configuration_name(self.root, name)
 

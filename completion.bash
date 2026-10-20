@@ -75,7 +75,6 @@ _nixberry_complete() {
                 name=${file##*/}
                 if [[ $file == "$recipe"/configurations/*/default.nix ]]; then
                     file=${file%/default.nix}
-                    [[ ! -L $file ]] || continue
                     name=${file##*/}
                 else
                     name=${name%.nix}

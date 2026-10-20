@@ -55,6 +55,7 @@
           specialArgs.unstable = unstable.legacyPackages.aarch64-linux;
           specialArgs.mc-modern = mc-modern;
           specialArgs.nixoncpp = nixoncpp;
+          specialArgs.nixberryModules.common = ./modules/common.nix;
           modules = [
             disko.nixosModules.disko
             ./platforms/rpi/disk-config.nix
@@ -136,6 +137,7 @@
           specialArgs.unstable = unstable.legacyPackages.x86_64-linux;
           specialArgs.mc-modern = mc-modern;
           specialArgs.nixoncpp = nixoncpp;
+          specialArgs.nixberryModules.common = ./modules/common.nix;
           modules = [
             disko.nixosModules.disko
             ./platforms/vm/disk-config.nix
@@ -309,6 +311,7 @@
           mkVmImage vmSystems.${name} target.spec.diskGiB
       ) deployment.instances;
       images = vmImages // builtins.mapAttrs (_: _: rpiInstaller.config.system.build.sdImage) rpiTargets;
+      deploymentSource = import ./management/deployment/source-package.nix { pkgs = vmPkgs; };
       deploymentTools = import ./management/deployment/package.nix {
         pkgs = vmPkgs;
       };
@@ -357,6 +360,7 @@
         inherit (mc-modern.packages.x86_64-linux) mc mc-tests;
         hstr = vmPkgs.callPackage ./modules/applications/hstr/package.nix { };
         nixberry = deploymentTools;
+        nixberry-source = deploymentSource;
         nixberry-qemu-image = mkVmImage defaultVmSystems.libvirt 32;
         nixberry-hyperv-image = mkHypervImage defaultVmSystems.hyperv 32;
         nixberry-proxmox-image = mkVmImage defaultVmSystems.proxmox 32;
@@ -393,6 +397,10 @@
         ) rpiInstaller.config.environment.systemPackages
       );
       apps.x86_64-linux = {
+        nixberry-source = {
+          type = "app";
+          program = "${deploymentSource}/bin/nixberry-source";
+        };
         nixberry = {
           type = "app";
           program = "${deploymentTools}/bin/nixberry";

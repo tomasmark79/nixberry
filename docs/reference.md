@@ -61,7 +61,39 @@ edit its stored `configuration` and continue with `diff` and `update`.
 Names start with a lowercase letter and contain lowercase letters, digits and hyphens.
 Larger configurations may use `configurations/web/default.nix`; a simultaneous
 `web.nix` is an error. Put helper modules inside the directory.
-The catalogue ignores symlinks; listing it does not build systems:
+Regular directory configurations may also be linked from another local repository.
+For example, place `webconf/` beside the recipe and link it as
+`configurations/web -> ../../webconf`. Keep a regular `default.nix` in that
+directory; nested symlinks in linked configurations are rejected.
+File symlinks are not configuration entries.
+
+External modules can import the shared base without a checkout-relative path:
+
+```nix
+{ nixberryModules, ... }:
+{
+  imports = [ nixberryModules.common ];
+}
+```
+
+Use the project launcher for linked configurations. It captures the linked
+directory into a temporary recipe before evaluating the CLI. Updates, direct
+deployment tools and exports capture it again when freezing their recipe.
+Git metadata and local build/cache files are excluded; uncommitted configuration
+changes are included. Exports contain ordinary directories and need no access
+to the original configuration repository. Scaffold writes still go to the
+original recipe's inventory.
+
+For linked configurations, an export preview captures a Nix source snapshot so
+its displayed build command refers to a usable immutable path. It does not build
+the image, create the bundle or contact a hypervisor.
+
+Direct `nix ... path:.#...` commands cannot follow a symlink outside the flake
+source tree. Use the launcher for operations or a regular exported recipe for
+direct Nix evaluation/builds. Recipes without linked configurations keep the
+same direct Nix interface and do not require materialization.
+
+Listing an ordinary recipe's catalogue does not build systems:
 
 ```sh
 nix eval --json path:.#nixberryConfigurations

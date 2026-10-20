@@ -404,6 +404,7 @@ class DispatchChecks(unittest.TestCase):
             with patch.dict(os.environ, {"NIXBERRY_RECIPE": "/recipe"}), patch("subprocess.run") as run:
                 MAIN(["plan", "nixberry", "--address", "192.168.79.229", "--erase-existing"])
                 command = run.call_args.args[0]
+                self.assertEqual(command[3:5], ["path:/recipe#nixberry-rpi-install", "--"])
                 self.assertIn("--dry-run", command)
                 self.assertNotIn("--apply", command)
                 self.assertEqual(command[-3:], ["--address", "192.168.79.229", "--erase-existing"])

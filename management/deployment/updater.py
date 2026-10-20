@@ -10,6 +10,7 @@ import tempfile
 
 from runtime import installation_checks, read, ssh_command, status, verify, guest_host_option, direct_connection
 from messages import _, info, success, warning
+from recipe_source import materialized_recipe
 
 
 def system_path(value):
@@ -46,8 +47,9 @@ def build(recipe, name, directory):
 
 
 def freeze_recipe(recipe, name, target, directory):
-    metadata = json.loads(subprocess.check_output([
-        "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + recipe], text=True))
+    with materialized_recipe(recipe) as source:
+        metadata = json.loads(subprocess.check_output([
+            "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + source], text=True))
     frozen = metadata["path"]
     # Protect both the snapshot and build from GC until the operation completes.
     subprocess.run(["nix-store", "--add-root", str(Path(directory) / "recipe"),

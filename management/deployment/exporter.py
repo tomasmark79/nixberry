@@ -2,6 +2,7 @@
 
 from messages import _, info, shell_script
 from runtime import deployment_method
+from recipe_source import materialized_recipe
 
 import hashlib
 import json
@@ -26,6 +27,11 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
     command = ["nix", "build", "--print-out-paths", "--no-write-lock-file",
                "path:" + str(recipe) + "#" + attribute]
     if dry_run:
+        with materialized_recipe(recipe) as source:
+            if source != str(recipe):
+                metadata = json.loads(subprocess.check_output([
+                    "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + source], text=True))
+                command[-1] = "path:" + metadata["path"] + "#" + attribute
         return {"target": target_name, "destination": str(destination), "deploymentMethod": selected,
                 "configuration": target.get("configuration", "default"),
                 "allowReset": target.get("allowReset", False),
@@ -39,8 +45,9 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
     info(_("Preparing the offline bundle for target {target} in {path}."), target=target_name, path=destination)
     with staging_directory as staging:
         # Nix creates one immutable source snapshot. Do not read the working recipe again.
-        metadata = json.loads(subprocess.check_output([
-            "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + str(recipe)], text=True))
+        with materialized_recipe(recipe) as source:
+            metadata = json.loads(subprocess.check_output([
+                "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + source], text=True))
         snapshot = Path(metadata["path"])
         staging = Path(staging)
         # GC roots live outside bundle content and remain until copying completes.

@@ -2621,3 +2621,18 @@ msgstr "Bez --apply se nepřipojuji k cíli, nesestavuji ani neměním systém."
 
 msgid "yes"
 msgstr "ano"
+
+#, python-brace-format
+msgid "Linked configuration is not a directory with a regular default.nix: {path}."
+msgstr "Odkazovaná konfigurace není adresář s běžným souborem default.nix: {path}."
+
+#, python-brace-format
+msgid "Linked configuration contains a symbolic link: {path}."
+msgstr "Odkazovaná konfigurace obsahuje symbolický odkaz: {path}."
+
+#, python-brace-format
+msgid "Linked configuration changed during capture: {path}."
+msgstr "Odkazovaná konfigurace se během pořizování kopie změnila: {path}."
+
+msgid "Run NixBerry with linked configurations captured in its recipe."
+msgstr "Spustí NixBerry s odkazovanými konfiguracemi zahrnutými v receptu."

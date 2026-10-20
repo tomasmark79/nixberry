@@ -5,4 +5,9 @@ launcher_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 source "$launcher_dir/management/deployment/shell-path.sh"
 recipe=$(_nixberry_recipe_dir "$launcher_dir")
 export NIXBERRY_RECIPE="$recipe"
+for configuration in "$recipe"/configurations/*; do
+  if [[ -L $configuration && ${configuration##*/} =~ ^[a-z][a-z0-9-]*$ ]]; then
+    exec nix run --no-write-lock-file "path:$recipe#nixberry-source" -- "$recipe" "$@"
+  fi
+done
 exec nix run --no-write-lock-file "path:$recipe#nixberry" -- "$@"

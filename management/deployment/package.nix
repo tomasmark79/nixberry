@@ -16,6 +16,7 @@ let
         ./exporter.py
         ./guest-install.sh
         ./updater.py
+        ./recipe_source.py
         ./diffing.py
         ./closure_metadata.py
         ./messages.py

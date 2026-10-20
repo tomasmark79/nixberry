@@ -14,7 +14,7 @@ def configuration_name(recipe, name):
     names = []
     if directory.is_dir():
         for path in directory.iterdir():
-            if path.is_symlink():
+            if path.is_symlink() and not path.is_dir():
                 continue
             if path.is_file() and path.suffix == ".nix":
                 candidate = path.stem

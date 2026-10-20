@@ -14,6 +14,46 @@ from exporter import export
 
 
 class ExportChecks(unittest.TestCase):
+    def test_linked_configuration_preview_uses_captured_source_without_building(self):
+        external = self.root / "webconf"
+        external.mkdir()
+        (external / "default.nix").write_text("{}")
+        (self.recipe / "configurations").mkdir()
+        (self.recipe / "configurations/web").symlink_to("../../webconf", target_is_directory=True)
+        destination = self.root / "preview-only"
+        with patch("exporter.subprocess.check_output", side_effect=self.nix_output) as metadata, \
+                patch("exporter.subprocess.run") as build:
+            result = export(self.recipe, "lab", self.target, destination, dry_run=True)
+        metadata.assert_called_once()
+        build.assert_not_called()
+        self.assertEqual(result["build"][-1], "path:" + str(self.snapshot) + "#nixberryImages.lab")
+        self.assertFalse(destination.exists())
+
+    def test_external_configuration_is_materialized_in_portable_recipe(self):
+        external = self.root / "webconf"
+        external.mkdir()
+        (external / "default.nix").write_text("{}")
+        (external / ".git").mkdir()
+        (external / ".git/config").write_text("private metadata")
+        (self.recipe / "configurations").mkdir()
+        (self.recipe / "configurations/web").symlink_to("../../webconf", target_is_directory=True)
+        self.target["configuration"] = "web"
+        def capture(command, **kwargs):
+            if command[1:3] == ["flake", "metadata"]:
+                source = Path(command[-1].removeprefix("path:"))
+                self.assertFalse((source / "configurations/web").is_symlink())
+                shutil.copytree(source, self.snapshot, dirs_exist_ok=True, symlinks=True)
+            return self.nix_output(command, **kwargs)
+        destination = self.root / "linked-bundle"
+        with patch("exporter.subprocess.run", return_value=SimpleNamespace(stdout=str(self.image))), \
+                patch("exporter.subprocess.check_output", side_effect=capture):
+            export(self.recipe, "lab", self.target, destination)
+        captured = destination / "recipe/configurations/web"
+        self.assertEqual((captured / "default.nix").read_text(), "{}")
+        self.assertFalse(captured.is_symlink())
+        self.assertFalse((captured / ".git").exists())
+        self.assertTrue((external / ".git/config").exists())
+
     def test_named_configuration_is_in_manifest_and_frozen_recipe(self):
         self.target["configuration"] = "web"
         (self.recipe / "configurations").mkdir()

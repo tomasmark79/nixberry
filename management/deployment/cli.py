@@ -17,6 +17,7 @@ from updater import update
 from diffing import compare
 from inspection import doctor, exit_code
 from cleanup import preview, failed
+from recipe_source import materialized_recipe
 from discovery import collect_status
 from messages import _, info, success, warning, ArgumentParser, error as report_error
 
@@ -310,8 +311,9 @@ def main(argv=None):
         recipe = os.environ.get("NIXBERRY_RECIPE")
         if not recipe:
             parser.error(_("Run verify through the nixberry launcher from the project root."))
-        expected = read(["nix", "eval", "--raw", "--no-write-lock-file",
-                         "path:" + recipe + "#nixberrySystems." + args.target + ".config.system.build.toplevel.outPath"])
+        with materialized_recipe(recipe) as source:
+            expected = read(["nix", "eval", "--raw", "--no-write-lock-file",
+                             "path:" + source + "#nixberrySystems." + args.target + ".config.system.build.toplevel.outPath"])
         try:
             result = verify(target, expected)
         except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
@@ -339,7 +341,9 @@ def main(argv=None):
             command += ["--address", args.address]
         if args.erase_existing:
             command.append("--erase-existing")
-        return subprocess.run(command, check=False).returncode
+        with materialized_recipe(recipe) as source:
+            command[3] = "path:" + source + "#nixberry-rpi-install"
+            return subprocess.run(command, check=False).returncode
     if args.action == "show":
         if args.json:
             print(json.dumps({key: value for key, value in target.items() if key != "commands"},

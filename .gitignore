@@ -23,4 +23,4 @@ __pycache__/
 
 # My own nixberry configuration files, which are not part of the public repository.
 configurations/nixberry.nix
-configurations/nixberry/
+configurations/nixberry

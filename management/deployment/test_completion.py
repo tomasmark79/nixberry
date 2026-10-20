@@ -121,7 +121,8 @@ printf '%s' '{ backend = "proxmox"; spec.name = "kozlonix"; }' > "$1/instances/k
         (self.root / "configurations/default.nix").touch()
         (self.root / "configurations/web/default.nix").touch()
         (self.root / "configurations/link.nix").symlink_to("default.nix")
-        self.assertEqual(self.complete("new-libvirt-vm", "demo", "--configuration", ""), ["default", "web"])
+        (self.root / "configurations/linked").symlink_to("web", target_is_directory=True)
+        self.assertEqual(self.complete("new-libvirt-vm", "demo", "--configuration", ""), ["default", "linked", "web"])
         self.assertEqual(self.complete("new-proxmox-vm", "--configuration", "web", "--"),
                          self.complete("new-proxmox-vm", "--configuration", "web", "demo", "--"))
         self.assertNotIn("--configuration", self.complete("update", "kozlonix", "--"))
