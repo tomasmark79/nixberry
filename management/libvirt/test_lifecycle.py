@@ -8,6 +8,7 @@ from pathlib import Path
 import runpy
 import subprocess
 import sys
+import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -98,6 +99,57 @@ class ResetChecks(unittest.TestCase):
         RESET["reject_shared"](
             '<domain><devices><disk><source file="/another.qcow2"/></disk></devices></domain>',
             MANIFEST["diskPath"], NVRAM)
+
+
+class ResetFileChecks(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        self.disk = self.root / "disk.qcow2"
+        self.disk.write_bytes(b"fixture")
+
+    def test_regular_file_is_accepted_without_changes(self):
+        RESET["validate_file"](self.disk)
+        self.assertEqual(self.disk.read_bytes(), b"fixture")
+
+    def test_linked_storage_directory_reports_the_parent_link(self):
+        link = self.root / "images"
+        link.symlink_to(self.root, target_is_directory=True)
+        with self.assertRaisesRegex(RuntimeError, "symbolic link") as failure:
+            RESET["validate_file"](link / self.disk.name)
+        self.assertIn(str(link) + ";", str(failure.exception))
+        self.assertEqual(self.disk.read_bytes(), b"fixture")
+
+    def test_leaf_link_is_rejected_even_when_broken(self):
+        for target in (self.disk, self.root / "absent"):
+            link = self.root / "linked.qcow2"
+            link.symlink_to(target)
+            with self.assertRaisesRegex(RuntimeError, "symbolic link") as failure:
+                RESET["validate_file"](link)
+            self.assertIn(str(link), str(failure.exception))
+            link.unlink()
+
+    def test_missing_and_nonregular_paths_have_specific_errors(self):
+        missing = self.root / "absent"
+        with self.assertRaisesRegex(RuntimeError, "Cannot inspect reset path") as failure:
+            RESET["validate_file"](missing)
+        self.assertIn(str(missing), str(failure.exception))
+        with self.assertRaisesRegex(RuntimeError, "not a regular file"):
+            RESET["validate_file"](self.root)
+
+    def test_hardlinked_file_is_rejected_without_removing_either_name(self):
+        alias = self.root / "shared.qcow2"
+        os.link(self.disk, alias)
+        with self.assertRaisesRegex(RuntimeError, "multiple hard links") as failure:
+            RESET["validate_file"](self.disk)
+        self.assertIn(str(self.disk), str(failure.exception))
+        self.assertEqual(alias.read_bytes(), b"fixture")
+
+    def test_mount_point_is_rejected(self):
+        with patch.object(Path, "is_mount", return_value=True):
+            with self.assertRaisesRegex(RuntimeError, "mount point"):
+                RESET["validate_file"](self.disk)
 
 
 class ProvisionChecks(unittest.TestCase):

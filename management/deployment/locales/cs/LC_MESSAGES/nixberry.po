@@ -1582,8 +1582,20 @@ msgstr "Název disku neodpovídá testovací VM."
 msgid "The disk or environment does not match the installation; this may be an installation ISO or recovery SD."
 msgstr "Disk nebo prostředí neodpovídá instalaci; může jít o instalační ISO či obnovovací SD."
 
-msgid "The disk or NVRAM is missing, is a link or is a shared file; refusing reset."
-msgstr "Disk nebo NVRAM chybí, je odkazem nebo sdíleným souborem; reset odmítám."
+msgid "Reset path contains a symbolic link: {path}; refusing reset."
+msgstr "Cesta pro reset obsahuje symbolický odkaz: {path}; reset odmítám."
+
+msgid "Reset path is not a regular file: {path}; refusing reset."
+msgstr "Cesta pro reset není běžným souborem: {path}; reset odmítám."
+
+msgid "Reset file is a mount point: {path}; refusing reset."
+msgstr "Soubor pro reset je přípojným bodem: {path}; reset odmítám."
+
+msgid "Reset file has multiple hard links: {path}; refusing reset."
+msgstr "Soubor pro reset má více pevných odkazů: {path}; reset odmítám."
+
+msgid "Cannot inspect reset path {path}: {error}"
+msgstr "Nelze prověřit cestu pro reset {path}: {error}"
 
 msgid "The disk or NVRAM is shared with another VM; refusing writes or removal."
 msgstr "Disk nebo NVRAM sdílí jiná VM; odmítám zápis nebo odstranění."

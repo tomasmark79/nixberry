@@ -299,6 +299,11 @@ msgstr ""
 msgid "Cannot determine the VM disk size."
 msgstr ""
 
+#: libvirt/reset.py:33
+#, python-brace-format
+msgid "Cannot inspect reset path {path}: {error}"
+msgstr ""
+
 #: deployment/inspection.py:177
 msgid "Cannot safely identify all protected generations."
 msgstr ""
@@ -617,7 +622,7 @@ msgstr ""
 msgid "Disk does not match."
 msgstr ""
 
-#: libvirt/install.py:43 libvirt/reset.py:31
+#: libvirt/install.py:43 libvirt/reset.py:52
 msgid "Disk path does not match."
 msgstr ""
 
@@ -1090,7 +1095,7 @@ msgstr ""
 msgid "Multicast MAC addresses are not allowed."
 msgstr ""
 
-#: libvirt/reset.py:104
+#: libvirt/reset.py:122
 msgid "NVRAM still exists after removal."
 msgstr ""
 
@@ -1205,7 +1210,7 @@ msgstr ""
 msgid "Only report selected VM status without inspecting disks or snapshots"
 msgstr ""
 
-#: libvirt/reset.py:105
+#: libvirt/reset.py:123
 msgid "Only the dedicated test VM, its disk and NVRAM were removed."
 msgstr ""
 
@@ -1450,11 +1455,11 @@ msgstr ""
 msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
 msgstr ""
 
-#: libvirt/reset.py:52
+#: libvirt/reset.py:73
 msgid "Removal of this instance is not declaratively allowed."
 msgstr ""
 
-#: libvirt/reset.py:91
+#: libvirt/reset.py:109
 msgid "Removal plan verified. Nothing was changed."
 msgstr ""
 
@@ -1462,11 +1467,11 @@ msgstr ""
 msgid "Removal plan verified; nothing was shut down or deleted. With --apply, the VM is gracefully shut down and removed after revalidation."
 msgstr ""
 
-#: libvirt/reset.py:45
+#: libvirt/reset.py:66
 msgid "Remove only the dedicated test VM and its disk; the default mode changes nothing."
 msgstr ""
 
-#: libvirt/reset.py:89
+#: libvirt/reset.py:107
 #, python-brace-format
 msgid "Remove only: {disk} and {nvram}"
 msgstr ""
@@ -1480,11 +1485,31 @@ msgstr ""
 msgid "Required arguments are missing: {arguments}"
 msgstr ""
 
+#: libvirt/reset.py:40
+#, python-brace-format
+msgid "Reset file has multiple hard links: {path}; refusing reset."
+msgstr ""
+
+#: libvirt/reset.py:38
+#, python-brace-format
+msgid "Reset file is a mount point: {path}; refusing reset."
+msgstr ""
+
 #: hyperv/reset.ps1:7
 msgid "Reset is not explicitly allowed."
 msgstr ""
 
-#: libvirt/reset.py:54
+#: libvirt/reset.py:29
+#, python-brace-format
+msgid "Reset path contains a symbolic link: {path}; refusing reset."
+msgstr ""
+
+#: libvirt/reset.py:36
+#, python-brace-format
+msgid "Reset path is not a regular file: {path}; refusing reset."
+msgstr ""
+
+#: libvirt/reset.py:75
 msgid "Reset requires a declared NixBerry owner; a known UUID alone is not enough."
 msgstr ""
 
@@ -1778,7 +1803,7 @@ msgstr ""
 msgid "Target: {value1}\nPlatform: {value2}"
 msgstr ""
 
-#: libvirt/reset.py:40
+#: libvirt/reset.py:61
 msgid "Test VM NVRAM path does not match."
 msgstr ""
 
@@ -1940,7 +1965,7 @@ msgstr ""
 msgid "The VM did not shut down gracefully; the next step was stopped."
 msgstr ""
 
-#: libvirt/reset.py:97
+#: libvirt/reset.py:115
 msgid "The VM did not shut down; nothing will be deleted."
 msgstr ""
 
@@ -1976,7 +2001,7 @@ msgstr ""
 msgid "The VM disk has no target for a size query."
 msgstr ""
 
-#: libvirt/reset.py:29
+#: libvirt/reset.py:50
 msgid "The VM does not have exactly one disk."
 msgstr ""
 
@@ -2024,7 +2049,7 @@ msgstr ""
 msgid "The VM has snapshots."
 msgstr ""
 
-#: libvirt/reset.py:83
+#: libvirt/reset.py:101
 msgid "The VM has snapshots; refusing removal."
 msgstr ""
 
@@ -2040,7 +2065,7 @@ msgstr ""
 msgid "The VM is missing the declared owner marker."
 msgstr ""
 
-#: libvirt/reset.py:79
+#: libvirt/reset.py:97
 msgid "The VM is not in a supported state."
 msgstr ""
 
@@ -2048,7 +2073,7 @@ msgstr ""
 msgid "The VM is not in the required state for ISO operations."
 msgstr ""
 
-#: libvirt/reset.py:100
+#: libvirt/reset.py:118
 msgid "The VM is not powered off; nothing will be deleted."
 msgstr ""
 
@@ -2174,7 +2199,7 @@ msgstr ""
 msgid "The active system is not the expected pinned system."
 msgstr ""
 
-#: libvirt/reset.py:77
+#: libvirt/reset.py:95
 msgid "The actual image has a different format, capacity, backing image or internal snapshot; refusing reset."
 msgstr ""
 
@@ -2326,7 +2351,7 @@ msgstr ""
 msgid "The disk does not belong to the declared storage."
 msgstr ""
 
-#: libvirt/reset.py:103
+#: libvirt/reset.py:121
 msgid "The disk file still exists after removal."
 msgstr ""
 
@@ -2360,10 +2385,6 @@ msgstr ""
 
 #: libvirt/create.sh:47
 msgid "The disk name does not match the test VM."
-msgstr ""
-
-#: libvirt/reset.py:71
-msgid "The disk or NVRAM is missing, is a link or is a shared file; refusing reset."
 msgstr ""
 
 #: libvirt/storage.py:31
@@ -2811,7 +2832,7 @@ msgstr ""
 msgid "The target disk is mounted."
 msgstr ""
 
-#: libvirt/install.py:44 libvirt/reset.py:32
+#: libvirt/install.py:44 libvirt/reset.py:53
 msgid "The target disk is not vda."
 msgstr ""
 
@@ -2904,11 +2925,11 @@ msgstr ""
 msgid "The volume did not report a size in bytes."
 msgstr ""
 
-#: libvirt/reset.py:56
+#: libvirt/reset.py:77
 msgid "The volume does not have the dedicated test VM name."
 msgstr ""
 
-#: libvirt/reset.py:36
+#: libvirt/reset.py:57
 msgid "The volume is not qcow2."
 msgstr ""
 
@@ -2916,7 +2937,7 @@ msgstr ""
 msgid "The volume name must match the declared VM."
 msgstr ""
 
-#: libvirt/reset.py:37
+#: libvirt/reset.py:58
 msgid "The volume uses a backing image."
 msgstr ""
 
@@ -3106,7 +3127,7 @@ msgstr ""
 msgid "VM ID does not match."
 msgstr ""
 
-#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:27
+#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:48
 msgid "VM UUID does not match."
 msgstr ""
 
@@ -3131,7 +3152,7 @@ msgstr ""
 msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
 msgstr ""
 
-#: libvirt/install.py:39 libvirt/reset.py:26
+#: libvirt/install.py:39 libvirt/reset.py:47
 msgid "VM name does not match."
 msgstr ""
 
@@ -3170,7 +3191,7 @@ msgstr ""
 msgid "VM: {value1}; UUID: {value2}; IP: {address}"
 msgstr ""
 
-#: libvirt/reset.py:88
+#: libvirt/reset.py:106
 #, python-brace-format
 msgid "VM: {value1}; UUID: {value2}; state: {state}"
 msgstr ""
@@ -3220,15 +3241,15 @@ msgstr ""
 msgid "VirtualBox requires an existing bridge adapter."
 msgstr ""
 
-#: libvirt/reset.py:33
+#: libvirt/reset.py:54
 msgid "Volume name does not match."
 msgstr ""
 
-#: libvirt/reset.py:34
+#: libvirt/reset.py:55
 msgid "Volume path does not match."
 msgstr ""
 
-#: libvirt/reset.py:35
+#: libvirt/reset.py:56
 msgid "Volume size does not match."
 msgstr ""
 

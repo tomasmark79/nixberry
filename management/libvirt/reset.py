@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import stat
 import subprocess
 import time
 import xml.etree.ElementTree as ET
@@ -17,6 +18,26 @@ from storage import reject_shared, reject_shared_domains
 def require(condition, message):
     if not condition:
         raise RuntimeError(message)
+
+
+def validate_file(filename):
+    path = Path(filename)
+    # Reject redirected parent directories as well as a linked leaf. This is
+    # intentionally stricter than merely checking whether the file exists.
+    for component in (*reversed(path.parents), path):
+        require(not component.is_symlink(),
+                _("Reset path contains a symbolic link: {path}; refusing reset.").format(path=component))
+    try:
+        data = path.stat()
+    except OSError as failure:
+        raise RuntimeError(_("Cannot inspect reset path {path}: {error}").format(
+            path=path, error=failure)) from failure
+    require(stat.S_ISREG(data.st_mode),
+            _("Reset path is not a regular file: {path}; refusing reset.").format(path=path))
+    require(not path.is_mount(),
+            _("Reset file is a mount point: {path}; refusing reset.").format(path=path))
+    require(data.st_nlink == 1,
+            _("Reset file has multiple hard links: {path}; refusing reset.").format(path=path))
 
 
 def validate_target(domain_xml, volume_xml, manifest):
@@ -65,10 +86,7 @@ def main():
         volume = virsh("vol-dumpxml", manifest["volume"], "--pool", manifest["storagePool"])
         disk, nvram = validate_target(virsh("dumpxml", manifest["name"], "--inactive"), volume, manifest)
         for filename in (disk, nvram):
-            path = Path(filename)
-            require(path.is_file() and not path.is_symlink() and not path.is_mount()
-                    and path.stat().st_nlink == 1 and not any(p.is_symlink() for p in path.parents),
-                    _("The disk or NVRAM is missing, is a link or is a shared file; refusing reset."))
+            validate_file(filename)
         image = json.loads(subprocess.check_output(
             ["qemu-img", "info", "-U", "--output=json", disk], text=True, timeout=20))
         require(image.get("format") == "qcow2" and image.get("virtual-size") == manifest["diskGiB"] * 1024**3
