@@ -1,8 +1,12 @@
 # NixBerry
 
-<img src="assets/NixBerryLogo.svg" alt="NixBerry logo" width="240">
+<p align="center">
+  <img src="assets/NixBerryLogo.svg" alt="NixBerry logo" width="240">
+</p>
 
-[Matrix Channel](https://matrix.to/#/#nixberry:matrix.org)
+<p align="center">
+  <a href="https://matrix.to/#/#nixberry:matrix.org">Matrix Channel</a>
+</p>
 
 NixBerry builds and manages NixOS servers on **QEMU/KVM (libvirt), Hyper-V,
 Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5**. One recipe
