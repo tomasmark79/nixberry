@@ -1,6 +1,5 @@
 """Compare recipes and system generations without changing the remote system."""
 
-import os
 from pathlib import Path
 import re
 import shlex
@@ -11,6 +10,7 @@ import tempfile
 from runtime import status
 from updater import build, connection, freeze_recipe, preflight
 from messages import _, color_enabled, info, render
+from closure_metadata import comparison_command, read_snapshot
 
 
 # As with Nixon's nvdiffg, select the two highest retained generation numbers.
@@ -59,7 +59,7 @@ def compare(recipe, name, target, *, generations=False, dry_run=False):
     info(_("Comparison: {name} ({backend})"), name=name, backend=target["backend"])
     if dry_run:
         info(_("Plan: verify installation → compare the two highest retained generations.") if generations else
-             _("Plan: verify installation → build recipe → retrieve missing old paths → nvd diff."))
+             _("Plan: verify installation → build recipe → read closure metadata → nvd diff."))
         info(_("No connection or build. Comparison does not change the remote system."))
         return 0
 
@@ -84,16 +84,10 @@ def compare(recipe, name, target, *, generations=False, dry_run=False):
         if preflight(target, current_snapshot) != previous:
             raise RuntimeError(_("The target system changed during the build. Run diff again."))
         command = connection(target, current_snapshot)
-        info(_("Retrieving missing parts of the running system into the local Nix store…"))
-        # Trust this identity-checked SSH source for this copy only: locally built
-        # system paths need not carry a binary-cache signature. Keep strict SSH
-        # host-key checks and let the local daemon enforce the caller's permissions.
-        subprocess.run(["nix", "copy", "--no-check-sigs", "--from", "ssh://" + command[-1], previous], check=True,
-                       env={**os.environ, "NIX_SSHOPTS": shlex.join(command[1:command.index("--")])})
-        # Protect the old system from GC during nvd, as with the newly built system.
-        subprocess.run(["nix-store", "--add-root", str(Path(directory) / "previous"),
-                        "--indirect", "--realise", previous], check=True, stdout=subprocess.DEVNULL)
+        info(_("Reading closure metadata from the running system and local recipe…"))
+        old_metadata = read_snapshot(previous, command)
+        new_metadata = read_snapshot(expected)
         if preflight(target, status(target)) != previous:
-            raise RuntimeError(_("The target system changed during transfer. Run diff again."))
+            raise RuntimeError(_("The target system changed while reading metadata. Run diff again."))
         info(_("New recipe: {system}"), system=expected)
-        return subprocess.run(["nvd", "diff", previous, expected], check=False).returncode
+        return subprocess.run(comparison_command(directory, old_metadata, new_metadata), check=False).returncode

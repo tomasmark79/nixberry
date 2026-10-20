@@ -117,16 +117,19 @@ the active and previously booted generations.
 
 <a id="comparison-transfer"></a>
 
-`diff` imports missing running-system paths into the local Nix store for `nvd`.
-For all five VM backends and RPi, target identity and installation are checked
-before transfer, and SSH requires a known host key, including through jump hosts.
-The copy uses `--no-check-sigs` only for that verified SSH source because locally
-built paths may have no binary-cache signature. This trusts the managed target's
-store contents; use `diff` only with targets trusted to supply local store paths.
-Global signature settings and trusted keys are not changed. For a daemon-backed
-local store, the caller must already have permission to import unsigned paths;
-otherwise the comparison stops with the daemon's error. The tool does not retry
-through `sudo` or change daemon settings. No system is activated remotely.
+`diff` reads package paths, selected packages and closure sizes from the running
+system over SSH and from the local build. Local `nvd` compares these metadata
+snapshots through its `--nix-bin-dir` query interface. Its `running` and `recipe`
+headers refer to temporary metadata directories; diagnostics show the actual
+system paths. No running-system store paths or executable files are imported,
+so unsigned builds do not require local daemon trust or signature exceptions.
+
+The same procedure applies to all five VM backends and RPi, for installed image
+and ISO systems and offline VM declarations managed through explicit guest SSH.
+Target identity and installation are checked before reading metadata and the
+active system is checked again before displaying the comparison. SSH requires
+a known host key, including through jump hosts. The command does not write to
+the target or activate a system. `diffg` continues to run `nvd` on the target.
 
 <a id="diagnostika"></a>
 <a id="diagnostics"></a>

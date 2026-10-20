@@ -1038,8 +1038,8 @@ msgstr "Plán ověřený. Disk nebyl změněný, VM nebyla vypnutá."
 msgid "Plan: {name}, 6 CPUs, 12 GiB RAM, 32 + 64 GiB disks, UEFI and a dedicated NAT network."
 msgstr "Plán: {name}, 6 CPU, 12 GiB RAM, disky 32 + 64 GiB, UEFI a samostatná NAT síť."
 
-msgid "Plan: verify installation → build recipe → retrieve missing old paths → nvd diff."
-msgstr "Plán: ověřit instalaci → sestavit recept → stáhnout chybějící staré cesty → nvd diff."
+msgid "Plan: verify installation → build recipe → read closure metadata → nvd diff."
+msgstr "Plán: ověřit instalaci → sestavit recept → načíst metadata závislostí → nvd diff."
 
 msgid "Plan: verify installation → compare the two highest retained generations."
 msgstr "Plán: ověřit instalaci → porovnat dvě nejvyšší dochované generace."
@@ -1188,8 +1188,8 @@ msgstr "Kapacita: {value1} CPU, {value2} MiB RAM, {value3} GiB disk"
 msgid "Result"
 msgstr "Výsledek"
 
-msgid "Retrieving missing parts of the running system into the local Nix store…"
-msgstr "Stahuji chybějící části běžícího systému do místní Nix store…"
+msgid "Reading closure metadata from the running system and local recipe…"
+msgstr "Načítám metadata závislostí běžícího systému a místního receptu…"
 
 msgid "Root and boot partitions match the installation."
 msgstr "Kořenový a bootovací oddíl odpovídají instalaci."
@@ -2050,8 +2050,14 @@ msgstr "Během sestavení se systém cíle změnil. Spusť diff znovu."
 msgid "The target system changed during the build. Run update again."
 msgstr "Během sestavení se systém cíle změnil. Spusť update znovu."
 
-msgid "The target system changed during transfer. Run diff again."
-msgstr "Během přenosu se systém cíle změnil. Spusť diff znovu."
+msgid "The target system changed while reading metadata. Run diff again."
+msgstr "Během načítání metadat se systém cíle změnil. Spusť diff znovu."
+
+msgid "Invalid closure metadata received for comparison."
+msgstr "Pro porovnání byla přijata neplatná metadata závislostí."
+
+msgid "Unsupported nvd metadata query."
+msgstr "Nepodporovaný dotaz nvd na metadata."
 
 msgid "The target's managed ISO already exists; nothing will be overwritten."
 msgstr "Spravované ISO cíle už existuje; nic nepřepisuji."

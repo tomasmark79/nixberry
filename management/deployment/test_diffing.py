@@ -1,4 +1,4 @@
-"""Porovnání nesmí aktivovat server ani přenášet systém směrem na něj."""
+"""Comparison must not activate a server or import its unsigned store paths."""
 
 import contextlib
 import io
@@ -37,7 +37,9 @@ class DiffChecks(unittest.TestCase):
         self.dependencies = {}
         for name, value in (("freeze_recipe", "/nix/store/frozen-recipe"),
                             ("status", {"state": "running", "addresses": ["172.21.222.76"]}),
-                            ("preflight", OLD), ("build", NEW), ("connection", SSH)):
+                            ("preflight", OLD), ("build", NEW), ("connection", SSH),
+                            ("read_snapshot", {"metadata": True}),
+                            ("comparison_command", ["nvd", "diff", OLD, NEW])):
             patcher = patch.object(diffing, name, return_value=value)
             self.dependencies[name] = patcher.start()
             self.addCleanup(patcher.stop)
@@ -55,36 +57,29 @@ class DiffChecks(unittest.TestCase):
         self.assertEqual(self.output.getvalue(), "")
         self.assertIn("[nixberry] Plan:", self.messages.getvalue())
 
-    def test_recipe_comparison_only_copies_from_server_and_keeps_jump_host(self):
+    def test_recipe_comparison_reads_metadata_and_keeps_jump_host(self):
         self.assertEqual(diffing.compare(self.recipe, "test", TARGET), 0)
         commands = [call.args[0] for call in self.run.call_args_list]
-        self.assertEqual(commands[0], ["nix", "copy", "--no-check-sigs", "--from", "ssh://root@172.21.222.76", OLD])
-        options = shlex.split(self.run.call_args_list[0].kwargs["env"]["NIX_SSHOPTS"])
-        self.assertEqual(options, SSH[1:SSH.index("--")])
-        self.assertEqual(commands[-1], ["nvd", "diff", OLD, NEW])
-        self.assertIn("--add-root", commands[1])
-        self.assertNotIn("--to", sum(commands, []))
-        self.assertEqual(len(commands), 3)
+        self.assertEqual(commands, [["nvd", "diff", OLD, NEW]])
+        self.assertEqual([call.args for call in self.dependencies["read_snapshot"].call_args_list],
+                         [(OLD, SSH), (NEW,)])
         self.assertEqual(self.dependencies["build"].call_args.args[0], "/nix/store/frozen-recipe")
 
-    def test_unsigned_copy_is_scoped_to_verified_source_on_every_platform(self):
+    def test_metadata_comparison_never_imports_store_paths_on_any_platform(self):
         for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware", "rpi"):
             with self.subTest(backend=backend):
                 self.run.reset_mock()
                 self.assertEqual(diffing.compare(self.recipe, "test", {**TARGET, "backend": backend}), 0)
                 commands = [call.args[0] for call in self.run.call_args_list]
-                self.assertEqual(commands[0], ["nix", "copy", "--no-check-sigs", "--from",
-                                               "ssh://root@172.21.222.76", OLD])
-                self.assertEqual(shlex.split(self.run.call_args_list[0].kwargs["env"]["NIX_SSHOPTS"]),
-                                 SSH[1:SSH.index("--")])
-                self.assertEqual(sum("--no-check-sigs" in command for command in commands), 1)
-                self.assertEqual(commands[-1], ["nvd", "diff", OLD, NEW])
+                self.assertEqual(commands, [["nvd", "diff", OLD, NEW]])
+                self.assertEqual(self.dependencies["read_snapshot"].call_args_list[-2].args, (OLD, SSH))
 
-    def test_identity_failure_never_reaches_unsigned_copy(self):
+    def test_identity_failure_never_reads_remote_metadata(self):
         self.dependencies["preflight"].side_effect = [OLD, RuntimeError("Identity mismatch")]
         with self.assertRaisesRegex(RuntimeError, "Identity mismatch"):
             diffing.compare(self.recipe, "test", TARGET)
         self.run.assert_not_called()
+        self.dependencies["read_snapshot"].assert_not_called()
 
     def test_stale_cli_stops_before_connecting(self):
         self.dependencies["freeze_recipe"].side_effect = RuntimeError("The target declaration differs")
@@ -120,11 +115,11 @@ class DiffChecks(unittest.TestCase):
             diffing.compare(self.recipe, "test", TARGET)
         self.run.assert_not_called()
 
-    def test_change_during_copy_stops_before_diff(self):
+    def test_change_during_metadata_read_stops_before_diff(self):
         self.dependencies["preflight"].side_effect = [OLD, OLD, NEW]
-        with self.assertRaisesRegex(RuntimeError, "during transfer"):
+        with self.assertRaisesRegex(RuntimeError, "while reading metadata"):
             diffing.compare(self.recipe, "test", TARGET)
-        self.assertEqual(len(self.run.call_args_list), 2)
+        self.run.assert_not_called()
 
     def test_invalid_recipe_and_name_do_not_connect(self):
         for recipe, name in (("", "test"), (self.recipe, "test;reboot")):
@@ -132,11 +127,11 @@ class DiffChecks(unittest.TestCase):
                 diffing.compare(recipe, name, TARGET)
         self.dependencies["status"].assert_not_called()
 
-    def test_copy_failure_never_runs_diff(self):
-        self.run.side_effect = subprocess.CalledProcessError(1, "nix copy")
+    def test_metadata_failure_never_runs_diff(self):
+        self.dependencies["read_snapshot"].side_effect = subprocess.CalledProcessError(1, "ssh")
         with self.assertRaises(subprocess.CalledProcessError):
             diffing.compare(self.recipe, "test", TARGET)
-        self.assertEqual(self.run.call_count, 1)
+        self.run.assert_not_called()
 
 
 class GenerationScriptChecks(unittest.TestCase):

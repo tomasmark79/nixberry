@@ -959,6 +959,10 @@ msgstr ""
 msgid "Invalid check key."
 msgstr ""
 
+#: deployment/closure_metadata.py:43
+msgid "Invalid closure metadata received for comparison."
+msgstr ""
+
 #: deployment/check_images.py:27
 msgid "Invalid format, capacity or unexpected backing file."
 msgstr ""
@@ -1115,7 +1119,7 @@ msgstr ""
 msgid "New offline bundle directory; relative paths are resolved from the working directory"
 msgstr ""
 
-#: deployment/diffing.py:95
+#: deployment/diffing.py:92
 #, python-brace-format
 msgid "New recipe: {system}"
 msgstr ""
@@ -1281,7 +1285,7 @@ msgid "Plan verified. The disk was not changed and the VM was not shut down."
 msgstr ""
 
 #: deployment/diffing.py:62
-msgid "Plan: verify installation → build recipe → retrieve missing old paths → nvd diff."
+msgid "Plan: verify installation → build recipe → read closure metadata → nvd diff."
 msgstr ""
 
 #: deployment/diffing.py:61
@@ -1420,6 +1424,10 @@ msgstr ""
 msgid "RPi: {value1}; serial: {value2}; address: {address}"
 msgstr ""
 
+#: deployment/diffing.py:87
+msgid "Reading closure metadata from the running system and local recipe…"
+msgstr ""
+
 #: deployment/portable.py:97
 #, python-brace-format
 msgid "Reading the image during transfer failed: {value1}"
@@ -1503,10 +1511,6 @@ msgstr ""
 
 #: deployment/cli.py:241
 msgid "Result"
-msgstr ""
-
-#: deployment/diffing.py:87
-msgid "Retrieving missing parts of the running system into the local Nix store…"
 msgstr ""
 
 #: deployment/inspection.py:115
@@ -2856,8 +2860,8 @@ msgstr ""
 msgid "The target system changed during the build. Run update again."
 msgstr ""
 
-#: deployment/diffing.py:94
-msgid "The target system changed during transfer. Run diff again."
+#: deployment/diffing.py:91
+msgid "The target system changed while reading metadata. Run diff again."
 msgstr ""
 
 #: deployment/host_agent.py:959
@@ -3052,6 +3056,10 @@ msgstr ""
 
 #: deployment/host_agent.py:64
 msgid "Unsupported host system."
+msgstr ""
+
+#: deployment/closure_metadata.py:86
+msgid "Unsupported nvd metadata query."
 msgstr ""
 
 #: deployment/campaign.py:764

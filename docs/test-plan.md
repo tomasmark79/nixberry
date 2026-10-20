@@ -36,6 +36,7 @@ test keys rather than the administrator's local identity.
 | Reset and rejected unsafe steps | `test_reset.py` and backend checks |
 | Completion, aliases, online/offline and direct SSH | `test_completion.py` |
 | Output, diagnostics, colors, languages and catalogues | `test_diagnostics.py`, `test_messages.py`, `test_message_contract.py` |
+| Metadata comparisons without importing unsigned paths | `test_diffing.py`, `test_closure_metadata.py` (real local `nvd` when available) |
 | Campaign isolation and resource tracking | `test_campaign.py` |
 
 Nixon's separate shell integration check is run from its own repository:

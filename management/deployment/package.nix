@@ -17,6 +17,7 @@ let
         ./guest-install.sh
         ./updater.py
         ./diffing.py
+        ./closure_metadata.py
         ./messages.py
         ./messages.sh
         ./locales/cs.sh
