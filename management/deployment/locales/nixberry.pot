@@ -169,6 +169,10 @@ msgstr ""
 msgid "All inventory checks passed; no VMs or hosts were contacted."
 msgstr ""
 
+#: deployment/check_ci.py:140
+msgid "All selected CI checks passed."
+msgstr ""
+
 #: deployment/cli.py:268
 #, python-brace-format
 msgid "All target statuses: {command}"
@@ -272,6 +276,11 @@ msgstr ""
 
 #: libvirt/install.py:50
 msgid "CD-ROM does not match."
+msgstr ""
+
+#: deployment/check_ci.py:111
+#, python-brace-format
+msgid "CI recipe copy: {path}."
 msgstr ""
 
 #: deployment/cli.py:131
@@ -1530,6 +1539,11 @@ msgstr ""
 msgid "Repeated creation was incorrectly allowed."
 msgstr ""
 
+#: deployment/check_ci.py:106
+#, python-brace-format
+msgid "Required CI tools are missing: {tools}."
+msgstr ""
+
 #: deployment/messages.py:153
 #, python-brace-format
 msgid "Required arguments are missing: {arguments}"
@@ -1621,6 +1635,10 @@ msgstr ""
 msgid "Run diff through the nixberry launcher with a complete pinned recipe."
 msgstr ""
 
+#: deployment/check_ci.py:100
+msgid "Run isolated NixBerry CI checks without contacting hosts."
+msgstr ""
+
 #: deployment/scaffold.py:58
 msgid "Run the command from a complete project recipe."
 msgstr ""
@@ -1635,6 +1653,11 @@ msgstr ""
 
 #: deployment/cli.py:313
 msgid "Run verify through the nixberry launcher from the project root."
+msgstr ""
+
+#: deployment/check_ci.py:50 deployment/check_ci.py:56
+#, python-brace-format
+msgid "Running CI check: {check}."
 msgstr ""
 
 #: deployment/runtime.py:330
@@ -1691,6 +1714,10 @@ msgstr ""
 #: deployment/cli.py:281
 #, python-brace-format
 msgid "Select a target: {value1}. Arbitrary addresses are not allowed."
+msgstr ""
+
+#: deployment/check_ci.py:102
+msgid "Select regression checks, inventory checks, or both."
 msgstr ""
 
 #: deployment/campaign.py:768
@@ -3055,6 +3082,11 @@ msgstr ""
 #: hyperv/manage.py:166
 #, python-brace-format
 msgid "Timed out waiting for the guest: {last_message}"
+msgstr ""
+
+#: deployment/check_ci.py:38
+#, python-brace-format
+msgid "Tracked path escapes the isolated recipe: {path}."
 msgstr ""
 
 #: deployment/portable.py:139

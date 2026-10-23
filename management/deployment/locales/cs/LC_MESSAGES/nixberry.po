@@ -2640,3 +2640,28 @@ msgstr "Odkazovaná konfigurace se během pořizování kopie změnila: {path}."
 
 msgid "Run NixBerry with linked configurations captured in its recipe."
 msgstr "Spustí NixBerry s odkazovanými konfiguracemi zahrnutými v receptu."
+
+msgid "All selected CI checks passed."
+msgstr "Všechny vybrané kontroly CI prošly."
+
+#, python-brace-format
+msgid "CI recipe copy: {path}."
+msgstr "Kopie receptu pro CI: {path}."
+
+#, python-brace-format
+msgid "Required CI tools are missing: {tools}."
+msgstr "Chybí požadované nástroje pro CI: {tools}."
+
+msgid "Run isolated NixBerry CI checks without contacting hosts."
+msgstr "Spustí izolované kontroly CI projektu NixBerry bez připojování k hostitelům."
+
+#, python-brace-format
+msgid "Running CI check: {check}."
+msgstr "Spouštím kontrolu CI: {check}."
+
+msgid "Select regression checks, inventory checks, or both."
+msgstr "Vyber regresní kontroly, kontroly inventáře nebo obojí."
+
+#, python-brace-format
+msgid "Tracked path escapes the isolated recipe: {path}."
+msgstr "Verzovaná cesta vede mimo izolovaný recept: {path}."

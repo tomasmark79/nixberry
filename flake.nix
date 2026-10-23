@@ -356,6 +356,21 @@
       ) vmInstallers;
       nixberryRpiRecoveries = rpiRecoveries;
       nixosConfigurations = allSystems;
+      devShells.x86_64-linux.ci = vmPkgs.mkShellNoCC {
+        packages = with vmPkgs; [
+          actionlint
+          bash
+          gettext
+          git
+          jq
+          libxml2.bin
+          nvd
+          powershell
+          python3
+          ruff
+          shellcheck
+        ];
+      };
       packages.x86_64-linux = {
         inherit (mc-modern.packages.x86_64-linux) mc mc-tests;
         hstr = vmPkgs.callPackage ./modules/applications/hstr/package.nix { };

@@ -8,15 +8,56 @@ not prove a real hypervisor works.
 
 ## Isolated checks
 
-From the recipe root, with Nix, Python, Bash and GNU gettext available:
+On x86_64 Linux, run the same isolated checks as CI from the recipe root:
 
 ```sh
-python3 management/deployment/compile_locales.py
+nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py
+```
+
+Nix must be installed and able to build local derivations. The `ci` development
+shell supplies the remaining tools from the recipe lock without replacing the
+installed Nix client. The first run downloads locked sources and runtime
+dependencies. It builds management tools and small test artifacts, without
+building guest systems, images or installation media.
+
+The runner copies tracked working files into a temporary recipe with a test-only
+public key. It excludes ignored and untracked files, including local hosts,
+VM/RPi declarations and private linked configurations. Tracked absolute links,
+links leaving the recipe and tracked paths through symbolic-link directories
+are rejected. The original checkout and its local identity are preserved.
+Add new source files to the Git index before checking them locally.
+
+[GitHub Actions](../.github/workflows/checks.yml) runs on pushes, pull requests
+and manual dispatches, with separate `regression` and `inventory` jobs. They
+require no repository secrets, administrator keys, SSH agent or hypervisor.
+Repository access is read-only and checkout credentials are not retained.
+Both jobs run catalogue checks and reject stale generated translations before
+compilation can rewrite them. Select either job locally with:
+
+```sh
+nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py --suite regression
+nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py --suite inventory
+```
+
+The regression job checks Python, Nix, Bash and PowerShell syntax, unresolved
+Python names, shell errors, workflow syntax and all five Python test suites.
+Missing tools and skipped tests fail the job. The inventory job evaluates
+isolated inventory variants across all five VM backends, including the
+Linux and Windows example host declarations, and builds the empty CLI. RPi-specific
+installation behavior is covered by mocked regression checks; CI does not
+prove physical recovery, boot or live deployment on any platform.
+
+For focused checks, use tools from the development shell and English defaults:
+
+```sh
+export NIXBERRY_LANG=en
 python3 management/deployment/compile_locales.py --check
+python3 management/deployment/compile_locales.py
 python3 -m unittest discover -s management/deployment -p 'test_*.py'
 python3 -m unittest discover -s management/libvirt -p 'test_*.py'
 python3 -m unittest discover -s management/hyperv -p 'test_*.py'
 python3 -m unittest discover -s management/rpi -p 'test_*.py'
+python3 -m unittest discover -s management/proxmox/lab -p 'test_*.py'
 python3 management/deployment/check_inventory.py
 ```
 
@@ -39,6 +80,7 @@ test keys rather than the administrator's local identity.
 | Output, diagnostics, colors, languages and catalogues | `test_diagnostics.py`, `test_messages.py`, `test_message_contract.py` |
 | Metadata comparisons without importing unsigned paths | `test_diffing.py`, `test_closure_metadata.py` (real local `nvd` when available) |
 | Campaign isolation and resource tracking | `test_campaign.py` |
+| CI export excludes local data and unsafe links | `test_ci.py` |
 
 Nixon's separate shell integration check is run from its own repository:
 `nix build --no-link path:.#checks.x86_64-linux.nixberry-shell`.
