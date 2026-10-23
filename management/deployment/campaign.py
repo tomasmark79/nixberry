@@ -345,7 +345,7 @@ class Campaign:
     def wait_verified(self):
         deadline = time.monotonic() + 300
         while time.monotonic() < deadline:
-            code, _ = self.cli("verify", self.case["target"], "--json", expected=None)
+            code = self.cli("verify", self.case["target"], "--json", expected=None)[0]
             if code == 0:
                 self.checks()
                 return

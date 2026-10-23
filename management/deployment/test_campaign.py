@@ -15,6 +15,20 @@ from campaign import Blocked, Campaign, matrix, nix_attrs, validate_static_netwo
 
 
 class CampaignTests(unittest.TestCase):
+    def test_verification_timeout_preserves_the_translation_function(self):
+        task = Campaign("/recipe", "/run-test")
+        task.case = {"target": "vm-demo-test-network"}
+        for ticks in ([0, 1, 301], [0, 301]):
+            with self.subTest(ticks=ticks), \
+                    patch.object(task, "cli", return_value=(1, "verification failed")) as cli, \
+                    patch.object(task, "checks") as checks, \
+                    patch("campaign.time.monotonic", side_effect=ticks), \
+                    patch("campaign.time.sleep"), \
+                    self.assertRaisesRegex(RuntimeError, "System verification failed after the new boot"):
+                task.wait_verified()
+            self.assertEqual(cli.call_count, len(ticks) - 2)
+            checks.assert_not_called()
+
     def test_online_preflight_errors_preserve_the_translation_function(self):
         task = Campaign("/recipe", "/run-test")
         task.case = {"group": "NET", "host": "test-host", "target": "vm-demo-test-network"}
