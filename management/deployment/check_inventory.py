@@ -169,9 +169,12 @@ def main():
         if case == "portable":
             for name, target in expected["instances"].items():
                 tool = state["vmTools"][name]
-                assert tool["target"]["backend"] == target["backend"]
-                assert tool["target"]["spec"] == target["spec"]
-                assert tool["imagePath"] and set(state["manifest"][name]["commands"]) == {"probe", "create", "install", "provision"}
+                if target["backend"] in ("libvirt", "hyperv"):
+                    assert all(tool.get(key) == value for key, value in target["spec"].items()), (case, name, "spec")
+                else:
+                    assert tool["target"]["backend"] == target["backend"]
+                    assert tool["target"]["spec"] == target["spec"]
+                assert tool["imagePath"] and set(state["manifest"][name]["commands"]) == {"probe", "create", "install", "provision", "reset"}, (case, name, "commands")
                 assert {"doctor", "cleanup"} <= set(state["manifest"][name]["operations"])
         records[case] = state
         (root / (case + ".json")).write_text(json.dumps(state, indent=2) + "\n")

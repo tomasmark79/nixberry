@@ -165,7 +165,7 @@ msgstr ""
 msgid "After verification, the running VM will be shut down gracefully and only its own resources removed."
 msgstr ""
 
-#: deployment/check_inventory.py:200
+#: deployment/check_inventory.py:203
 msgid "All inventory checks passed; no VMs or hosts were contacted."
 msgstr ""
 
@@ -1210,15 +1210,15 @@ msgstr ""
 msgid "Not enough free space."
 msgstr ""
 
-#: deployment/check_inventory.py:199
+#: deployment/check_inventory.py:202
 msgid "OK empty CLI: build, list and status without hosts or targets"
 msgstr ""
 
-#: deployment/check_inventory.py:190
+#: deployment/check_inventory.py:193
 msgid "OK missing-host: clear configuration error"
 msgstr ""
 
-#: deployment/check_inventory.py:178
+#: deployment/check_inventory.py:181
 #, python-brace-format
 msgid "OK {case}: {value2}"
 msgstr ""
@@ -2748,7 +2748,7 @@ msgstr ""
 msgid "The operator creates the VM; prepare the image through offline export."
 msgstr ""
 
-#: deployment/check_inventory.py:189
+#: deployment/check_inventory.py:192
 msgid "The orphaned host declaration was not rejected."
 msgstr ""
 
