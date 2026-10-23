@@ -2446,6 +2446,10 @@ msgstr "nespravovaný"
 msgid "Unrecognized arguments: {arguments}"
 msgstr "Neznámé argumenty: {arguments}"
 
+#, python-brace-format
+msgid "Ambiguous option {option}. Choices: {choices}"
+msgstr "Nejednoznačná volba {option}. Možnosti: {choices}"
+
 msgid "Unsupported backend for a new declaration."
 msgstr "Nepodporovaný backend nové deklarace."
 

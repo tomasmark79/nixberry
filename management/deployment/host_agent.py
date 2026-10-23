@@ -746,8 +746,10 @@ def reset_checks(spec, backend, directory):
             return [v for k, v in info.items() if any(re.fullmatch(re.escape(c) + r"-\d+-\d+", k) for c in controllers)
                     and v not in ("none", "emptydrive", "")]
         details = pairs(run([spec["toolPath"], "showvminfo", spec["uuid"], "--machinereadable"]))
+        # createvm composes <basefolder>/<name>/<name>.vbox, including when
+        # the supplied base folder already has the instance's name.
         if (not details.get("CfgFile") or Path(details["CfgFile"]).resolve()
-                != (directory / (spec["name"] + ".vbox")).resolve()):
+                != (directory / spec["name"] / (spec["name"] + ".vbox")).resolve()):
             raise RuntimeError(_("The VirtualBox VM configuration is outside its dedicated directory; refusing reset."))
         if details.get("SnapshotCount", "0") != "0":
             raise RuntimeError(_("The VM has snapshots; refusing reset."))

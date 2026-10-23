@@ -54,6 +54,7 @@ class MessageChecks(unittest.TestCase):
     def test_parser_errors_default_to_english_on_stderr_and_keep_exit_code_two(self):
         cases = (
             (["--unknown"], "Unrecognized arguments"),
+            (["--h"], "Ambiguous option --h. Choices: --help, --host"),
             (["--host"], "requires a value"),
             (["--apply=yes"], "does not accept a value"),
             (["--apply", "--dry-run"], "cannot be combined"),
@@ -75,6 +76,21 @@ class MessageChecks(unittest.TestCase):
             self.assertIn(expected, stderr.getvalue())
             self.assertIn("Usage:", stderr.getvalue())
             self.assertEqual(stderr.getvalue().count("[nixberry]"), 1)
+
+    def test_ambiguous_option_is_translated_and_preserves_technical_choices(self):
+        catalog = czech_catalogue()
+        with patch.dict(os.environ, {"NIXBERRY_LANG": "cs"}, clear=True), \
+                patch.object(messages, "_catalog", return_value=catalog):
+            parser = messages.ArgumentParser(prog="test")
+            parser.add_argument("--host")
+            stdout, stderr = Stream(), Stream()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr), \
+                    self.assertRaises(SystemExit) as failure:
+                parser.parse_args(["--h"])
+        self.assertEqual(failure.exception.code, 2)
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertIn("[nixberry] Nejednoznačná volba --h. Možnosti: --help, --host\n", stderr.getvalue())
+        self.assertEqual(stderr.getvalue().count("[nixberry]"), 1)
 
     def test_nested_own_error_has_one_prefix_and_preserves_braces(self):
         with contextlib.redirect_stderr(Stream()) as stderr:

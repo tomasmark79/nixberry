@@ -335,7 +335,7 @@ class Campaign:
         self.start()
         self.wait_verified()
         self.set_revision("A")
-        code, _ = self.cli("create", self.case["target"], "--apply", expected=None)
+        code = self.cli("create", self.case["target"], "--apply", expected=None)[0]
         self.set_revision("B")
         if code == 0:
             raise RuntimeError(_("Repeated creation was incorrectly allowed."))

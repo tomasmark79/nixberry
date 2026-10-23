@@ -26,6 +26,10 @@ Normal `update` does not rename partitions. Inspect them with
 | SSD serial | `EXAMPLE_SERIAL` |
 | SSD by-id | `/dev/disk/by-id/ata-EXAMPLE_SERIAL` |
 
+`installerAddress` and `gateway` require IPv4 addresses. The persistent
+`address` requires IPv4 CIDR notation with a prefix from 0 to 32; `dns` must
+contain at least one IPv4 or IPv6 address literal.
+
 Another RPi or SSD needs its own declaration and newly built media.
 Firmware must permit USB boot; this tool does not configure EEPROM.
 

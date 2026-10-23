@@ -11,10 +11,24 @@ import unittest
 import xml.etree.ElementTree as ET
 from unittest.mock import patch, call
 
-from campaign import Campaign, matrix, nix_attrs, validate_static_network
+from campaign import Blocked, Campaign, matrix, nix_attrs, validate_static_network
 
 
 class CampaignTests(unittest.TestCase):
+    def test_online_preflight_errors_preserve_the_translation_function(self):
+        task = Campaign("/recipe", "/run-test")
+        task.case = {"group": "NET", "host": "test-host", "target": "vm-demo-test-network"}
+        with patch.object(task, "fresh_recipe", return_value={"backend": "libvirt"}), \
+                patch.object(task, "preflight"), \
+                self.assertRaisesRegex(Blocked, "reserved static address"):
+            task.online()
+        task.case["group"] = "ON"
+        with patch.object(task, "fresh_recipe", return_value={"backend": "libvirt"}), \
+                patch.object(task, "preflight"), \
+                patch.object(task, "snapshot", return_value={"state": "running"}), \
+                self.assertRaisesRegex(RuntimeError, "already exists"):
+            task.online()
+
     def test_cli_pins_its_private_recipe_over_shell_overrides(self):
         task = Campaign('/recipe', '/run-test')
         task.work = Path('/private recipe')

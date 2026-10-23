@@ -4,6 +4,7 @@ let
   cfg = config.nixberry.rpi;
   inherit (lib) mkOption types;
   mac = types.strMatching "([0-9a-f]{2}:){5}[0-9a-f]{2}";
+  addresses = import ../../modules/system/networking/addresses.nix { inherit lib; };
 in
 {
   options.nixberry.rpi = {
@@ -21,15 +22,15 @@ in
     };
     address = mkOption {
       type = types.str;
-      description = "Persistent system address including prefix length.";
+      description = "Persistent IPv4 system address including prefix length.";
     };
     gateway = mkOption {
       type = types.str;
-      description = "Target system default gateway.";
+      description = "Target system default IPv4 gateway.";
     };
     dns = mkOption {
       type = types.listOf types.str;
-      description = "Target system DNS servers.";
+      description = "Target system DNS server IPv4 or IPv6 addresses.";
     };
     lanMac = mkOption {
       type = mac;
@@ -69,6 +70,22 @@ in
     };
   };
   config.assertions = [
+    {
+      assertion = addresses.ipv4 cfg.installerAddress;
+      message = "The RPi installer address must be a valid IPv4 address.";
+    }
+    {
+      assertion = addresses.ipv4WithPrefix cfg.address;
+      message = "The RPi system address must be a valid IPv4 address with a prefix length from 0 to 32.";
+    }
+    {
+      assertion = addresses.ipv4 cfg.gateway;
+      message = "The RPi gateway must be a valid IPv4 address.";
+    }
+    {
+      assertion = cfg.dns != [ ] && builtins.all addresses.ip cfg.dns;
+      message = "RPi DNS servers must be a nonempty list of valid IPv4 or IPv6 addresses.";
+    }
     {
       assertion = cfg.reserveMac == null || cfg.reserveMac != cfg.lanMac;
       message = "Primary and spare RPi adapters must have different MAC addresses.";

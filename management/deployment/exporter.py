@@ -15,7 +15,10 @@ import tempfile
 
 
 def export(recipe, target_name, target, destination, *, dry_run=False, method=None):
-    recipe, destination = Path(recipe).resolve(), Path(destination).expanduser().resolve()
+    destination = Path(destination).expanduser()
+    if destination.is_symlink():
+        raise RuntimeError(_("The output directory already exists; export will not overwrite it."))
+    recipe, destination = Path(recipe).resolve(), destination.resolve()
     if not re.fullmatch(r"[a-zA-Z0-9_-]+", target_name):
         raise RuntimeError(_("Disallowed exported target name."))
     if destination.exists() or destination.is_symlink():

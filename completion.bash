@@ -12,6 +12,7 @@ _nixberry_complete() {
     local current=${COMP_WORDS[COMP_CWORD]} action= target= word file name
     local skip_value=0 i
     local recipe
+    COMPREPLY=()
     recipe=$(_nixberry_recipe_dir "$_nixberry_completion_recipe" 2>/dev/null) || return 0
     local -a actions=(
         list show status ssh probe plan create install provision reset
@@ -20,7 +21,6 @@ _nixberry_complete() {
     )
     local -a options=(--help --version)
     local -A used=()
-    COMPREPLY=()
 
     # Skip option values; offer no local completions after an SSH command separator.
     for ((i = 1; i < COMP_CWORD; i++)); do

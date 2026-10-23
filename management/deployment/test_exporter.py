@@ -102,6 +102,21 @@ class ExportChecks(unittest.TestCase):
                 self.assertIn("--output ~/lab-offline", str(error.exception))
                 nix.assert_not_called()
 
+    def test_dangling_output_symlink_is_rejected_before_preview_or_build(self):
+        destination = self.root / "bundle-link"
+        unrelated = self.root / "unrelated-output"
+        destination.symlink_to(unrelated, target_is_directory=True)
+        for dry_run in (True, False):
+            with self.subTest(dry_run=dry_run), \
+                    patch("exporter.subprocess.check_output") as nix, \
+                    patch("exporter.subprocess.run") as build:
+                with self.assertRaisesRegex(RuntimeError, "already exists"):
+                    export(self.recipe, "lab", self.target, destination, dry_run=dry_run)
+                nix.assert_not_called()
+                build.assert_not_called()
+                self.assertTrue(destination.is_symlink())
+                self.assertFalse(unrelated.exists())
+
 
     def test_bundle_has_complete_recipe_and_valid_hashes(self):
         destination = self.root / "bundle"

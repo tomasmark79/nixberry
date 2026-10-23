@@ -203,6 +203,9 @@ network = {
 };
 ```
 
+Static addresses use IPv4 CIDR notation with a prefix from 0 to 32 and an IPv4
+gateway. DNS entries must be IPv4 or IPv6 literals.
+
 These addresses are examples. The hypervisor operator provides the bridge,
 VLAN, firewall and connection to the correct subnet. Export a disk or ISO:
 

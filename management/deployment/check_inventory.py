@@ -53,9 +53,7 @@ def summary(recipe):
 def main():
     ArgumentParser(description=_(__doc__)).parse_args()
     recipe = Path(__file__).resolve().parents[2]
-    preferred = Path("/home/shared/tmp")
-    root = Path(tempfile.mkdtemp(prefix="nixberry-management-check-",
-                                 dir=preferred if preferred.is_dir() else None))
+    root = Path(tempfile.mkdtemp(prefix="nixberry-management-check-"))
     info(_("Copies and results: {value1}"), value1=str(root))
     raw = evaluate("import " + str(recipe / "instances"))
     initial = registry(recipe)

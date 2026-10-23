@@ -148,6 +148,8 @@ class ArgumentParser(argparse.ArgumentParser):
         # Translate common argparse errors without changing its global gettext or locale.
         patterns = (
             (r"unrecognized arguments: (?P<arguments>.*)", _("Unrecognized arguments: {arguments}")),
+            (r"ambiguous option: (?P<option>.*?) could match (?P<choices>.*)",
+             _("Ambiguous option {option}. Choices: {choices}")),
             (r"the following arguments are required: (?P<arguments>.*)", _("Required arguments are missing: {arguments}")),
             (r"one of the arguments (?P<arguments>.*) is required", _("Specify one of these options: {arguments}")),
             (r"argument (?P<option>.*?): expected one argument", _("Option {option} requires a value.")),

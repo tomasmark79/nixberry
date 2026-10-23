@@ -172,6 +172,15 @@ COMP_WORDS=(nixberry show nova); COMP_CWORD=2; _nixberry_complete
     def test_recipe_override_and_empty_inventory(self):
         self.assertEqual(self.complete("show", "", before='NIXBERRY_RECIPE="$1/instances"'), [])
 
+    def test_invalid_recipe_clears_previous_completions(self):
+        for command, words in (("nixberry", ("show", "")), ("nixrebuildberry", ("",))):
+            with self.subTest(command=command):
+                self.assertEqual(self.complete(*words, command=command, before='''
+COMP_WORDS=(nixberry sh); COMP_CWORD=1; _nixberry_complete
+[[ ${COMPREPLY[*]} == show ]] || exit 1
+NIXBERRY_RECIPE=/missing-nixberry-recipe
+'''), [])
+
     def test_source_by_filename(self):
         result = subprocess.run(
             [self.bash, "--noprofile", "--norc", "-c",
