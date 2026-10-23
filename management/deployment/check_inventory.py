@@ -164,7 +164,7 @@ def main():
             assert state["systems"]["another-hv"]["hostname"] == "nixberry-another-hv"
             for name, target in expected["instances"].items():
                 if name != "another-hv" and target["backend"] == "hyperv":
-                    assert other["isoPath"] != state["vmTools"][name]["isoPath"]
+                    assert other["imagePath"] and other["imagePath"] != state["vmTools"][name]["imagePath"], (case, name, "imagePath")
                     assert state["images"][name] != state["images"]["another-hv"]
         if case == "portable":
             for name, target in expected["instances"].items():
