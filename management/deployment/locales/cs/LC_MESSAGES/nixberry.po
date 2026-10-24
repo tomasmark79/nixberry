@@ -2783,3 +2783,11 @@ msgstr "SSH při počátečním startu musí používat jiný port než běžné
 
 msgid "Use an IPv4 or unscoped IPv6 guest address."
 msgstr "Použij IPv4 nebo IPv6 adresu hostované VM bez identifikátoru rozhraní."
+
+#, python-brace-format
+msgid "After preparation: {command}"
+msgstr "Po přípravě: {command}"
+
+#, python-brace-format
+msgid "No prepared encrypted image metadata was found at {path}. Run {command} first; its output directory must not already exist."
+msgstr "Na cestě {path} nebyla nalezena metadata připraveného šifrovaného obrazu. Nejdříve spusť {command}; jeho výstupní adresář ještě nesmí existovat."

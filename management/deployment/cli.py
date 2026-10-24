@@ -19,7 +19,7 @@ from inspection import doctor, exit_code
 from cleanup import preview, failed
 from recipe_source import materialized_recipe
 from discovery import collect_status
-from security import policy as security_policy, require_supported, prepare_image, unlock
+from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, ArgumentParser, error as report_error
 
 
@@ -225,9 +225,15 @@ def main(argv=None):
         info(_("Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."))
         if args.offline:
             info(_("Offline declaration: edit capacity and deployment parameters in the file before export."))
-            info(_("Next step: {command}"), command=f"nixberry export {args.target} --output ~/{args.target}-offline")
+            next_command = f"nixberry export {args.target} --output ~/{args.target}-offline"
         else:
-            info(_("Next step: {command}"), command=f"nixberry plan {args.target}")
+            next_command = f"nixberry plan {args.target}"
+        if args.security == "luks":
+            info(_("Next step: {command}"), command=f"nixberry prepare-image {args.target}")
+            info(_("After preparation: {command}"), command=next_command)
+        else:
+            info(_("Next step: {command}"), command=next_command)
+        if not args.offline:
             info(_("After reviewing: {command}"), command=f"nixberry reproduce {args.target} --apply")
         return 0
     if (args.address or args.erase_existing) and not (args.action == "unlock" and not args.erase_existing) and not (
@@ -294,6 +300,8 @@ def main(argv=None):
     target = registry[args.target]
     if args.action in ("plan", "create", "install", "provision", "reproduce", "export", "prepare-image", "unlock", "update", "verify"):
         require_supported(target, args.method or deployment_method(target))
+    if args.action in ("plan", "create", "install", "provision", "reproduce", "export", "unlock") and security_policy(target)["mode"] == "luks":
+        image_metadata(target, name=args.target)
     if args.action == "prepare-image":
         recipe = os.environ.get("NIXBERRY_RECIPE")
         if not recipe or not (Path(recipe) / "flake.nix").is_file():

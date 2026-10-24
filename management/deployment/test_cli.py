@@ -42,6 +42,40 @@ class HelpChecks(unittest.TestCase):
 
 
 class DispatchChecks(unittest.TestCase):
+    def test_encrypted_declaration_hints_prepare_before_plan_or_export(self):
+        create = Mock(return_value=(Path("/recipe/instances/vm-demo-secured.nix"), "{}"))
+        with patch("pathlib.Path.read_text", return_value="{}"), \
+                patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT_HOSTS": "/hosts"}), \
+                patch.dict(MAIN.__globals__, {"new_vm": create, "new_libvirt": create}), \
+                patch("subprocess.run") as run:
+            for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+                for offline in ([], ["--offline"]):
+                    with self.subTest(backend=backend, offline=offline), \
+                            contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as hints:
+                        self.assertEqual(MAIN(["new-" + backend + "-vm", "vm-demo-secured",
+                                               "--security", "luks", "--dry-run", *offline]), 0)
+                        text = hints.getvalue()
+                        following = "export" if offline else "plan"
+                        self.assertIn("Next step: nixberry prepare-image vm-demo-secured", text)
+                        self.assertLess(text.index("nixberry prepare-image"), text.index("nixberry " + following))
+            run.assert_not_called()
+
+    def test_missing_encrypted_image_stops_before_any_backend_dispatch(self):
+        manifest = Path(os.environ["NIXBERRY_DEPLOYMENT"])
+        with patch("subprocess.run") as run:
+            for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+                manifest.write_text(json.dumps({"test": {"backend": backend, "spec": {}, "host": "lab",
+                    "commands": {action: "/tools/" + action for action in ("create", "install", "provision")},
+                    "security": {"mode": "luks", "imageDirectory": str(manifest.parent / "not-prepared")}}}))
+                for action in ("plan", "create", "install", "provision", "reproduce", "export", "unlock"):
+                    extra = ["--address", "192.0.2.20"] if action == "unlock" else []
+                    with self.subTest(backend=backend, action=action):
+                        with self.assertRaises(RuntimeError) as failure:
+                            MAIN([action, "test", *extra])
+                        self.assertIn("nixberry prepare-image test", str(failure.exception))
+                        self.assertNotIn("Errno", str(failure.exception))
+            run.assert_not_called()
+
     def test_configuration_is_persisted_by_all_new_commands_and_not_an_update_override(self):
         create = Mock(return_value=(Path("/recipe/instances/demo.nix"), "{}"))
         with patch("pathlib.Path.read_text", return_value="{}"), \

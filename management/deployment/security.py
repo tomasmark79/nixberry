@@ -61,7 +61,8 @@ def binding(target):
             "security": {k: v for k, v in policy(target).items() if k != "imageDirectory"}}
 
 
-def artifact(target, *, system=None):
+def image_metadata(target, *, name="TARGET"):
+    """Read preparation metadata with an actionable error before adapter dispatch."""
     security = require_supported(target)
     directory = security.get("imageDirectory")
     if security["mode"] != "luks" or not directory:
@@ -69,7 +70,17 @@ def artifact(target, *, system=None):
     root = Path(directory)
     if not root.is_absolute() or root.is_symlink():
         raise RuntimeError(_("The encrypted image directory must be an absolute regular directory."))
-    metadata = json.loads((root / "encryption.json").read_text())
+    metadata_path = root / "encryption.json"
+    try:
+        metadata = json.loads(metadata_path.read_text())
+    except FileNotFoundError:
+        raise RuntimeError(_("No prepared encrypted image metadata was found at {path}. Run {command} first; its output directory must not already exist.").format(
+            path=metadata_path, command=f"nixberry prepare-image {name}")) from None
+    return root, metadata
+
+
+def artifact(target, *, system=None):
+    root, metadata = image_metadata(target)
     if metadata["binding"] != binding(target) or (system is not None and metadata["systemPath"] != system):
         raise RuntimeError(_("The encrypted image does not match this declaration and system; prepare a new image."))
     path = root / ("system." + FORMATS[target["backend"]])

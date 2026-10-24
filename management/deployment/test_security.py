@@ -80,6 +80,20 @@ class SecurityTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "checksum"):
             artifact(self.target)
 
+    def test_missing_prepared_media_has_actionable_errors_for_every_backend(self):
+        (self.root / "encryption.json").unlink()
+        with patch("security.subprocess.run") as run:
+            for backend in FORMATS:
+                for directory in (self.root, self.root / "not-prepared"):
+                    target = {**self.target, "backend": backend,
+                              "security": {"mode": "luks", "imageDirectory": str(directory)}}
+                    with self.subTest(backend=backend, directory=directory):
+                        with self.assertRaisesRegex(RuntimeError, "nixberry prepare-image TARGET") as failure:
+                            artifact(target)
+                        self.assertIn("output directory must not already exist", str(failure.exception))
+                        self.assertNotIn("Errno", str(failure.exception))
+            run.assert_not_called()
+
     def test_direct_manifest_requires_verified_media_and_system(self):
         manifest = {"security": self.target["security"], "securityTarget": self.target,
                     "imagePath": str(self.disk), "systemPath": self.metadata["systemPath"]}

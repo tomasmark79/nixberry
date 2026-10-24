@@ -60,6 +60,9 @@ nixberry plan vm-demo-encrypted
 nixberry reproduce vm-demo-encrypted --apply
 ```
 
+`plan` validates prepared media; run `prepare-image` first. Neither declaration
+creation nor planning prepares an encrypted disk or reads a passphrase.
+
 Preparation asks twice for a passphrase of at least 16 bytes. `--key-file FILE`
 supplies a runtime passphrase instead; the file must be regular, private,
 owned by the current user and not a symlink. Never put it in the recipe,
