@@ -224,6 +224,9 @@ def unlock(target, address, *, dry_run=False):
         command = ["ssh", "-t", "-p", str(security["port"]),
             "-o", "StrictHostKeyChecking=yes", "-o", "UserKnownHostsFile=" + str(known),
             "-o", "GlobalKnownHostsFile=/dev/null", "-o", "HostKeyAlias=" + alias,
+            "-o", "KnownHostsCommand=none", "-o", "VerifyHostKeyDNS=no",
+            "-o", "HostKeyAlgorithms=ssh-ed25519", "-o", "UpdateHostKeys=no",
+            "-o", "ControlMaster=no", "-o", "ControlPath=none", "-o", "ControlPersist=no",
             "-o", "ClearAllForwardings=yes", "-o", "ForwardAgent=no", "-o", "ForwardX11=no",
             "-o", "ConnectTimeout=10", "root@" + address]
         spec = target["spec"]
@@ -235,6 +238,7 @@ def unlock(target, address, *, dry_run=False):
                 raise ValueError(_("Disallowed SSH host or account."))
             import shlex
             relay = ["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
+                     "-o", "ControlMaster=no", "-o", "ControlPath=none", "-o", "ControlPersist=no",
                      "-o", "ForwardAgent=no", "-o", "ForwardX11=no", "-W", "[%h]:%p",
                      spec["sshUser"] + "@" + spec["sshHost"]]
             command[1:1] = ["-o", "ProxyCommand=" + shlex.join(relay)]

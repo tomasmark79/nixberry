@@ -295,10 +295,13 @@ def main(argv=None):
     if args.action in ("plan", "create", "install", "provision", "reproduce", "export", "prepare-image", "unlock", "update", "verify"):
         require_supported(target, args.method or deployment_method(target))
     if args.action == "prepare-image":
+        recipe = os.environ.get("NIXBERRY_RECIPE")
+        if not recipe or not (Path(recipe) / "flake.nix").is_file():
+            parser.error(_("Run the operation through the nixberry launcher with a complete project recipe."))
         destination = args.output or security_policy(target).get("imageDirectory")
         if not destination:
             parser.error(_("Set security.imageDirectory or specify --output for prepare-image."))
-        result = prepare_image(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target,
+        result = prepare_image(recipe, args.target, target,
                                destination, key_file=args.key_file, dry_run=args.dry_run)
         print(json.dumps(result, indent=2) if args.json or args.dry_run else result["destination"])
         return 0

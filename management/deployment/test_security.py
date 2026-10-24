@@ -1,6 +1,8 @@
 """Encryption policy, artifact binding and refusal before side effects."""
 
 import copy
+import contextlib
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -121,6 +123,7 @@ class SecurityTests(unittest.TestCase):
         proxy = next(value for value in run.call_args.args[0] if value.startswith("ProxyCommand="))
         self.assertIn("StrictHostKeyChecking=yes", proxy)
         self.assertIn("BatchMode=yes", proxy)
+        self.assertIn("ControlPath=none", proxy)
         self.assertIn("operator@192.168.50.2", proxy)
 
     def test_prepare_dry_run_never_reads_password_builds_or_creates_destination(self):
@@ -132,6 +135,19 @@ class SecurityTests(unittest.TestCase):
             self.assertFalse(output.exists())
             run.assert_not_called()
             read.assert_not_called()
+
+    def test_prepare_cli_requires_explicit_recipe_without_current_directory_fallback(self):
+        import cli
+        target = {**self.target, "offline": True, "host": "offline:vm-demo-test"}
+        for recipe in ("", str(self.root / "missing-recipe")):
+            with patch.dict("os.environ", {"NIXBERRY_DEPLOYMENT": "/registry", "NIXBERRY_RECIPE": recipe}, clear=True), \
+                    patch("pathlib.Path.read_text", return_value=json.dumps({"vm-demo-test": target})), \
+                    patch.object(cli, "prepare_image") as prepare, \
+                    contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as error:
+                    cli.main(["prepare-image", "vm-demo-test", "--dry-run"])
+                self.assertEqual(error.exception.code, 2)
+                prepare.assert_not_called()
 
     def test_password_inside_recipe_is_rejected_before_source_capture(self):
         recipe = self.root / "recipe"
@@ -151,6 +167,9 @@ class SecurityTests(unittest.TestCase):
             self.assertIn("StrictHostKeyChecking=yes", command)
             self.assertIn("GlobalKnownHostsFile=/dev/null", command)
             self.assertIn("ForwardAgent=no", command)
+            for option in ("KnownHostsCommand=none", "VerifyHostKeyDNS=no", "HostKeyAlgorithms=ssh-ed25519",
+                           "UpdateHostKeys=no", "ControlMaster=no", "ControlPath=none", "ControlPersist=no"):
+                self.assertIn(option, command)
             self.assertNotIn("StrictHostKeyChecking=accept-new", command)
             self.assertEqual(command[-1], "root@192.168.50.10")
         for address in ("192.168.79.1", "-oProxyCommand=bad", "host;bad", "fe80::1%bad'zone"):

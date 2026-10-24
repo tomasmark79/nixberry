@@ -97,7 +97,10 @@ nixberry verify vm-demo-encrypted
 ```
 
 Unlock pins the initrd public key from local preparation and rejects changed or
-unknown keys. SSH forwarding is disabled. It uses the declared SSH jump host
+unknown keys. It opens a fresh SSH connection with only the prepared Ed25519
+host key, disabling connection sharing, dynamic host-key commands, DNS key
+trust and automatic host-key updates. SSH forwarding is disabled. It uses the
+declared SSH jump host
 where the existing backend transport requires one. The boot environment's SSH
 identity is separate from the installed server's identity. SSH disconnecting
 during switch-root is not evidence of a successful boot: `install` and `verify`
