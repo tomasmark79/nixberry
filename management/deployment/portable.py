@@ -237,7 +237,7 @@ def start_and_verify(target, manifest, *, timeout=300):
             error = failure
             if not unlock_attempted and manifest.get("security", {}).get("mode", "none") != "none":
                 state = snapshot(target)
-                if state["state"] == "running":
+                if state["state"] == "running" and (not state["addresses"] or getattr(failure, "returncode", None) == 255):
                     from security import unlock_for_install
                     unlock_for_install(manifest, state["addresses"][0] if len(state["addresses"]) == 1 else None)
                     unlock_attempted = True

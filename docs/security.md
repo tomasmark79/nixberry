@@ -104,6 +104,10 @@ during switch-root is not evidence of a successful boot: `install` and `verify`
 must still check the installed system. Unlock does not reboot, create or format
 a VM, and `--dry-run` does not connect or read a passphrase.
 
+DHCP can assign different addresses to initrd and the installed system. Use
+the current early-boot address for `unlock`; after unlocking, `status` and
+installation verification discover the running system's address again.
+
 A checksum failure or mismatched image binding requires investigation and a
 new preparation if the declaration changed. Never bypass verification by
 editing the checksum. Retain old prepared media for recovery until replacement

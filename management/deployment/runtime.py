@@ -16,8 +16,10 @@ def read(command):
                             env={**os.environ, "LC_ALL": "C"}, check=False)
     if result.returncode:
         # SSH stderr may contain only warnings while stdout holds the actual failure.
-        raise RuntimeError("\n".join(part for part in (result.stderr.strip(), result.stdout.strip()) if part)
-                           or _("The host did not respond."))
+        failure = RuntimeError("\n".join(part for part in (result.stderr.strip(), result.stdout.strip()) if part)
+                               or _("The host did not respond."))
+        failure.returncode = result.returncode
+        raise failure
     forward_stderr(result.stderr)
     return result.stdout.strip()
 

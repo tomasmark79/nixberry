@@ -25,6 +25,30 @@ def spec(root, **extra):
 
 
 class PortableTests(unittest.TestCase):
+    def test_verification_failure_does_not_request_another_disk_passphrase(self):
+        for backend in ("proxmox", "virtualbox", "vmware"):
+            target = {"backend": backend, "spec": spec(self.root), "security": {"mode": "luks"}}
+            manifest = {"security": target["security"], "systemPath": "/nix/store/expected-system"}
+            failure = RuntimeError("Installed-system identity mismatch")
+            failure.returncode = 1
+            with self.subTest(backend=backend), \
+                    patch.object(portable, "snapshot", return_value={"state": "running", "addresses": ["192.168.50.20"]}), \
+                    patch.object(portable, "known_hosts", return_value=self.root / "ssh/known_hosts"), \
+                    patch.object(runtime, "verify", side_effect=failure), \
+                    patch.object(portable.time, "monotonic", side_effect=[0, 0, 2]), \
+                    patch.object(portable.time, "sleep"), patch("security.unlock_for_install") as unlock:
+                with self.assertRaisesRegex(RuntimeError, "Installed-system identity mismatch"):
+                    portable.start_and_verify(target, manifest, timeout=1)
+                unlock.assert_not_called()
+
+    def test_remote_errors_preserve_transport_exit_status(self):
+        for code in (1, 255):
+            with patch.object(runtime.subprocess, "run", return_value=subprocess.CompletedProcess([], code, "detail", "failure")):
+                with self.assertRaises(RuntimeError) as failure:
+                    runtime.read(["ssh", "host", "command"])
+            self.assertEqual(failure.exception.returncode, code)
+            self.assertEqual(str(failure.exception), "failure\ndetail")
+
     def test_windows_private_directory_grants_actual_user_sid(self):
         directory = Mock()
         with patch.object(agent.os, "name", "nt"), \

@@ -372,7 +372,7 @@ msgstr ""
 msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
 msgstr ""
 
-#: deployment/runtime.py:327
+#: deployment/runtime.py:329
 #, python-brace-format
 msgid "Check failed: {check}"
 msgstr ""
@@ -567,7 +567,7 @@ msgstr ""
 msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/dispatch.py:21 deployment/host_agent.py:945 deployment/runtime.py:228 hyperv/host.ps1:25 hyperv/manage.py:94
+#: deployment/dispatch.py:21 deployment/host_agent.py:945 deployment/runtime.py:230 hyperv/host.ps1:25 hyperv/manage.py:94
 msgid "Deployment method must be iso or image."
 msgstr ""
 
@@ -610,7 +610,7 @@ msgstr ""
 msgid "Disallowed SSH account."
 msgstr ""
 
-#: deployment/portable.py:41 deployment/runtime.py:263 deployment/security.py:235
+#: deployment/portable.py:41 deployment/runtime.py:265 deployment/security.py:235
 msgid "Disallowed SSH host or account."
 msgstr ""
 
@@ -779,7 +779,7 @@ msgstr ""
 msgid "Hyper-V installation completed."
 msgstr ""
 
-#: deployment/runtime.py:120
+#: deployment/runtime.py:122
 msgid "Hyper-V is unavailable."
 msgstr ""
 
@@ -987,15 +987,15 @@ msgstr ""
 msgid "Invalid Proxmox resource: {key}"
 msgstr ""
 
-#: deployment/runtime.py:51
+#: deployment/runtime.py:53
 msgid "Invalid SSH host or port (1–65535)."
 msgstr ""
 
-#: deployment/runtime.py:61
+#: deployment/runtime.py:63
 msgid "Invalid SSH target DNS name."
 msgstr ""
 
-#: deployment/runtime.py:56
+#: deployment/runtime.py:58
 msgid "Invalid SSH target IPv4 address."
 msgstr ""
 
@@ -1040,7 +1040,7 @@ msgstr ""
 msgid "Invalid host hostname."
 msgstr ""
 
-#: deployment/runtime.py:88
+#: deployment/runtime.py:90
 msgid "Invalid hostKeyAlias for SSH key verification."
 msgstr ""
 
@@ -1712,7 +1712,7 @@ msgstr ""
 msgid "Running CI check: {check}."
 msgstr ""
 
-#: deployment/runtime.py:334
+#: deployment/runtime.py:336
 #, c-format
 msgid "Running system: %s"
 msgstr ""
@@ -1730,7 +1730,7 @@ msgstr ""
 msgid "SSH must connect directly to the declared Proxmox node."
 msgstr ""
 
-#: deployment/runtime.py:58
+#: deployment/runtime.py:60
 msgid "SSH requires a specific host address."
 msgstr ""
 
@@ -1833,7 +1833,7 @@ msgstr ""
 msgid "Specify a new target name: {value1} NAME."
 msgstr ""
 
-#: deployment/runtime.py:48
+#: deployment/runtime.py:50
 msgid "Specify direct SSH as root@HOST[:PORT]."
 msgstr ""
 
@@ -1867,7 +1867,7 @@ msgstr ""
 msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
 msgstr ""
 
-#: deployment/runtime.py:222
+#: deployment/runtime.py:224
 msgid "Status queries are not implemented for this host type."
 msgstr ""
 
@@ -1982,11 +1982,11 @@ msgstr ""
 msgid "The EFI bootloader is missing."
 msgstr ""
 
-#: deployment/runtime.py:128
+#: deployment/runtime.py:130
 msgid "The Hyper-V VM does not have the declared owner."
 msgstr ""
 
-#: deployment/runtime.py:133
+#: deployment/runtime.py:135
 msgid "The Hyper-V VM does not match the declared adapter and generation."
 msgstr ""
 
@@ -2092,11 +2092,11 @@ msgstr ""
 msgid "The Proxmox system disk was changed outside the declared creation."
 msgstr ""
 
-#: deployment/runtime.py:211
+#: deployment/runtime.py:213
 msgid "The RPi hardware does not match the declared machine."
 msgstr ""
 
-#: deployment/runtime.py:214
+#: deployment/runtime.py:216
 msgid "The RPi network adapter does not match the declaration."
 msgstr ""
 
@@ -2280,11 +2280,11 @@ msgstr ""
 msgid "The VM must have exactly one target disk."
 msgstr ""
 
-#: deployment/runtime.py:125
+#: deployment/runtime.py:127
 msgid "The VM name is ambiguous."
 msgstr ""
 
-#: deployment/runtime.py:159
+#: deployment/runtime.py:161
 msgid "The VM network adapter does not match the declaration."
 msgstr ""
 
@@ -2354,7 +2354,7 @@ msgstr ""
 msgid "The VirtualBox VM name or UUID is already in use."
 msgstr ""
 
-#: deployment/runtime.py:118
+#: deployment/runtime.py:120
 msgid "The Windows host does not match the declaration."
 msgstr ""
 
@@ -2478,7 +2478,7 @@ msgstr ""
 msgid "The declaration already exists; refusing to overwrite it."
 msgstr ""
 
-#: deployment/runtime.py:201
+#: deployment/runtime.py:203
 msgid "The declared IPv4 address is not enabled on the RPi."
 msgstr ""
 
@@ -2506,7 +2506,7 @@ msgstr ""
 msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
 msgstr ""
 
-#: deployment/runtime.py:188
+#: deployment/runtime.py:190
 msgid "The direct SSH target does not match the declared VM architecture and hostname."
 msgstr ""
 
@@ -2626,7 +2626,7 @@ msgstr ""
 msgid "The guest address is outside the expected network."
 msgstr ""
 
-#: deployment/runtime.py:266
+#: deployment/runtime.py:268
 msgid "The guest address must differ from the Windows host address."
 msgstr ""
 
@@ -2783,7 +2783,7 @@ msgstr ""
 msgid "The lab subnet overlaps an existing route."
 msgstr ""
 
-#: deployment/runtime.py:152
+#: deployment/runtime.py:154
 msgid "The libvirt VM identity does not match the declaration."
 msgstr ""
 
@@ -2791,7 +2791,7 @@ msgstr ""
 msgid "The libvirt VM identity does not match the dedicated Proxmox lab."
 msgstr ""
 
-#: deployment/runtime.py:156
+#: deployment/runtime.py:158
 msgid "The libvirt VM is missing the declared owner marker."
 msgstr ""
 
@@ -2945,7 +2945,7 @@ msgstr ""
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
-#: deployment/runtime.py:332
+#: deployment/runtime.py:334
 #, python-brace-format
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
@@ -2991,7 +2991,7 @@ msgstr ""
 msgid "The storage path must not contain a symbolic link."
 msgstr ""
 
-#: deployment/runtime.py:341
+#: deployment/runtime.py:343
 msgid "The system check did not return the expected result."
 msgstr ""
 
@@ -3047,7 +3047,7 @@ msgstr ""
 msgid "The target disk is too small."
 msgstr ""
 
-#: deployment/runtime.py:250
+#: deployment/runtime.py:252
 msgid "The target does not have exactly one usable IPv4 address. Details: probe TARGET."
 msgstr ""
 
@@ -3072,7 +3072,7 @@ msgstr ""
 msgid "The target is not running: {value1}"
 msgstr ""
 
-#: deployment/runtime.py:234
+#: deployment/runtime.py:236
 msgid "The target is not running; login is unavailable."
 msgstr ""
 
@@ -3168,7 +3168,7 @@ msgstr ""
 msgid "There is not enough storage space for the image and declared VM capacity."
 msgstr ""
 
-#: deployment/runtime.py:144
+#: deployment/runtime.py:146
 msgid "This adapter only supports local libvirt."
 msgstr ""
 
@@ -3551,15 +3551,15 @@ msgstr ""
 msgid "absent"
 msgstr ""
 
-#: deployment/runtime.py:75
+#: deployment/runtime.py:77
 msgid "access only accepts host, port, user, knownHostsFile and hostKeyAlias."
 msgstr ""
 
-#: deployment/runtime.py:78
+#: deployment/runtime.py:80
 msgid "access requires a host, an integer port and the root account."
 msgstr ""
 
-#: deployment/runtime.py:96
+#: deployment/runtime.py:98
 msgid "access supports offline VMs without hypervisor management."
 msgstr ""
 
@@ -3571,7 +3571,7 @@ msgstr ""
 msgid "error"
 msgstr ""
 
-#: deployment/runtime.py:83
+#: deployment/runtime.py:85
 msgid "knownHostsFile must be an absolute path without control characters."
 msgstr ""
 
