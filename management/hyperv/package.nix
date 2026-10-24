@@ -9,6 +9,8 @@
   image ? null,
   deploymentMethod ? "image",
   allowReset ? false,
+  security ? { mode = "none"; },
+  securityTarget ? null,
 }:
 let
   commonSource = import ../messages.nix { inherit pkgs; };
@@ -16,6 +18,7 @@ let
   manifest = pkgs.writeText "nixberry-hyperv-manifest.json" (
     builtins.toJSON (
       spec
+      // pkgs.lib.optionalAttrs (security.mode != "none") { inherit security securityTarget; }
       // {
         inherit deploymentMethod;
         isoPath = if deploymentMethod == "iso" then "${installerIso}/iso/${isoName}" else null;

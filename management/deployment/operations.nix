@@ -8,6 +8,7 @@ in
   "show"
   "export"
 ]
+++ optional ((target.security.mode or "none") != "none") [ "prepare-image" "unlock" ]
 ++ optional caps.system [
   "status"
   "doctor"

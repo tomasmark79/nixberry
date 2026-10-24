@@ -8,6 +8,7 @@ import ./with-locales.nix {
       ./deployment/messages.py
       ./deployment/messages.sh
       ./deployment/shell_runner.py
+      ./deployment/security.py
       ./deployment/locales/cs.sh
     ];
   };

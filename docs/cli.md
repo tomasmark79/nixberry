@@ -6,6 +6,21 @@
 Without a command it runs `list`. A target is a declaration name, not an IP.
 A command after `--` is only accepted by `ssh`.
 
+Encrypted VM declarations use `new-*-vm NAME --security luks`. The optional
+`--security confidential` records a requirement that currently fails closed;
+attested launch and key delivery are unavailable. Existing declarations are
+edited directly. See [encryption and remote unlocking](security.md).
+
+| Encryption command | Result |
+| --- | --- |
+| `prepare-image TARGET [--output DIR] [--key-file FILE]` | Prepare encrypted media outside the store; otherwise use `security.imageDirectory` and an interactive passphrase. |
+| `prepare-image TARGET --dry-run` | Show the preparation plan without building or reading a passphrase. |
+| `unlock TARGET --address IP` | Connect to the pinned early-boot SSH identity and enter the passphrase. |
+| `unlock TARGET --address IP --dry-run` | Show the public unlock policy without connecting. |
+
+Preparation accepts `--json`; unlocking is interactive. Neither command accepts
+`--apply`. Encrypted ISO deployment is rejected; use `image`.
+
 ## Inventory and management
 
 | Command | Result |

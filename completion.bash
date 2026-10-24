@@ -17,7 +17,7 @@ _nixberry_complete() {
     local -a actions=(
         list show status ssh probe plan create install provision reset
         new-libvirt-vm new-hyperv-vm new-proxmox-vm new-virtualbox-vm new-vmware-vm
-        reproduce verify update diff diffg export doctor cleanup
+        reproduce verify update diff diffg export doctor cleanup prepare-image unlock
     )
     local -a options=(--help --version)
     local -A used=()
@@ -31,7 +31,7 @@ _nixberry_complete() {
         fi
         case $word in
             --) return 0 ;;
-            --host|--ssh|--output|--address|--artifact-root|--method|--configuration)
+            --host|--ssh|--output|--address|--artifact-root|--method|--configuration|--security|--key-file)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
         esac
@@ -64,6 +64,10 @@ _nixberry_complete() {
                     host=
                 fi
             done < "$hosts_file"
+        elif [[ $word == --security ]]; then
+            for name in none luks confidential; do
+                [[ $name == "$current"* ]] && COMPREPLY+=("$name")
+            done
         elif [[ $word == --method ]]; then
             for name in iso image; do
                 [[ $name == "$current"* ]] && COMPREPLY+=("$name")
@@ -88,19 +92,21 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            list|show|status|verify|export|doctor|cleanup) options+=(--json) ;;
+            list|show|status|verify|export|doctor|cleanup|prepare-image) options+=(--json) ;;
         esac
         case $action in
             update|create|install|provision|reset|reproduce) options+=(--apply --dry-run) ;;
-            new-*|plan|diff|diffg|export) options+=(--dry-run) ;;
+            new-*|plan|diff|diffg|export|prepare-image|unlock) options+=(--dry-run) ;;
         esac
         case $action in
             new-*|show|plan|create|install|provision|reproduce|export) options+=(--method) ;;
         esac
         case $action in
-            new-*) options+=(--host --offline --configuration) ;;
+            new-*) options+=(--host --offline --configuration --security) ;;
             update|ssh|verify|status|doctor|diff|diffg) options+=(--host --ssh) ;;
             export) options+=(--output) ;;
+            prepare-image) options+=(--output --key-file) ;;
+            unlock) options+=(--address) ;;
             cleanup) options+=(--artifact-root) ;;
         esac
         if [[ $action == plan || $action == reproduce ]] && [[ -n $target ]] &&

@@ -72,6 +72,7 @@ tool output do not change language. Documentation is maintained in English.
 | Change packages, services or declarations | [Configuration](#configuration) |
 | Recover Raspberry Pi | [SD recovery](docs/rpi-recovery.md) |
 | Look up commands and options | [CLI reference](docs/cli.md) |
+| Prepare an encrypted VM disk | [LUKS and remote unlocking](docs/security.md) |
 | Troubleshoot a failure | [Troubleshooting](#troubleshooting) |
 
 <a id="sprava"></a>

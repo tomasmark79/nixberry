@@ -77,6 +77,7 @@ class ConfigurationChecks(unittest.TestCase):
 
     def test_vm_and_rpi_registry_keep_selection_out_of_hardware_spec(self):
         shutil.copyfile(Path(__file__).with_name("default.nix"), self.root / "management/deployment/default.nix")
+        shutil.copyfile(Path(__file__).with_name("security.nix"), self.root / "management/deployment/security.nix")
         (self.root / "hosts.nix").write_text("{}")
         (self.root / "instances/default.nix").write_text(
             '{ demo = { backend = "libvirt"; configuration = "web"; spec.name = "demo"; }; }')

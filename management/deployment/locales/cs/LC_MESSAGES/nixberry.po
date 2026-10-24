@@ -2665,3 +2665,121 @@ msgstr "Vyber regresní kontroly, kontroly inventáře nebo obojí."
 #, python-brace-format
 msgid "Tracked path escapes the isolated recipe: {path}."
 msgstr "Verzovaná cesta vede mimo izolovaný recept: {path}."
+
+msgid "--key-file only applies to prepare-image."
+msgstr "--key-file lze použít pouze s prepare-image."
+
+msgid "--output only applies to export or prepare-image."
+msgstr "--output lze použít pouze s export nebo prepare-image."
+
+msgid "--security only applies to new-*-vm; edit security in existing declarations."
+msgstr "--security lze použít pouze s new-*-vm; u existujících deklarací uprav security."
+
+msgid "Confidential deployment is unavailable: measured launch and attestation-bound key delivery are not implemented. No VM was created and no key was released."
+msgstr "Nasazení confidential není dostupné: měřený start a předání klíče vázané na atestaci nejsou implementované. Nebyla vytvořena žádná VM ani vydán žádný klíč."
+
+msgid "Encrypted ISO installation is unavailable; use an encrypted image prepared on a trusted local machine."
+msgstr "Šifrovaná instalace z ISO není dostupná; použij šifrovaný obraz připravený na důvěryhodném místním stroji."
+
+msgid "Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed."
+msgstr "Šifrované VM:\n  new-*-vm NAME --security luks vytvoří deklaraci pro nasazení šifrovaného obrazu.\n  prepare-image TARGET připraví disk mimo Nix store; vyžádá si heslo.\n  unlock TARGET --address IP se připojí k předem ověřené SSH identitě initrd.\n  Nastav security.imageDirectory na soukromý adresář mimo recept.\n  Šifrovaná instalace z ISO a start confidential nyní nejsou dostupné.\n  Požadavky confidential se bezpečně odmítnou; přechod na běžnou VM není dovolen."
+
+msgid "Encrypted image preparation requires a writable tmpfs for temporary secrets."
+msgstr "Příprava šifrovaného obrazu vyžaduje zapisovatelný tmpfs pro dočasná tajemství."
+
+msgid "Encrypted image prepared. Keep the passphrase separately; verify a complete locked boot and remote unlock before relying on it."
+msgstr "Šifrovaný obraz je připraven. Heslo uchovávej odděleně; před použitím ověř celý zamčený start a vzdálené odemknutí."
+
+msgid "New LUKS passphrase: "
+msgstr "Nové heslo LUKS: "
+
+msgid "Private runtime passphrase file for prepare-image; otherwise prompt securely"
+msgstr "Soukromý soubor s heslem pro prepare-image; jinak se heslo bezpečně vyžádá"
+
+msgid "Repeat LUKS passphrase: "
+msgstr "Zopakuj heslo LUKS: "
+
+#, python-brace-format
+msgid "Security: {mode}; unlock: {unlock}"
+msgstr "Zabezpečení: {mode}; odemykání: {unlock}"
+
+msgid "Set security.imageDirectory or specify --output for prepare-image."
+msgstr "Nastav security.imageDirectory nebo zadej --output pro prepare-image."
+
+msgid "Set security.imageDirectory to the prepared encrypted image directory."
+msgstr "Nastav security.imageDirectory na adresář s připraveným šifrovaným obrazem."
+
+msgid "Specify the early-boot VM IP address with unlock TARGET --address IP."
+msgstr "Zadej IP adresu VM při počátečním startu pomocí unlock TARGET --address IP."
+
+msgid "Store encrypted images and secrets outside the recipe root."
+msgstr "Šifrované obrazy a tajemství ukládej mimo kořen receptu."
+
+msgid "The deployment media path does not match the verified encrypted image."
+msgstr "Cesta nasazovaného média neodpovídá ověřenému šifrovanému obrazu."
+
+msgid "The encrypted VM is waiting for unlock. Run unlock TARGET --address IP in a terminal, then repeat install --apply to verify boot."
+msgstr "Šifrovaná VM čeká na odemknutí. V terminálu spusť unlock TARGET --address IP a potom zopakuj install --apply pro ověření startu."
+
+msgid "The encrypted image checksum does not match; refusing deployment."
+msgstr "Kontrolní součet šifrovaného obrazu nesouhlasí; nasazení odmítám."
+
+msgid "The encrypted image directory must be an absolute regular directory."
+msgstr "Adresář šifrovaného obrazu musí být běžný adresář s absolutní cestou."
+
+msgid "The encrypted image does not match this declaration and system; prepare a new image."
+msgstr "Šifrovaný obraz neodpovídá této deklaraci a systému; připrav nový obraz."
+
+msgid "The output directory already exists; refusing to overwrite it."
+msgstr "Výstupní adresář již existuje; odmítám ho přepsat."
+
+msgid "The passphrases do not match."
+msgstr "Hesla se neshodují."
+
+msgid "The password file must be a private regular file owned by the current user."
+msgstr "Soubor s heslem musí být soukromý běžný soubor vlastněný aktuálním uživatelem."
+
+msgid "The unlock SSH port must be between 1 and 65535."
+msgstr "SSH port pro odemykání musí být mezi 1 a 65535."
+
+msgid "The unlock address must identify the guest, not the hypervisor or management router."
+msgstr "Adresa pro odemykání musí patřit hostované VM, nikoli hypervizoru nebo routeru správy."
+
+msgid "The unlock policy does not match the VM security mode."
+msgstr "Způsob odemykání neodpovídá režimu zabezpečení VM."
+
+msgid "Unknown VM security mode."
+msgstr "Neznámý režim zabezpečení VM."
+
+msgid "Unlocking the encrypted VM through its pinned early-boot SSH identity…"
+msgstr "Odemykám šifrovanou VM přes její předem ověřenou SSH identitu počátečního startu…"
+
+msgid "Use a single-line LUKS passphrase of 16 to 4096 bytes."
+msgstr "Použij jednořádkové heslo LUKS o délce 16 až 4096 bajtů."
+
+msgid "VM encryption does not apply to Raspberry Pi recovery media."
+msgstr "Šifrování VM se nevztahuje na záchranná média Raspberry Pi."
+
+msgid "VM protection for new-*; confidential requires attested key delivery and is currently unavailable"
+msgstr "Ochrana VM pro new-*; confidential vyžaduje atestované předání klíče a nyní není dostupné"
+
+msgid "VM security contains unsupported fields; keep secrets outside declarations."
+msgstr "Zabezpečení VM obsahuje nepodporovaná pole; tajemství uchovávej mimo deklarace."
+
+msgid "prepare-image requires security.mode = luks."
+msgstr "prepare-image vyžaduje security.mode = luks."
+
+msgid "unlock requires security.mode = luks."
+msgstr "unlock vyžaduje security.mode = luks."
+
+msgid "Interactive passphrase entry requires a terminal; use --key-file for automation."
+msgstr "Interaktivní zadání hesla vyžaduje terminál; pro automatizaci použij --key-file."
+
+msgid "Keep the runtime password file outside the recipe and Nix store."
+msgstr "Soubor s heslem pro běh uchovávej mimo recept a Nix store."
+
+msgid "Early-boot SSH must use a different port from ordinary SSH (22)."
+msgstr "SSH při počátečním startu musí používat jiný port než běžné SSH (22)."
+
+msgid "Use an IPv4 or unscoped IPv6 guest address."
+msgstr "Použij IPv4 nebo IPv6 adresu hostované VM bez identifikátoru rozhraní."

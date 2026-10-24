@@ -19,6 +19,7 @@ from inspection import doctor, exit_code
 from cleanup import preview, failed
 from recipe_source import materialized_recipe
 from discovery import collect_status
+from security import policy as security_policy, require_supported, prepare_image, unlock
 from messages import _, info, success, warning, ArgumentParser, error as report_error
 
 
@@ -101,6 +102,8 @@ def image_table(images):
 def operations(target):
     caps = capabilities(target)
     result = ["show", "export"]
+    if security_policy(target)["mode"] != "none":
+        result += ["prepare-image", "unlock"]
     if caps["system"]:
         result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg"]
     if caps["hypervisor"] or target["backend"] == "rpi":
@@ -123,7 +126,8 @@ def main(argv=None):
         argv, remote_command = argv[:delimiter], argv[delimiter + 1:]
     parser = ArgumentParser(
         prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."),
-        epilog=_(HELP_COMMANDS) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."),
+        epilog=_(HELP_COMMANDS) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths.")
+        + "\n\n" + _("Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version",
@@ -131,11 +135,13 @@ def main(argv=None):
     parser.add_argument("action", metavar=_("COMMAND"), help=_("Command from the list below (default: list)"), nargs="?", default="list",
                         type=lambda value: value + "-vm" if value in ("new-libvirt", "new-hyperv", "new-proxmox", "new-virtualbox", "new-vmware") else value, choices=(
         "list", "show", "status", "ssh", "probe", "plan", "create", "install", "provision", "reset",
-        "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup"))
+        "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup", "prepare-image", "unlock"))
     parser.add_argument("target", metavar=_("TARGET"), nargs="?", help=_("Existing target name, or a new name for new-*"))
     parser.add_argument("--host", help=_("Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"))
     parser.add_argument("--offline", action="store_true", help=_("Prepare any VM offline without a hypervisor; cannot be combined with --host"))
     parser.add_argument("--configuration", help=_("Server configuration for new-*; defaults to default, other names from configurations/"))
+    parser.add_argument("--security", choices=("none", "luks", "confidential"), help=_("VM protection for new-*; confidential requires attested key delivery and is currently unavailable"))
+    parser.add_argument("--key-file", help=_("Private runtime passphrase file for prepare-image; otherwise prompt securely"))
     parser.add_argument("--method", choices=("iso", "image"), help=_("VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"))
     parser.add_argument("--ssh", help=_("One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"))
     parser.add_argument("--output", help=_("New offline bundle directory; relative paths are resolved from the working directory"))
@@ -148,6 +154,10 @@ def main(argv=None):
     modes.add_argument("--apply", action="store_true", help=_("Apply changes for update and deployment/recovery operations"))
     modes.add_argument("--dry-run", action="store_true", help=_("Show the plan without writing; diff/diffg without connections or builds"))
     args = parser.parse_args(argv)
+    if args.security is not None and not args.action.startswith("new-"):
+        parser.error(_("--security only applies to new-*-vm; edit security in existing declarations."))
+    if args.key_file and args.action != "prepare-image":
+        parser.error(_("--key-file only applies to prepare-image."))
     # Short names remain aliases; adapters keep the original backend identifier.
     if args.action.startswith("new-") and args.action.endswith("-vm"):
         args.action = args.action[:-3]
@@ -185,8 +195,8 @@ def main(argv=None):
         parser.error(_("Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."))
     if args.artifact_root and args.action != "cleanup":
         parser.error(_("--artifact-root only applies to cleanup."))
-    if args.output and args.action != "export":
-        parser.error(_("--output only applies to export."))
+    if args.output and args.action not in ("export", "prepare-image"):
+        parser.error(_("--output only applies to export or prepare-image."))
     if args.action.startswith("new-"):
         if args.apply or args.json or args.address or args.erase_existing:
             parser.error(_("new-* only creates a local declaration; it does not accept these options."))
@@ -196,10 +206,12 @@ def main(argv=None):
         if args.action == "new-libvirt" and not args.offline:
             path, text = new_libvirt(os.environ.get("NIXBERRY_RECIPE", ""), hosts, registry,
                                     args.target, args.host, write=not args.dry_run, **({"method": args.method} if args.method else {}),
+                                    **({"security_mode": args.security} if args.security else {}),
                                     **({"configuration": args.configuration} if args.configuration is not None else {}))
         else:
             path, text = new_vm(os.environ.get("NIXBERRY_RECIPE", ""), hosts, registry,
                                 args.target, args.action[4:], args.host, write=not args.dry_run, offline=args.offline,
+                                **({"security_mode": args.security} if args.security else {}),
                                 **({"method": args.method} if args.method else {}),
                                 **({"configuration": args.configuration} if args.configuration is not None else {}))
         if args.dry_run:
@@ -218,13 +230,13 @@ def main(argv=None):
             info(_("Next step: {command}"), command=f"nixberry plan {args.target}")
             info(_("After reviewing: {command}"), command=f"nixberry reproduce {args.target} --apply")
         return 0
-    if (args.address or args.erase_existing) and not (
+    if (args.address or args.erase_existing) and not (args.action == "unlock" and not args.erase_existing) and not (
             args.action in ("plan", "reproduce") and args.target in registry
             and registry[args.target]["backend"] == "rpi"):
         parser.error(_("--address and --erase-existing only apply to plan/reproduce for RPi targets."))
-    if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup"):
+    if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup", "prepare-image"):
         parser.error(_("--json is available for list, show, status, verify, export, doctor and cleanup."))
-    if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup") and args.apply:
+    if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup", "prepare-image", "unlock") and args.apply:
         parser.error(_("This operation does not accept --apply."))
     if args.action in ("doctor", "cleanup"):
         if args.target and args.target not in registry:
@@ -280,6 +292,24 @@ def main(argv=None):
     if args.target not in registry:
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
+    if args.action in ("plan", "create", "install", "provision", "reproduce", "export", "prepare-image", "unlock", "update", "verify"):
+        require_supported(target, args.method or deployment_method(target))
+    if args.action == "prepare-image":
+        destination = args.output or security_policy(target).get("imageDirectory")
+        if not destination:
+            parser.error(_("Set security.imageDirectory or specify --output for prepare-image."))
+        result = prepare_image(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target,
+                               destination, key_file=args.key_file, dry_run=args.dry_run)
+        print(json.dumps(result, indent=2) if args.json or args.dry_run else result["destination"])
+        return 0
+    if args.action == "unlock":
+        if not args.address:
+            parser.error(_("Specify the early-boot VM IP address with unlock TARGET --address IP."))
+        result = unlock(target, args.address, dry_run=args.dry_run)
+        if args.dry_run:
+            print(json.dumps(result, indent=2))
+            return 0
+        return result
     if args.method and target["backend"] == "rpi":
         parser.error(_("--method is for VMs; RPi uses a recovery SD card."))
     if args.action == "show" and args.method:
@@ -356,6 +386,7 @@ def main(argv=None):
             print(_("Hypervisor: {value1}").format(value1=target["host"] if caps["hypervisor"] else _("unmanaged")))
             if target["backend"] != "rpi":
                 print(_("Deployment method: {method}").format(method=args.method or deployment_method(target)))
+                print(_("Security: {mode}; unlock: {unlock}").format(**security_policy(target)))
             print(_("Build/export: yes; system management: {value1}").format(value1=_("configured") if caps["system"] else _("unconfigured")))
             print(_("Platform profile: {value1}").format(value1=target["profile"]))
             if target["backend"] != "rpi":

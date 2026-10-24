@@ -281,7 +281,11 @@ def installation_checks(target):
     else:
         checks.append('test -d /sys/firmware/efi')
         manual = target.get("offline") and direct_connection(target)
-        if manual:
+        from security import policy
+        if policy(target)["mode"] != "none":
+            from security import encryption_checks
+            checks += encryption_checks(target)
+        elif manual:
             # An importer may change controllers. Image partitions and their shared disk must remain intact.
             checks += [
                 'test "$(readlink -f "$(findmnt -n -o SOURCE /)")" = '

@@ -142,6 +142,7 @@
             disko.nixosModules.disko
             ./platforms/vm/disk-config.nix
             ./platforms/vm/configuration.nix
+            ./platforms/vm/security.nix
             profile
           ];
         };
@@ -234,6 +235,7 @@
             ({ lib, ... }: {
               networking.hostName = lib.mkForce target.guestHostName;
               nixberry.vm.network = target.network or { };
+              nixberry.vm.security = builtins.removeAttrs target.security [ "imageDirectory" ];
             })
           ];
         }
@@ -259,7 +261,11 @@
             isoName = vmInstallers.${name}.config.image.fileName;
             targetSystem = vmSystems.${name}.config.system.build.toplevel;
             diskoScript = vmSystems.${name}.config.system.build.diskoScript;
-            image = vmImages.${name};
+            image = if target.security.mode == "none" then vmImages.${name}
+              else if target.security.imageDirectory != null then target.security.imageDirectory
+              else "/run/nixberry/unprepared-image";
+            security = target.security;
+            securityTarget = target;
             deploymentMethod = if method == null then target.deploymentMethod else method;
           }
         ) (lib.filterAttrs (_: target: !target.offline) deployment.instances);
@@ -298,6 +304,9 @@
         '';
       vmImages = builtins.mapAttrs (
         name: target:
+        if target.security.mode != "none" then
+          throw "Encrypted images must be prepared outside the Nix store with nixberry prepare-image TARGET --output DIR."
+        else
         if target.backend == "hyperv" then
           mkHypervImage vmSystems.${name} target.spec.diskGiB
         else if
@@ -346,6 +355,14 @@
       nixberrySystems = rpiSystems // vmSystems;
       nixberryConfigurations = builtins.attrNames configurations.modules;
       nixberryImages = images;
+      nixberryImageBuilders = builtins.mapAttrs (name: target:
+        (vmSystems.${name}.extendModules {
+          modules = [
+            ./management/vm/image.nix
+            { disko.devices.disk.system.imageSize = "${toString target.spec.diskGiB}G"; }
+          ];
+        }).config.system.build.diskoImagesScript
+      ) deployment.instances;
       nixberryTools = vmTools;
       nixberryToolsByMethod = {
         image = mkVmTools "image";

@@ -111,6 +111,36 @@ Select the appropriate architecture for ARM packages.
 
 ## Live scenario matrix
 
+### Encrypted VM images
+
+Use a new isolated recipe, per-test SSH identities and a fresh disk. Never
+reencrypt, reinstall or delete an existing VM as part of these checks.
+
+For each available VM backend and image format:
+
+1. Prepare a LUKS image outside the recipe and store. Confirm that neither
+   the recipe, derivations, export nor logs contain the test passphrase.
+2. Review `plan`, create the new VM and boot it. Confirm that initrd SSH is
+   reachable while ordinary services are unavailable and the root stays locked.
+3. Reject a wrong passphrase and a changed pinned SSH host key. Neither case
+   may start the installed system or silently relax key verification.
+4. Unlock through the pinned initrd identity. Verify LUKS2, the mapped root,
+   the expected backing partition, boot partition, system and required services.
+5. Shut down gracefully and boot the same VM again. It must wait for a new
+   unlock; unlocking once must not install a persistent disk key.
+6. Check export and offline import, including the public unlock metadata.
+   Refuse corrupted media, changed identity/policy and encrypted ISO requests.
+
+Confidential requests must fail before creation or key release on unsupported
+implementations. An intentional refusal is evidence of that guard, not evidence
+of confidential execution. Successful confidential execution additionally needs
+real supported hardware, measured launch and independent attestation-bound key
+delivery; mock evidence cannot substitute for these.
+
+Unit tests and evaluated options cover declaration and validation contracts.
+Image creation proves preparation only. A libvirt boot does not prove Hyper-V,
+Proxmox VE, VirtualBox or VMware Workstation behavior.
+
 Test both methods for each supported backend/host combination.
 Windows uses SSH; local libvirt, VirtualBox and VMware run on Linux.
 

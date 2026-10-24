@@ -26,6 +26,8 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
     if destination == recipe or recipe in destination.parents:
         raise RuntimeError(_("Store the bundle outside the NixBerry recipe root."))
     selected = method or deployment_method(target)
+    from security import require_supported, artifact, policy
+    security = require_supported(target, selected)
     attribute = ("nixberryInstallers." if selected == "iso" and target["backend"] != "rpi" else "nixberryImages.") + target_name
     command = ["nix", "build", "--print-out-paths", "--no-write-lock-file",
                "path:" + str(recipe) + "#" + attribute]
@@ -38,7 +40,8 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         return {"target": target_name, "destination": str(destination), "deploymentMethod": selected,
                 "configuration": target.get("configuration", "default"),
                 "allowReset": target.get("allowReset", False),
-                "build": [*command[:-1], "--no-link", command[-1]]}
+                **({"preparedImageDirectory": security.get("imageDirectory"), "security": security}
+                   if security["mode"] != "none" else {"build": [*command[:-1], "--no-link", command[-1]]})}
     try:
         destination.parent.mkdir(parents=True, exist_ok=True)
         staging_directory = tempfile.TemporaryDirectory(prefix=".nixberry-export-", dir=destination.parent)
@@ -77,18 +80,25 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         if backend not in extensions:
             raise RuntimeError(_("Image export is not implemented for this platform."))
         extension = "iso" if selected == "iso" and backend != "rpi" else extensions[backend]
-        result = subprocess.run([
-            *command[:-1], "--out-link", str(staging / "image"),
-            flake + "#" + attribute], text=True, stdout=subprocess.PIPE, check=True)
-        paths = result.stdout.strip().splitlines()
-        if len(paths) != 1:
-            raise RuntimeError(_("The build did not return exactly one image."))
-        artifacts = list(Path(paths[0]).rglob("*." + extension))
+        encrypted = policy(target)["mode"] != "none"
+        if encrypted:
+            artifacts = [artifact(target)[0]]
+        else:
+            result = subprocess.run([
+                *command[:-1], "--out-link", str(staging / "image"),
+                flake + "#" + attribute], text=True, stdout=subprocess.PIPE, check=True)
+            paths = result.stdout.strip().splitlines()
+            if len(paths) != 1:
+                raise RuntimeError(_("The build did not return exactly one image."))
+            artifacts = list(Path(paths[0]).rglob("*." + extension))
         if len(artifacts) != 1:
             raise RuntimeError(_("The result does not contain exactly one image of the expected format."))
         system = subprocess.check_output(["nix", "eval", "--raw", "--no-write-lock-file",
             flake + "#nixberrySystems." + target_name + ".config.system.build.toplevel.outPath"], text=True).strip()
-        filename = "nixberry-" + target_name + "." + extension
+        filename = ("system" if encrypted else "nixberry-" + target_name) + "." + extension
+        if encrypted:
+            prepared_path, encryption = artifact(target, system=system)
+            shutil.copyfile(Path(target["security"]["imageDirectory"]) / "encryption.json", root / "encryption.json")
         shutil.copyfile(artifacts[0], root / filename)
         manifest = {"target": target_name, "backend": backend, "profile": target["profile"], "deploymentMethod": selected,
                     "configuration": target.get("configuration", "default"),
@@ -98,6 +108,9 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
                     "network": target.get("network", {"mode": "dhcp"}) if backend != "rpi" else None,
                     "systemPath": system,
                     "lockSha256": hashlib.sha256((frozen_recipe / "flake.lock").read_bytes()).hexdigest()}
+        if encrypted:
+            manifest["security"] = policy(target)
+            manifest["initrdHostKey"] = encryption["initrdHostKey"]
         (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
         (root / "README.txt").write_text(_(
             "NixBerry: offline bundle\n\n1. Verify checksums: sha256sum -c SHA256SUMS\n2. Transfer and boot instructions: recipe/README.md\n3. Target and parameters: manifest.json\n\nThe image contains the system and its dependencies. VM disks boot directly;\nthe RPi SD card is a recovery environment with the prebuilt target system.\nInstalled services and applications may have their own network requirements.\n"
@@ -142,7 +155,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
                 lines.append(digest + "  " + str(file.relative_to(root)))
         (root / "SHA256SUMS").write_text("\n".join(lines) + "\n")
         # A destination occupied during a long build must not be overwritten.
-        destination.mkdir()
+        destination.mkdir(mode=0o700 if encrypted else 0o777)
         try:
             for item in root.iterdir():
                 shutil.move(str(item), destination / item.name)

@@ -24,6 +24,8 @@ def launch(target, command, arguments):
     if not recipe or not (Path(recipe) / "flake.nix").is_file():
         raise RuntimeError(_("Run the operation through the nixberry launcher with a complete project recipe."))
     expected = json.loads(Path(os.environ["NIXBERRY_DISPATCH_TARGET"]).read_text())
+    from security import require_supported
+    require_supported(expected, method or expected.get("deploymentMethod", "image"))
     with tempfile.TemporaryDirectory(prefix="nixberry-tools-") as directory:
         frozen = freeze_recipe(str(Path(recipe).resolve()), target, expected, directory)
         return subprocess.run([

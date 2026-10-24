@@ -227,6 +227,7 @@ def start_and_verify(target, manifest, *, timeout=300):
     info(_("Waiting for the guest agent, SSH and verified boot from disk…"))
     deadline = time.monotonic() + timeout
     error = None
+    unlock_attempted = False
     while time.monotonic() < deadline:
         try:
             result = verify(target, manifest["systemPath"])
@@ -234,6 +235,12 @@ def start_and_verify(target, manifest, *, timeout=300):
             return result
         except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as failure:
             error = failure
+            if not unlock_attempted and manifest.get("security", {}).get("mode", "none") != "none":
+                state = snapshot(target)
+                if state["state"] == "running":
+                    from security import unlock_for_install
+                    unlock_for_install(manifest, state["addresses"][0] if len(state["addresses"]) == 1 else None)
+                    unlock_attempted = True
             time.sleep(3)
     raise RuntimeError(_("The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}").format(value1=str(error)))
 
@@ -246,6 +253,8 @@ def main(argv=None):
     modes.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     manifest = json.loads(Path(os.environ["NIXBERRY_PORTABLE_MANIFEST"]).read_text())
+    from security import validate_manifest
+    validate_manifest(manifest)
     target = manifest["target"]
     validate(target["spec"], target["backend"])
     if args.action == "probe":

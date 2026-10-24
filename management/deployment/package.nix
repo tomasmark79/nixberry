@@ -13,6 +13,7 @@ let
         ./discovery.py
         ./runtime.py
         ./scaffold.py
+        ./security.py
         ./exporter.py
         ./guest-install.sh
         ./updater.py
@@ -131,6 +132,8 @@ in
     pkgs.openssh
     pkgs.nix
     pkgs.nvd
+    pkgs.qemu
+    pkgs.openssh
   ];
   text = ''
     export NIXBERRY_VERSION=${pkgs.lib.escapeShellArg version}

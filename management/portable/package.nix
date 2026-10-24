@@ -10,6 +10,8 @@
   isoName,
   deploymentMethod ? "image",
   allowReset ? false,
+  security ? { mode = "none"; },
+  securityTarget ? null,
   ...
 }:
 let
@@ -21,6 +23,7 @@ let
       ../deployment/guest-install.sh
       ../deployment/runtime.py
       ../deployment/messages.py
+      ../deployment/security.py
       ../deployment/messages.sh
       (pkgs.lib.fileset.fileFilter (file: file.hasExt "mo") ../deployment/locales)
     ];
@@ -28,6 +31,7 @@ let
   manifest = pkgs.writeText "nixberry-${backend}-manifest.json" (
     builtins.toJSON (
       spec
+      // pkgs.lib.optionalAttrs (security.mode != "none") { inherit security securityTarget; }
       // {
         inherit backend guestHostName deploymentMethod;
         systemPath = toString targetSystem;
@@ -41,7 +45,7 @@ let
             guestHostName
             deploymentMethod
             ;
-        };
+        } // pkgs.lib.optionalAttrs (security.mode != "none") { inherit security; };
       }
     )
   );

@@ -41,11 +41,15 @@ def choose_address(addresses, host):
 
 
 def installed_check(snapshot, spec):
-    return """set -eu
+    encrypted = ""
+    if spec.get("security", {}).get("mode", "none") != "none":
+        from security import encryption_checks
+        encrypted = "; ".join(encryption_checks(spec)) + "\n"
+    return "set -eu\n" + encrypted + """
 test "$(uname -m)" = x86_64
 test "$(cat /sys/class/dmi/id/product_uuid | tr '[:upper:]' '[:lower:]')" = EXPECTED_UUID
 test "$(hostname)" = EXPECTED_HOST
-test "$(findmnt -n -o SOURCE /)" = /dev/sda2
+test "$(findmnt -n -o SOURCE /)" = EXPECTED_ROOT
 test -d /sys/firmware/efi
 if mountpoint -q /iso; then exit 1; fi
 hostname
@@ -57,7 +61,8 @@ done
 systemctl --failed --no-legend
 test -z "$(systemctl --failed --no-legend)"
 """.replace("EXPECTED_UUID", shlex.quote(snapshot["biosGuid"].lower())).replace(
-        "EXPECTED_HOST", shlex.quote(spec["guestHostName"]))
+        "EXPECTED_HOST", shlex.quote(spec["guestHostName"])).replace(
+        "EXPECTED_ROOT", "/dev/mapper/nixberry-root" if spec.get("security", {}).get("mode", "none") != "none" else "/dev/sda2")
 
 
 class Manager:
@@ -147,10 +152,15 @@ class Manager:
 
     def wait_guest(self, *, installed=False):
         deadline = time.monotonic() + 240
+        unlock_attempted = False
         last_message = _("The VM has no IP address yet.")
         while time.monotonic() < deadline:
             snapshot = self.remote("status")
             address = choose_address(snapshot["ips"], self.spec["sshHost"])
+            if installed and snapshot["state"] == "Running" and not address and not unlock_attempted:
+                from security import unlock_for_install
+                unlock_for_install(self.spec, None)
+                unlock_attempted = True
             if snapshot["state"] == "Running" and address:
                 if installed:
                     command = ("test \"$(readlink -f /run/current-system)\" = " + shlex.quote(self.spec["systemPath"])
@@ -162,6 +172,10 @@ class Manager:
                     info(_("VM {value1}; IP {address}; SSH available."), value1=snapshot['id'], address=address)
                     return snapshot, address
                 last_message = (result.stderr or _("SSH is not available yet.")).strip()[-500:]
+                if installed and result.returncode == 255 and not unlock_attempted:
+                    from security import unlock_for_install
+                    unlock_for_install(self.spec, address)
+                    unlock_attempted = True
             time.sleep(4)
         raise RuntimeError(_("Timed out waiting for the guest: {last_message}").format(last_message=last_message))
 
@@ -214,6 +228,9 @@ def main():
     modes.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     spec = json.loads(Path(os.environ["NIXBERRY_HYPERV_MANIFEST"]).read_text())
+    if spec.get("security", {}).get("mode", "none") != "none":
+        from security import validate_manifest
+        validate_manifest(spec)
     with tempfile.TemporaryDirectory(prefix="nixberry-hyperv-") as state:
         manager = Manager(spec, state)
         if args.mode in ("create", "provision"):

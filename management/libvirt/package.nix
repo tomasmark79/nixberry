@@ -10,6 +10,8 @@
   image ? null,
   deploymentMethod ? "image",
   allowReset ? spec.allowReset or false,
+  security ? { mode = "none"; },
+  securityTarget ? null,
 }:
 let
   commonSource = import ../messages.nix { inherit pkgs; };
@@ -21,6 +23,7 @@ let
   manifest = pkgs.writeText "nixberry-libvirt-manifest.json" (
     builtins.toJSON (
       spec
+      // lib.optionalAttrs (security.mode != "none") { inherit security securityTarget; }
       // {
         inherit diskPath deploymentMethod;
         isoPath = if deploymentMethod == "iso" then isoPath else null;

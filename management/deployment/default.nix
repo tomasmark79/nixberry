@@ -58,6 +58,7 @@ let
       allowReset = instance.allowReset or false;
       configuration = configurations.select instance;
       deploymentMethod = instance.deploymentMethod or "image";
+      security = import ./security.nix { security = instance.security or { }; };
       capabilities = {
         build = true;
         export = true;

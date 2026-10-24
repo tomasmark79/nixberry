@@ -16,6 +16,9 @@ def legacy(spec):
 
 
 def validate(spec):
+    if spec.get("security", {}).get("mode", "none") != "none":
+        from security import validate_manifest
+        validate_manifest(spec)
     if spec.get("uri") != "qemu:///system":
         raise RuntimeError(_("Only local qemu:///system is allowed."))
     if not re.fullmatch(r"nixberry-[a-z0-9][a-z0-9-]{0,52}", spec["name"]):

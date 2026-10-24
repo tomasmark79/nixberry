@@ -32,10 +32,15 @@ def configuration_name(recipe, name):
     return name
 
 
-def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, offline=False, method=None, configuration="default"):
+def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, offline=False, method=None, configuration="default", security_mode="none"):
     if offline and host is not None:
         raise RuntimeError(_("Offline preparation cannot be combined with --host."))
     configuration = configuration_name(recipe, configuration)
+    from security import policy
+    security = policy({"backend": backend, "security": {"mode": security_mode}})
+    if security_mode != "none" and method == "iso":
+        from security import require_supported
+        require_supported({"backend": backend, "security": security}, "iso")
     if backend not in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
         raise RuntimeError(_("Unsupported backend for a new declaration."))
     if not re.fullmatch(r"[a-z](?:[a-z0-9-]{0,38}[a-z0-9])?", name) or name in registry:
@@ -86,6 +91,10 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
             + placement + f"  configuration = {quote(configuration)};\n" + network + f"  deploymentMethod = {quote(method or 'image')};\n"
             + f"  profile = {quote('nixberry-vm' if backend == 'libvirt' else 'nixberry-' + backend)};\n"
             + "  # Instance removal is disabled by default.\n  allowReset = false;\n"
+            + ("" if security_mode == "none" else
+               f'  security = {{\n    mode = {quote(security_mode)};\n    unlock = {quote(security["unlock"])};\n    port = 2222;\n'
+               + '    # Prepared locally, outside the recipe and Nix store.\n'
+               + f'    imageDirectory = {quote(str(Path.home() / ".local/share/nixberry/encrypted" / name))};\n  }};\n')
             + "  spec = {\n" + f"    name = {quote('nixberry-' + name)};\n"
             + f"    uuid = {quote(str(identity))};\n    ownerId = {quote(owner_id)};\n"
             + f"    mac = {quote(mac)};\n    memoryMiB = 4096;\n    vcpus = 4;\n    diskGiB = 32;\n")
@@ -108,7 +117,7 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
     return path, text
 
 
-def new_libvirt(recipe, hosts, registry, name, host=None, *, write=True, method=None, configuration="default"):
+def new_libvirt(recipe, hosts, registry, name, host=None, *, write=True, method=None, configuration="default", security_mode="none"):
     """Preserve the entry point for older callers; use the shared declaration generator."""
     return new_vm(recipe, hosts, registry, name, "libvirt", host, write=write,
-                  method=method, configuration=configuration)
+                  method=method, configuration=configuration, security_mode=security_mode)

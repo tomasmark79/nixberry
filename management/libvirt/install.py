@@ -74,6 +74,10 @@ def choose_address(output, network_xml, mac):
 
 
 def installed_check(manifest):
+    encrypted = ""
+    if manifest.get("security", {}).get("mode", "none") != "none":
+        from security import encryption_checks
+        encrypted = "; ".join(encryption_checks(manifest)) + "; "
     return (
         "set -eu; "
         "test \"$(cat /sys/class/dmi/id/product_uuid)\" = " + shlex.quote(manifest["uuid"]) + "; "
@@ -84,7 +88,7 @@ def installed_check(manifest):
         "! mountpoint -q /iso; "
         "for service in sshd systemd-networkd qemu-guest-agent; do "
         'systemctl is-active --quiet "$service" || exit 1; done; '
-        "hostname; findmnt -n -o SOURCE,FSTYPE /; readlink -f /run/current-system"
+        + encrypted + "hostname; findmnt -n -o SOURCE,FSTYPE /; readlink -f /run/current-system"
     )
 
 
@@ -102,11 +106,16 @@ def image_install(manifest, apply):
         virsh("start", manifest["name"])
     with tempfile.TemporaryDirectory(prefix="nixberry-image-ssh-") as directory:
         deadline, failure = time.monotonic() + 240, None
+        unlock_attempted = False
         while time.monotonic() < deadline:
             try:
                 validate_domain(virsh("dumpxml", manifest["name"]), manifest)
-                address = choose_address(virsh("domifaddr", manifest["name"], "--source", "lease"),
-                                         virsh("net-dumpxml", manifest["network"]), manifest["mac"])
+                early_network = (manifest.get("securityTarget") or {}).get("network", {})
+                if early_network.get("mode") == "static":
+                    address = str(ipaddress.ip_interface(early_network["address"]).ip)
+                else:
+                    address = choose_address(virsh("domifaddr", manifest["name"], "--source", "lease"),
+                                             virsh("net-dumpxml", manifest["network"]), manifest["mac"])
                 result = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                     "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=3",
                     "-o", "StrictHostKeyChecking=accept-new", "-o", "UserKnownHostsFile=" + directory + "/known_hosts",
@@ -118,6 +127,10 @@ def image_install(manifest, apply):
                     success(_("Boot of the prebuilt system from disk verified."))
                     return
                 failure = result.stderr
+                if result.returncode == 255 and not unlock_attempted:
+                    from security import unlock_for_install
+                    unlock_for_install(manifest, address)
+                    unlock_attempted = True
             except (RuntimeError, subprocess.SubprocessError) as error:
                 failure = str(error)
             time.sleep(3)
