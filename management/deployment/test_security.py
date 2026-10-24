@@ -219,3 +219,22 @@ class SecurityTests(unittest.TestCase):
                                     for key in config["authorizedKeys"]))
                 self.assertTrue(config["authorizedKeys"])
                 self.assertTrue({"virtio_net", "e1000", "vmxnet3", "hv_netvsc"} <= set(config["drivers"]))
+
+    def test_configuration_cannot_silently_weaken_declared_disk_protection(self):
+        recipe = self.root / "recipe"
+        copy_test_recipe(Path(__file__).parents[2], recipe)
+        new_vm(recipe, {}, {}, "vm-demo-policy", "libvirt", offline=True, security_mode="luks")
+        cases = (
+            ('nixberry.vm.security.mode = lib.mkForce "none";', "must preserve the VM security policy"),
+            ('disko.devices.disk.system.content.partitions.root.content = lib.mkOverride 0 { '
+             'type = "filesystem"; format = "ext4"; mountpoint = "/"; };', "Encrypted VM root must use LUKS"),
+            ('swapDevices = lib.mkForce [ { device = "/dev/test-swap"; } ];', "must not enable swap devices"),
+        )
+        for override, message in cases:
+            (recipe / "configurations/default.nix").write_text(
+                '{ lib, ... }: { imports = [ ../modules/common.nix ]; ' + override + ' }')
+            result = subprocess.run(["nix", "eval", "--raw", "--no-write-lock-file",
+                "path:" + str(recipe) + "#nixberrySystems.vm-demo-policy.config.system.build.toplevel.drvPath"],
+                text=True, capture_output=True, timeout=60)
+            self.assertNotEqual(result.returncode, 0, override)
+            self.assertIn(message, result.stderr)

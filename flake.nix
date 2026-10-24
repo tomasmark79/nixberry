@@ -232,10 +232,14 @@
         profiles.${target.backend}.system.extendModules {
           modules = [
             configurations.modules.${target.configuration}
-            ({ lib, ... }: {
+            ({ config, lib, ... }: {
               networking.hostName = lib.mkForce target.guestHostName;
               nixberry.vm.network = target.network or { };
               nixberry.vm.security = builtins.removeAttrs target.security [ "imageDirectory" ];
+              assertions = [ {
+                assertion = config.nixberry.vm.security == builtins.removeAttrs target.security [ "imageDirectory" ];
+                message = "The selected configuration must preserve the VM security policy declared in the instance.";
+              } ];
             })
           ];
         }

@@ -5,6 +5,8 @@ let
   encrypted = cfg.mode != "none";
   network = config.nixberry.vm.network;
   static = network.mode == "static";
+  root = config.disko.devices.disk.system.content.partitions.root.content or { };
+  luks = config.boot.initrd.luks.devices.nixberry-root or { };
 in
 {
   options.nixberry.vm.security = lib.mkOption {
@@ -29,9 +31,17 @@ in
       assertion = !(builtins.elem cfg.port config.services.openssh.ports);
       message = "Early-boot SSH must use a different port from the installed system SSH service.";
     } {
+      assertion = (root.type or "") == "luks" && (root.name or "") == "nixberry-root"
+        && (root.passwordFile or null) == "/run/nixberry/luks-password"
+        && (root.additionalKeyFiles or [ ]) == [ ];
+      message = "Encrypted VM root must use LUKS with the runtime provisioning password and no additional provisioning keys.";
+    } {
+      assertion = config.swapDevices == [ ];
+      message = "Encrypted VM images must not enable swap devices outside the protected root policy.";
+    } {
       assertion = config.fileSystems."/".device == "/dev/mapper/nixberry-root"
-        && config.boot.initrd.luks.devices.nixberry-root.keyFile == null
-        && !config.boot.initrd.luks.devices.nixberry-root.tryEmptyPassphrase;
+        && (luks.keyFile or null) == null
+        && !(luks.tryEmptyPassphrase or true);
       message = "LUKS VM root must use nixberry-root without an embedded key or empty-passphrase fallback.";
     } ];
     disko.devices.disk.system.content.partitions.root.content = lib.mkForce {
