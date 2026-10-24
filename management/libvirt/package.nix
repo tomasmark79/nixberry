@@ -81,7 +81,10 @@ let
           <target type="virtio" name="org.qemu.guest_agent.0"/>
         </channel>
         <rng model="virtio"><backend model="random">/dev/urandom</backend></rng>
-        <video><model type="none"/></video>
+        <graphics type="spice">
+          <listen type="socket"/>
+        </graphics>
+        <video><model type="vga" heads="1" primary="yes"/></video>
       </devices>
     </domain>
   '';

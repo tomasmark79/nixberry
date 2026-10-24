@@ -40,6 +40,10 @@ these parameters; the recipe supplies OVMF and deployment media.
 `image` imports QCOW2 into a new volume. `iso` creates a blank `/dev/vda` disk.
 Guest access uses a DHCP lease from the declared network.
 
+New libvirt VMs include a SPICE graphical console with a standard VGA adapter
+and a serial console. SPICE uses a libvirt-managed UNIX socket. Open the
+graphical console through a libvirt client such as virt-manager.
+
 ### Hyper-V
 
 The SSH account needs Hyper-V management permission and write access to dedicated
