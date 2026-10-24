@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from security import FORMATS, artifact, binding, digest, policy, prepare_image, read_password, require_supported, unlock, validate_manifest
+from security import FORMATS, artifact, binding, digest, policy, prepare_image, read_password, require_supported, unlock, unlock_for_install, validate_manifest
 from scaffold import new_vm
 from test_support import copy_test_recipe
 
@@ -53,6 +53,13 @@ class SecurityTests(unittest.TestCase):
                 policy({"security": security})
         with self.assertRaisesRegex(ValueError, "Raspberry Pi"):
             require_supported({"backend": "rpi", "security": {"mode": "luks"}})
+
+    def test_missing_boot_verification_does_not_claim_a_proven_locked_disk(self):
+        manifest = {"security": self.target["security"], "securityTarget": self.target}
+        with patch("sys.stdin.isatty", return_value=False), patch("security.unlock") as connect:
+            with self.assertRaisesRegex(ValueError, "boot is not verified"):
+                unlock_for_install(manifest, None)
+            connect.assert_not_called()
 
     def test_artifact_rejects_changes_identity_policy_system_and_symlinks(self):
         self.assertEqual(artifact(self.target, system=self.metadata["systemPath"])[0], self.disk)

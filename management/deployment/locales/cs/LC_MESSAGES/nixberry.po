@@ -2718,8 +2718,8 @@ msgstr "Šifrované obrazy a tajemství ukládej mimo kořen receptu."
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr "Cesta nasazovaného média neodpovídá ověřenému šifrovanému obrazu."
 
-msgid "The encrypted VM is waiting for unlock. Run unlock TARGET --address IP in a terminal, then repeat install --apply to verify boot."
-msgstr "Šifrovaná VM čeká na odemknutí. V terminálu spusť unlock TARGET --address IP a potom zopakuj install --apply pro ověření startu."
+msgid "The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."
+msgstr "Start šifrované VM není ověřený. Pokud čeká na heslo, spusť v terminálu unlock TARGET --address IP a potom zopakuj install --apply."
 
 msgid "The encrypted image checksum does not match; refusing deployment."
 msgstr "Kontrolní součet šifrovaného obrazu nesouhlasí; nasazení odmítám."

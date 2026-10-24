@@ -255,7 +255,7 @@ def unlock_for_install(manifest, address):
             address = str(ipaddress.ip_interface(network["address"]).ip)
     import sys
     if not address or not sys.stdin.isatty():
-        raise ValueError(_("The encrypted VM is waiting for unlock. Run unlock TARGET --address IP in a terminal, then repeat install --apply to verify boot."))
+        raise ValueError(_("The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."))
     info(_("Unlocking the encrypted VM through its pinned early-boot SSH identity…"))
     # SSH may disconnect during switch-root; the caller verifies boot independently.
     unlock(manifest["securityTarget"], address)
