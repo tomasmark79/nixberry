@@ -15,7 +15,9 @@
   ...
 }:
 let
-  source = pkgs.lib.fileset.toSource {
+  source = import ../with-locales.nix {
+    inherit pkgs;
+    source = pkgs.lib.fileset.toSource {
     root = ../deployment;
     fileset = pkgs.lib.fileset.unions [
       ../deployment/portable.py
@@ -25,8 +27,9 @@ let
       ../deployment/messages.py
       ../deployment/security.py
       ../deployment/messages.sh
-      (pkgs.lib.fileset.fileFilter (file: file.hasExt "mo") ../deployment/locales)
+      ../deployment/locales/cs.sh
     ];
+    };
   };
   manifest = pkgs.writeText "nixberry-${backend}-manifest.json" (
     builtins.toJSON (

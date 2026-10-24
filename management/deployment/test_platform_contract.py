@@ -1,6 +1,7 @@
 """Společný kontrakt balíčků všech VM; pouze izolované buildy a odmítnuté operace."""
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import unittest
@@ -72,6 +73,12 @@ class PlatformContractTests(unittest.TestCase):
                     expected = {f'nixberry-{prefix}-{action}' for action in ('create', 'install', 'provision', 'reset')}
                     expected.add(f'nixberry-{backend}-probe')
                     self.assertEqual({p.name for p in (root / 'bin').iterdir()}, expected)
+                    result = subprocess.run([str(root / 'bin' / f'nixberry-{prefix}-create'), '--help'],
+                        env={**os.environ, 'NIXBERRY_LANG': 'cs', 'NO_COLOR': '1', 'TERM': 'dumb'},
+                        text=True, capture_output=True, timeout=15)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn('Použití:', result.stdout)
+                    self.assertNotIn('Usage:', result.stdout)
 
     def test_reset_needs_no_media_and_refuses_apply_without_permission(self):
         for backend in BACKENDS:
