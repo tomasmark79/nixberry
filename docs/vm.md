@@ -78,6 +78,13 @@ NixOS needs its VirtualBox host module and user permissions. On Windows, use
 the same account for SSH and GUI. The adapter grants that account's SID access
 only to the newly created private VM directory.
 
+Hardware virtualization must be available to VirtualBox. On Linux,
+`kvm.enable_virt_at_load=Y` can reserve it while KVM modules are loaded, even
+without running KVM VMs. Coordinate hypervisor access in the host configuration.
+On Windows with Hyper-V, also verify that the installed VirtualBox UEFI firmware
+can boot the guest. A CPU exception in UEFI must be resolved on the host before
+Linux or [remote disk unlocking](security.md) can start.
+
 ### VMware Workstation
 
 Prepare Python 3, working `vmrun`, dedicated storage and NAT with DHCP.
