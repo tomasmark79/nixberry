@@ -110,12 +110,12 @@ This does not replace a real boot test.
 Application checks:
 
 ```sh
-nix build --no-link path:.#mc
-nix run path:.#mc-tests
+nix build --no-link path:.#emcx
+nix run path:.#emcx-tests
 nix build --no-link path:.#hstr path:.#packages.x86_64-linux.hstr.tests.scroll
 ```
 
-MC needs `unshare -Ur` and runs TUI checks in tmux. HSTR uses temporary history.
+emcx needs `unshare -Ur` and runs TUI checks in tmux. HSTR uses temporary history.
 Select the appropriate architecture for ARM packages.
 
 ## Live scenario matrix

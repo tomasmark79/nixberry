@@ -12,14 +12,17 @@
       inputs.nixpkgs.follows = "nixos-raspberrypi/nixpkgs";
       inputs.nixpkgs-wasm.follows = "nixos-raspberrypi/nixpkgs";
     };
-    mc-modern = {
-      # The fork branch follows development; this flake.lock pins the exact revision.
-      url = "github:tomasmark79/mc/mc-modern";
-      inputs.nixpkgs.follows = "nixos-raspberrypi/nixpkgs";
+    emcx = {
+      url = "github:tomasmark79/emcx";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.mc-upstream.follows = "mc-upstream";
+    };
+    mc-upstream = {
+      url = "github:MidnightCommander/mc/master";
+      flake = false;
     };
     # Updates follow main; flake.lock pins the exact revision in use.
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -36,7 +39,7 @@
       nixpkgs,
       unstable,
       nixoncpp,
-      mc-modern,
+      emcx,
       disko,
       nixos-anywhere,
       nixos-raspberrypi,
@@ -50,32 +53,37 @@
       rpiTargets = import ./management/rpi/targets;
       mkRpi =
         target:
-        let base = nixos-raspberrypi.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs.unstable = unstable.legacyPackages.aarch64-linux;
-          specialArgs.mc-modern = mc-modern;
-          specialArgs.nixoncpp = nixoncpp;
-          specialArgs.nixberryModules.common = ./modules/common.nix;
-          modules = [
-            disko.nixosModules.disko
-            ./platforms/rpi/disk-config.nix
-            ./platforms/rpi/configuration.nix
-            ./platforms/rpi/boot.nix
-            configurations.modules.${configurations.select target}
-            { nixberry.rpi = builtins.removeAttrs target [ "configuration" ]; }
-          ];
-        };
-        in base.extendModules {
+        let
+          base = nixos-raspberrypi.lib.nixosSystem {
+            system = "aarch64-linux";
+            specialArgs.unstable = unstable.legacyPackages.aarch64-linux;
+            specialArgs.emcx = emcx;
+            specialArgs.nixoncpp = nixoncpp;
+            specialArgs.nixberryModules.common = ./modules/common.nix;
+            modules = [
+              disko.nixosModules.disko
+              ./platforms/rpi/disk-config.nix
+              ./platforms/rpi/configuration.nix
+              ./platforms/rpi/boot.nix
+              configurations.modules.${configurations.select target}
+              { nixberry.rpi = builtins.removeAttrs target [ "configuration" ]; }
+            ];
+          };
+        in
+        base.extendModules {
           specialArgs.nixberryRpiBootLoader = base.config.system.build.installBootLoader;
           modules = [
             ./platforms/rpi/security.nix
             ({ config, ... }: {
-              assertions = [ {
-                assertion = config.nixberry.rpi.security == import ./management/rpi/security.nix {
-                  security = target.security or { };
-                };
-                message = "The selected configuration must preserve the RPi security policy declared in the target.";
-              } ];
+              assertions = [
+                {
+                  assertion =
+                    config.nixberry.rpi.security == import ./management/rpi/security.nix {
+                      security = target.security or { };
+                    };
+                  message = "The selected configuration must preserve the RPi security policy declared in the target.";
+                }
+              ];
             })
           ];
         };
@@ -112,7 +120,8 @@
           minimumDiskBytes = (cfg.rootGiB * 1024 * 1024 * 1024) + (520 * 1024 * 1024);
           systemPath = toString system.config.system.build.toplevel;
           diskoPath = toString system.config.system.build.diskoScript;
-        } // lib.optionalAttrs (cfg.security.mode != "none") { inherit (cfg) security; }
+        }
+        // lib.optionalAttrs (cfg.security.mode != "none") { inherit (cfg) security; }
       ) rpiSystems;
       encryptedRpiConfigs = builtins.filter (cfg: cfg.security.mode == "luks") (
         map (system: system.config.nixberry.rpi) (builtins.attrValues rpiSystems)
@@ -124,30 +133,40 @@
             ./management/rpi/installer.nix
             ({ lib, ... }: {
               config = lib.mkIf (encryptedRpiConfigs != [ ]) {
-                assertions = [ {
-                  assertion = builtins.length encryptedRpiConfigs
-                    == builtins.length (lib.unique (map (cfg: cfg.lanMac) encryptedRpiConfigs));
-                  message = "Encrypted RPi recovery targets must have distinct primary MAC addresses.";
-                } ];
+                assertions = [
+                  {
+                    assertion =
+                      builtins.length encryptedRpiConfigs
+                      == builtins.length (lib.unique (map (cfg: cfg.lanMac) encryptedRpiConfigs));
+                    message = "Encrypted RPi recovery targets must have distinct primary MAC addresses.";
+                  }
+                ];
                 networking.useDHCP = lib.mkForce false;
                 networking.useNetworkd = lib.mkForce true;
                 systemd.network = {
                   enable = true;
-                  networks = builtins.listToAttrs (map (cfg: {
-                    name = "00-nixberry-${cfg.hardwareSerial}";
-                    value = {
-                      matchConfig.MACAddress = cfg.lanMac;
-                      address = [ cfg.address ];
-                      gateway = [ cfg.gateway ];
-                      dns = cfg.dns;
-                      networkConfig = { DHCP = "no"; IPv6AcceptRA = false; };
+                  networks =
+                    builtins.listToAttrs (
+                      map (cfg: {
+                        name = "00-nixberry-${cfg.hardwareSerial}";
+                        value = {
+                          matchConfig.MACAddress = cfg.lanMac;
+                          address = [ cfg.address ];
+                          gateway = [ cfg.gateway ];
+                          dns = cfg.dns;
+                          networkConfig = {
+                            DHCP = "no";
+                            IPv6AcceptRA = false;
+                          };
+                        };
+                      }) encryptedRpiConfigs
+                    )
+                    // {
+                      "90-recovery-dhcp" = {
+                        matchConfig.Name = "en* eth*";
+                        networkConfig.DHCP = "yes";
+                      };
                     };
-                  }) encryptedRpiConfigs) // {
-                    "90-recovery-dhcp" = {
-                      matchConfig.Name = "en* eth*";
-                      networkConfig.DHCP = "yes";
-                    };
-                  };
                 };
               };
             })
@@ -181,7 +200,7 @@
         lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs.unstable = unstable.legacyPackages.x86_64-linux;
-          specialArgs.mc-modern = mc-modern;
+          specialArgs.emcx = emcx;
           specialArgs.nixoncpp = nixoncpp;
           specialArgs.nixberryModules.common = ./modules/common.nix;
           modules = [
@@ -283,13 +302,17 @@
               nixberry.vm.network = target.network or { };
               nixberry.vm.adapters = guestAdapters target;
               nixberry.vm.security = builtins.removeAttrs target.security [ "imageDirectory" ];
-              assertions = [ {
-                assertion = config.nixberry.vm.adapters == guestAdapters target;
-                message = "The selected configuration must preserve the VM adapter identities declared in the instance.";
-              } {
-                assertion = config.nixberry.vm.security == builtins.removeAttrs target.security [ "imageDirectory" ];
-                message = "The selected configuration must preserve the VM security policy declared in the instance.";
-              } ];
+              assertions = [
+                {
+                  assertion = config.nixberry.vm.adapters == guestAdapters target;
+                  message = "The selected configuration must preserve the VM adapter identities declared in the instance.";
+                }
+                {
+                  assertion =
+                    config.nixberry.vm.security == builtins.removeAttrs target.security [ "imageDirectory" ];
+                  message = "The selected configuration must preserve the VM security policy declared in the instance.";
+                }
+              ];
             })
           ];
         }
@@ -300,17 +323,24 @@
           profile = profiles.${target.backend};
         in
         (mkVmInstaller target.profile vmSystems.${name} profile.disk profile.modules).extendModules {
-          modules = [ {
-            nixberry.vm.network = target.network or { };
-            nixberry.vm.adapters = guestAdapters target;
-          } ];
+          modules = [
+            {
+              nixberry.vm.network = target.network or { };
+              nixberry.vm.adapters = guestAdapters target;
+            }
+          ];
         }
       ) deployment.instances;
-      guestAdapters = target: map (adapter: {
-        inherit (adapter) name;
-        mac = let compact = lib.toLower (builtins.replaceStrings [ ":" "-" ] [ "" "" ] adapter.mac);
-          in lib.concatStringsSep ":" (builtins.genList (i: builtins.substring (i * 2) 2 compact) 6);
-      }) (target.spec.networkAdapters or [ ]);
+      guestAdapters =
+        target:
+        map (adapter: {
+          inherit (adapter) name;
+          mac =
+            let
+              compact = lib.toLower (builtins.replaceStrings [ ":" "-" ] [ "" "" ] adapter.mac);
+            in
+            lib.concatStringsSep ":" (builtins.genList (i: builtins.substring (i * 2) 2 compact) 6);
+        }) (target.spec.networkAdapters or [ ]);
       mkVmTools =
         method:
         builtins.mapAttrs (
@@ -323,9 +353,13 @@
             isoName = vmInstallers.${name}.config.image.fileName;
             targetSystem = vmSystems.${name}.config.system.build.toplevel;
             diskoScript = vmSystems.${name}.config.system.build.diskoScript;
-            image = if target.security.mode == "none" then vmImages.${name}
-              else if target.security.imageDirectory != null then target.security.imageDirectory
-              else "/run/nixberry/unprepared-image";
+            image =
+              if target.security.mode == "none" then
+                vmImages.${name}
+              else if target.security.imageDirectory != null then
+                target.security.imageDirectory
+              else
+                "/run/nixberry/unprepared-image";
             security = target.security;
             securityTarget = target;
             deploymentMethod = if method == null then target.deploymentMethod else method;
@@ -368,8 +402,7 @@
         name: target:
         if target.security.mode != "none" then
           throw "Encrypted images must be prepared outside the Nix store with nixberry prepare-image TARGET --output DIR."
-        else
-        if target.backend == "hyperv" then
+        else if target.backend == "hyperv" then
           mkHypervImage vmSystems.${name} target.spec.diskGiB
         else if
           builtins.elem target.backend [
@@ -417,7 +450,8 @@
       nixberrySystems = rpiSystems // vmSystems;
       nixberryConfigurations = builtins.attrNames configurations.modules;
       nixberryImages = images;
-      nixberryImageBuilders = builtins.mapAttrs (name: target:
+      nixberryImageBuilders = builtins.mapAttrs (
+        name: target:
         (vmSystems.${name}.extendModules {
           modules = [
             ./management/vm/image.nix
@@ -451,7 +485,7 @@
         ];
       };
       packages.x86_64-linux = {
-        inherit (mc-modern.packages.x86_64-linux) mc mc-tests;
+        inherit (emcx.packages.x86_64-linux) emcx emcx-tests;
         hstr = vmPkgs.callPackage ./modules/applications/hstr/package.nix { };
         nixberry = deploymentTools;
         nixberry-source = deploymentSource;
@@ -483,8 +517,8 @@
         nixos-raspberrypi.inputs.nixpkgs.legacyPackages.aarch64-linux.callPackage
           ./modules/applications/hstr/package.nix
           { };
-      packages.aarch64-linux.mc = mc-modern.packages.aarch64-linux.mc;
-      packages.aarch64-linux.mc-tests = mc-modern.packages.aarch64-linux.mc-tests;
+      packages.aarch64-linux.emcx = emcx.packages.aarch64-linux.emcx;
+      packages.aarch64-linux.emcx-tests = emcx.packages.aarch64-linux.emcx-tests;
       packages.aarch64-linux.nixberry-rpi-local-tools = builtins.head (
         builtins.filter (
           package: (package.name or "") == "nixberry-install-local"

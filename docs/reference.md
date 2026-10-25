@@ -218,10 +218,13 @@ does not itself prove RAM exhaustion.
 
 ## Shared applications
 
-Midnight Commander uses the pinned `mc-modern` input.
-Update it with `nix flake update mc-modern --flake .`, then update servers through
-the normal CLI. User `~/.config/mc/ini` overrides package defaults.
-The Bash `mc` wrapper preserves the last visited directory; the direct binary does not.
+Extended Commander uses the pinned `emcx` input and the separate `mc-upstream`
+source input. Update them with `nix flake update emcx mc-upstream --flake .`,
+then update servers through the normal CLI. The `emcx` and `emcx-tests` packages
+are exported for `x86_64-linux` and `aarch64-linux`.
+User `~/.config/emcx/ini` overrides package defaults; existing MC configuration
+is separate. The Bash `emcx` wrapper preserves the last visited directory;
+the direct binary does not.
 Wayland clipboard access requires a graphical session, not SSH alone.
 
 [HSTR](../modules/applications/hstr/package.nix) opens history with `Ctrl+R` in

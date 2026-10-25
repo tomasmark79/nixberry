@@ -36,6 +36,29 @@
         "type": "github"
       }
     },
+    "emcx": {
+      "inputs": {
+        "mc-upstream": [
+          "mc-upstream"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792968416,
+        "narHash": "sha256-v6f9f3KkAC4nMeM3FyxG1k8mRZXoCCBxx1b1AdtKIbc=",
+        "owner": "tomasmark79",
+        "repo": "emcx",
+        "rev": "9e7def0948564b172393c93139d6b05d989a37a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tomasmark79",
+        "repo": "emcx",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "locked": {
         "lastModified": 1767039857,
@@ -69,24 +92,19 @@
         "type": "github"
       }
     },
-    "mc-modern": {
-      "inputs": {
-        "nixpkgs": [
-          "nixos-raspberrypi",
-          "nixpkgs"
-        ]
-      },
+    "mc-upstream": {
+      "flake": false,
       "locked": {
-        "lastModified": 1792396921,
-        "narHash": "sha256-mn7ZlZFgZt1Ww3H5pMAvIhnALQE4VgKLJUHcRaul+sE=",
-        "owner": "tomasmark79",
+        "lastModified": 1792861026,
+        "narHash": "sha256-GDZ3B3ZQfIfphez6ib4iWAe/wW6lOe0HxVEWas61LfQ=",
+        "owner": "MidnightCommander",
         "repo": "mc",
-        "rev": "2b8a21278b6cad69d7a046a7fb8941e7467a4784",
+        "rev": "6cfdb0c10fc0a285ea1bd2efc4228637ecf6fb61",
         "type": "github"
       },
       "original": {
-        "owner": "tomasmark79",
-        "ref": "mc-modern",
+        "owner": "MidnightCommander",
+        "ref": "master",
         "repo": "mc",
         "type": "github"
       }
@@ -292,7 +310,8 @@
     "root": {
       "inputs": {
         "disko": "disko",
-        "mc-modern": "mc-modern",
+        "emcx": "emcx",
+        "mc-upstream": "mc-upstream",
         "nixoncpp": "nixoncpp",
         "nixos-anywhere": "nixos-anywhere",
         "nixos-raspberrypi": "nixos-raspberrypi",
