@@ -67,7 +67,9 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
            if backend == "vmware" else ("52:54:00:" if backend == "libvirt" else "02:79:81:") + ":".join(suffix[i:i + 2] for i in (0, 2, 4)))
     if backend == "hyperv":
         mac = mac.replace(":", "")
-    if any(target["spec"].get("mac", "").replace(":", "").lower() == mac.replace(":", "") for target in registry.values()):
+    if any(adapter.get("mac", "").replace(":", "").lower() == mac.replace(":", "").lower()
+           for target in registry.values()
+           for adapter in target["spec"].get("networkAdapters", [target["spec"]])):
         raise RuntimeError(_("The generated MAC conflicts with an existing one; run the command again."))
     def quote(value):
         return json.dumps(value).replace("${", "\\${")
@@ -97,7 +99,10 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
                + f'    imageDirectory = {quote(str(Path.home() / ".local/share/nixberry/encrypted" / name))};\n  }};\n')
             + "  spec = {\n" + f"    name = {quote('nixberry-' + name)};\n"
             + f"    uuid = {quote(str(identity))};\n    ownerId = {quote(owner_id)};\n"
-            + f"    mac = {quote(mac)};\n    memoryMiB = 4096;\n    vcpus = 4;\n    diskGiB = 32;\n")
+            + f"    mac = {quote(mac)};\n"
+            + "    # Optional networkAdapters declares ordered named NICs; the first matches mac and the host attachment.\n"
+            + "    # Address secondary NICs through network.interfaces; see docs/vm-networking.md.\n"
+            + "    memoryMiB = 4096;\n    vcpus = 4;\n    diskGiB = 32;\n")
     if backend == "hyperv":
         text += "    generation = 2;\n    secureBoot = false;\n"
     if backend == "proxmox":

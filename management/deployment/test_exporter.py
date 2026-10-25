@@ -96,6 +96,30 @@ class ExportChecks(unittest.TestCase):
         self.snapshot = self.root / "snapshot"
         shutil.copytree(self.recipe, self.snapshot)
 
+    def test_named_adapters_survive_all_vm_image_and_iso_handoffs(self):
+        from test_multinic import spec
+        for backend, extension in [("libvirt", "qcow2"), ("hyperv", "vhdx"),
+                                   ("proxmox", "qcow2"), ("virtualbox", "vdi"), ("vmware", "vmdk")]:
+            for method in ("image", "iso"):
+                self.target = {"backend": backend, "profile": "nixberry-vm" if backend == "libvirt" else "nixberry-" + backend,
+                               "deploymentMethod": method, "spec": {**spec(backend), "vmid": 103},
+                               "network": {"mode": "dhcp", "interfaces": {"lan0": {"mode": "static", "address": "10.123.0.1/24"}}}}
+                for old in self.image.iterdir():
+                    old.unlink()
+                (self.image / ("installer.iso" if method == "iso" else "system." + extension)).write_bytes(b"fixture")
+                destination = self.root / (backend + "-" + method)
+                with self.subTest(backend=backend, method=method), \
+                        patch("exporter.subprocess.run", return_value=SimpleNamespace(stdout=str(self.image))), \
+                        patch("exporter.subprocess.check_output", side_effect=self.nix_output):
+                    manifest = export(self.recipe, "vm-demo", self.target, destination)
+                self.assertEqual(manifest['spec']['networkAdapters'], self.target['spec']['networkAdapters'])
+                self.assertIn('lan0', (destination / 'NETWORKS.txt').read_text())
+                self.assertIn('10.123.0.1/24', (destination / 'NETWORKS.txt').read_text())
+                self.assertIn('NETWORKS.txt', (destination / 'SHA256SUMS').read_text())
+                for name in ['PROXMOX.txt', 'VIRTUALBOX.txt']:
+                    if (destination / name).exists():
+                        self.assertNotIn('not tied to the MAC', (destination / name).read_text())
+
     def nix_output(self, command, **kwargs):
         if command[1:3] == ["flake", "metadata"]:
             return json.dumps({"path": str(self.snapshot)})

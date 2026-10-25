@@ -8,6 +8,15 @@ not prove a real hypervisor works.
 
 ## Isolated checks
 
+The named-adapter contract is exercised by `test_multinic.py` across all five VM
+backends, including guest addressing, LUKS initrd selection, adapter identity and
+management endpoint rejection. For live verification, use a separately authorized
+disposable VM with isolated networks and an independent client. Check image and
+ISO boot, adapter names/MACs, primary SSH selection, secondary addressing, rejection
+of altered or extra adapters, and reset preview after hardware changes. Test both
+supported host operating systems where available; isolated tests do not establish
+live backend support or authorize changes to existing machines.
+
 On x86_64 Linux, run the same isolated checks as CI from the recipe root:
 
 ```sh

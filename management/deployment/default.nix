@@ -69,7 +69,7 @@ let
       inherit (host) backend;
       profile = instance.profile or expectedProfile;
       guestHostName = instance.guestHostName or instance.spec.name;
-      spec =
+      spec = import ./vm-network.nix { backend = host.backend; spec =
         (instance.deployment or { })
         // host.connection
         // instance.spec
@@ -81,9 +81,18 @@ let
             }
           else
             { }
-        );
+        ); };
     }
   ) vmInstances;
+  adapterMacs = builtins.concatLists (map (target: map (adapter:
+    builtins.replaceStrings [ ":" "-" "A" "B" "C" "D" "E" "F" ]
+      [ "" "" "a" "b" "c" "d" "e" "f" ] adapter.mac)
+    (target.spec.networkAdapters or (if target.spec ? mac then [ target.spec ] else [ ])))
+    (builtins.attrValues instances));
+  explicitAdapterMacs = builtins.concatLists (map (target: map (adapter:
+    builtins.replaceStrings [ ":" "-" "A" "B" "C" "D" "E" "F" ]
+      [ "" "" "a" "b" "c" "d" "e" "f" ] adapter.mac)
+    (target.spec.networkAdapters or [ ])) (builtins.attrValues instances));
   rpiTargets = builtins.mapAttrs (name: target: {
     host = target.hostName;
     profile = name;
@@ -104,6 +113,9 @@ let
     in if security.mode == "none" then { } else { inherit security; })) (import ../rpi/targets);
 in
 assert builtins.intersectAttrs instances rpiTargets == { };
+assert builtins.all (value: builtins.length (builtins.filter (other: other == value) adapterMacs) == 1)
+  explicitAdapterMacs
+  || throw "VM adapter MAC addresses must be unique across the local inventory.";
 {
   inherit hosts instances;
   # Unified inventory includes physical machines and VMs without duplicating RPi data.

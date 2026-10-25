@@ -25,7 +25,7 @@ class CompletionTests(unittest.TestCase):
         shutil.copyfile(self.recipe / "completion.bash", self.root / "completion.bash")
         (self.root / 'management/deployment').mkdir(parents=True)
         shutil.copyfile(self.recipe / 'management/rpi/security.nix', self.root / 'management/rpi/security.nix')
-        for name in ('default.nix', 'security.nix', 'configurations.nix', 'operations.nix', 'completion-targets.nix', 'shell-path.sh', 'messages.sh'):
+        for name in ('default.nix', 'security.nix', 'vm-network.nix', 'configurations.nix', 'operations.nix', 'completion-targets.nix', 'shell-path.sh', 'messages.sh'):
             shutil.copyfile(Path(__file__).with_name(name), self.root / 'management/deployment' / name)
         (self.root / 'configurations').mkdir()
         (self.root / 'flake.nix').write_text('{}')

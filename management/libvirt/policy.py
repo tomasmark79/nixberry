@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 import sys
 import uuid
+from vm_network import adapters
 
 
 def legacy(spec):
@@ -16,6 +17,7 @@ def legacy(spec):
 
 
 def validate(spec):
+    adapters(spec, "libvirt")
     if spec.get("security", {}).get("mode", "none") != "none":
         from security import validate_manifest
         validate_manifest(spec)

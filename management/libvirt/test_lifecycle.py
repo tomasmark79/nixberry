@@ -22,6 +22,7 @@ MANIFEST = {
     "diskPath": "/var/lib/libvirt/images/nixberry-repro-test.qcow2",
     "volume": "nixberry-repro-test.qcow2",
     "diskGiB": 32,
+    "mac": "52:54:00:79:81:01", "network": "default",
 }
 NVRAM = "/var/lib/libvirt/qemu/nvram/nixberry-repro-test_VARS.fd"
 DOMAIN = """<domain><name>nixberry-repro-test</name>
@@ -29,7 +30,9 @@ DOMAIN = """<domain><name>nixberry-repro-test</name>
 <os><nvram>/var/lib/libvirt/qemu/nvram/nixberry-repro-test_VARS.fd</nvram></os>
 <devices><disk device="disk">
 <source file="/var/lib/libvirt/images/nixberry-repro-test.qcow2"/>
-<target dev="vda"/></disk></devices></domain>"""
+<target dev="vda"/></disk>
+<interface type="network"><mac address="52:54:00:79:81:01"/><source network="default"/></interface>
+</devices></domain>"""
 VOLUME = """<volume><name>nixberry-repro-test.qcow2</name>
 <capacity unit="bytes">34359738368</capacity><target>
 <path>/var/lib/libvirt/images/nixberry-repro-test.qcow2</path>

@@ -12,6 +12,7 @@ let
         ./dispatch.py
         ./discovery.py
         ./runtime.py
+        ./vm_network.py
         ./scaffold.py
         ./security.py
         ./rpi_secrets.py

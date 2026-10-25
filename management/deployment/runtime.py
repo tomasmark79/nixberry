@@ -9,6 +9,7 @@ import re
 import shlex
 import subprocess
 import xml.etree.ElementTree as ET
+from vm_network import adapters as network_adapters, libvirt_matches, guest_checks
 
 
 def read(command):
@@ -129,12 +130,16 @@ def hyperv_status(target, data):
     if vm.get("ownerId") != spec["ownerId"]:
         raise RuntimeError(_("The Hyper-V VM does not have the declared owner."))
     adapters = vm["network"]
-    if (vm["generation"] != spec["generation"] or len(adapters) != 1
-            or mac(adapters[0]["mac"]) != mac(spec["mac"])
-            or adapters[0]["switchName"] != spec["switchName"]):
+    expected = network_adapters(spec, "hyperv")
+    actual = {(mac(item["mac"]), item["switchName"]) for item in adapters}
+    if (vm["generation"] != spec["generation"] or len(adapters) != len(expected)
+            or actual != {(mac(item["mac"]), item["switchName"]) for item in expected}
+            or ("networkAdapters" in spec and
+                {(mac(item["mac"]), item.get("switchId")) for item in adapters}
+                != {(mac(item["mac"]), item["switchId"]) for item in expected})):
         raise RuntimeError(_("The Hyper-V VM does not match the declared adapter and generation."))
     state = vm["state"].lower()
-    values = adapters[0]["ips"] if state == "running" else []
+    values = next(item["ips"] for item in adapters if mac(item["mac"]) == mac(spec["mac"])) if state == "running" else []
     return {"state": "shut off" if state == "off" else state,
             "addresses": addresses(values, excluded=(spec["sshHost"],))}
 
@@ -156,8 +161,7 @@ def libvirt_status(target, names=None):
         marker = domain.find("./metadata/{urn:nixberry:deployment}owner")
         if marker is None or marker.get("id") != spec["ownerId"]:
             raise RuntimeError(_("The libvirt VM is missing the declared owner marker."))
-    adapters = domain.findall("./devices/interface/mac")
-    if len(adapters) != 1 or mac(adapters[0].get("address", "")) != mac(spec["mac"]):
+    if not libvirt_matches(domain, spec):
         raise RuntimeError(_("The VM network adapter does not match the declaration."))
     state = read(command + ["domstate", spec["name"]])
     values = []
@@ -314,6 +318,8 @@ def installation_checks(target):
                 'test "$(tr A-Z a-z < /sys/class/dmi/id/product_uuid)" = ' + shlex.quote(spec["uuid"]),
                 'grep -i -x -q -- ' + shlex.quote(spec["mac"]) + ' /sys/class/net/*/address',
             ]
+    if backend != "rpi":
+        checks += guest_checks(spec, backend)
     return checks
 
 

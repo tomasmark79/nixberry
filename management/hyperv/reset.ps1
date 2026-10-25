@@ -11,6 +11,28 @@ Require ($s.name -cmatch '^nixberry-[a-z0-9][a-z0-9-]{0,52}$') 'Disallowed VM na
 Require ($s.ownerId -ceq ('nixberry-hyperv-' + $s.uuid)) 'Declared UUID and owner do not match.'
 Require ($s.storageDirectory -match '^[A-Za-z]:\\' -and $s.storageDirectory -notmatch '\.\.') 'Disallowed path.'
 Import-Module Hyper-V -ErrorAction Stop
+
+# The first declared adapter is the management path; all NICs retain switch identity checks.
+$adapters = if ($null -ne $s.networkAdapters) { @($s.networkAdapters) } else {
+    @([pscustomobject]@{ name='management'; mac=$s.mac; switchName=$s.switchName; switchId=$s.switchId })
+}
+Require ($adapters.Count -ge 1 -and $adapters.Count -le 8) 'networkAdapters must contain 1–8 ordered adapters.'
+Require ($adapters[0].mac -eq $s.mac -and $adapters[0].switchName -eq $s.switchName -and $adapters[0].switchId -eq $s.switchId) 'The first adapter must match the primary MAC and host attachment; it provides management access.'
+Require (@($adapters | Select-Object -ExpandProperty mac -Unique).Count -eq $adapters.Count -and @($adapters | Select-Object -ExpandProperty name -Unique).Count -eq $adapters.Count) 'Network adapter names and MAC addresses must be unique within a VM.'
+foreach ($adapter in $adapters) {
+    Require ($adapter.mac -match '^[0-9A-Fa-f]{12}$' -and $adapter.mac -ne '000000000000' -and ([Convert]::ToInt32($adapter.mac.Substring(0,2),16) -band 1) -eq 0) 'Each network adapter requires a nonzero unicast MAC address.'
+    $declaredSwitch = @(Get-VMSwitch -Name $adapter.switchName -ErrorAction Stop)
+    Require ($declaredSwitch.Count -eq 1 -and $declaredSwitch[0].Id.ToString() -eq $adapter.switchId) 'Switch does not match.'
+}
+function CheckAdapters($vm) {
+    $nics = @(Get-VMNetworkAdapter -VM $vm)
+    Require ($nics.Count -eq $adapters.Count) 'VM network does not match.'
+    foreach ($adapter in $adapters) {
+        $matches = @($nics | Where-Object { $_.MacAddress -eq $adapter.mac -and $_.SwitchId.ToString() -eq $adapter.switchId })
+        Require ($matches.Count -eq 1) 'VM network does not match.'
+    }
+}
+
 $base = Canonical $s.storageDirectory
 $root = Join-Path $base $s.name
 $diskPath = Join-Path $root 'system.vhdx'
@@ -50,8 +72,7 @@ function OwnedVm {
     Require ($disks.Count -eq 1 -and (Canonical $disks[0].Path) -eq $diskPath) 'The system disk does not match or an additional disk is attached.'
     $vhd = Get-VHD -Path $diskPath -ErrorAction Stop
     Require ($vhd.Size -eq ([int64]$s.diskGiB * 1GB) -and -not $vhd.ParentPath -and $vhd.VhdType.ToString() -eq 'Dynamic') 'VHDX size or origin does not match.'
-    $nics = @(Get-VMNetworkAdapter -VM $vm)
-    Require ($nics.Count -eq 1 -and $nics[0].MacAddress -eq $s.mac -and $nics[0].SwitchId.ToString() -eq $s.switchId) 'VM network does not match.'
+    CheckAdapters $vm
     Require (@(Get-VMSnapshot -VM $vm).Count -eq 0) 'The VM has checkpoints; refusing reset.'
     foreach ($peer in Get-VM) {
         if ($peer.Id -eq $vm.Id) { continue }

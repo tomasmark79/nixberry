@@ -24,7 +24,7 @@ if command == "list":
     if "--uuid" in args:
         print("")
     elif "--name" in args:
-        print("nixberry-repro-test" if case == "existing-domain" else "")
+        print("nixberry-repro-test" if case == "existing-domain" else ("peer" if case == "secondary-mac-used" else ""))
 elif command == "pool-info":
     print("State: running")
     if case == "verbose-info":
@@ -38,12 +38,19 @@ elif command == "vol-list":
     if case == "existing-volume":
         print(" nixberry-repro-test.qcow2 /some/path")
 elif command == "net-info":
-    print("Active: yes")
+    print("Active: no" if case == "secondary-inactive" and args[1] == "vm-demo-lan" else "Active: yes")
     if case == "verbose-info":
         print("details " * 100000)
 elif command == "net-dumpxml":
     mode = "bridge" if case == "wrong-network" else "nat"
-    print("<network><forward mode='" + mode + "'/></network>")
+    if case == "secondary-isolated" and args[1] == "vm-demo-lan":
+        print("<network/>")
+    elif case == "secondary-reservation" and args[1] == "vm-demo-lan":
+        print("<network><forward mode='nat'/><ip><dhcp><host mac='52:54:00:79:81:02'/></dhcp></ip></network>")
+    else:
+        print("<network><forward mode='" + mode + "'/></network>")
+elif command == "dumpxml":
+    print("<domain><devices><interface><mac address='52:54:00:79:81:02'/></interface></devices></domain>")
 elif command == "domcapabilities":
     print("<domainCapabilities/>")
 elif command in ("vol-create-as", "vol-upload", "define", "start"):
@@ -57,6 +64,21 @@ else:
 
 
 class CreationChecks(unittest.TestCase):
+    def test_secondary_network_and_mac_guards_run_before_writes(self):
+        manifest = json.loads(self.manifest.read_text())
+        manifest['networkAdapters'] = [
+            {'name': 'wan0', 'mac': manifest['mac'], 'network': manifest['network']},
+            {'name': 'lan0', 'mac': '52:54:00:79:81:02', 'network': 'vm-demo-lan'}]
+        self.manifest.write_text(json.dumps(manifest))
+        for case, allowed in [('secondary-isolated', True), ('secondary-inactive', False),
+                              ('secondary-mac-used', False), ('secondary-reservation', False)]:
+            with self.subTest(case=case):
+                self.log.unlink(missing_ok=True)
+                result = self.run_command('--dry-run', case=case)
+                self.assertEqual(result.returncode == 0, allowed, result.stderr)
+                calls = [json.loads(line) for line in self.log.read_text().splitlines()]
+                self.assertFalse(any(call[0] in ('vol-create-as', 'vol-upload', 'define', 'start') for call in calls))
+
     def setUp(self):
         for command in ("jq", "xmllint"):
             if shutil.which(command) is None:

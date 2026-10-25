@@ -15,6 +15,7 @@ import time
 import xml.etree.ElementTree as ET
 import policy
 from storage import reject_shared_domains
+from vm_network import libvirt_matches, guest_checks
 
 
 def remember_host_key(source, manifest):
@@ -50,10 +51,7 @@ def validate_domain(xml, manifest):
         require(len(cds) == 1 and cds[0].find("target").get("dev") == "sda", _("CD-ROM does not match."))
         require(cds[0].find("source") is not None and cds[0].find("source").get("file") == manifest["isoPath"],
                 _("The VM is not using the expected ISO."))
-    interfaces = root.findall("./devices/interface")
-    require(len(interfaces) == 1, _("The VM must have exactly one network adapter."))
-    require(interfaces[0].find("mac").get("address") == manifest["mac"], _("MAC address does not match."))
-    require(interfaces[0].find("source").get("network") == manifest["network"], _("Network does not match."))
+    require(libvirt_matches(root, manifest), _("The VM network adapter does not match the declaration."))
 
 
 def choose_address(output, network_xml, mac):
@@ -75,11 +73,12 @@ def choose_address(output, network_xml, mac):
 
 def installed_check(manifest):
     encrypted = ""
+    network = "".join(check + "; " for check in guest_checks(manifest, "libvirt"))
     if manifest.get("security", {}).get("mode", "none") != "none":
         from security import encryption_checks
         encrypted = "; ".join(encryption_checks(manifest)) + "; "
     return (
-        "set -eu; "
+        "set -eu; " + network +
         "test \"$(cat /sys/class/dmi/id/product_uuid)\" = " + shlex.quote(manifest["uuid"]) + "; "
         "test \"$(hostname)\" = " + shlex.quote(manifest.get("guestHostName", "nixberry-vm")) + "; "
         "test \"$(readlink -f /run/current-system)\" = " + shlex.quote(manifest["systemPath"]) + "; "
@@ -169,6 +168,9 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="nixberry-install-ssh-") as state:
         def ssh(command, phase, *, input_text=None, capture=False):
+            checks = guest_checks(manifest, "libvirt")
+            if checks:
+                command = "set -eu; " + "; ".join(checks) + "; " + command
             return subprocess.run(
                 ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                  "-o", "StrictHostKeyChecking=accept-new",

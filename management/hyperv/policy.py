@@ -5,9 +5,11 @@ from messages import _
 from pathlib import PureWindowsPath
 import re
 import uuid
+from vm_network import adapters
 
 
 def validate(spec):
+    adapters(spec, "hyperv")
     if not re.fullmatch(r"nixberry-[a-z0-9][a-z0-9-]{0,52}", spec.get("name", "")):
         raise RuntimeError(_("A Hyper-V VM must have a safe nixberry-… name."))
     if not re.fullmatch(r"nixberry-hyperv-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", spec.get("ownerId", "")):

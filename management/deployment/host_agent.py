@@ -24,6 +24,7 @@ import subprocess
 import sys
 import uuid
 import xml.etree.ElementTree as ET
+from vm_network import adapters as network_adapters, mac as compact_mac
 
 
 def run(argv, *, timeout=120, breakaway=False):
@@ -60,6 +61,7 @@ def private_directory(directory):
 def validate(spec, backend):
     if backend not in ("proxmox", "virtualbox", "vmware"):
         raise ValueError(_("Unsupported backend."))
+    network_adapters(spec, backend)
     if spec["hostPlatform"] not in ("linux", "windows") or (backend == "proxmox" and spec["hostPlatform"] != "linux"):
         raise ValueError(_("Unsupported host system."))
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.-]{0,252}", spec["hostName"]):
@@ -205,14 +207,47 @@ def proxmox_registry():
     return json.loads(run(["pvesh", "get", "/cluster/resources", "--type", "vm", "--output-format", "json"]))
 
 
+def network_conflicts(spec, backend):
+    """Recheck explicit NIC MACs before writes, including stopped inventory where available."""
+    if "networkAdapters" not in spec:
+        return
+    wanted = {compact_mac(item["mac"]) for item in network_adapters(spec, backend)}
+    observed = []
+    if backend == "virtualbox":
+        for vm in vbox_registry(spec):
+            info = pairs(run([spec["toolPath"], "showvminfo", vm["uuid"], "--machinereadable"]))
+            observed += [value for key, value in info.items() if re.fullmatch(r"macaddress\d+", key)]
+    elif backend == "proxmox":
+        for vm in proxmox_registry():
+            if vm.get("type") != "qemu":
+                continue
+            info = json.loads(run(["pvesh", "get", f'/nodes/{vm["node"]}/qemu/{vm["vmid"]}/config', "--output-format", "json"]))
+            observed += [part.split("=", 1)[1] for key, value in info.items() if re.fullmatch(r"net\d+", key)
+                         for part in value.split(",") if re.fullmatch(r"[A-Za-z0-9]+=(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}", part)]
+    else:
+        # Workstation has no global stopped-VM registry. Inspect its dedicated
+        # storage and registered running paths; external stopped VMs remain an operator boundary.
+        paths = set(Path(spec["storageDirectory"]).rglob("*.vmx"))
+        paths.update(Path(path) for path in run([spec["toolPath"], "list"]).splitlines()[1:])
+        for path in paths:
+            if path.is_symlink() or not path.is_file():
+                raise RuntimeError(_("VMX must not be a link."))
+            info = pairs(path.read_text(encoding="utf-8"))
+            observed += [value for key, value in info.items() if re.fullmatch(r"ethernet\d+\.address", key)]
+    if wanted & {compact_mac(value) for value in observed}:
+        raise RuntimeError(_("A declared adapter MAC is already used by another VM."))
+
+
 def absent(spec, backend, directory):
     if directory.exists() or directory.is_symlink():
         raise RuntimeError(_("The destination directory already exists; refusing to overwrite an existing or partial result."))
+    network_conflicts(spec, backend)
     if backend == "virtualbox":
         if any(vm["uuid"] == spec["uuid"] or vm["name"] == spec["name"] for vm in vbox_registry(spec)):
             raise RuntimeError(_("The VirtualBox VM name or UUID is already in use."))
         adapters = re.findall(r"^Name:\s+(.+)$", run([spec["toolPath"], "list", "bridgedifs"]), re.M)
-        if spec["bridge"] not in [adapter.strip() for adapter in adapters]:
+        if any(item["bridge"] not in [adapter.strip() for adapter in adapters]
+               for item in network_adapters(spec, backend)):
             raise RuntimeError(_("The declared VirtualBox bridge adapter does not exist."))
     elif backend == "proxmox":
         if any(vm["vmid"] == spec["vmid"] or vm.get("name") == spec["name"] for vm in proxmox_registry()):
@@ -223,7 +258,8 @@ def absent(spec, backend, directory):
         required = spec["diskGiB"] * 1024 ** 3 + 4 * 1024 ** 2
         if storage.get("avail", 0) < required:
             raise RuntimeError(_("The Proxmox storage lacks space for the declared disk capacity and EFI."))
-        if not Path("/sys/class/net", spec["bridge"], "bridge").is_dir():
+        if any(not Path("/sys/class/net", item["bridge"], "bridge").is_dir()
+               for item in network_adapters(spec, backend)):
             raise RuntimeError(_("The Proxmox bridge does not exist."))
     else:
         # Workstation cannot inventory all stopped VMs. Reserve the name and
@@ -234,6 +270,41 @@ def absent(spec, backend, directory):
                 values = pairs(path.read_text(encoding="utf-8"))
                 if values.get("displayName") == spec["name"] or values.get("annotation") == spec["ownerId"]:
                     raise RuntimeError(_("The matching VMware VM is already running."))
+
+
+def network_matches(info, spec, backend):
+    """Verify every enabled NIC, its slot, static identity and attachment."""
+    expected = network_adapters(spec, backend)
+    if backend == "virtualbox":
+        enabled = {int(key[3:]) for key, value in info.items()
+                   if re.fullmatch(r"nic\d+", key) and value not in ("none", "null")}
+        if enabled != set(range(1, len(expected) + 1)):
+            return False
+        return all(info.get(f"nic{i}") == "bridged"
+                   and compact_mac(info.get(f"macaddress{i}", "")) == compact_mac(item["mac"])
+                   and info.get(f"bridgeadapter{i}") == item["bridge"]
+                   for i, item in enumerate(expected, 1))
+    if backend == "proxmox":
+        enabled = {key for key in info if re.fullmatch(r"net\d+", key)}
+        if enabled != {f"net{i}" for i in range(len(expected))}:
+            return False
+        for i, item in enumerate(expected):
+            fields = dict(part.split("=", 1) for part in info[f"net{i}"].split(",") if "=" in part)
+            if compact_mac(fields.get("virtio", "")) != compact_mac(item["mac"]) or fields.get("bridge") != item["bridge"]:
+                return False
+        return True
+    enabled = {int(match[1]) for key, value in info.items()
+               if (match := re.fullmatch(r"ethernet(\d+)\.present", key)) and value.upper() == "TRUE"}
+    if enabled != set(range(len(expected))):
+        return False
+    for i, item in enumerate(expected):
+        prefix = f"ethernet{i}."
+        if (compact_mac(info.get(prefix + "address", "")) != compact_mac(item["mac"])
+                or info.get(prefix + "addressType") != "static"
+                or info.get(prefix + "connectionType") != ("nat" if item["vmnet"] == "nat" else "custom")
+                or (item["vmnet"] != "nat" and info.get(prefix + "vnet") != item["vmnet"])):
+            return False
+    return True
 
 
 def probe(spec, backend, directory, inventory=None):
@@ -256,11 +327,10 @@ def probe(spec, backend, directory, inventory=None):
         info = pairs(run([spec["toolPath"], "showvminfo", spec["uuid"], "--machinereadable"]))
         marker = run([spec["toolPath"], "getextradata", spec["uuid"], "nixberry/owner"])
         disk = str(directory / image_name(backend))
-        if (marker != "Value: " + spec["ownerId"] or info.get("macaddress1", "").lower() != spec["mac"].replace(":", "").lower()
+        if (marker != "Value: " + spec["ownerId"] or not network_matches(info, spec, backend)
                 or info.get("firmware", "").lower() not in ("efi", "efi64")
                 or os.path.normcase(os.path.normpath(info.get("SATA-0-0", ""))) != os.path.normcase(os.path.normpath(disk))
-                or info.get("nic1") != "bridged"
-                or info.get("bridgeadapter1") != spec["bridge"]):
+                ):
             raise RuntimeError(_("VirtualBox owner, disk, firmware or network does not match."))
         values = []
         state = info["VMState"]
@@ -290,8 +360,7 @@ def probe(spec, backend, directory, inventory=None):
         info = json.loads(run(["pvesh", "get", f'/nodes/{spec["node"]}/qemu/{spec["vmid"]}/config', "--output-format", "json"]))
         if (info.get("description") != spec["ownerId"] or info.get("name") != spec["name"]
                 or "uuid=" + spec["uuid"] not in info.get("smbios1", "") or info.get("bios") != "ovmf"
-                or spec["mac"].lower() not in info.get("net0", "").lower()
-                or "bridge=" + spec["bridge"] not in info.get("net0", "")):
+                or not network_matches(info, spec, backend)):
             raise RuntimeError(_("The Proxmox configuration does not match the owner or hardware."))
         binding = directory / "hardware.json"
         if binding.is_symlink():
@@ -321,7 +390,7 @@ def probe(spec, backend, directory, inventory=None):
     bios = bios_uuid(spec)
     if (info.get("annotation") != spec["ownerId"] or info.get("displayName") != spec["name"]
             or info.get("uuid.bios", "").lower().replace("-", " ").split() != bios.replace("-", " ").split()
-            or info.get("ethernet0.address", "").lower() != spec["mac"].lower()
+            or not network_matches(info, spec, backend)
             or info.get("firmware") != "efi" or info.get("sata0:0.fileName") != image_name(backend)):
         raise RuntimeError(_("The VMware configuration does not match the declaration."))
     running = read_once((backend, spec["toolPath"], "running"), lambda: run([spec["toolPath"], "list"]).splitlines()[1:])
@@ -346,11 +415,17 @@ def vmx_text(spec):
         "uuid.bios": bios_uuid(spec),
         "uuid.action": "keep", "msg.autoAnswer": "TRUE",
         "sata0.present": "TRUE", "sata0:0.present": "TRUE", "sata0:0.fileName": "system.vmdk",
-        "ethernet0.present": "TRUE", "ethernet0.connectionType": "nat", "ethernet0.virtualDev": "e1000e",
-        "ethernet0.addressType": "static", "ethernet0.address": spec["mac"],
-        "ethernet0.startConnected": "TRUE", "tools.syncTime": "FALSE",
+        "tools.syncTime": "FALSE",
         "pciBridge0.present": "TRUE", "pciBridge4.present": "TRUE", "pciBridge4.virtualDev": "pcieRootPort",
     }
+    for index, adapter in enumerate(network_adapters(spec, "vmware")):
+        prefix = f"ethernet{index}."
+        values.update({prefix + "present": "TRUE", prefix + "virtualDev": "e1000e",
+                       prefix + "connectionType": "nat" if adapter["vmnet"] == "nat" else "custom",
+                       prefix + "addressType": "static", prefix + "address": adapter["mac"],
+                       prefix + "startConnected": "TRUE"})
+        if adapter["vmnet"] != "nat":
+            values[prefix + "vnet"] = adapter["vmnet"]
     return "\n".join(key + ' = "' + value + '"' for key, value in values.items()) + "\n"
 
 
@@ -380,6 +455,7 @@ def create(spec, backend, directory):
         digest = hashlib.file_digest(stream, "sha256").hexdigest()
     if digest != marker["sha256"]:
         raise RuntimeError(_("Image checksum does not match."))
+    network_conflicts(spec, backend)
     if backend == "virtualbox":
         if any(vm["uuid"] == spec["uuid"] or vm["name"] == spec["name"] for vm in vbox_registry(spec)):
             raise RuntimeError(_("The VirtualBox VM already exists."))
@@ -390,8 +466,9 @@ def create(spec, backend, directory):
              # VirtualBox EFI reports SMBIOS 2.5; Linux does not reverse this UUID as for 2.6+.
              "--hardware-uuid", spec["uuid"], "--system-uuid-le", "off",
              "--firmware", "efi", "--ioapic", "on", "--boot1", "disk", "--boot2", "none", "--boot3", "none", "--boot4", "none",
-             "--nic1", "bridged", "--bridge-adapter1", spec["bridge"], "--nic-type1", "82540EM",
-             "--mac-address1", spec["mac"].replace(":", ""), "--cable-connected1", "on"])
+             *[argument for i, adapter in enumerate(network_adapters(spec, backend), 1) for argument in
+               (f"--nic{i}", "bridged", f"--bridge-adapter{i}", adapter["bridge"], f"--nic-type{i}", "82540EM",
+                f"--mac-address{i}", adapter["mac"].replace(":", ""), f"--cable-connected{i}", "on")]])
         run([tool, "storagectl", identity, "--name", "SATA", "--add", "sata", "--controller", "IntelAhci", "--portcount", "2" if installing else "1", "--bootable", "on"])
         if installing:
             disk = directory / image_name(backend)
@@ -423,7 +500,8 @@ def create(spec, backend, directory):
         run(["qm", "create", str(spec["vmid"]), "--name", spec["name"], "--description", spec["ownerId"],
              "--smbios1", "uuid=" + spec["uuid"], "--memory", str(spec["memoryMiB"]), "--cores", str(spec["vcpus"]),
              "--bios", "ovmf", "--machine", "q35", "--ostype", "l26", "--agent", "enabled=1",
-             "--net0", "virtio=" + spec["mac"] + ",bridge=" + spec["bridge"],
+             *[argument for i, adapter in enumerate(network_adapters(spec, backend)) for argument in
+               (f"--net{i}", "virtio=" + adapter["mac"] + ",bridge=" + adapter["bridge"])],
              "--efidisk0", spec["storage"] + ":0,efitype=4m,pre-enrolled-keys=0",
              "--virtio0", (spec["storage"] + ":" + str(spec["diskGiB"]) if installing else spec["storage"] + ":0,import-from=" + str(image)),
              *(["--ide2", iso_volume + ",media=cdrom"] if installing else []),
@@ -969,7 +1047,8 @@ def dispatch(request):
             private_directory(directory)
             with (directory / "nixberry.json").open("x", encoding="utf-8") as stream:
                 json.dump({"spec": spec, "sha256": request["sha256"], "imageBytes": request["imageBytes"], "method": method}, stream)
-        return {"directory": str(directory), "freeBytes": free, "requiredBytes": required, "state": "absent"}
+        return {"directory": str(directory), "freeBytes": free, "requiredBytes": required, "state": "absent",
+                "networkAdapters": network_adapters(spec, backend)}
     if owned(directory, spec).get("method", "image") != method:
         raise RuntimeError(_("The method differs from the created VM; use the original --method."))
     if action == "installer-check":

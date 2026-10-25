@@ -15,9 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from service_test import assert_services
 
 LIBVIRT = {"backend": "libvirt", "spec": {
-    "uri": "qemu:///system", "name": "test", "uuid": "expected", "mac": "52:54:00:79:81:01"}}
+    "uri": "qemu:///system", "name": "test", "uuid": "expected", "mac": "52:54:00:79:81:01", "network": "vm-demo-wan"}}
 DOMAIN = ('<domain><name>test</name><uuid>expected</uuid><devices>'
-          '<interface><mac address="52:54:00:79:81:01"/></interface></devices></domain>')
+          '<interface type="network"><mac address="52:54:00:79:81:01"/>'
+          '<source network="vm-demo-wan"/></interface></devices></domain>')
 LEASES = ('Name MAC Protocol Address\nvnet0 52:54:00:79:81:01 ipv4 192.168.77.97/24\n'
           'vnet1 52:54:00:79:81:99 ipv4 192.168.79.1/24')
 HYPERV = {"backend": "hyperv", "commands": {"probe": "/probe"}, "spec": {

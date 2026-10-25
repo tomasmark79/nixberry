@@ -20,6 +20,10 @@ msgstr ""
 msgid "\nImages in the selected directories:"
 msgstr ""
 
+#: deployment/exporter.py:162
+msgid "\nNamed adapters: read NETWORKS.txt and preserve all declared MAC addresses.\n"
+msgstr ""
+
 #: deployment/exporter.py:120
 msgid "\nProxmox handoff: see PROXMOX.txt.\n"
 msgstr ""
@@ -88,15 +92,15 @@ msgstr ""
 msgid "/mnt is mounted."
 msgstr ""
 
-#: hyperv/policy.py:12
+#: hyperv/policy.py:14
 msgid "A Hyper-V VM must have a safe nixberry-… name."
 msgstr ""
 
-#: hyperv/policy.py:14
+#: hyperv/policy.py:16
 msgid "A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."
 msgstr ""
 
-#: hyperv/reset.ps1:93
+#: hyperv/reset.ps1:114
 msgid "A VM with the same name is present again after removal; keeping the directory."
 msgstr ""
 
@@ -108,15 +112,19 @@ msgstr ""
 msgid "A command after -- is only available for ssh TARGET -- COMMAND."
 msgstr ""
 
+#: deployment/host_agent.py:238
+msgid "A declared adapter MAC is already used by another VM."
+msgstr ""
+
 #: deployment/inspection.py:159
 msgid "A default route is present."
 msgstr ""
 
-#: deployment/host_agent.py:776
+#: deployment/host_agent.py:854
 msgid "A differencing image depends on this disk; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:622
+#: deployment/host_agent.py:700
 msgid "A disk, snapshot, backing image or recovery medium may be attached."
 msgstr ""
 
@@ -124,7 +132,7 @@ msgstr ""
 msgid "A mounted disk already uses the target partition labels."
 msgstr ""
 
-#: libvirt/policy.py:29
+#: libvirt/policy.py:31
 msgid "A new VM must have a declared owner tied to its UUID."
 msgstr ""
 
@@ -132,7 +140,7 @@ msgstr ""
 msgid "A partition extends beyond the disk."
 msgstr ""
 
-#: deployment/host_agent.py:77
+#: deployment/host_agent.py:79 deployment/vm_network.py:39
 msgid "A static VMware MAC must be in the range 00:50:56:00:00:00–00:50:56:3f:ff:ff."
 msgstr ""
 
@@ -154,11 +162,24 @@ msgstr ""
 msgid "Active system: {path}"
 msgstr ""
 
-#: hyperv/reset.ps1:44
+#: hyperv/reset.ps1:66
 msgid "Actual VM ID or owner does not match."
 msgstr ""
 
-#: libvirt/create.sh:117
+#: deployment/vm_network.py:31
+msgid "Adapter names must be unique Linux interface names of 1–15 lowercase characters."
+msgstr ""
+
+#: libvirt/create.sh:108
+#, c-format
+msgid "Adapter: %s; network: %s"
+msgstr ""
+
+#: libvirt/create.sh:84
+msgid "Additional libvirt networks must use NAT or isolated forwarding."
+msgstr ""
+
+#: libvirt/create.sh:131
 #, c-format
 msgid "Address: virsh --connect %s domifaddr %s --source lease"
 msgstr ""
@@ -199,24 +220,24 @@ msgstr ""
 msgid "Allocation"
 msgstr ""
 
-#: deployment/messages.py:152
+#: deployment/messages.py:157
 #, python-brace-format
 msgid "Ambiguous option {option}. Choices: {choices}"
 msgstr ""
 
-#: deployment/host_agent.py:788
+#: deployment/host_agent.py:866
 msgid "Another VM or its snapshot uses a file belonging to this VM; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:783 deployment/host_agent.py:818 hyperv/reset.ps1:66
+#: deployment/host_agent.py:861 deployment/host_agent.py:896 hyperv/reset.ps1:87
 msgid "Another VM uses a file belonging to this VM; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:877
+#: deployment/host_agent.py:955
 msgid "Another VM, container or snapshot uses the volume or ISO; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:828
+#: deployment/host_agent.py:906
 msgid "Another VMware image depends on this disk; refusing reset."
 msgstr ""
 
@@ -240,17 +261,25 @@ msgstr ""
 msgid "Apply changes for update and deployment/recovery operations"
 msgstr ""
 
-#: deployment/messages.py:161
+#: deployment/messages.py:166
 #, python-brace-format
 msgid "Argument {option}: invalid value {value}. Choices: {choices}"
 msgstr ""
 
-#: deployment/messages.py:142
+#: deployment/messages.py:147
 msgid "Arguments"
 msgstr ""
 
 #: deployment/cli.py:68 deployment/cli.py:80 deployment/cli.py:97
 msgid "Assessment"
+msgstr ""
+
+#: deployment/exporter.py:134
+msgid "Attach every declared adapter in order, preserving its MAC and attachment; see NETWORKS.txt."
+msgstr ""
+
+#: deployment/exporter.py:135
+msgid "Attach exactly one network adapter to the chosen network."
 msgstr ""
 
 #: deployment/inspection.py:122
@@ -262,11 +291,11 @@ msgstr ""
 msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
 msgstr ""
 
-#: hyperv/manage.py:193 libvirt/install.py:127
+#: hyperv/manage.py:197 libvirt/install.py:126
 msgid "Boot of the prebuilt system from disk verified."
 msgstr ""
 
-#: hyperv/manage.py:191 hyperv/manage.py:218
+#: hyperv/manage.py:195 hyperv/manage.py:222
 msgid "Boot verification from VHDX failed."
 msgstr ""
 
@@ -287,11 +316,11 @@ msgstr ""
 msgid "Building the target configuration…"
 msgstr ""
 
-#: deployment/host_agent.py:927
+#: deployment/host_agent.py:1005
 msgid "Bulk status requires 1–128 VM declarations."
 msgstr ""
 
-#: libvirt/install.py:50
+#: libvirt/install.py:51
 msgid "CD-ROM does not match."
 msgstr ""
 
@@ -304,7 +333,7 @@ msgstr ""
 msgid "COMMAND"
 msgstr ""
 
-#: hyperv/host.ps1:59 hyperv/reset.ps1:47
+#: hyperv/host.ps1:78 hyperv/reset.ps1:69
 msgid "CPU or RAM does not match."
 msgstr ""
 
@@ -330,7 +359,7 @@ msgstr ""
 msgid "Cannot determine the VM disk size."
 msgstr ""
 
-#: libvirt/reset.py:39
+#: libvirt/reset.py:40
 #, python-brace-format
 msgid "Cannot inspect reset path {path}: {error}"
 msgstr ""
@@ -339,15 +368,15 @@ msgstr ""
 msgid "Cannot safely identify all protected generations."
 msgstr ""
 
-#: deployment/host_agent.py:872
+#: deployment/host_agent.py:950
 msgid "Cannot safely verify another VM's snapshot; refusing reset."
 msgstr ""
 
-#: hyperv/host.ps1:80
+#: hyperv/host.ps1:98
 msgid "Cannot unambiguously determine the VM BIOS UUID."
 msgstr ""
 
-#: libvirt/install.py:72
+#: libvirt/install.py:70
 msgid "Cannot unambiguously determine the VM address."
 msgstr ""
 
@@ -355,12 +384,12 @@ msgstr ""
 msgid "Cannot verify another VM's volume path; refusing writes or removal."
 msgstr ""
 
-#: libvirt/reset.py:141
+#: libvirt/reset.py:143
 #, python-brace-format
 msgid "Cannot verify disk image {path}. Check read access and qemu-img diagnostics; nothing was removed."
 msgstr ""
 
-#: deployment/host_agent.py:55
+#: deployment/host_agent.py:56
 msgid "Cannot verify the user SID for the private VM directory."
 msgstr ""
 
@@ -381,7 +410,7 @@ msgstr ""
 msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
 msgstr ""
 
-#: deployment/runtime.py:336
+#: deployment/runtime.py:342
 #, python-brace-format
 msgid "Check failed: {check}"
 msgstr ""
@@ -394,11 +423,11 @@ msgstr ""
 msgid "Checking owner, disks, snapshots and VM state before removal…"
 msgstr ""
 
-#: deployment/portable.py:134
+#: deployment/portable.py:135
 msgid "Checking target absence and host resources…"
 msgstr ""
 
-#: libvirt/create.sh:98
+#: libvirt/create.sh:112
 msgid "Checks passed. No disk or VM was created."
 msgstr ""
 
@@ -437,7 +466,7 @@ msgstr ""
 msgid "Compile Czech gettext and shell catalogues; --check verifies generated shell content."
 msgstr ""
 
-#: deployment/exporter.py:152
+#: deployment/exporter.py:163
 msgid "Computing bundle checksums…"
 msgstr ""
 
@@ -449,11 +478,11 @@ msgstr ""
 msgid "Configuration"
 msgstr ""
 
-#: hyperv/host.ps1:58
+#: hyperv/host.ps1:77
 msgid "Configuration directory does not match."
 msgstr ""
 
-#: hyperv/reset.ps1:46
+#: hyperv/reset.ps1:68
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
@@ -471,7 +500,7 @@ msgstr ""
 msgid "Connecting: {command}"
 msgstr ""
 
-#: libvirt/create.sh:116
+#: libvirt/create.sh:130
 #, c-format
 msgid "Console: virsh --connect %s console %s"
 msgstr ""
@@ -489,7 +518,7 @@ msgstr ""
 msgid "Could not confirm Hyper-V VM removal; check status and storage state."
 msgstr ""
 
-#: hyperv/reset.ps1:92
+#: hyperv/reset.ps1:113
 msgid "Could not confirm VM removal."
 msgstr ""
 
@@ -498,7 +527,7 @@ msgstr ""
 msgid "Could not confirm activation (SSH or systemd-run). Check {logs} and {verify}. The generation may already have been set; no reboot was performed."
 msgstr ""
 
-#: deployment/host_agent.py:914
+#: deployment/host_agent.py:992
 msgid "Could not confirm removal of the VM or its directory."
 msgstr ""
 
@@ -522,7 +551,7 @@ msgstr ""
 msgid "Create and install a test VM in one command; without --apply, only show the plan."
 msgstr ""
 
-#: deployment/portable.py:221
+#: deployment/portable.py:225
 msgid "Create the VM first using create or reproduce."
 msgstr ""
 
@@ -534,7 +563,7 @@ msgstr ""
 msgid "Creation completed and verified: the VM is running the declared system from disk."
 msgstr ""
 
-#: deployment/portable.py:143
+#: deployment/portable.py:144
 msgid "Creation did not return a verified powered-off VM."
 msgstr ""
 
@@ -560,7 +589,7 @@ msgstr ""
 msgid "Declared UUID and owner do not match."
 msgstr ""
 
-#: libvirt/policy.py:40
+#: libvirt/policy.py:42
 msgid "Declared disk capacity does not match."
 msgstr ""
 
@@ -568,11 +597,11 @@ msgstr ""
 msgid "Dedicated nested Proxmox for adapter testing; never takes over an existing VM."
 msgstr ""
 
-#: deployment/portable.py:249
+#: deployment/portable.py:253
 msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/dispatch.py:21 deployment/host_agent.py:945 deployment/runtime.py:230 hyperv/host.ps1:25 hyperv/manage.py:94
+#: deployment/dispatch.py:21 deployment/host_agent.py:1023 deployment/runtime.py:234 hyperv/host.ps1:44 hyperv/manage.py:95
 msgid "Deployment method must be iso or image."
 msgstr ""
 
@@ -602,12 +631,12 @@ msgstr ""
 msgid "Direct SSH to VM: {endpoint}; verifying the SSH key and declared hostname."
 msgstr ""
 
-#: libvirt/reset.py:59
+#: libvirt/reset.py:60
 #, python-brace-format
 msgid "Directory symlink: {path} → {target}"
 msgstr ""
 
-#: libvirt/reset.py:57
+#: libvirt/reset.py:58
 msgid "Directory symlinks are present in the reset paths."
 msgstr ""
 
@@ -615,7 +644,7 @@ msgstr ""
 msgid "Disallowed SSH account."
 msgstr ""
 
-#: deployment/portable.py:41 deployment/runtime.py:265 deployment/security.py:275
+#: deployment/portable.py:42 deployment/runtime.py:269 deployment/security.py:277
 msgid "Disallowed SSH host or account."
 msgstr ""
 
@@ -631,7 +660,7 @@ msgstr ""
 msgid "Disallowed exported target name."
 msgstr ""
 
-#: hyperv/manage.py:37
+#: hyperv/manage.py:38
 msgid "Disallowed guest address."
 msgstr ""
 
@@ -639,11 +668,11 @@ msgstr ""
 msgid "Disallowed installation address."
 msgstr ""
 
-#: libvirt/policy.py:38
+#: deployment/vm_network.py:37 libvirt/policy.py:40
 msgid "Disallowed libvirt VM MAC address."
 msgstr ""
 
-#: deployment/host_agent.py:921 hyperv/host.ps1:163
+#: deployment/host_agent.py:999 hyperv/host.ps1:184
 msgid "Disallowed operation."
 msgstr ""
 
@@ -667,7 +696,7 @@ msgstr ""
 msgid "Disk does not match."
 msgstr ""
 
-#: libvirt/install.py:43 libvirt/reset.py:101
+#: libvirt/install.py:44 libvirt/reset.py:103
 msgid "Disk path does not match."
 msgstr ""
 
@@ -679,7 +708,7 @@ msgstr ""
 msgid "Disk size does not match."
 msgstr ""
 
-#: libvirt/create.sh:95
+#: libvirt/create.sh:106
 #, c-format
 msgid "Disk: %s (%s GiB); network: %s"
 msgstr ""
@@ -689,7 +718,7 @@ msgstr ""
 msgid "Disk: {value1}; serial: {value2}; root: {value3}"
 msgstr ""
 
-#: libvirt/install.py:168
+#: libvirt/install.py:167
 #, python-brace-format
 msgid "Disk: {value1}; system: {value2}"
 msgstr ""
@@ -700,6 +729,14 @@ msgstr ""
 
 #: proxmox/lab/create.py:74
 msgid "Downloading the official Proxmox installation ISO…"
+msgstr ""
+
+#: deployment/vm_network.py:35 hyperv/host.ps1:26 hyperv/reset.ps1:23
+msgid "Each network adapter requires a nonzero unicast MAC address."
+msgstr ""
+
+#: deployment/vm_network.py:29
+msgid "Each network adapter requires name, mac and the backend attachment fields."
 msgstr ""
 
 #: deployment/security.py:39
@@ -726,11 +763,11 @@ msgstr ""
 msgid "Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed."
 msgstr ""
 
-#: deployment/security.py:146
+#: deployment/security.py:148
 msgid "Encrypted image preparation requires a writable tmpfs for temporary secrets."
 msgstr ""
 
-#: deployment/security.py:233
+#: deployment/security.py:235
 msgid "Encrypted image prepared. Keep the passphrase separately; verify a complete locked boot and remote unlock before relying on it."
 msgstr ""
 
@@ -776,19 +813,19 @@ msgstr ""
 msgid "Guest UUID does not match."
 msgstr ""
 
-#: hyperv/manage.py:203
+#: hyperv/manage.py:207
 msgid "Guest check or installation failed."
 msgstr ""
 
-#: libvirt/install.py:185
+#: libvirt/install.py:187
 msgid "Guest check or installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: libvirt/install.py:195
+#: libvirt/install.py:197
 msgid "Guest installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: hyperv/manage.py:207
+#: hyperv/manage.py:211
 msgid "Guest shutdown failed."
 msgstr ""
 
@@ -796,15 +833,15 @@ msgstr ""
 msgid "Hyper-V installation completed."
 msgstr ""
 
-#: deployment/runtime.py:122
+#: deployment/runtime.py:123
 msgid "Hyper-V is unavailable."
 msgstr ""
 
-#: hyperv/policy.py:16
+#: hyperv/policy.py:18
 msgid "Hyper-V requires Generation 2 with Secure Boot disabled."
 msgstr ""
 
-#: hyperv/policy.py:21
+#: hyperv/policy.py:23
 msgid "Hyper-V storage must be an absolute path on a local drive without parent directory components."
 msgstr ""
 
@@ -821,19 +858,19 @@ msgstr ""
 msgid "Hypervisor: {value1}"
 msgstr ""
 
-#: libvirt/install.py:205
+#: libvirt/install.py:207
 msgid "ISO detached; waiting for SSH on the installed system."
 msgstr ""
 
-#: deployment/host_agent.py:957
+#: deployment/host_agent.py:1035
 msgid "ISO installation requires vmware-vdiskmanager next to vmrun."
 msgstr ""
 
-#: deployment/portable.py:172
+#: deployment/portable.py:173
 msgid "ISO method: install boots the installation ISO and writes the system only to a verified blank disk."
 msgstr ""
 
-#: deployment/host_agent.py:365
+#: deployment/host_agent.py:440
 #, python-brace-format
 msgid "ISO storage {storage} is inactive on the target node."
 msgstr ""
@@ -842,7 +879,7 @@ msgstr ""
 msgid "Image"
 msgstr ""
 
-#: deployment/host_agent.py:382
+#: deployment/host_agent.py:457
 msgid "Image checksum does not match."
 msgstr ""
 
@@ -854,7 +891,7 @@ msgstr ""
 msgid "Image export is not implemented for this platform."
 msgstr ""
 
-#: hyperv/manage.py:186 libvirt/install.py:103
+#: hyperv/manage.py:190 libvirt/install.py:102
 msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
 msgstr ""
 
@@ -896,15 +933,15 @@ msgstr ""
 msgid "Incomplete extraction of {name}: {value2} bytes instead of {value3}."
 msgstr ""
 
-#: libvirt/install.py:141
+#: libvirt/install.py:140
 msgid "Install only into the dedicated VM; without --apply, only check the plan."
 msgstr ""
 
-#: hyperv/host.ps1:157
+#: hyperv/host.ps1:178
 msgid "Installation DVD does not match."
 msgstr ""
 
-#: libvirt/create.sh:115
+#: libvirt/create.sh:129
 msgid "Installation ISO started. The target NixOS is not installed yet."
 msgstr ""
 
@@ -912,11 +949,11 @@ msgstr ""
 msgid "Installation VM UUID does not match."
 msgstr ""
 
-#: deployment/portable.py:207
+#: deployment/portable.py:211
 msgid "Installation VM shutdown failed; the ISO remains attached."
 msgstr ""
 
-#: hyperv/manage.py:220
+#: hyperv/manage.py:224
 msgid "Installation and boot from VHDX verified. The VM remains running."
 msgstr ""
 
@@ -925,7 +962,7 @@ msgstr ""
 msgid "Installation check failed: {check}"
 msgstr ""
 
-#: deployment/portable.py:210
+#: deployment/portable.py:214
 msgid "Installation completed. Detaching the ISO and booting the system from disk…"
 msgstr ""
 
@@ -937,15 +974,15 @@ msgstr ""
 msgid "Installation completed. The VM can be shut down gracefully and the ISO detached."
 msgstr ""
 
-#: libvirt/install.py:197
+#: libvirt/install.py:199
 msgid "Installation completed; gracefully shutting down the test VM."
 msgstr ""
 
-#: deployment/portable.py:197
+#: deployment/portable.py:201
 msgid "Installation environment check failed; the disk was not changed."
 msgstr ""
 
-#: deployment/portable.py:204
+#: deployment/portable.py:208
 msgid "Installation failed; the ISO remains attached and no automatic retry is performed."
 msgstr ""
 
@@ -957,7 +994,7 @@ msgstr ""
 msgid "Installed profile does not match."
 msgstr ""
 
-#: libvirt/install.py:214
+#: libvirt/install.py:216
 #, python-brace-format
 msgid "Installed system check failed: {value1}"
 msgstr ""
@@ -978,45 +1015,45 @@ msgstr ""
 msgid "Installer target system does not match."
 msgstr ""
 
-#: deployment/security.py:161
+#: deployment/security.py:163
 msgid "Interactive passphrase entry requires a terminal; use --key-file for automation."
 msgstr ""
 
-#: hyperv/policy.py:18
+#: hyperv/policy.py:20
 msgid "Invalid Hyper-V VM MAC address."
 msgstr ""
 
-#: hyperv/policy.py:24
+#: hyperv/policy.py:26
 #, python-brace-format
 msgid "Invalid Hyper-V capacity: {key}"
 msgstr ""
 
-#: deployment/host_agent.py:73 hyperv/host.ps1:13
+#: deployment/host_agent.py:75 hyperv/host.ps1:13
 msgid "Invalid MAC address."
 msgstr ""
 
-#: deployment/host_agent.py:88
+#: deployment/host_agent.py:90
 msgid "Invalid Proxmox ISO storage."
 msgstr ""
 
-#: deployment/host_agent.py:86
+#: deployment/host_agent.py:88
 #, python-brace-format
 msgid "Invalid Proxmox resource: {key}"
 msgstr ""
 
-#: deployment/runtime.py:53
+#: deployment/runtime.py:54
 msgid "Invalid SSH host or port (1–65535)."
 msgstr ""
 
-#: deployment/runtime.py:63
+#: deployment/runtime.py:64
 msgid "Invalid SSH target DNS name."
 msgstr ""
 
-#: deployment/runtime.py:58
+#: deployment/runtime.py:59
 msgid "Invalid SSH target IPv4 address."
 msgstr ""
 
-#: deployment/host_agent.py:71
+#: deployment/host_agent.py:73
 msgid "Invalid UUID or owner marker."
 msgstr ""
 
@@ -1024,7 +1061,7 @@ msgstr ""
 msgid "Invalid VM capacity."
 msgstr ""
 
-#: deployment/host_agent.py:68
+#: deployment/host_agent.py:70
 msgid "Invalid VM name."
 msgstr ""
 
@@ -1032,11 +1069,11 @@ msgstr ""
 msgid "Invalid VM owner."
 msgstr ""
 
-#: deployment/host_agent.py:83
+#: deployment/host_agent.py:85
 msgid "Invalid VMID."
 msgstr ""
 
-#: deployment/host_agent.py:80
+#: deployment/host_agent.py:82
 #, python-brace-format
 msgid "Invalid capacity: {key}"
 msgstr ""
@@ -1053,11 +1090,11 @@ msgstr ""
 msgid "Invalid format, capacity or unexpected backing file."
 msgstr ""
 
-#: deployment/host_agent.py:66
+#: deployment/host_agent.py:68
 msgid "Invalid host hostname."
 msgstr ""
 
-#: deployment/runtime.py:90
+#: deployment/runtime.py:91
 msgid "Invalid hostKeyAlias for SSH key verification."
 msgstr ""
 
@@ -1069,11 +1106,15 @@ msgstr ""
 msgid "Invalid ip route response."
 msgstr ""
 
+#: deployment/vm_network.py:47 deployment/vm_network.py:49
+msgid "Invalid network adapter attachment."
+msgstr ""
+
 #: deployment/inspection.py:183
 msgid "Invalid or incomplete generation inventory."
 msgstr ""
 
-#: deployment/host_agent.py:95
+#: deployment/host_agent.py:97
 msgid "Invalid storage path."
 msgstr ""
 
@@ -1089,11 +1130,11 @@ msgstr ""
 msgid "Invalid test host name."
 msgstr ""
 
-#: hyperv/host.ps1:102 hyperv/host.ps1:114
+#: hyperv/host.ps1:120 hyperv/host.ps1:132
 msgid "Invalid upload identifier."
 msgstr ""
 
-#: deployment/host_agent.py:658
+#: deployment/host_agent.py:736
 msgid "Inventory is read-only. VMware: running VMs and files in the dedicated directory, not all stopped VMs on the host. unknown is not a deletion candidate. Snapshots and saved states in each VM directory are also protected. On Windows, allocation is read through GetCompressedFileSizeW; logicalBytes is the file length."
 msgstr ""
 
@@ -1101,7 +1142,7 @@ msgstr ""
 msgid "Keep RPi installation secrets outside the recipe and Nix store."
 msgstr ""
 
-#: deployment/security.py:183
+#: deployment/security.py:185
 msgid "Keep the runtime password file outside the recipe and Nix store."
 msgstr ""
 
@@ -1122,7 +1163,7 @@ msgstr ""
 msgid "Libvirt cleanup only supports local qemu:///system."
 msgstr ""
 
-#: libvirt/create.sh:105
+#: libvirt/create.sh:119
 #, c-format
 msgid "Libvirt created the disk at a different path: %s"
 msgstr ""
@@ -1159,23 +1200,19 @@ msgstr ""
 msgid "Loading and unloading verified. The RPi was not rebooted."
 msgstr ""
 
-#: libvirt/install.py:55
-msgid "MAC address does not match."
-msgstr ""
-
 #: deployment/cli.py:152
 msgid "Machine-readable output for inventory, diagnostics, verify and export"
 msgstr ""
 
-#: deployment/host_agent.py:422 deployment/host_agent.py:686
+#: deployment/host_agent.py:499 deployment/host_agent.py:764
 msgid "Managed ISO checksum does not match."
 msgstr ""
 
-#: hyperv/host.ps1:120
+#: hyperv/host.ps1:138
 msgid "Media hash does not match."
 msgstr ""
 
-#: hyperv/manage.py:145
+#: hyperv/manage.py:149
 msgid "Media transfer failed."
 msgstr ""
 
@@ -1184,7 +1221,7 @@ msgstr ""
 msgid "MemAvailable={available}; conservative requirement={needed}"
 msgstr ""
 
-#: libvirt/create.sh:96
+#: libvirt/create.sh:110
 #, c-format
 msgid "Method: %s; ISO: %s; disk image: %s"
 msgstr ""
@@ -1194,16 +1231,16 @@ msgstr ""
 msgid "Missing Czech translations: {messages}"
 msgstr ""
 
-#: libvirt/create.sh:94
+#: libvirt/create.sh:105
 #, c-format
 msgid "Mode: %s; URI: %s; VM: %s"
 msgstr ""
 
-#: deployment/host_agent.py:75
+#: deployment/host_agent.py:77
 msgid "Multicast MAC addresses are not allowed."
 msgstr ""
 
-#: libvirt/reset.py:186 libvirt/reset.py:192
+#: libvirt/reset.py:188 libvirt/reset.py:194
 msgid "NVRAM still exists after removal."
 msgstr ""
 
@@ -1211,12 +1248,16 @@ msgstr ""
 msgid "Name from rpi/targets/default.nix"
 msgstr ""
 
+#: deployment/exporter.py:158
+msgid "Named VM network adapters\n\nCreate all adapters in the listed order and preserve their MAC addresses.\nThe first adapter provides management access and uses the top-level network settings.\nSecondary adapters use network.interfaces; omitted entries have no address or DHCP.\nPrepare attachments in the destination environment; manual import does not adopt hypervisor ownership.\nVMware address discovery is not MAC-specific; SSH verification rejects a secondary-interface endpoint.\n\n"
+msgstr ""
+
 #: proxmox/lab/create.py:47
 msgid "Nested AMD KVM is not enabled."
 msgstr ""
 
-#: libvirt/install.py:56
-msgid "Network does not match."
+#: deployment/vm_network.py:41 hyperv/host.ps1:24 hyperv/reset.ps1:21
+msgid "Network adapter names and MAC addresses must be unique within a VM."
 msgstr ""
 
 #: deployment/cli.py:434
@@ -1228,7 +1269,7 @@ msgstr ""
 msgid "Network: {value1}, gateway {value2}, DNS {value3}"
 msgstr ""
 
-#: deployment/security.py:162
+#: deployment/security.py:164
 msgid "New LUKS passphrase: "
 msgstr ""
 
@@ -1272,7 +1313,7 @@ msgstr ""
 msgid "No failed units."
 msgstr ""
 
-#: deployment/security.py:85
+#: deployment/security.py:87
 #, python-brace-format
 msgid "No prepared encrypted image metadata was found at {path}. Run {command} first; its output directory must not already exist."
 msgstr ""
@@ -1285,7 +1326,7 @@ msgstr ""
 msgid "Not enough free RAM for the loading check."
 msgstr ""
 
-#: hyperv/host.ps1:47
+#: hyperv/host.ps1:66
 msgid "Not enough free space."
 msgstr ""
 
@@ -1319,7 +1360,7 @@ msgstr ""
 msgid "One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"
 msgstr ""
 
-#: libvirt/create.sh:45 libvirt/policy.py:23
+#: libvirt/create.sh:45 libvirt/policy.py:25
 msgid "Only local qemu:///system is allowed."
 msgstr ""
 
@@ -1327,7 +1368,7 @@ msgstr ""
 msgid "Only report selected VM status without inspecting disks or snapshots"
 msgstr ""
 
-#: libvirt/reset.py:193
+#: libvirt/reset.py:195
 msgid "Only the dedicated test VM, its disk and NVRAM were removed."
 msgstr ""
 
@@ -1353,21 +1394,21 @@ msgstr ""
 msgid "Operation: {value1}"
 msgstr ""
 
-#: deployment/messages.py:157
+#: deployment/messages.py:162
 #, python-brace-format
 msgid "Option {option} does not accept a value {value}."
 msgstr ""
 
-#: deployment/messages.py:155
+#: deployment/messages.py:160
 #, python-brace-format
 msgid "Option {option} requires a value."
 msgstr ""
 
-#: deployment/messages.py:143
+#: deployment/messages.py:148
 msgid "Options"
 msgstr ""
 
-#: deployment/messages.py:159
+#: deployment/messages.py:164
 #, python-brace-format
 msgid "Options {option} and {other} cannot be combined."
 msgstr ""
@@ -1376,7 +1417,7 @@ msgstr ""
 msgid "Outputs transferred and verified. Partitions, the active system and RPi boot state were not changed."
 msgstr ""
 
-#: hyperv/host.ps1:55
+#: hyperv/host.ps1:74
 msgid "Ownership or media does not match."
 msgstr ""
 
@@ -1392,7 +1433,7 @@ msgstr ""
 msgid "Pinned installation manifest does not match."
 msgstr ""
 
-#: hyperv/manage.py:136
+#: hyperv/manage.py:140
 #, python-brace-format
 msgid "Plan verified. Method {method}; no media transfer, disk creation or VM creation."
 msgstr ""
@@ -1406,7 +1447,7 @@ msgstr ""
 msgid "Plan verified. Nothing changed. Erase SSD: {value1}"
 msgstr ""
 
-#: libvirt/install.py:187
+#: libvirt/install.py:189
 msgid "Plan verified. The disk was not changed and the VM was not shut down."
 msgstr ""
 
@@ -1503,7 +1544,7 @@ msgstr ""
 msgid "Protection"
 msgstr ""
 
-#: deployment/host_agent.py:434
+#: deployment/host_agent.py:512
 msgid "Proxmox created a disk outside the declared storage."
 msgstr ""
 
@@ -1525,16 +1566,16 @@ msgstr ""
 msgid "Proxmox lab preparation failed: {error}"
 msgstr ""
 
-#: deployment/host_agent.py:361
+#: deployment/host_agent.py:436
 #, python-brace-format
 msgid "Proxmox storage {storage} is not enabled for ISO content."
 msgstr ""
 
-#: deployment/host_agent.py:583
+#: deployment/host_agent.py:661
 msgid "Proxmox: node VMs and snapshots, images in the selected storage. Block/thin storage may not report physical allocation; null is not zero. Storage shared with other nodes prevents proof that orphaned volumes are unused."
 msgstr ""
 
-#: hyperv/host.ps1:60
+#: hyperv/host.ps1:79
 msgid "RAM mode does not match."
 msgstr ""
 
@@ -1574,7 +1615,7 @@ msgstr ""
 msgid "RPi: {value1}; serial: {value2}; address: {address}"
 msgstr ""
 
-#: deployment/security.py:173
+#: deployment/security.py:175
 msgid "Raspberry Pi encryption uses its recovery installer, not VM image preparation."
 msgstr ""
 
@@ -1582,7 +1623,7 @@ msgstr ""
 msgid "Reading closure metadata from the running system and local recipe…"
 msgstr ""
 
-#: deployment/portable.py:97
+#: deployment/portable.py:98
 #, python-brace-format
 msgid "Reading the image during transfer failed: {value1}"
 msgstr ""
@@ -1600,7 +1641,7 @@ msgstr ""
 msgid "Removal allowed: {value}"
 msgstr ""
 
-#: libvirt/reset.py:75
+#: libvirt/reset.py:76
 msgid "Removal cancelled; nothing was changed."
 msgstr ""
 
@@ -1608,11 +1649,11 @@ msgstr ""
 msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
 msgstr ""
 
-#: libvirt/reset.py:119
+#: libvirt/reset.py:121
 msgid "Removal of this instance is not declaratively allowed."
 msgstr ""
 
-#: libvirt/reset.py:162
+#: libvirt/reset.py:164
 msgid "Removal plan verified. Nothing was changed."
 msgstr ""
 
@@ -1620,24 +1661,24 @@ msgstr ""
 msgid "Removal plan verified; nothing was shut down or deleted. With --apply, the VM is gracefully shut down and removed after revalidation."
 msgstr ""
 
-#: libvirt/reset.py:111
+#: libvirt/reset.py:113
 msgid "Remove only the dedicated test VM and its disk; the default mode changes nothing."
 msgstr ""
 
-#: libvirt/reset.py:159
+#: libvirt/reset.py:161
 #, python-brace-format
 msgid "Remove only: {disk} and {nvram}"
 msgstr ""
 
-#: libvirt/reset.py:114
+#: libvirt/reset.py:116
 msgid "Remove the verified VM; directory symlinks require interactive confirmation"
 msgstr ""
 
-#: libvirt/reset.py:69
+#: libvirt/reset.py:70
 msgid "Remove this VM and only its verified files through these directory symlinks? [y/N]"
 msgstr ""
 
-#: deployment/security.py:163
+#: deployment/security.py:165
 msgid "Repeat LUKS passphrase: "
 msgstr ""
 
@@ -1650,17 +1691,17 @@ msgstr ""
 msgid "Required CI tools are missing: {tools}."
 msgstr ""
 
-#: deployment/messages.py:153
+#: deployment/messages.py:158
 #, python-brace-format
 msgid "Required arguments are missing: {arguments}"
 msgstr ""
 
-#: libvirt/reset.py:46
+#: libvirt/reset.py:47
 #, python-brace-format
 msgid "Reset file has multiple hard links: {path}; refusing reset."
 msgstr ""
 
-#: libvirt/reset.py:44
+#: libvirt/reset.py:45
 #, python-brace-format
 msgid "Reset file is a mount point: {path}; refusing reset."
 msgstr ""
@@ -1669,25 +1710,25 @@ msgstr ""
 msgid "Reset is not explicitly allowed."
 msgstr ""
 
-#: libvirt/reset.py:33
+#: libvirt/reset.py:34
 #, python-brace-format
 msgid "Reset path contains a symbolic link: {path}; refusing reset."
 msgstr ""
 
-#: libvirt/reset.py:42
+#: libvirt/reset.py:43
 #, python-brace-format
 msgid "Reset path is not a regular file: {path}; refusing reset."
 msgstr ""
 
-#: libvirt/reset.py:49
+#: libvirt/reset.py:50
 msgid "Reset paths changed during verification; refusing further changes."
 msgstr ""
 
-#: libvirt/reset.py:81
+#: libvirt/reset.py:82
 msgid "Reset paths changed since verification; refusing further changes. Inspect VM and storage state before retrying."
 msgstr ""
 
-#: libvirt/reset.py:121
+#: libvirt/reset.py:123
 msgid "Reset requires a declared NixBerry owner; a known UUID alone is not enough."
 msgstr ""
 
@@ -1695,7 +1736,7 @@ msgstr ""
 msgid "Reset requires allowReset = true; for this instance and a declared hypervisor host."
 msgstr ""
 
-#: deployment/host_agent.py:732
+#: deployment/host_agent.py:810
 msgid "Reset requires an existing running or stopped VM; partial operation remnants will not be deleted."
 msgstr ""
 
@@ -1703,15 +1744,15 @@ msgstr ""
 msgid "Reset requires an unambiguous apply mode."
 msgstr ""
 
-#: deployment/host_agent.py:923
+#: deployment/host_agent.py:1001
 msgid "Reset requires explicit permission and an unambiguous apply mode."
 msgstr ""
 
-#: libvirt/reset.py:68
+#: libvirt/reset.py:69
 msgid "Reset through directory symlinks requires an interactive terminal; nothing was changed."
 msgstr ""
 
-#: libvirt/reset.py:61
+#: libvirt/reset.py:62
 #, python-brace-format
 msgid "Resolved reset path: {path} → {resolved}"
 msgstr ""
@@ -1766,7 +1807,7 @@ msgstr ""
 msgid "Running CI check: {check}."
 msgstr ""
 
-#: deployment/runtime.py:343
+#: deployment/runtime.py:349
 #, c-format
 msgid "Running system: %s"
 msgstr ""
@@ -1784,23 +1825,23 @@ msgstr ""
 msgid "Runtime encryption keys require an encrypted RPi target."
 msgstr ""
 
-#: hyperv/manage.py:174
+#: hyperv/manage.py:178
 msgid "SSH is not available yet."
 msgstr ""
 
-#: deployment/host_agent.py:115
+#: deployment/host_agent.py:117
 msgid "SSH must connect directly to the declared Proxmox node."
 msgstr ""
 
-#: deployment/runtime.py:60
+#: deployment/runtime.py:61
 msgid "SSH requires a specific host address."
 msgstr ""
 
-#: deployment/host_agent.py:531
+#: deployment/host_agent.py:609
 msgid "SSH user's VirtualBox registry, including media and snapshot references. review requires checking usage outside this registry. Do not add shared disk sizes across VMs."
 msgstr ""
 
-#: hyperv/manage.py:224
+#: hyperv/manage.py:228
 msgid "Safely create and install a dedicated Hyper-V VM over Windows SSH."
 msgstr ""
 
@@ -1812,11 +1853,11 @@ msgstr ""
 msgid "Scope: all VMs and snapshots in local libvirt, images in the declared pool. External consumers outside libvirt may be undetectable; review does not prove disuse."
 msgstr ""
 
-#: hyperv/reset.ps1:48
+#: hyperv/reset.ps1:70
 msgid "Secure Boot does not match."
 msgstr ""
 
-#: hyperv/host.ps1:61
+#: hyperv/host.ps1:80
 msgid "Secure Boot is not disabled."
 msgstr ""
 
@@ -1874,11 +1915,11 @@ msgstr ""
 msgid "Set security.imageDirectory or specify --output for prepare-image."
 msgstr ""
 
-#: deployment/security.py:77
+#: deployment/security.py:79
 msgid "Set security.imageDirectory to the prepared encrypted image directory."
 msgstr ""
 
-#: deployment/security.py:245
+#: deployment/security.py:247
 msgid "Set security.initrdHostKey to the trusted RPi boot SSH public key before unlocking."
 msgstr ""
 
@@ -1886,7 +1927,7 @@ msgstr ""
 msgid "Set security.recoveryHostKey to the trusted recovery medium SSH public key before connecting."
 msgstr ""
 
-#: deployment/messages.py:145
+#: deployment/messages.py:150
 msgid "Show help and exit"
 msgstr ""
 
@@ -1903,11 +1944,11 @@ msgstr ""
 msgid "Specify a new target name: {value1} NAME."
 msgstr ""
 
-#: deployment/runtime.py:50
+#: deployment/runtime.py:51
 msgid "Specify direct SSH as root@HOST[:PORT]."
 msgstr ""
 
-#: deployment/messages.py:154
+#: deployment/messages.py:159
 #, python-brace-format
 msgid "Specify one of these options: {arguments}"
 msgstr ""
@@ -1916,11 +1957,11 @@ msgstr ""
 msgid "Specify the early-boot VM IP address with unlock TARGET --address IP."
 msgstr ""
 
-#: deployment/host_agent.py:605
+#: deployment/host_agent.py:683
 msgid "Staging, recovery or interrupted creation; review is required."
 msgstr ""
 
-#: deployment/host_agent.py:998
+#: deployment/host_agent.py:1077
 msgid "Starting requires an existing powered-off VM with a verified owner."
 msgstr ""
 
@@ -1932,16 +1973,16 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: deployment/exporter.py:135 deployment/exporter.py:144
+#: deployment/exporter.py:140 deployment/exporter.py:149
 #, python-brace-format
 msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
 msgstr ""
 
-#: deployment/runtime.py:224
+#: deployment/runtime.py:228
 msgid "Status queries are not implemented for this host type."
 msgstr ""
 
-#: libvirt/policy.py:34
+#: libvirt/policy.py:36
 msgid "Storage must have an absolute path without parent directory components."
 msgstr ""
 
@@ -1949,7 +1990,7 @@ msgstr ""
 msgid "Store campaign results outside the recipe."
 msgstr ""
 
-#: deployment/security.py:186
+#: deployment/security.py:188
 msgid "Store encrypted images and secrets outside the recipe root."
 msgstr ""
 
@@ -1957,30 +1998,30 @@ msgstr ""
 msgid "Store the bundle outside the NixBerry recipe root."
 msgstr ""
 
-#: hyperv/host.ps1:107
+#: hyperv/host.ps1:125
 msgid "Stored media hash does not match."
 msgstr ""
 
-#: hyperv/policy.py:26
+#: deployment/vm_network.py:51 hyperv/policy.py:28
 msgid "Switch ID must be a canonical UUID."
 msgstr ""
 
-#: hyperv/host.ps1:18
+#: hyperv/host.ps1:28 hyperv/reset.ps1:25
 msgid "Switch does not match."
 msgstr ""
 
-#: hyperv/host.ps1:126
+#: hyperv/host.ps1:144
 msgid "System disk copy hash does not match."
 msgstr ""
 
-#: deployment/exporter.py:147
+#: deployment/exporter.py:152
 #, python-brace-format
-msgid "System disk handoff for VM{vmid}\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify sha256sum -c SHA256SUMS.\n2. Prepare a powered-off VM with UEFI/OVMF and Secure Boot disabled.\n   Recommended resources: {vcpus} CPUs, {memory} MiB RAM, {disk} GiB disk.\n3. Import QCOW2 into the chosen storage and attach it as virtio0 or scsi0 (VirtIO SCSI).\n   Configure boot from the attached disk and enable QEMU Guest Agent.\n4. Attach exactly one VirtIO network adapter to the agreed network and start the VM.\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. In the console, verify ip -4 address, ip route and resolvectl status.\n   System: readlink -f /run/current-system; the expected value is in manifest.json.\n\nThe operator may assign a different MAC and UUID; system networking is not tied to the MAC.\nManual import does not adopt ownership markers required for hypervisor management.\nManage the server through access in its declaration or nixberry update TARGET --ssh root@HOST:PORT --apply.\nSSH access uses keys from the included recipe; password login is disabled.\nThe image supplies the system; the operator manages the host, bridge and firewall.\n"
+msgid "System disk handoff for VM{vmid}\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify sha256sum -c SHA256SUMS.\n2. Prepare a powered-off VM with UEFI/OVMF and Secure Boot disabled.\n   Recommended resources: {vcpus} CPUs, {memory} MiB RAM, {disk} GiB disk.\n3. Import QCOW2 into the chosen storage and attach it as virtio0 or scsi0 (VirtIO SCSI).\n   Configure boot from the attached disk and enable QEMU Guest Agent.\n4. {adapters}\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. In the console, verify ip -4 address, ip route and resolvectl status.\n   System: readlink -f /run/current-system; the expected value is in manifest.json.\n\n{identity}\nManual import does not adopt ownership markers required for hypervisor management.\nManage the server through access in its declaration or nixberry update TARGET --ssh root@HOST:PORT --apply.\nSSH access uses keys from the included recipe; password login is disabled.\nThe image supplies the system; the operator manages the host, bridge and firewall.\n"
 msgstr ""
 
-#: deployment/exporter.py:138
+#: deployment/exporter.py:143
 #, python-brace-format
-msgid "System disk handoff for VirtualBox on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux (64-bit) VM, skip unattended installation and do not attach an ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM. Enable UEFI and leave Secure Boot disabled.\n3. First copy the VDI outside the bundle; attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n   For another VM, use VBoxManage clonemedium disk to assign a unique media UUID.\n4. Attach exactly one Intel PRO/1000 MT Desktop network adapter to the chosen network.\n   For DHCP, use Bridged Adapter with DHCP or NAT.\n   For a static IP, the network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status virtualbox in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\nFor NAT, configure SSH port forwarding in the operator's environment.\nThe operator may assign a different VM UUID and MAC; networking is not tied to the MAC.\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
+msgid "System disk handoff for VirtualBox on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux (64-bit) VM, skip unattended installation and do not attach an ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM. Enable UEFI and leave Secure Boot disabled.\n3. First copy the VDI outside the bundle; attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n   For another VM, use VBoxManage clonemedium disk to assign a unique media UUID.\n4. {adapters}\n   For DHCP, use Bridged Adapter with DHCP or NAT.\n   For a static IP, the network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status virtualbox in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\nFor NAT, configure SSH port forwarding in the operator's environment.\n{identity}\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
 msgstr ""
 
 #: hyperv/guest-install.sh:22 libvirt/guest-install.sh:22
@@ -2012,7 +2053,7 @@ msgstr ""
 msgid "Target"
 msgstr ""
 
-#: hyperv/host.ps1:63
+#: hyperv/host.ps1:82
 msgid "Target VHDX does not match."
 msgstr ""
 
@@ -2044,7 +2085,7 @@ msgstr ""
 msgid "Target: {value1}\nPlatform: {value2}"
 msgstr ""
 
-#: libvirt/reset.py:106
+#: libvirt/reset.py:108
 msgid "Test VM NVRAM path does not match."
 msgstr ""
 
@@ -2052,15 +2093,15 @@ msgstr ""
 msgid "The EFI bootloader is missing."
 msgstr ""
 
-#: deployment/runtime.py:130
+#: deployment/runtime.py:131
 msgid "The Hyper-V VM does not have the declared owner."
 msgstr ""
 
-#: deployment/runtime.py:135
+#: deployment/runtime.py:140
 msgid "The Hyper-V VM does not match the declared adapter and generation."
 msgstr ""
 
-#: hyperv/manage.py:246
+#: hyperv/manage.py:250
 msgid "The Hyper-V operation timed out. Check the target's status and probe before retrying."
 msgstr ""
 
@@ -2072,7 +2113,7 @@ msgstr ""
 msgid "The ISO is not attached."
 msgstr ""
 
-#: hyperv/manage.py:215
+#: hyperv/manage.py:219
 msgid "The ISO is still attached."
 msgstr ""
 
@@ -2080,16 +2121,16 @@ msgstr ""
 msgid "The LVM group uses another disk."
 msgstr ""
 
-#: libvirt/create.sh:91
+#: libvirt/create.sh:88
 msgid "The MAC address already has a declaration in this network."
 msgstr ""
 
-#: libvirt/create.sh:87
+#: libvirt/create.sh:100
 #, c-format
 msgid "The MAC address is already used by %s."
 msgstr ""
 
-#: hyperv/host.ps1:45
+#: hyperv/host.ps1:64
 msgid "The MAC address is already used by another VM."
 msgstr ""
 
@@ -2098,39 +2139,39 @@ msgstr ""
 msgid "The NixBerry recipe is incomplete or unavailable: %s"
 msgstr ""
 
-#: deployment/host_agent.py:408
+#: deployment/host_agent.py:485
 msgid "The Proxmox VM already exists."
 msgstr ""
 
-#: deployment/host_agent.py:845
+#: deployment/host_agent.py:923
 msgid "The Proxmox VM disk is not a verified volume of this instance; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:852
+#: deployment/host_agent.py:930
 msgid "The Proxmox VM has an additional disk or foreign medium; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:280 deployment/host_agent.py:288
+#: deployment/host_agent.py:350 deployment/host_agent.py:358
 msgid "The Proxmox VM identity or node does not match."
 msgstr ""
 
-#: deployment/host_agent.py:833
+#: deployment/host_agent.py:911
 msgid "The Proxmox VM is locked, protected or a template; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:219
+#: deployment/host_agent.py:254
 msgid "The Proxmox VMID or name is already in use in the cluster."
 msgstr ""
 
-#: deployment/host_agent.py:227
+#: deployment/host_agent.py:263
 msgid "The Proxmox bridge does not exist."
 msgstr ""
 
-#: deployment/host_agent.py:295
+#: deployment/host_agent.py:364
 msgid "The Proxmox configuration does not match the owner or hardware."
 msgstr ""
 
-#: deployment/host_agent.py:97
+#: deployment/host_agent.py:99
 msgid "The Proxmox import path must not contain a comma."
 msgstr ""
 
@@ -2150,23 +2191,23 @@ msgstr ""
 msgid "The Proxmox lab identity does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:222
+#: deployment/host_agent.py:257
 msgid "The Proxmox storage is inactive."
 msgstr ""
 
-#: deployment/host_agent.py:225
+#: deployment/host_agent.py:260
 msgid "The Proxmox storage lacks space for the declared disk capacity and EFI."
 msgstr ""
 
-#: deployment/host_agent.py:301
+#: deployment/host_agent.py:370
 msgid "The Proxmox system disk was changed outside the declared creation."
 msgstr ""
 
-#: deployment/runtime.py:213
+#: deployment/runtime.py:217
 msgid "The RPi hardware does not match the declared machine."
 msgstr ""
 
-#: deployment/runtime.py:216
+#: deployment/runtime.py:220
 msgid "The RPi network adapter does not match the declaration."
 msgstr ""
 
@@ -2174,15 +2215,15 @@ msgstr ""
 msgid "The SSH forward did not start listening."
 msgstr ""
 
-#: hyperv/host.ps1:42
+#: hyperv/host.ps1:61
 msgid "The VM already exists; it will not be overwritten."
 msgstr ""
 
-#: hyperv/reset.ps1:90
+#: hyperv/reset.ps1:111
 msgid "The VM changed during reset; nothing will be deleted."
 msgstr ""
 
-#: hyperv/reset.ps1:33
+#: hyperv/reset.ps1:55
 msgid "The VM contains a differencing disk; refusing reset."
 msgstr ""
 
@@ -2190,19 +2231,19 @@ msgstr ""
 msgid "The VM contains unexpected disks; cleanup was stopped."
 msgstr ""
 
-#: libvirt/reset.py:179
+#: libvirt/reset.py:181
 msgid "The VM definition and NVRAM were removed; verifying the disk before removal."
 msgstr ""
 
-#: hyperv/manage.py:210
+#: hyperv/manage.py:214
 msgid "The VM did not shut down gracefully."
 msgstr ""
 
-#: hyperv/reset.ps1:85
+#: hyperv/reset.ps1:106
 msgid "The VM did not shut down gracefully; nothing will be deleted."
 msgstr ""
 
-#: deployment/host_agent.py:896
+#: deployment/host_agent.py:974
 msgid "The VM did not shut down gracefully; reset will delete nothing."
 msgstr ""
 
@@ -2210,19 +2251,19 @@ msgstr ""
 msgid "The VM did not shut down gracefully; the next step was stopped."
 msgstr ""
 
-#: libvirt/reset.py:173
+#: libvirt/reset.py:175
 msgid "The VM did not shut down; nothing will be deleted."
 msgstr ""
 
-#: deployment/portable.py:163 libvirt/install.py:201
+#: deployment/portable.py:164 libvirt/install.py:203
 msgid "The VM did not shut down; the ISO will not be detached."
 msgstr ""
 
-#: hyperv/host.ps1:43
+#: hyperv/host.ps1:62
 msgid "The VM directory already exists."
 msgstr ""
 
-#: deployment/host_agent.py:714
+#: deployment/host_agent.py:792
 msgid "The VM directory contains a link, mount point or shared file; refusing reset."
 msgstr ""
 
@@ -2230,15 +2271,15 @@ msgstr ""
 msgid "The VM directory contains a link; manual inspection is required."
 msgstr ""
 
-#: hyperv/reset.ps1:32
+#: hyperv/reset.ps1:54
 msgid "The VM directory contains a link; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:129
+#: deployment/host_agent.py:131
 msgid "The VM directory is missing or is a link."
 msgstr ""
 
-#: hyperv/reset.ps1:96
+#: hyperv/reset.ps1:117
 msgid "The VM directory remains after removal."
 msgstr ""
 
@@ -2246,7 +2287,7 @@ msgstr ""
 msgid "The VM disk has no target for a size query."
 msgstr ""
 
-#: libvirt/reset.py:99
+#: libvirt/reset.py:101
 msgid "The VM does not have exactly one disk."
 msgstr ""
 
@@ -2258,7 +2299,7 @@ msgstr ""
 msgid "The VM has a lock or snapshot; cleanup was stopped."
 msgstr ""
 
-#: deployment/host_agent.py:799
+#: deployment/host_agent.py:877
 msgid "The VM has a snapshot, saved state or lock; refusing reset."
 msgstr ""
 
@@ -2266,169 +2307,165 @@ msgstr ""
 msgid "The VM has a snapshot; cleanup was stopped."
 msgstr ""
 
-#: deployment/host_agent.py:796
+#: deployment/host_agent.py:874
 msgid "The VM has additional disks or unexpected disk files; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:758
+#: deployment/host_agent.py:836
 msgid "The VM has additional or foreign media; refusing reset."
 msgstr ""
 
-#: hyperv/reset.ps1:55
+#: hyperv/reset.ps1:76
 msgid "The VM has checkpoints; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:649
+#: deployment/host_agent.py:727
 msgid "The VM has media outside its own directory; total allocation is unknown."
 msgstr ""
 
-#: hyperv/manage.py:39
+#: hyperv/manage.py:40
 msgid "The VM has multiple possible IPv4 addresses."
 msgstr ""
 
-#: hyperv/manage.py:156
+#: hyperv/manage.py:160
 msgid "The VM has no IP address yet."
 msgstr ""
 
-#: hyperv/host.ps1:70
+#: hyperv/host.ps1:88
 msgid "The VM has snapshots."
 msgstr ""
 
-#: libvirt/reset.py:152
+#: libvirt/reset.py:154
 msgid "The VM has snapshots; refusing removal."
 msgstr ""
 
-#: deployment/host_agent.py:755 deployment/host_agent.py:801 deployment/host_agent.py:836
+#: deployment/host_agent.py:833 deployment/host_agent.py:879 deployment/host_agent.py:914
 msgid "The VM has snapshots; refusing reset."
 msgstr ""
 
-#: hyperv/reset.ps1:45
+#: hyperv/reset.ps1:67
 msgid "The VM is in an unsupported state; refusing reset."
 msgstr ""
 
-#: libvirt/policy.py:47
+#: libvirt/policy.py:49
 msgid "The VM is missing the declared owner marker."
 msgstr ""
 
-#: libvirt/reset.py:148
+#: libvirt/reset.py:150
 msgid "The VM is not in a supported state."
 msgstr ""
 
-#: deployment/host_agent.py:667
+#: deployment/host_agent.py:745
 msgid "The VM is not in the required state for ISO operations."
 msgstr ""
 
-#: libvirt/reset.py:177
+#: libvirt/reset.py:179
 msgid "The VM is not powered off; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:148 libvirt/install.py:101
+#: hyperv/host.ps1:169 libvirt/install.py:100
 msgid "The VM is not ready to boot from disk."
 msgstr ""
 
-#: libvirt/install.py:157
+#: libvirt/install.py:156
 msgid "The VM is not running."
 msgstr ""
 
-#: deployment/host_agent.py:672 deployment/host_agent.py:681 deployment/host_agent.py:695 hyperv/manage.py:196 libvirt/install.py:52
+#: deployment/host_agent.py:750 deployment/host_agent.py:759 deployment/host_agent.py:773 hyperv/manage.py:200 libvirt/install.py:53
 msgid "The VM is not using the expected ISO."
 msgstr ""
 
-#: hyperv/host.ps1:155
+#: hyperv/host.ps1:176
 msgid "The VM must be shut down gracefully."
 msgstr ""
 
-#: libvirt/policy.py:25
+#: libvirt/policy.py:27
 msgid "The VM must have a safe nixberry-… name of up to 63 characters."
 msgstr ""
 
-#: libvirt/install.py:54
-msgid "The VM must have exactly one network adapter."
-msgstr ""
-
-#: libvirt/install.py:42
+#: libvirt/install.py:43
 msgid "The VM must have exactly one target disk."
 msgstr ""
 
-#: deployment/runtime.py:127
+#: deployment/runtime.py:128
 msgid "The VM name is ambiguous."
 msgstr ""
 
-#: deployment/runtime.py:161
+#: deployment/runtime.py:165 libvirt/install.py:54 libvirt/reset.py:99
 msgid "The VM network adapter does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:900
+#: deployment/host_agent.py:978
 msgid "The VM or its resources changed during reset; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:50
+#: hyperv/host.ps1:69
 msgid "The VM ownership record is missing."
 msgstr ""
 
-#: hyperv/reset.ps1:23
+#: hyperv/reset.ps1:45
 msgid "The VM path contains a reparse point."
 msgstr ""
 
-#: deployment/portable.py:148
+#: deployment/portable.py:149
 msgid "The VM was created with a prebuilt system disk; it has not been started yet."
 msgstr ""
 
-#: deployment/host_agent.py:664
+#: deployment/host_agent.py:742
 msgid "The VM was not created for ISO installation."
 msgstr ""
 
-#: deployment/host_agent.py:907
+#: deployment/host_agent.py:985
 msgid "The VM was removed, but its volume remains; keeping records for manual inspection."
 msgstr ""
 
-#: deployment/portable.py:245
+#: deployment/portable.py:249
 #, python-brace-format
 msgid "The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}"
 msgstr ""
 
-#: libvirt/install.py:137
+#: libvirt/install.py:136
 #, python-brace-format
 msgid "The VM was started, but system verification failed: {error}"
 msgstr ""
 
-#: deployment/host_agent.py:793
+#: deployment/host_agent.py:871
 msgid "The VMware VM has additional or foreign media; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:326
+#: deployment/host_agent.py:395
 msgid "The VMware configuration does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:805
+#: deployment/host_agent.py:883
 msgid "The VMware disk has a backing image or unverified origin; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:808
+#: deployment/host_agent.py:886
 msgid "The VMware disk references additional or unverified files; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:385
+#: deployment/host_agent.py:461
 msgid "The VirtualBox VM already exists."
 msgstr ""
 
-#: deployment/host_agent.py:753
+#: deployment/host_agent.py:831
 msgid "The VirtualBox VM configuration is outside its dedicated directory; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:254
+#: deployment/host_agent.py:325
 msgid "The VirtualBox VM identity does not match."
 msgstr ""
 
-#: deployment/host_agent.py:213
+#: deployment/host_agent.py:247
 msgid "The VirtualBox VM name or UUID is already in use."
 msgstr ""
 
-#: deployment/runtime.py:120
+#: deployment/runtime.py:121
 msgid "The Windows host does not match the declaration."
 msgstr ""
 
-#: hyperv/manage.py:115
+#: hyperv/manage.py:116
 msgid "The Windows operation failed."
 msgstr ""
 
@@ -2444,11 +2481,11 @@ msgstr ""
 msgid "The active system is not the expected pinned system."
 msgstr ""
 
-#: libvirt/reset.py:146
+#: libvirt/reset.py:148
 msgid "The actual image has a different format, capacity, backing image or internal snapshot; refusing reset."
 msgstr ""
 
-#: deployment/portable.py:105
+#: deployment/portable.py:106
 msgid "The adapter failed."
 msgstr ""
 
@@ -2480,7 +2517,7 @@ msgstr ""
 msgid "The build did not return exactly one image."
 msgstr ""
 
-#: deployment/portable.py:128
+#: deployment/portable.py:129
 #, python-brace-format
 msgid "The build result is missing the expected image: {value1}"
 msgstr ""
@@ -2490,7 +2527,7 @@ msgstr ""
 msgid "The built installation ISO is missing: %s"
 msgstr ""
 
-#: deployment/portable.py:123
+#: deployment/portable.py:124
 #, python-brace-format
 msgid "The built installation ISO is missing: {path}"
 msgstr ""
@@ -2544,15 +2581,15 @@ msgstr ""
 msgid "The data disk is mounted."
 msgstr ""
 
-#: deployment/scaffold.py:113
+#: deployment/scaffold.py:118
 msgid "The declaration already exists; refusing to overwrite it."
 msgstr ""
 
-#: deployment/runtime.py:203
+#: deployment/runtime.py:207
 msgid "The declared IPv4 address is not enabled on the RPi."
 msgstr ""
 
-#: deployment/host_agent.py:216
+#: deployment/host_agent.py:251
 msgid "The declared VirtualBox bridge adapter does not exist."
 msgstr ""
 
@@ -2560,7 +2597,7 @@ msgstr ""
 msgid "The declared host is unavailable over verified SSH."
 msgstr ""
 
-#: deployment/host_agent.py:109
+#: deployment/host_agent.py:111
 msgid "The dedicated storageDirectory must be an existing absolute directory outside the drive root."
 msgstr ""
 
@@ -2568,15 +2605,15 @@ msgstr ""
 msgid "The default mode only verifies the plan. --apply creates a VM using the selected image or iso method."
 msgstr ""
 
-#: deployment/security.py:107
+#: deployment/security.py:109
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr ""
 
-#: deployment/host_agent.py:210
+#: deployment/host_agent.py:243
 msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
 msgstr ""
 
-#: deployment/runtime.py:190
+#: deployment/runtime.py:194
 msgid "The direct SSH target does not match the declared VM architecture and hostname."
 msgstr ""
 
@@ -2596,15 +2633,15 @@ msgstr ""
 msgid "The disk contains signatures."
 msgstr ""
 
-#: libvirt/policy.py:36
+#: libvirt/policy.py:38
 msgid "The disk does not belong to the declared storage."
 msgstr ""
 
-#: libvirt/reset.py:190
+#: libvirt/reset.py:192
 msgid "The disk file still exists after removal."
 msgstr ""
 
-#: deployment/host_agent.py:769
+#: deployment/host_agent.py:847
 msgid "The disk has a backing image or unverified origin; refusing reset."
 msgstr ""
 
@@ -2616,7 +2653,7 @@ msgstr ""
 msgid "The disk is mounted."
 msgstr ""
 
-#: hyperv/host.ps1:67
+#: hyperv/host.ps1:86
 msgid "The disk is shared with another VM."
 msgstr ""
 
@@ -2624,7 +2661,7 @@ msgstr ""
 msgid "The disk is too small."
 msgstr ""
 
-#: deployment/host_agent.py:773
+#: deployment/host_agent.py:851
 msgid "The disk is used by another VM or snapshot; refusing reset."
 msgstr ""
 
@@ -2644,23 +2681,23 @@ msgstr ""
 msgid "The disk or environment does not match the installation; this may be an installation ISO or recovery SD."
 msgstr ""
 
-#: deployment/host_agent.py:298
+#: deployment/host_agent.py:367
 msgid "The disk record must not be a link."
 msgstr ""
 
-#: deployment/security.py:299
+#: deployment/security.py:301
 msgid "The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."
 msgstr ""
 
-#: deployment/security.py:96
+#: deployment/security.py:98
 msgid "The encrypted image checksum does not match; refusing deployment."
 msgstr ""
 
-#: deployment/security.py:80
+#: deployment/security.py:82
 msgid "The encrypted image directory must be an absolute regular directory."
 msgstr ""
 
-#: deployment/security.py:93
+#: deployment/security.py:95
 msgid "The encrypted image does not match this declaration and system; prepare a new image."
 msgstr ""
 
@@ -2692,15 +2729,19 @@ msgstr ""
 msgid "The exported lock does not match the manifest."
 msgstr ""
 
-#: deployment/scaffold.py:71
+#: deployment/vm_network.py:55 hyperv/host.ps1:23 hyperv/reset.ps1:20
+msgid "The first adapter must match the primary MAC and host attachment; it provides management access."
+msgstr ""
+
+#: deployment/scaffold.py:73
 msgid "The generated MAC conflicts with an existing one; run the command again."
 msgstr ""
 
-#: libvirt/install.py:70
+#: libvirt/install.py:68
 msgid "The guest address is outside the expected network."
 msgstr ""
 
-#: deployment/runtime.py:268
+#: deployment/runtime.py:272
 msgid "The guest address must differ from the Windows host address."
 msgstr ""
 
@@ -2748,12 +2789,12 @@ msgstr ""
 msgid "The handoff target already exists; import is not allowed."
 msgstr ""
 
-#: deployment/portable.py:103
+#: deployment/portable.py:104
 #, python-brace-format
 msgid "The host adapter did not return JSON: {value1}"
 msgstr ""
 
-#: deployment/runtime.py:20
+#: deployment/runtime.py:21
 msgid "The host did not respond."
 msgstr ""
 
@@ -2765,23 +2806,23 @@ msgstr ""
 msgid "The host does not match the selected backend."
 msgstr ""
 
-#: deployment/host_agent.py:103
+#: deployment/host_agent.py:105
 msgid "The host hostname does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:106
+#: deployment/host_agent.py:108
 msgid "The host operating system does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:93
+#: deployment/host_agent.py:95
 msgid "The hypervisor tool path is missing."
 msgstr ""
 
-#: deployment/host_agent.py:968
+#: deployment/host_agent.py:1046
 msgid "The image SHA256 is missing."
 msgstr ""
 
-#: hyperv/host.ps1:149 libvirt/install.py:48
+#: hyperv/host.ps1:170 libvirt/install.py:49
 msgid "The image method must not have an installation ISO attached."
 msgstr ""
 
@@ -2790,7 +2831,7 @@ msgstr ""
 msgid "The image root must be a directory: {value1}"
 msgstr ""
 
-#: deployment/host_agent.py:992
+#: deployment/host_agent.py:1071
 msgid "The image transfer is incomplete or corrupted."
 msgstr ""
 
@@ -2798,7 +2839,7 @@ msgstr ""
 msgid "The installation ISO is not attached."
 msgstr ""
 
-#: deployment/portable.py:189
+#: deployment/portable.py:193
 msgid "The installation ISO is unreachable; leaving the VM unchanged."
 msgstr ""
 
@@ -2828,7 +2869,7 @@ msgstr ""
 msgid "The installer is running. The password is in {path}; verify the installation result separately."
 msgstr ""
 
-#: deployment/portable.py:274
+#: deployment/portable.py:278
 msgid "The iso method creates a new VM with a blank disk; install verifies the installation environment, writes the system and detaches the ISO."
 msgstr ""
 
@@ -2861,7 +2902,7 @@ msgstr ""
 msgid "The lab subnet overlaps an existing route."
 msgstr ""
 
-#: deployment/runtime.py:154
+#: deployment/runtime.py:159
 msgid "The libvirt VM identity does not match the declaration."
 msgstr ""
 
@@ -2869,27 +2910,27 @@ msgstr ""
 msgid "The libvirt VM identity does not match the dedicated Proxmox lab."
 msgstr ""
 
-#: deployment/runtime.py:158
+#: deployment/runtime.py:163
 msgid "The libvirt VM is missing the declared owner marker."
 msgstr ""
 
-#: deployment/portable.py:35
+#: deployment/portable.py:36
 msgid "The local manager currently supports Linux; use SSH for Windows."
 msgstr ""
 
-#: deployment/host_agent.py:860
+#: deployment/host_agent.py:938
 msgid "The managed ISO has different content; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:857
+#: deployment/host_agent.py:935
 msgid "The managed ISO is not verified; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:369
+#: deployment/host_agent.py:444
 msgid "The managed ISO path is not a safe existing directory."
 msgstr ""
 
-#: deployment/host_agent.py:683
+#: deployment/host_agent.py:761
 msgid "The managed installation ISO is missing."
 msgstr ""
 
@@ -2897,23 +2938,23 @@ msgstr ""
 msgid "The manually created VM did not obtain an address."
 msgstr ""
 
-#: deployment/host_agent.py:236
+#: deployment/host_agent.py:272
 msgid "The matching VMware VM is already running."
 msgstr ""
 
-#: hyperv/host.ps1:101
+#: hyperv/host.ps1:119
 msgid "The media directory is a reparse point."
 msgstr ""
 
-#: hyperv/host.ps1:23
+#: hyperv/host.ps1:42
 msgid "The media hash is missing."
 msgstr ""
 
-#: hyperv/manage.py:96
+#: hyperv/manage.py:97
 msgid "The media path for the selected deployment method is missing."
 msgstr ""
 
-#: deployment/host_agent.py:974 hyperv/host.ps1:53
+#: deployment/host_agent.py:1053 hyperv/host.ps1:72
 msgid "The method differs from the created VM; use the original --method."
 msgstr ""
 
@@ -2925,11 +2966,11 @@ msgstr ""
 msgid "The mounted RPi root is not the expected encrypted mapping."
 msgstr ""
 
-#: libvirt/install.py:61
+#: libvirt/install.py:59
 msgid "The network has no NAT."
 msgstr ""
 
-#: libvirt/create.sh:76
+#: libvirt/create.sh:78
 msgid "The network is inactive."
 msgstr ""
 
@@ -2941,7 +2982,7 @@ msgstr ""
 msgid "The official ISO checksum does not match."
 msgstr ""
 
-#: deployment/portable.py:52
+#: deployment/portable.py:53
 msgid "The offline target has no connected host; use show or export."
 msgstr ""
 
@@ -2954,6 +2995,14 @@ msgstr ""
 msgid "The operator creates the VM; prepare the image through offline export."
 msgstr ""
 
+#: deployment/exporter.py:137
+msgid "The operator may assign a different MAC and UUID; system networking is not tied to the MAC."
+msgstr ""
+
+#: deployment/exporter.py:136
+msgid "The operator may change the VM UUID, but must preserve every declared adapter MAC."
+msgstr ""
+
 #: deployment/check_inventory.py:192
 msgid "The orphaned host declaration was not rejected."
 msgstr ""
@@ -2962,19 +3011,19 @@ msgstr ""
 msgid "The output directory already exists; export will not overwrite it."
 msgstr ""
 
-#: deployment/security.py:178
+#: deployment/security.py:180
 msgid "The output directory already exists; refusing to overwrite it."
 msgstr ""
 
-#: deployment/host_agent.py:132
+#: deployment/host_agent.py:134
 msgid "The owner marker must not be a link."
 msgstr ""
 
-#: deployment/security.py:164
+#: deployment/security.py:166
 msgid "The passphrases do not match."
 msgstr ""
 
-#: deployment/security.py:156
+#: deployment/security.py:158
 msgid "The password file must be a private regular file owned by the current user."
 msgstr ""
 
@@ -2986,7 +3035,7 @@ msgstr ""
 msgid "The plan includes erasing existing partitions; this only happens with --apply."
 msgstr ""
 
-#: deployment/host_agent.py:378
+#: deployment/host_agent.py:453
 msgid "The prebuilt image is missing."
 msgstr ""
 
@@ -3043,12 +3092,12 @@ msgstr ""
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
-#: deployment/runtime.py:341
+#: deployment/runtime.py:347
 #, python-brace-format
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
 
-#: deployment/host_agent.py:135
+#: deployment/host_agent.py:137
 msgid "The saved VM declaration differs from the current one; nothing will be overwritten."
 msgstr ""
 
@@ -3073,7 +3122,7 @@ msgstr ""
 msgid "The step timed out; resource state requires inspection."
 msgstr ""
 
-#: hyperv/host.ps1:35
+#: hyperv/host.ps1:54
 msgid "The storage is a reparse point."
 msgstr ""
 
@@ -3085,11 +3134,11 @@ msgstr ""
 msgid "The storage path does not match the manifest."
 msgstr ""
 
-#: deployment/host_agent.py:112
+#: deployment/host_agent.py:114
 msgid "The storage path must not contain a symbolic link."
 msgstr ""
 
-#: deployment/runtime.py:350
+#: deployment/runtime.py:356
 msgid "The system check did not return the expected result."
 msgstr ""
 
@@ -3097,7 +3146,7 @@ msgstr ""
 msgid "The system disk does not have the expected serial."
 msgstr ""
 
-#: hyperv/reset.ps1:50
+#: hyperv/reset.ps1:72
 msgid "The system disk does not match or an additional disk is attached."
 msgstr ""
 
@@ -3137,7 +3186,7 @@ msgstr ""
 msgid "The target disk is mounted."
 msgstr ""
 
-#: libvirt/install.py:44 libvirt/reset.py:102
+#: libvirt/install.py:45 libvirt/reset.py:104
 msgid "The target disk is not vda."
 msgstr ""
 
@@ -3145,7 +3194,7 @@ msgstr ""
 msgid "The target disk is too small."
 msgstr ""
 
-#: deployment/runtime.py:252
+#: deployment/runtime.py:256
 msgid "The target does not have exactly one usable IPv4 address. Details: probe TARGET."
 msgstr ""
 
@@ -3170,7 +3219,7 @@ msgstr ""
 msgid "The target is not running: {value1}"
 msgstr ""
 
-#: deployment/runtime.py:236
+#: deployment/runtime.py:240
 msgid "The target is not running; login is unavailable."
 msgstr ""
 
@@ -3190,7 +3239,7 @@ msgstr ""
 msgid "The target system changed while reading metadata. Run diff again."
 msgstr ""
 
-#: deployment/host_agent.py:961
+#: deployment/host_agent.py:1039
 msgid "The target's managed ISO already exists; nothing will be overwritten."
 msgstr ""
 
@@ -3206,11 +3255,11 @@ msgstr ""
 msgid "The test name exceeds the CLI limit."
 msgstr ""
 
-#: libvirt/create.sh:79
+#: libvirt/create.sh:82
 msgid "The test network must use NAT."
 msgstr ""
 
-#: deployment/host_agent.py:988
+#: deployment/host_agent.py:1067
 msgid "The transfer exceeded the declared length."
 msgstr ""
 
@@ -3218,7 +3267,7 @@ msgstr ""
 msgid "The unlock SSH port must be between 1 and 65535."
 msgstr ""
 
-#: deployment/security.py:256
+#: deployment/security.py:258
 msgid "The unlock address must identify the guest, not the hypervisor or management router."
 msgstr ""
 
@@ -3234,7 +3283,7 @@ msgstr ""
 msgid "The update preview changed the running system."
 msgstr ""
 
-#: hyperv/host.ps1:104
+#: hyperv/host.ps1:122
 msgid "The upload already exists."
 msgstr ""
 
@@ -3242,31 +3291,31 @@ msgstr ""
 msgid "The volume did not report a size in bytes."
 msgstr ""
 
-#: libvirt/reset.py:123
+#: libvirt/reset.py:125
 msgid "The volume does not have the dedicated test VM name."
 msgstr ""
 
-#: libvirt/reset.py:89
+#: libvirt/reset.py:90
 msgid "The volume is not qcow2."
 msgstr ""
 
-#: libvirt/policy.py:31
+#: libvirt/policy.py:33
 msgid "The volume name must match the declared VM."
 msgstr ""
 
-#: libvirt/reset.py:90
+#: libvirt/reset.py:91
 msgid "The volume uses a backing image."
 msgstr ""
 
-#: deployment/host_agent.py:963
+#: deployment/host_agent.py:1041
 msgid "There is not enough free space in the Proxmox ISO storage."
 msgstr ""
 
-#: deployment/host_agent.py:965
+#: deployment/host_agent.py:1043
 msgid "There is not enough storage space for the image and declared VM capacity."
 msgstr ""
 
-#: deployment/runtime.py:146
+#: deployment/runtime.py:151
 msgid "This adapter only supports local libvirt."
 msgstr ""
 
@@ -3282,7 +3331,7 @@ msgstr ""
 msgid "This operation does not accept --apply."
 msgstr ""
 
-#: hyperv/host.ps1:147
+#: hyperv/host.ps1:168
 msgid "This operation requires the image method."
 msgstr ""
 
@@ -3294,7 +3343,7 @@ msgstr ""
 msgid "This target is not included on the installation SD."
 msgstr ""
 
-#: hyperv/manage.py:180
+#: hyperv/manage.py:184
 #, python-brace-format
 msgid "Timed out waiting for the guest: {last_message}"
 msgstr ""
@@ -3304,7 +3353,7 @@ msgstr ""
 msgid "Tracked path escapes the isolated recipe: {path}."
 msgstr ""
 
-#: deployment/portable.py:139
+#: deployment/portable.py:140
 #, python-brace-format
 msgid "Transferring and verifying installation media; method {method}…"
 msgstr ""
@@ -3314,7 +3363,7 @@ msgstr ""
 msgid "Transferring the system to {host}…"
 msgstr ""
 
-#: hyperv/manage.py:142
+#: hyperv/manage.py:146
 #, python-brace-format
 msgid "Transferring {bytes} media bytes to Windows; SHA256={sha256}"
 msgstr ""
@@ -3323,7 +3372,7 @@ msgstr ""
 msgid "UEFI profile does not match."
 msgstr ""
 
-#: libvirt/policy.py:27
+#: libvirt/policy.py:29
 msgid "UUID is not in canonical form."
 msgstr ""
 
@@ -3355,7 +3404,7 @@ msgstr ""
 msgid "Unknown RPi target."
 msgstr ""
 
-#: deployment/host_agent.py:187
+#: deployment/host_agent.py:189
 msgid "Unknown VBoxManage list vms output."
 msgstr ""
 
@@ -3392,11 +3441,11 @@ msgstr ""
 msgid "Unknown volume list line: {line}"
 msgstr ""
 
-#: deployment/security.py:300
+#: deployment/security.py:302
 msgid "Unlocking the encrypted VM through its pinned early-boot SSH identity…"
 msgstr ""
 
-#: deployment/messages.py:150
+#: deployment/messages.py:155
 #, python-brace-format
 msgid "Unrecognized arguments: {arguments}"
 msgstr ""
@@ -3405,11 +3454,11 @@ msgstr ""
 msgid "Unsupported backend for a new declaration."
 msgstr ""
 
-#: deployment/host_agent.py:62
+#: deployment/host_agent.py:63
 msgid "Unsupported backend."
 msgstr ""
 
-#: deployment/host_agent.py:64
+#: deployment/host_agent.py:66
 msgid "Unsupported host system."
 msgstr ""
 
@@ -3425,15 +3474,15 @@ msgstr ""
 msgid "Updates are not implemented for this platform."
 msgstr ""
 
-#: hyperv/host.ps1:117
+#: hyperv/host.ps1:135
 msgid "Upload hash does not match."
 msgstr ""
 
-#: hyperv/host.ps1:116
+#: hyperv/host.ps1:134
 msgid "Upload length does not match."
 msgstr ""
 
-#: deployment/messages.py:132
+#: deployment/messages.py:137
 msgid "Usage: "
 msgstr ""
 
@@ -3445,19 +3494,19 @@ msgstr ""
 msgid "Usage: nixberry-vm-create [--dry-run|--apply]"
 msgstr ""
 
-#: deployment/security.py:166
+#: deployment/security.py:168
 msgid "Use a single-line LUKS passphrase of 16 to 4096 bytes."
 msgstr ""
 
-#: deployment/security.py:254
+#: deployment/security.py:256
 msgid "Use an IPv4 or unscoped IPv6 guest address."
 msgstr ""
 
-#: hyperv/reset.ps1:52
+#: hyperv/reset.ps1:74
 msgid "VHDX size or origin does not match."
 msgstr ""
 
-#: hyperv/host.ps1:65
+#: hyperv/host.ps1:84
 msgid "VHDX type or size does not match."
 msgstr ""
 
@@ -3465,28 +3514,28 @@ msgstr ""
 msgid "VM"
 msgstr ""
 
-#: hyperv/host.ps1:57
+#: hyperv/host.ps1:76
 msgid "VM ID does not match."
 msgstr ""
 
-#: hyperv/guest-install.sh:15 libvirt/install.py:40 libvirt/reset.py:97
+#: hyperv/guest-install.sh:15 libvirt/install.py:41 libvirt/reset.py:98
 msgid "VM UUID does not match."
 msgstr ""
 
-#: hyperv/manage.py:149
+#: hyperv/manage.py:153
 #, python-brace-format
 msgid "VM created and booted from ISO: {value1}"
 msgstr ""
 
-#: deployment/portable.py:146
+#: deployment/portable.py:147
 msgid "VM created and booted from the installation ISO."
 msgstr ""
 
-#: libvirt/create.sh:111
+#: libvirt/create.sh:125
 msgid "VM created with a prebuilt disk; install will start and verify it."
 msgstr ""
 
-#: hyperv/manage.py:151
+#: hyperv/manage.py:155
 msgid "VM created with a prebuilt disk; it is not running yet."
 msgstr ""
 
@@ -3494,7 +3543,7 @@ msgstr ""
 msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
 msgstr ""
 
-#: libvirt/install.py:39 libvirt/reset.py:96
+#: libvirt/install.py:40 libvirt/reset.py:97
 msgid "VM name does not match."
 msgstr ""
 
@@ -3502,15 +3551,15 @@ msgstr ""
 msgid "VM name for fast status; repeatable"
 msgstr ""
 
-#: hyperv/host.ps1:69 hyperv/reset.ps1:54
+#: hyperv/host.ps1:32 hyperv/host.ps1:35 hyperv/reset.ps1:29 hyperv/reset.ps1:32
 msgid "VM network does not match."
 msgstr ""
 
-#: hyperv/reset.ps1:42
+#: hyperv/reset.ps1:64
 msgid "VM ownership record does not match."
 msgstr ""
 
-#: hyperv/manage.py:212
+#: hyperv/manage.py:216
 msgid "VM powered off. Detaching the ISO and configuring boot from VHDX."
 msgstr ""
 
@@ -3522,11 +3571,11 @@ msgstr ""
 msgid "VM security contains unsupported fields; keep secrets outside declarations."
 msgstr ""
 
-#: deployment/exporter.py:137 deployment/exporter.py:146
+#: deployment/exporter.py:142 deployment/exporter.py:151
 msgid "VM system network: DHCP.\n"
 msgstr ""
 
-#: hyperv/manage.py:172
+#: hyperv/manage.py:176
 #, python-brace-format
 msgid "VM {value1}; IP {address}; SSH available."
 msgstr ""
@@ -3536,18 +3585,22 @@ msgstr ""
 msgid "VM: {value1}"
 msgstr ""
 
-#: libvirt/install.py:167
+#: libvirt/install.py:166
 #, python-brace-format
 msgid "VM: {value1}; UUID: {value2}; IP: {address}"
 msgstr ""
 
-#: libvirt/reset.py:158
+#: libvirt/reset.py:160
 #, python-brace-format
 msgid "VM: {value1}; UUID: {value2}; state: {state}"
 msgstr ""
 
-#: deployment/host_agent.py:319
+#: deployment/host_agent.py:234 deployment/host_agent.py:388
 msgid "VMX must not be a link."
+msgstr ""
+
+#: deployment/vm_network.py:53
+msgid "VMware adapters require nat or a named vmnet0–vmnet19 attachment."
 msgstr ""
 
 #: deployment/reset.py:48
@@ -3562,7 +3615,7 @@ msgstr ""
 msgid "Verified: Hyper-V UUID, UEFI, manifest and blank disk."
 msgstr ""
 
-#: libvirt/install.py:216
+#: libvirt/install.py:218
 msgid "Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."
 msgstr ""
 
@@ -3583,35 +3636,35 @@ msgstr ""
 msgid "Verify the SSH key and known host key; for a network error, also check the cable, port and declared MAC. Diagnostics do not scan the network or bypass identity checks."
 msgstr ""
 
-#: deployment/host_agent.py:264
+#: deployment/host_agent.py:334
 msgid "VirtualBox owner, disk, firmware or network does not match."
 msgstr ""
 
-#: deployment/host_agent.py:91
+#: deployment/host_agent.py:93
 msgid "VirtualBox requires an existing bridge adapter."
 msgstr ""
 
-#: libvirt/reset.py:86
+#: libvirt/reset.py:87
 msgid "Volume name does not match."
 msgstr ""
 
-#: libvirt/reset.py:87
+#: libvirt/reset.py:88
 msgid "Volume path does not match."
 msgstr ""
 
-#: libvirt/reset.py:88
+#: libvirt/reset.py:89
 msgid "Volume size does not match."
 msgstr ""
 
-#: deployment/portable.py:227
+#: deployment/portable.py:231
 msgid "Waiting for the guest agent, SSH and verified boot from disk…"
 msgstr ""
 
-#: deployment/portable.py:180
+#: deployment/portable.py:184
 msgid "Waiting for the installation ISO, guest agent and SSH…"
 msgstr ""
 
-#: deployment/portable.py:208
+#: deployment/portable.py:212
 msgid "Waiting for the installation VM to shut down gracefully; the ISO remains attached."
 msgstr ""
 
@@ -3633,7 +3686,7 @@ msgstr ""
 msgid "Windows host does not match."
 msgstr ""
 
-#: deployment/portable.py:278
+#: deployment/portable.py:282
 msgid "With --apply, a prebuilt disk is imported; no existing VM is formatted. install starts and verifies the prebuilt system."
 msgstr ""
 
@@ -3649,15 +3702,15 @@ msgstr ""
 msgid "absent"
 msgstr ""
 
-#: deployment/runtime.py:77
+#: deployment/runtime.py:78
 msgid "access only accepts host, port, user, knownHostsFile and hostKeyAlias."
 msgstr ""
 
-#: deployment/runtime.py:80
+#: deployment/runtime.py:81
 msgid "access requires a host, an integer port and the root account."
 msgstr ""
 
-#: deployment/runtime.py:98
+#: deployment/runtime.py:99
 msgid "access supports offline VMs without hypervisor management."
 msgstr ""
 
@@ -3669,7 +3722,7 @@ msgstr ""
 msgid "error"
 msgstr ""
 
-#: deployment/runtime.py:85
+#: deployment/runtime.py:86
 msgid "knownHostsFile must be an absolute path without control characters."
 msgstr ""
 
@@ -3681,6 +3734,10 @@ msgstr ""
 msgid "management not configured"
 msgstr ""
 
+#: deployment/vm_network.py:25 hyperv/host.ps1:22 hyperv/reset.ps1:19
+msgid "networkAdapters must contain 1–8 ordered adapters."
+msgstr ""
+
 #: deployment/cli.py:206
 msgid "new-* only creates a local declaration; it does not accept these options."
 msgstr ""
@@ -3689,15 +3746,15 @@ msgstr ""
 msgid "no"
 msgstr ""
 
-#: deployment/security.py:175
+#: deployment/security.py:177
 msgid "prepare-image requires security.mode = luks."
 msgstr ""
 
-#: deployment/portable.py:262
+#: deployment/portable.py:266
 msgid "probe is read-only."
 msgstr ""
 
-#: deployment/portable.py:44
+#: deployment/portable.py:45
 msgid "pythonCommand must be a command name available in the host PATH."
 msgstr ""
 
@@ -3713,7 +3770,7 @@ msgstr ""
 msgid "stopped"
 msgstr ""
 
-#: deployment/portable.py:38
+#: deployment/portable.py:39
 msgid "transport must be local or ssh."
 msgstr ""
 
@@ -3725,7 +3782,7 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
-#: deployment/security.py:240
+#: deployment/security.py:242
 msgid "unlock requires security.mode = luks."
 msgstr ""
 

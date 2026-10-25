@@ -2869,3 +2869,60 @@ msgstr "Šifrované mapování nepatří k ověřenému disku RPi."
 
 msgid "Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET --address IP opens the pinned early-boot identity.\n  prepare-image applies only to VM disks. See docs/security.md."
 msgstr "Šifrované Raspberry Pi:\n  V deklaraci fyzického cíle nastav security.mode = luks.\n  Nastav security.initrdHostKey a security.recoveryHostKey podle důvěryhodné přípravy média.\n  reproduce používá obnovovací médium a --initrd-key-file; vyžádá si heslo LUKS.\n  unlock TARGET --address IP otevře ověřenou identitu počátečního startu.\n  prepare-image platí pouze pro disky VM. Viz docs/security.md."
+
+msgid "\nNamed adapters: read NETWORKS.txt and preserve all declared MAC addresses.\n"
+msgstr "\nPojmenované adaptéry: přečti NETWORKS.txt a zachovej všechny deklarované MAC adresy.\n"
+
+msgid "A declared adapter MAC is already used by another VM."
+msgstr "Deklarovanou MAC adresu adaptéru již používá jiná VM."
+
+msgid "Adapter names must be unique Linux interface names of 1–15 lowercase characters."
+msgstr "Názvy adaptérů musí být jedinečné názvy linuxových rozhraní o délce 1–15 znaků s malými písmeny."
+
+msgid "Adapter: %s; network: %s"
+msgstr "Adaptér: %s; síť: %s"
+
+msgid "Additional libvirt networks must use NAT or isolated forwarding."
+msgstr "Další sítě libvirt musí používat NAT nebo izolované připojení."
+
+msgid "Attach every declared adapter in order, preserving its MAC and attachment; see NETWORKS.txt."
+msgstr "Připoj všechny deklarované adaptéry v uvedeném pořadí a zachovej jejich MAC i připojení; viz NETWORKS.txt."
+
+msgid "Attach exactly one network adapter to the chosen network."
+msgstr "Připoj právě jeden síťový adaptér do zvolené sítě."
+
+msgid "Each network adapter requires a nonzero unicast MAC address."
+msgstr "Každý síťový adaptér vyžaduje nenulovou unicastovou MAC adresu."
+
+msgid "Each network adapter requires name, mac and the backend attachment fields."
+msgstr "Každý síťový adaptér vyžaduje name, mac a pole připojení daného backendu."
+
+msgid "Invalid network adapter attachment."
+msgstr "Neplatné připojení síťového adaptéru."
+
+msgid "Named VM network adapters\n\nCreate all adapters in the listed order and preserve their MAC addresses.\nThe first adapter provides management access and uses the top-level network settings.\nSecondary adapters use network.interfaces; omitted entries have no address or DHCP.\nPrepare attachments in the destination environment; manual import does not adopt hypervisor ownership.\nVMware address discovery is not MAC-specific; SSH verification rejects a secondary-interface endpoint.\n\n"
+msgstr "Pojmenované síťové adaptéry VM\n\nVytvoř všechny adaptéry v uvedeném pořadí a zachovej jejich MAC adresy.\nPrvní adaptér poskytuje přístup pro správu a používá nastavení network na nejvyšší úrovni.\nDalší adaptéry používají network.interfaces; vynechané položky nemají adresu ani DHCP.\nPřipojení připrav v cílovém prostředí; ruční import nepřebírá vlastnictví hypervizoru.\nZjištění adresy ve VMware nerozlišuje MAC; kontrola SSH odmítne připojení přes vedlejší rozhraní.\n\n"
+
+msgid "Network adapter names and MAC addresses must be unique within a VM."
+msgstr "Názvy síťových adaptérů a jejich MAC adresy musí být v rámci VM jedinečné."
+
+msgid "System disk handoff for VM{vmid}\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify sha256sum -c SHA256SUMS.\n2. Prepare a powered-off VM with UEFI/OVMF and Secure Boot disabled.\n   Recommended resources: {vcpus} CPUs, {memory} MiB RAM, {disk} GiB disk.\n3. Import QCOW2 into the chosen storage and attach it as virtio0 or scsi0 (VirtIO SCSI).\n   Configure boot from the attached disk and enable QEMU Guest Agent.\n4. {adapters}\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. In the console, verify ip -4 address, ip route and resolvectl status.\n   System: readlink -f /run/current-system; the expected value is in manifest.json.\n\n{identity}\nManual import does not adopt ownership markers required for hypervisor management.\nManage the server through access in its declaration or nixberry update TARGET --ssh root@HOST:PORT --apply.\nSSH access uses keys from the included recipe; password login is disabled.\nThe image supplies the system; the operator manages the host, bridge and firewall.\n"
+msgstr "Předání systémového disku pro VM{vmid}\n\nObraz: {filename}\nHostname: {hostname}\n{network}\n1. Ověř sha256sum -c SHA256SUMS.\n2. Připrav vypnutou VM s UEFI/OVMF a vypnutým Secure Boot.\n   Doporučená kapacita: {vcpus} CPU, {memory} MiB RAM, disk {disk} GiB.\n3. Importuj QCOW2 do zvoleného úložiště a připoj jej jako virtio0 nebo scsi0 (VirtIO SCSI).\n   Nastav bootování z připojeného disku a povol QEMU Guest Agent.\n4. {adapters}\n   Pro pevnou IP musí připojená síť odpovídat uvedené podsíti a bráně.\n5. Z konzole ověř ip -4 address, ip route a resolvectl status.\n   Systém: readlink -f /run/current-system; očekávaná hodnota je v manifest.json.\n\n{identity}\nRuční import nepřebírá značky vlastnictví požadované správou přes hypervizor.\nSamotný server lze spravovat přes access v deklaraci nebo nixberry update CIL --ssh root@HOST:PORT --apply.\nPřístup přes SSH používá klíče z přiloženého receptu, heslo je vypnuté.\nObraz dodává systém; konfiguraci hostitele, bridge a firewall spravuje provozovatel.\n"
+
+msgid "System disk handoff for VirtualBox on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux (64-bit) VM, skip unattended installation and do not attach an ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM. Enable UEFI and leave Secure Boot disabled.\n3. First copy the VDI outside the bundle; attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n   For another VM, use VBoxManage clonemedium disk to assign a unique media UUID.\n4. {adapters}\n   For DHCP, use Bridged Adapter with DHCP or NAT.\n   For a static IP, the network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status virtualbox in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\nFor NAT, configure SSH port forwarding in the operator's environment.\n{identity}\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
+msgstr "Předání systémového disku pro VirtualBox na Linuxu i Windows\n\nObraz: {filename}\nHostname: {hostname}\n{network}\n1. Ověř SHA256SUMS před importem. Na Linuxu: sha256sum -c SHA256SUMS.\n   Ve Windows porovnej Get-FileHash -Algorithm SHA256 '{filename}' s řádkem v SHA256SUMS.\n2. Vytvoř novou VM typu Linux (64-bit), přeskoč bezobslužnou instalaci a nepřipojuj ISO.\n   Kapacita: {vcpus} CPU, {memory} MiB RAM. Zapni UEFI, Secure Boot ponech vypnutý.\n3. VDI nejprve zkopíruj mimo balíček; k řadiči SATA připoj tento existující disk.\n   Obraz má kapacitu {disk} GiB a obsahuje nainstalovaný systém.\n   Kopii pro další VM vytvoř pomocí VBoxManage clonemedium disk, aby měla vlastní UUID média.\n4. {adapters}\n   Pro DHCP použij Bridged Adapter s DHCP nebo NAT.\n   Pro pevnou IP musí síť odpovídat uvedené podsíti a bráně.\n5. Spusť VM z disku a z konzole ověř ip -4 address, ip route a systemctl status virtualbox.\n   Očekávaný systém (readlink -f /run/current-system) je v manifest.json.\n\nPři NAT nastav v prostředí provozovatele přesměrování SSH portu.\n{identity}\nRuční import nepřebírá značky vlastníka automatické správy hypervizoru.\nServer spravuj přes access v offline deklaraci nebo --ssh root@HOST:PORT.\nSSH přijímá klíče z receptu; heslo je vypnuté.\n"
+
+msgid "The first adapter must match the primary MAC and host attachment; it provides management access."
+msgstr "První adaptér musí odpovídat primární MAC adrese a připojení hostitele; poskytuje přístup pro správu."
+
+msgid "The operator may assign a different MAC and UUID; system networking is not tied to the MAC."
+msgstr "Provozovatel může přidělit jinou MAC a UUID; systémová síť není vázaná na MAC."
+
+msgid "The operator may change the VM UUID, but must preserve every declared adapter MAC."
+msgstr "Provozovatel může změnit UUID VM, ale musí zachovat MAC adresy všech deklarovaných adaptérů."
+
+msgid "VMware adapters require nat or a named vmnet0–vmnet19 attachment."
+msgstr "Adaptéry VMware vyžadují připojení nat nebo pojmenované vmnet0–vmnet19."
+
+msgid "networkAdapters must contain 1–8 ordered adapters."
+msgstr "networkAdapters musí obsahovat 1–8 adaptérů v určeném pořadí."

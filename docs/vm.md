@@ -25,6 +25,11 @@ All VMs use UEFI with Secure Boot disabled. Adapters manage new owned VMs;
 they do not take over existing foreign machines. Libvirt supports local URIs.
 The VMware adapter targets Workstation, not ESXi, vCenter or Fusion.
 
+VMs default to one adapter. For ordered named interfaces, secondary addressing,
+management selection and backend attachment limits, see
+[VM networking](vm-networking.md). Declaring interfaces does not enable routing
+or change existing hypervisor hardware.
+
 Automatic host access uses private IPv4. Address `192.168.79.1` is protected
 and cannot be a managed target or jump host.
 

@@ -2,6 +2,7 @@
 "Safely create and install a dedicated Hyper-V VM over Windows SSH."
 
 from messages import _, ArgumentParser, info, success, localized_script, shell_script, forward_stderr, error as report_error
+from vm_network import guest_checks
 
 import argparse
 import base64
@@ -117,6 +118,9 @@ class Manager:
         return json.loads(result.stdout.lstrip("\ufeff"))
 
     def guest(self, address, command, *, installed=False, input_text=None, capture=True, timeout=30):
+        checks = guest_checks(self.spec, "hyperv")
+        if checks:
+            command = "set -eu; " + "; ".join(checks) + "; " + command
         known_hosts = self.state / ("installed-hosts" if installed else "installer-hosts")
         options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                    "-o", "StrictHostKeyChecking=accept-new", "-o", "UserKnownHostsFile=" + str(known_hosts),

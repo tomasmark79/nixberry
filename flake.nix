@@ -281,8 +281,12 @@
             ({ config, lib, ... }: {
               networking.hostName = lib.mkForce target.guestHostName;
               nixberry.vm.network = target.network or { };
+              nixberry.vm.adapters = guestAdapters target;
               nixberry.vm.security = builtins.removeAttrs target.security [ "imageDirectory" ];
               assertions = [ {
+                assertion = config.nixberry.vm.adapters == guestAdapters target;
+                message = "The selected configuration must preserve the VM adapter identities declared in the instance.";
+              } {
                 assertion = config.nixberry.vm.security == builtins.removeAttrs target.security [ "imageDirectory" ];
                 message = "The selected configuration must preserve the VM security policy declared in the instance.";
               } ];
@@ -296,9 +300,17 @@
           profile = profiles.${target.backend};
         in
         (mkVmInstaller target.profile vmSystems.${name} profile.disk profile.modules).extendModules {
-          modules = [ { nixberry.vm.network = target.network or { }; } ];
+          modules = [ {
+            nixberry.vm.network = target.network or { };
+            nixberry.vm.adapters = guestAdapters target;
+          } ];
         }
       ) deployment.instances;
+      guestAdapters = target: map (adapter: {
+        inherit (adapter) name;
+        mac = let compact = lib.toLower (builtins.replaceStrings [ ":" "-" ] [ "" "" ] adapter.mac);
+          in lib.concatStringsSep ":" (builtins.genList (i: builtins.substring (i * 2) 2 compact) 6);
+      }) (target.spec.networkAdapters or [ ]);
       mkVmTools =
         method:
         builtins.mapAttrs (

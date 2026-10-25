@@ -81,7 +81,7 @@ if ($hyperv) {
                 allocatedBytes = $allocated
                 classification = 'protected'
                 network = @(Get-VMNetworkAdapter -VM $vm | ForEach-Object {
-                    [ordered]@{ switchName = $_.SwitchName; mac = $_.MacAddress; ips = @($_.IPAddresses) }
+                    [ordered]@{ switchName = $_.SwitchName; switchId = $_.SwitchId.ToString(); mac = $_.MacAddress; ips = @($_.IPAddresses) }
                 })
             }
         })

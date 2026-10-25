@@ -7,7 +7,10 @@ pkgs.writeShellApplication {
     export LC_ALL=C
     virsh --connect ${pkgs.lib.escapeShellArg spec.uri} list --all
     virsh --connect ${pkgs.lib.escapeShellArg spec.uri} pool-info ${pkgs.lib.escapeShellArg spec.storagePool}
-    virsh --connect ${pkgs.lib.escapeShellArg spec.uri} net-info ${pkgs.lib.escapeShellArg spec.network}
+    ${pkgs.lib.concatMapStringsSep "\n" (network:
+      "virsh --connect ${pkgs.lib.escapeShellArg spec.uri} net-info ${pkgs.lib.escapeShellArg network}")
+      (pkgs.lib.unique (map (adapter: adapter.network)
+        (spec.networkAdapters or [ { network = spec.network; } ])))}
     names=$(virsh --connect ${pkgs.lib.escapeShellArg spec.uri} list --all --name)
     while IFS= read -r name; do
       if [[ "$name" == ${pkgs.lib.escapeShellArg spec.name} ]]; then

@@ -4,6 +4,8 @@ _nb_translate() {
   case $1 in
     '/mnt is already mounted.') REPLY='/mnt je již připojené.' ;;
     '/mnt is mounted.') REPLY='/mnt je připojené.' ;;
+    'Adapter: %s; network: %s') REPLY='Adaptér: %s; síť: %s' ;;
+    'Additional libvirt networks must use NAT or isolated forwarding.') REPLY='Další sítě libvirt musí používat NAT nebo izolované připojení.' ;;
     'Address: virsh --connect %s domifaddr %s --source lease') REPLY='Adresa: virsh --connect %s domifaddr %s --source lease' ;;
     'Another disk already uses the partition label.') REPLY='Označení oddílu už používá jiný disk.' ;;
     'Another disk uses the partition label.') REPLY='Označení oddílu používá jiný disk.' ;;

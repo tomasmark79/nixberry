@@ -33,6 +33,7 @@ declaration and MAC.
 | --- | --- |
 | `README.txt` | Instructions for the selected medium, in the selected CLI language. |
 | `manifest.json` | Platform, method, capacity, networking and exact target system path. |
+| `NETWORKS.txt` | Present for named VM adapters: ordered MAC/attachment bindings and per-interface addressing. |
 | `SHA256SUMS` | Checksums of all files. |
 | `recipe/` | The same recipe and lock used to build the medium, including local declarations. |
 | `INSTALL-ISO.sh` | Guest-side check and installation, only in ISO bundles. |
@@ -161,7 +162,9 @@ Check `lsblk -o NAME,TYPE,PARTLABEL,MOUNTPOINTS` if needed; do not change contro
 just to match a device name. A larger virtual disk does not automatically enlarge partitions.
 
 The operator may assign a VM name, MAC and UUID. The system hostname still follows
-the declaration, and networking is not tied to the original MAC.
+the declaration. Legacy single-adapter images are not tied to the original MAC.
+Images declaring `spec.networkAdapters` require all declared MACs and their ordered
+attachments; follow `NETWORKS.txt` and [VM networking](vm-networking.md).
 Verify address, gateway, DNS and `systemPath` after boot.
 The operator verifies connectivity in their environment.
 

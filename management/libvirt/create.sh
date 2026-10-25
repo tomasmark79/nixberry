@@ -72,27 +72,41 @@ done <<< "$volumes"
 if [[ -e "$disk" || -L "$disk" ]]; then
   fail 'The target disk already exists. It will not be overwritten.'
 fi
-network_info=$(v net-info "$network")
-grep -Eq '^Active: +yes$' <<< "$network_info" || fail 'The network is inactive.'
-network_xml=$(v net-dumpxml "$network")
-[[ $(xmllint --xpath 'string(/network/forward/@mode)' - <<< "$network_xml") == nat ]] \
-  || fail 'The test network must use NAT.'
+adapters=$(jq -er '(.networkAdapters // [{mac: .mac, network: .network}])[] | [.mac, .network] | @tsv' "$NIXBERRY_MANIFEST")
+while IFS=$'\t' read -r adapter_mac adapter_network; do
+  network_info=$(v net-info "$adapter_network")
+  grep -Eq '^Active: +yes$' <<< "$network_info" || fail 'The network is inactive.'
+  network_xml=$(v net-dumpxml "$adapter_network")
+  forward_mode=$(xmllint --xpath 'string(/network/forward/@mode)' - <<< "$network_xml")
+  if [[ "$adapter_mac" == "$mac" ]]; then
+    [[ "$forward_mode" == nat ]] || fail 'The test network must use NAT.'
+  else
+    [[ "$forward_mode" == nat || -z "$forward_mode" ]] || fail 'Additional libvirt networks must use NAT or isolated forwarding.'
+  fi
+  while IFS=$'\t' read -r candidate_mac _; do
+    if grep -Fiq "$candidate_mac" <<< "$network_xml"; then
+      fail 'The MAC address already has a declaration in this network.'
+    fi
+  done <<< "$adapters"
+done <<< "$adapters"
 v domcapabilities --virttype kvm --arch x86_64 --machine "$machine" >/dev/null
 
 # MAC checks include stopped VMs and static DHCP reservations.
 while IFS= read -r domain; do
   [[ -n "$domain" ]] || continue
   domain_xml=$(v dumpxml "$domain")
-  if grep -Fiq "$mac" <<< "$domain_xml"; then
-    fail 'The MAC address is already used by %s.' "$domain"
-  fi
+  while IFS=$'\t' read -r adapter_mac _; do
+    if grep -Fiq "$adapter_mac" <<< "$domain_xml"; then
+      fail 'The MAC address is already used by %s.' "$domain"
+    fi
+  done <<< "$adapters"
 done <<< "$names"
-if grep -Fiq "$mac" <<< "$network_xml"; then
-  fail 'The MAC address already has a declaration in this network.'
-fi
 
 nb_info 'Mode: %s; URI: %s; VM: %s' "$mode" "$uri" "$name"
 nb_info 'Disk: %s (%s GiB); network: %s' "$disk" "$size" "$network"
+while IFS=$'\t' read -r adapter_mac adapter_network; do
+  nb_info 'Adapter: %s; network: %s' "$adapter_mac" "$adapter_network"
+done <<< "$adapters"
 nb_info 'Method: %s; ISO: %s; disk image: %s' "$method" "$iso" "$image"
 if [[ "$mode" == dry-run ]]; then
   nb_success 'Checks passed. No disk or VM was created.'

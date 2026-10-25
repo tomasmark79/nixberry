@@ -24,6 +24,7 @@ let
       ../deployment/host_agent.py
       ../deployment/guest-install.sh
       ../deployment/runtime.py
+      ../deployment/vm_network.py
       ../deployment/messages.py
       ../deployment/security.py
       ../deployment/messages.sh

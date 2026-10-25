@@ -70,11 +70,13 @@ let
                     <boot order="1"/>
                   </disk>''}
         <controller type="sata" index="0"/>
-        <interface type="network">
-          <mac address="${spec.mac}"/>
-          <source network="${escape spec.network}"/>
-          <model type="virtio"/>
-        </interface>
+        ${lib.concatMapStringsSep "\n" (adapter: ''
+          <interface type="network">
+            <mac address="${adapter.mac}"/>
+            <source network="${escape adapter.network}"/>
+            <model type="virtio"/>
+          </interface>
+        '') (spec.networkAdapters or [ { inherit (spec) mac network; } ])}
         <serial type="pty"><target port="0"/></serial>
         <console type="pty"><target type="serial" port="0"/></console>
         <channel type="unix">

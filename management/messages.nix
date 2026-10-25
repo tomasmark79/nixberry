@@ -9,6 +9,7 @@ import ./with-locales.nix {
       ./deployment/messages.sh
       ./deployment/shell_runner.py
       ./deployment/security.py
+      ./deployment/vm_network.py
       ./deployment/rpi_secrets.py
       ./deployment/locales/cs.sh
     ];

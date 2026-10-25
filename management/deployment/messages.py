@@ -124,7 +124,12 @@ def python_script(path):
     if catalog.is_file():
         prelude += (f"_nb_catalog = gettext.GNUTranslations(io.BytesIO({catalog.read_bytes()!r}))\n"
                     "_nb_messages._catalog = lambda language: _nb_catalog\n")
-    return prelude + Path(path).read_text()
+    source = Path(path).read_text()
+    if "from vm_network import " in source:
+        prelude += ("_nb_network = types.ModuleType('vm_network')\n"
+                    "sys.modules['vm_network'] = _nb_network\n"
+                    f"exec({(root / 'vm_network.py').read_text()!r}, _nb_network.__dict__)\n")
+    return prelude + source
 
 
 class _UsageFormatter:

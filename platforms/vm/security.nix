@@ -79,7 +79,8 @@ in
       systemd.network = {
         enable = true;
         networks."10-lan" = {
-          matchConfig.Name = "en* eth*";
+          matchConfig = if config.nixberry.vm.adapters == [ ] then { Name = "en* eth*"; }
+            else { MACAddress = (builtins.head config.nixberry.vm.adapters).mac; };
           networkConfig = {
             DHCP = if static then "no" else "ipv4";
             IPv6AcceptRA = false;

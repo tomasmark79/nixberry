@@ -14,6 +14,7 @@ import time
 import xml.etree.ElementTree as ET
 import policy
 from storage import reject_shared, reject_shared_domains
+from vm_network import libvirt_matches
 
 
 def require(condition, message):
@@ -95,6 +96,7 @@ def validate_target(domain_xml, volume_xml, manifest):
     policy.owner(root, manifest)
     require(root.findtext("name") == manifest["name"], _("VM name does not match."))
     require(root.findtext("uuid") == manifest["uuid"], _("VM UUID does not match."))
+    require(libvirt_matches(root, manifest), _("The VM network adapter does not match the declaration."))
     disks = root.findall("./devices/disk[@device='disk']")
     require(len(disks) == 1, _("The VM does not have exactly one disk."))
     source = disks[0].find("source")

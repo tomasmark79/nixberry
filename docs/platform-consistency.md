@@ -14,6 +14,7 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 | Image and ISO | yes | yes | yes | yes | yes | SD recovery |
 | `new-*-vm` and `--offline` | yes | yes | yes | yes | yes | separate declaration |
 | Target network declaration | yes | yes | yes | yes | yes | yes |
+| Ordered named VM adapters | yes | yes | yes | yes | yes | physical target bindings |
 | System and recipe export | yes | yes | yes | yes | yes | yes |
 | System management over SSH | yes | yes | yes | yes | yes | yes |
 | Online `probe/create/install/provision/reset` | yes | yes | yes | yes | yes | own probe/recovery |
@@ -26,6 +27,8 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 
 This describes implemented interfaces, not proof of every live combination.
 See [encrypted disks](security.md) for the security boundaries and prerequisites.
+See [VM networking](vm-networking.md) for primary management identity, attachment
+variants and the VMware address-discovery limitation.
 Offline VMs can gain system management through `access` or `--ssh`, not
 hypervisor management. `status` and `doctor` may explain missing access settings.
 

@@ -53,6 +53,10 @@ default), so verification can distinguish a locked boot from ordinary services.
 The output directory must not already exist. Keep it outside the recipe and
 Nix store. It contains the encrypted system disk and `encryption.json`, which
 binds its checksum, VM identity, system and boot SSH public key.
+When `spec.networkAdapters` is declared, the image binding also includes the whole
+ordered adapter list. Changing a MAC, name or attachment requires a newly prepared
+encrypted image. Initrd networking uses only the first adapter; see
+[VM networking](vm-networking.md).
 
 ```bash
 nixberry prepare-image vm-demo-encrypted --dry-run

@@ -32,6 +32,17 @@ class SecurityTests(unittest.TestCase):
     def save_metadata(self):
         (self.root / "encryption.json").write_text(json.dumps(self.metadata))
 
+    def test_prepared_image_is_bound_to_every_explicit_adapter(self):
+        self.target["spec"]["networkAdapters"] = [
+            {"name": "wan0", "mac": "52:54:00:00:00:01", "network": "vm-demo-wan"},
+            {"name": "lan0", "mac": "52:54:00:00:00:02", "network": "vm-demo-lan"}]
+        self.metadata["binding"] = binding(self.target)
+        self.save_metadata()
+        self.assertEqual(artifact(self.target)[0], self.disk)
+        self.target["spec"]["networkAdapters"][1]["network"] = "other"
+        with self.assertRaisesRegex(RuntimeError, "does not match"):
+            artifact(self.target)
+
     def test_all_vm_backends_refuse_confidential_and_encrypted_iso(self):
         with patch("security.subprocess.run") as run:
             for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):

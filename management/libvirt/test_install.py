@@ -33,7 +33,7 @@ DOMAIN = """<domain><name>nixberry-repro-test</name>
 <disk device="disk"><source file="/var/lib/libvirt/images/nixberry-repro-test.qcow2"/>
 <target dev="vda"/></disk>
 <disk device="cdrom"><source file="/nix/store/test/installer.iso"/><target dev="sda"/></disk>
-<interface><mac address="52:54:00:79:81:01"/><source network="default"/></interface>
+<interface type="network"><mac address="52:54:00:79:81:01"/><source network="default"/></interface>
 </devices></domain>"""
 NETWORK = """<network><forward mode="nat"/><ip address="192.168.77.1"
 netmask="255.255.255.0"/></network>"""

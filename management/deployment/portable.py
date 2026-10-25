@@ -18,6 +18,7 @@ import threading
 import time
 
 from host_agent import validate, image_name
+from vm_network import guest_checks
 
 
 BACKENDS = ("proxmox", "virtualbox", "vmware")
@@ -174,6 +175,9 @@ def install_iso(target, manifest, *, apply):
         rpc(target, "start")
     with tempfile.TemporaryDirectory(prefix="nixberry-installer-ssh-") as directory:
         def guest(snapshot, command, *, input_text=None, capture=False, timeout=30):
+            checks = guest_checks(target["spec"], target["backend"])
+            if checks:
+                command = "set -eu; " + "; ".join(checks) + "; " + command
             args = ssh_command({**target, "_acceptNewGuestKey": True}, snapshot)
             args[1:1] = ["-o", "BatchMode=yes", "-o", "UserKnownHostsFile=" + directory + "/known_hosts"]
             return subprocess.run(args + [command], input=input_text, text=True, capture_output=capture, timeout=timeout, check=False)

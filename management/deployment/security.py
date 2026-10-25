@@ -66,7 +66,9 @@ def binding(target):
             "configuration": target.get("configuration", "default"),
             "network": target.get("network", {}),
             "diskGiB": target["spec"]["diskGiB"],
-            "security": {k: v for k, v in policy(target).items() if k != "imageDirectory"}}
+            "security": {k: v for k, v in policy(target).items() if k != "imageDirectory"}} | (
+                {"networkAdapters": target["spec"]["networkAdapters"]}
+                if "networkAdapters" in target["spec"] else {})
 
 
 def image_metadata(target, *, name="TARGET"):

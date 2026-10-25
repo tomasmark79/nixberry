@@ -299,6 +299,28 @@ class PortableTests(unittest.TestCase):
         self.assertIn("local-lvm:0,import-from=" + str(directory / "system.qcow2"), command)
         self.assertIn("virtio=" + s["mac"] + ",bridge=vmbr0", command)
 
+    def test_proxmox_two_adapter_creation_uses_declared_slots_for_both_methods(self):
+        s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
+        s["networkAdapters"] = [{"name": "wan0", "mac": s["mac"], "bridge": "vmbr0"},
+                                {"name": "lan0", "mac": "00:50:56:12:34:57", "bridge": "vmbr1"}]
+        directory = self.marker(s, backend="proxmox")
+        for method in ("image", "iso"):
+            marker = json.loads((directory / "nixberry.json").read_text())
+            marker["method"] = method
+            (directory / "nixberry.json").write_text(json.dumps(marker))
+            if method == "iso":
+                (directory / "installer.iso").write_bytes((directory / "system.qcow2").read_bytes())
+            hardware = directory / "hardware.json"
+            if hardware.exists():
+                hardware.unlink()
+            with self.subTest(method=method), patch.object(agent, "proxmox_registry", return_value=[]), \
+                    patch.object(agent, "proxmox_iso_medium", return_value=("local:iso/lab.iso", directory / "managed.iso")), \
+                    patch.object(agent, "run", side_effect=["", '{"virtio0":"local-lvm:vm-1000-disk-1","efidisk0":"local-lvm:vm-1000-disk-0"}']) as run, \
+                    patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
+                agent.create(s, "proxmox", directory)
+            command = run.call_args_list[0].args[0]
+            self.assertEqual(command[command.index("--net1") + 1], "virtio=00:50:56:12:34:57,bridge=vmbr1")
+
     def test_proxmox_iso_uses_managed_volume_and_detaches_only_verified_medium(self):
         s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
         directory = self.marker(s, backend="proxmox")
@@ -406,6 +428,18 @@ class PortableTests(unittest.TestCase):
         self.assertIn("--bridge-adapter1", modify)
         self.assertIn("efi", modify)
         self.assertFalse(any(command[1] == "startvm" for command in commands))
+
+    def test_virtualbox_two_adapter_creation_preserves_the_primary_slot(self):
+        s = spec(self.root, bridge="WAN")
+        s["networkAdapters"] = [{"name": "wan0", "mac": s["mac"], "bridge": "WAN"},
+                                {"name": "lan0", "mac": "00:50:56:12:34:57", "bridge": "LAN"}]
+        directory = self.marker(s, backend="virtualbox")
+        with patch.object(agent, "vbox_registry", return_value=[]), patch.object(agent, "run") as run, \
+                patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
+            agent.create(s, "virtualbox", directory)
+        command = next(call.args[0] for call in run.call_args_list if call.args[0][1] == "modifyvm")
+        for flag, value in [("--bridge-adapter1", "WAN"), ("--bridge-adapter2", "LAN"), ("--mac-address2", "005056123457")]:
+            self.assertEqual(command[command.index(flag) + 1], value)
 
     def test_insufficient_space_leaves_no_directory(self):
         s = spec(self.root)
