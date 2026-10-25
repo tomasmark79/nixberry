@@ -156,6 +156,35 @@ lsblk() { case "${@: -1}" in "$ROOTDEV") echo "$ROOTPARENT";; "$BOOTDEV") echo "
                 with self.assertRaises(RuntimeError):
                     runtime.status(RPI)
 
+    def test_encrypted_rpi_serial_lookup_does_not_traverse_the_mapping(self):
+        target = {**RPI, "security": {"mode": "luks"},
+                  "spec": {**RPI["spec"], "hostName": "pi", "diskSerial": "expected-ssd"}}
+        check = next(check for check in runtime.installation_checks(target) if "SERIAL" in check)
+        fixture = r'''
+lsblk() {
+    if [[ "$*" == *'PKNAME'* ]]; then
+        echo sda
+        [[ " $* " == *' -dn '* ]] || echo sda2
+        return 0
+    fi
+    local device
+    for device in "${@:4}"; do
+        if [[ "$device" == /dev/sda ]]; then
+            echo "$SSD_SERIAL"
+        else
+            echo "Unexpected child device: $device" >&2
+            return 1
+        fi
+    done
+}
+'''
+        for serial in ("expected-ssd", "foreign-ssd"):
+            with self.subTest(serial=serial):
+                result = subprocess.run(["bash", "-c", fixture + check],
+                                        env={**os.environ, "SSD_SERIAL": serial}, capture_output=True, text=True)
+                self.assertEqual(result.returncode == 0, serial == "expected-ssd")
+                self.assertEqual(result.stderr, "")
+
     def test_rpi_cannot_connect_to_protected_address(self):
         target = {**RPI, "spec": {**RPI["spec"], "address": "192.168.79.1/24"}}
         with patch.object(runtime, "read") as read, self.assertRaises(RuntimeError):

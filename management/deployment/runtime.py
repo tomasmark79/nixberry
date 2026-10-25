@@ -282,7 +282,7 @@ def installation_checks(target):
         if policy(target)["mode"] == "luks":
             checks += encryption_checks(target)
             partition = shlex.quote("/dev/disk/by-partlabel/" + spec.get("rootLabel", spec["hostName"] + "-root"))
-            checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -n -o PKNAME '
+            checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -dn -o PKNAME '
                           + partition + '))" = ' + shlex.quote(spec["diskSerial"]))
         else:
             checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -n -o PKNAME '
