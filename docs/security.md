@@ -148,6 +148,13 @@ The swap file inside root is protected by the same mapping; external swap is
 rejected. An existing plaintext root requires recovery installation or a
 separately reviewed migration. `update` does not encrypt an existing filesystem.
 
+`--erase-existing` removes existing signatures and the partition table; it does
+not sanitize historical plaintext. If old data must also be inaccessible,
+review and perform a separate whole-device erasure before installation.
+Overwriting accessible sectors does not guarantee erasure of SSD flash cells
+hidden by the controller; stronger guarantees require a verified device-specific
+sanitization method.
+
 Before installation, keep a verified backup and prepare bootable recovery media
 on SD or USB. Provision the recovery medium with its own SSH host identity
 outside the Nix store. Generate a separate unencrypted Ed25519 SSH host key for
