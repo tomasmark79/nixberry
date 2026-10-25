@@ -111,6 +111,25 @@ Select the appropriate architecture for ARM packages.
 
 ## Live scenario matrix
 
+### Encrypted Raspberry Pi root
+
+Use a verified encrypted backup and prepared SD/USB recovery media. Live physical
+disk installation and reboot require separate authorization and exact board/disk
+identity checks. A build or local bootloader test does not prove RPi cold boot.
+
+Check that plaintext defaults remain unchanged, private boot keys are absent
+from the built initrd, and RP1, USB storage, cryptsetup and the declared static
+network are available before root. Verify that missing runtime secrets abort a
+generation update before the previous default generation is replaced.
+
+Reject changed recovery SSH keys, mismatched public/private boot keys, a
+different media policy and mounted or wrong-serial SSDs before formatting.
+Install LUKS2 with runtime credentials, then verify the mapped root and original
+physical SSD identity. Test a locked cold boot, wrong passphrase, changed boot
+SSH key, successful unlock, installed-system verification, repeat cold boot and
+an update that preserves runtime initrd-secret installation. Confirm persistent
+application state survives the authorized migration.
+
 ### Encrypted VM images
 
 Use a new isolated recipe, per-test SSH identities and a fresh disk. Never

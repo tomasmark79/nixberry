@@ -14,4 +14,5 @@
   diskSerial = "EXAMPLE_SERIAL";
   rootGiB = 32;
   adminKeyFile = ../../../admin.pub;
+  # Optional: security.mode = "luks"; see docs/security.md for recovery and SSH key pins.
 }

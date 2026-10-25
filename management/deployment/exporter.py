@@ -40,8 +40,9 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         return {"target": target_name, "destination": str(destination), "deploymentMethod": selected,
                 "configuration": target.get("configuration", "default"),
                 "allowReset": target.get("allowReset", False),
-                **({"preparedImageDirectory": security.get("imageDirectory"), "security": security}
-                   if security["mode"] != "none" else {"build": [*command[:-1], "--no-link", command[-1]]})}
+                **({"security": security} if security["mode"] != "none" else {}),
+                **({"preparedImageDirectory": security.get("imageDirectory")}
+                   if security["mode"] != "none" and target["backend"] != "rpi" else {"build": [*command[:-1], "--no-link", command[-1]]})}
     try:
         destination.parent.mkdir(parents=True, exist_ok=True)
         staging_directory = tempfile.TemporaryDirectory(prefix=".nixberry-export-", dir=destination.parent)
@@ -80,7 +81,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         if backend not in extensions:
             raise RuntimeError(_("Image export is not implemented for this platform."))
         extension = "iso" if selected == "iso" and backend != "rpi" else extensions[backend]
-        encrypted = policy(target)["mode"] != "none"
+        encrypted = policy(target)["mode"] != "none" and backend != "rpi"
         if encrypted:
             artifacts = [artifact(target)[0]]
         else:
@@ -111,6 +112,8 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         if encrypted:
             manifest["security"] = policy(target)
             manifest["initrdHostKey"] = encryption["initrdHostKey"]
+        elif backend == "rpi" and policy(target)["mode"] != "none":
+            manifest["security"] = policy(target)
         (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
         (root / "README.txt").write_text(_(
             "NixBerry: offline bundle\n\n1. Verify checksums: sha256sum -c SHA256SUMS\n2. Transfer and boot instructions: recipe/README.md\n3. Target and parameters: manifest.json\n\nThe image contains the system and its dependencies. VM disks boot directly;\nthe RPi SD card is a recovery environment with the prebuilt target system.\nInstalled services and applications may have their own network requirements.\n"
@@ -155,7 +158,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
                 lines.append(digest + "  " + str(file.relative_to(root)))
         (root / "SHA256SUMS").write_text("\n".join(lines) + "\n")
         # A destination occupied during a long build must not be overwritten.
-        destination.mkdir(mode=0o700 if encrypted else 0o777)
+        destination.mkdir(mode=0o700 if policy(target)["mode"] != "none" else 0o777)
         try:
             for item in root.iterdir():
                 shutil.move(str(item), destination / item.name)

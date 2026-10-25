@@ -50,7 +50,7 @@
       rpiTargets = import ./management/rpi/targets;
       mkRpi =
         target:
-        nixos-raspberrypi.lib.nixosSystem {
+        let base = nixos-raspberrypi.lib.nixosSystem {
           system = "aarch64-linux";
           specialArgs.unstable = unstable.legacyPackages.aarch64-linux;
           specialArgs.mc-modern = mc-modern;
@@ -63,6 +63,20 @@
             ./platforms/rpi/boot.nix
             configurations.modules.${configurations.select target}
             { nixberry.rpi = builtins.removeAttrs target [ "configuration" ]; }
+          ];
+        };
+        in base.extendModules {
+          specialArgs.nixberryRpiBootLoader = base.config.system.build.installBootLoader;
+          modules = [
+            ./platforms/rpi/security.nix
+            ({ config, ... }: {
+              assertions = [ {
+                assertion = config.nixberry.rpi.security == import ./management/rpi/security.nix {
+                  security = target.security or { };
+                };
+                message = "The selected configuration must preserve the RPi security policy declared in the target.";
+              } ];
+            })
           ];
         };
       rpiSystems = builtins.mapAttrs (_: target: mkRpi target) rpiTargets;
@@ -98,13 +112,45 @@
           minimumDiskBytes = (cfg.rootGiB * 1024 * 1024 * 1024) + (520 * 1024 * 1024);
           systemPath = toString system.config.system.build.toplevel;
           diskoPath = toString system.config.system.build.diskoScript;
-        }
+        } // lib.optionalAttrs (cfg.security.mode != "none") { inherit (cfg) security; }
       ) rpiSystems;
+      encryptedRpiConfigs = builtins.filter (cfg: cfg.security.mode == "luks") (
+        map (system: system.config.nixberry.rpi) (builtins.attrValues rpiSystems)
+      );
       mkRpiInstaller =
         offline:
         nixos-raspberrypi.nixosConfigurations.rpi5-installer.extendModules {
           modules = [
             ./management/rpi/installer.nix
+            ({ lib, ... }: {
+              config = lib.mkIf (encryptedRpiConfigs != [ ]) {
+                assertions = [ {
+                  assertion = builtins.length encryptedRpiConfigs
+                    == builtins.length (lib.unique (map (cfg: cfg.lanMac) encryptedRpiConfigs));
+                  message = "Encrypted RPi recovery targets must have distinct primary MAC addresses.";
+                } ];
+                networking.useDHCP = lib.mkForce false;
+                networking.useNetworkd = lib.mkForce true;
+                systemd.network = {
+                  enable = true;
+                  networks = builtins.listToAttrs (map (cfg: {
+                    name = "00-nixberry-${cfg.hardwareSerial}";
+                    value = {
+                      matchConfig.MACAddress = cfg.lanMac;
+                      address = [ cfg.address ];
+                      gateway = [ cfg.gateway ];
+                      dns = cfg.dns;
+                      networkConfig = { DHCP = "no"; IPv6AcceptRA = false; };
+                    };
+                  }) encryptedRpiConfigs) // {
+                    "90-recovery-dhcp" = {
+                      matchConfig.Name = "en* eth*";
+                      networkConfig.DHCP = "yes";
+                    };
+                  };
+                };
+              };
+            })
             {
               environment.etc."nixberry-rpi-targets.json".text =
                 if offline then

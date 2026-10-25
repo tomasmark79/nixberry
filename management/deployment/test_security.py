@@ -53,8 +53,23 @@ class SecurityTests(unittest.TestCase):
                          {"mode": "luks", "password": "not-allowed"}, {"mode": "luks", "port": 22}):
             with self.subTest(security=security), self.assertRaises(ValueError):
                 policy({"security": security})
+        self.assertEqual(require_supported({"backend": "rpi", "security": {"mode": "luks"}})["mode"], "luks")
         with self.assertRaisesRegex(ValueError, "Raspberry Pi"):
-            require_supported({"backend": "rpi", "security": {"mode": "luks"}})
+            require_supported({"backend": "rpi", "security": {"mode": "confidential"}})
+
+    def test_physical_unlock_requires_a_trusted_public_key_without_vm_artifacts(self):
+        target = {"backend": "rpi", "spec": {"hardwareSerial": "0123456789abcdef"},
+                  "security": {"mode": "luks"}}
+        with self.assertRaisesRegex(ValueError, "trusted RPi"):
+            unlock(target, "192.168.50.20", dry_run=True)
+        target["security"]["initrdHostKey"] = "ssh-ed25519 TESTKEY"
+        with patch("security.artifact") as image, patch("security.subprocess.run") as run:
+            plan = unlock(target, "192.168.50.20", dry_run=True)
+            self.assertEqual(plan["hostKeyAlias"], "nixberry-initrd-rpi-0123456789abcdef")
+            image.assert_not_called()
+            run.assert_not_called()
+            with self.assertRaisesRegex(ValueError, "recovery installer"):
+                prepare_image("/tmp/recipe", "rpi-demo", target, self.root / "output", dry_run=True)
 
     def test_missing_boot_verification_does_not_claim_a_proven_locked_disk(self):
         manifest = {"security": self.target["security"], "securityTarget": self.target}

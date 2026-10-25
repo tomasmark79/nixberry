@@ -2791,3 +2791,81 @@ msgstr "Po přípravě: {command}"
 #, python-brace-format
 msgid "No prepared encrypted image metadata was found at {path}. Run {command} first; its output directory must not already exist."
 msgstr "Na cestě {path} nebyla nalezena metadata připraveného šifrovaného obrazu. Nejdříve spusť {command}; jeho výstupní adresář ještě nesmí existovat."
+
+msgid "--initrd-key-file only applies to encrypted RPi plan/reproduce."
+msgstr "--initrd-key-file lze použít pouze pro plan/reproduce šifrovaného RPi."
+
+msgid "--key-file applies to prepare-image or encrypted RPi plan/reproduce."
+msgstr "--key-file lze použít pro prepare-image nebo plan/reproduce šifrovaného RPi."
+
+msgid "Encrypted RPi installation requires --initrd-key-file and a trusted security.initrdHostKey pin."
+msgstr "Instalace šifrovaného RPi vyžaduje --initrd-key-file a důvěryhodný veřejný klíč v security.initrdHostKey."
+
+msgid "Keep RPi installation secrets outside the recipe and Nix store."
+msgstr "Tajné údaje pro instalaci RPi uchovávej mimo recept a Nix store."
+
+msgid "Physical Raspberry Pi targets support LUKS, not confidential VM launch."
+msgstr "Fyzické cíle Raspberry Pi podporují LUKS, nikoli spuštění confidential VM."
+
+msgid "Private runtime LUKS passphrase file; otherwise prompt securely"
+msgstr "Soukromý soubor s heslem LUKS pro běh; jinak bezpečně vyžádat heslo"
+
+msgid "Private runtime SSH host key for encrypted RPi reproduction"
+msgstr "Soukromý hostitelský SSH klíč pro obnovu šifrovaného RPi za běhu"
+
+msgid "Private runtime SSH host key matching the trusted initrd public key"
+msgstr "Soukromý hostitelský SSH klíč odpovídající důvěryhodnému veřejnému klíči initrd"
+
+msgid "Private runtime passphrase file for image preparation or encrypted RPi reproduction; otherwise prompt securely"
+msgstr "Soukromý soubor s heslem pro přípravu obrazu nebo obnovu šifrovaného RPi; jinak bezpečně vyžádat heslo"
+
+msgid "RPi host-key pins must be public Ed25519 SSH keys."
+msgstr "Ověřovací hostitelské klíče RPi musí být veřejné SSH klíče Ed25519."
+
+msgid "RPi installation secrets require /run on tmpfs."
+msgstr "Tajné údaje pro instalaci RPi vyžadují /run na tmpfs."
+
+msgid "Raspberry Pi encryption uses its recovery installer, not VM image preparation."
+msgstr "Šifrování Raspberry Pi používá jeho obnovovací instalátor, nikoli přípravu obrazu VM."
+
+msgid "Runtime LUKS and initrd SSH secrets are missing; the disk was not changed."
+msgstr "Chybí tajné údaje LUKS a initrd SSH pro běh; disk nebyl změněn."
+
+msgid "Runtime encryption keys require an encrypted RPi target."
+msgstr "Šifrovací klíče pro běh vyžadují šifrovaný cíl RPi."
+
+msgid "Set security.initrdHostKey to the trusted RPi boot SSH public key before unlocking."
+msgstr "Před odemknutím nastav v security.initrdHostKey důvěryhodný veřejný SSH klíč počátečního startu RPi."
+
+msgid "Set security.recoveryHostKey to the trusted recovery medium SSH public key before connecting."
+msgstr "Před připojením nastav v security.recoveryHostKey důvěryhodný veřejný SSH klíč obnovovacího média."
+
+msgid "The mounted RPi root is not LUKS2."
+msgstr "Připojený kořenový oddíl RPi nepoužívá LUKS2."
+
+msgid "The mounted RPi root is not the expected encrypted mapping."
+msgstr "Připojený kořenový oddíl RPi není očekávané šifrované mapování."
+
+msgid "The private initrd SSH key does not match the trusted RPi public key."
+msgstr "Soukromý SSH klíč initrd neodpovídá důvěryhodnému veřejnému klíči RPi."
+
+msgid "The private initrd SSH key is too large."
+msgstr "Soukromý SSH klíč initrd je příliš velký."
+
+msgid "The private initrd SSH key must be a private regular file owned by the current user."
+msgstr "Soukromý SSH klíč initrd musí být soukromý běžný soubor vlastněný aktuálním uživatelem."
+
+msgid "Unknown RPi security mode."
+msgstr "Neznámý režim zabezpečení RPi."
+
+msgid "The installation media contains a different RPi encryption policy or SSH identity."
+msgstr "Instalační médium obsahuje jinou zásadu šifrování RPi nebo SSH identitu."
+
+msgid "Early-boot unlock address or current RPi recovery address"
+msgstr "Adresa pro odemknutí při počátečním startu nebo aktuální adresa obnovy RPi"
+
+msgid "The encrypted mapping does not belong to the verified RPi disk."
+msgstr "Šifrované mapování nepatří k ověřenému disku RPi."
+
+msgid "Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET --address IP opens the pinned early-boot identity.\n  prepare-image applies only to VM disks. See docs/security.md."
+msgstr "Šifrované Raspberry Pi:\n  V deklaraci fyzického cíle nastav security.mode = luks.\n  Nastav security.initrdHostKey a security.recoveryHostKey podle důvěryhodné přípravy média.\n  reproduce používá obnovovací médium a --initrd-key-file; vyžádá si heslo LUKS.\n  unlock TARGET --address IP otevře ověřenou identitu počátečního startu.\n  prepare-image platí pouze pro disky VM. Viz docs/security.md."

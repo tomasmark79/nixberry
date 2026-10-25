@@ -20,13 +20,15 @@ FORMATS = {"libvirt": "qcow2", "proxmox": "qcow2", "hyperv": "vhdx",
 
 def policy(target):
     value = target.get("security", {})
-    if not isinstance(value, dict) or set(value) - {"mode", "unlock", "port", "imageDirectory"}:
+    rpi = target.get("backend") == "rpi"
+    fields = {"mode", "unlock", "port", "initrdHostKey", "recoveryHostKey"} if rpi else {"mode", "unlock", "port", "imageDirectory"}
+    if not isinstance(value, dict) or set(value) - fields:
         raise ValueError(_("VM security contains unsupported fields; keep secrets outside declarations."))
     mode = value.get("mode", "none")
     if mode not in ("none", "luks", "confidential"):
         raise ValueError(_("Unknown VM security mode."))
-    if mode != "none" and target.get("backend") == "rpi":
-        raise ValueError(_("VM encryption does not apply to Raspberry Pi recovery media."))
+    if mode == "confidential" and rpi:
+        raise ValueError(_("Physical Raspberry Pi targets support LUKS, not confidential VM launch."))
     unlock = value.get("unlock", "attested" if mode == "confidential" else "manual")
     if unlock != ("attested" if mode == "confidential" else "manual"):
         raise ValueError(_("The unlock policy does not match the VM security mode."))
@@ -35,6 +37,12 @@ def policy(target):
         raise ValueError(_("The unlock SSH port must be between 1 and 65535."))
     if mode != "none" and port == 22:
         raise ValueError(_("Early-boot SSH must use a different port from ordinary SSH (22)."))
+    if rpi:
+        import re
+        for field in ("initrdHostKey", "recoveryHostKey"):
+            key = value.get(field)
+            if key is not None and (not isinstance(key, str) or not re.fullmatch(r"ssh-ed25519 [A-Za-z0-9+/]+=*( [^\n\r]*)?", key)):
+                raise ValueError(_("RPi host-key pins must be public Ed25519 SSH keys."))
     return {**value, "mode": mode, "unlock": unlock, "port": port}
 
 
@@ -103,7 +111,7 @@ def encryption_checks(target):
     """Verify the actual root mapping and its backing disk, not only its name."""
     if policy(target)["mode"] == "none":
         return []
-    return [
+    checks = [
         'test "$(readlink -f "$(findmnt -n -o SOURCE /)")" = "$(readlink -f /dev/mapper/nixberry-root)"',
         "LC_ALL=C cryptsetup status nixberry-root | grep -Eq '^[[:space:]]*type:[[:space:]]*LUKS2$'",
         'test "$(readlink -f "$(LC_ALL=C cryptsetup status nixberry-root | sed -n "s/^[[:space:]]*device:[[:space:]]*//p")")" = "$(readlink -f /dev/disk/by-partlabel/disk-system-root)"',
@@ -112,6 +120,14 @@ def encryption_checks(target):
         'test "$(lsblk -ndo PKNAME /dev/disk/by-partlabel/disk-system-root)" = "$(lsblk -ndo PKNAME /dev/disk/by-partlabel/disk-system-boot)"',
         'test "$(readlink -f "$(findmnt -n -o SOURCE /boot)")" = "$(readlink -f /dev/disk/by-partlabel/disk-system-boot)"',
     ]
+    if target["backend"] == "rpi":
+        import shlex
+        spec = target["spec"]
+        root = shlex.quote("/dev/disk/by-partlabel/" + spec.get("rootLabel", spec["hostName"] + "-root"))
+        boot = shlex.quote("/dev/disk/by-partlabel/" + spec.get("bootLabel", spec["hostName"] + "-boot"))
+        checks = [line.replace("/dev/disk/by-partlabel/disk-system-root", root)
+                  .replace("/dev/disk/by-partlabel/disk-system-boot", boot) for line in checks]
+    return checks
 
 
 @contextmanager
@@ -153,6 +169,8 @@ def read_password(key_file=None):
 
 def prepare_image(recipe, name, target, destination, *, key_file=None, dry_run=False):
     require_supported(target)
+    if target["backend"] == "rpi":
+        raise ValueError(_("Raspberry Pi encryption uses its recovery installer, not VM image preparation."))
     if policy(target)["mode"] != "luks":
         raise ValueError(_("prepare-image requires security.mode = luks."))
     destination = Path(destination).expanduser().absolute()
@@ -221,14 +239,22 @@ def unlock(target, address, *, dry_run=False):
     if security["mode"] != "luks":
         raise ValueError(_("unlock requires security.mode = luks."))
     # A pinned public key comes from trusted local preparation, never ssh-keyscan.
-    image, metadata = artifact(target)
+    if target["backend"] == "rpi":
+        key = security.get("initrdHostKey")
+        if not key:
+            raise ValueError(_("Set security.initrdHostKey to the trusted RPi boot SSH public key before unlocking."))
+        metadata = {"initrdHostKey": key}
+        identity = "rpi-" + target["spec"]["hardwareSerial"]
+    else:
+        image, metadata = artifact(target)
+        identity = target["spec"]["uuid"]
     import ipaddress
     address = str(ipaddress.ip_address(address))
     if "%" in address:
         raise ValueError(_("Use an IPv4 or unscoped IPv6 guest address."))
     if address in ("192.168.79.1", target["spec"].get("sshHost")):
         raise ValueError(_("The unlock address must identify the guest, not the hypervisor or management router."))
-    alias = "nixberry-initrd-" + target["spec"]["uuid"]
+    alias = "nixberry-initrd-" + identity
     with tempfile.TemporaryDirectory(prefix="nixberry-unlock-") as directory:
         known = Path(directory) / "known_hosts"
         known.write_text(alias + " " + metadata["initrdHostKey"] + "\n")

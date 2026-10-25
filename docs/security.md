@@ -1,4 +1,4 @@
-# Encrypted VM disks
+# Encrypted VM and Raspberry Pi disks
 
 [← Main guide](../README.md) · [CLI](cli.md) · [Platforms](platform-consistency.md)
 
@@ -26,8 +26,9 @@ and attestation-bound key delivery are not implemented. A hardware capability
 flag or ordinary remote SSH unlock is not sufficient to claim this protection.
 There is no fallback to `luks` or `none`.
 
-Raspberry Pi 5 uses separate SD recovery and physical disk declarations.
-These VM options do not add encryption to RPi installations.
+Raspberry Pi 5 uses a separate physical disk declaration and recovery installer.
+Its optional LUKS root policy is described below; VM `prepare-image` does not
+apply to Raspberry Pi.
 
 ## Prepare and deploy
 
@@ -138,3 +139,73 @@ unlock metadata and checksums, never the disk passphrase. Keep the passphrase
 separate from both media and backups. After relocation, set
 `security.imageDirectory` in the local declaration to the bundle directory
 before using `unlock`; retain the original trusted public-key metadata.
+
+## Raspberry Pi 5
+
+RPi targets support `none` (default) or `luks` with manual unlocking. Root and
+its application data use LUKS2. The firmware FAT partition stays unencrypted.
+The swap file inside root is protected by the same mapping; external swap is
+rejected. An existing plaintext root requires recovery installation or a
+separately reviewed migration. `update` does not encrypt an existing filesystem.
+
+Before installation, keep a verified backup and prepare bootable recovery media
+on SD or USB. Provision the recovery medium with its own SSH host identity
+outside the Nix store. Generate a separate unencrypted Ed25519 SSH host key for
+initrd on the trusted management machine and keep its private file outside the
+recipe. Pin both public keys in the local physical target declaration:
+
+```nix
+security = {
+  mode = "luks";
+  unlock = "manual";
+  port = 2222;
+  initrdHostKey = "ssh-ed25519 PUBLIC_BOOT_KEY";
+  recoveryHostKey = "ssh-ed25519 PUBLIC_RECOVERY_KEY";
+};
+```
+
+Use real public keys from that trusted preparation. Remote encrypted installation
+requires the recovery pin and checks it before connecting. It never learns the
+key from an unverified network connection. Physical board serial, primary MAC,
+disk serial, mounted disks and prepared-media policy are checked independently.
+Recovery images use each encrypted target's declared static address for its
+primary MAC. Other Ethernet interfaces retain DHCP recovery access.
+
+```bash
+nixberry plan rpi-demo --address 192.168.50.20 --erase-existing
+nixberry reproduce rpi-demo --address 192.168.50.20 --erase-existing \
+  --initrd-key-file ~/private/rpi-demo/initrd-host-key --apply
+```
+
+The installer asks for the LUKS passphrase twice. A private `--key-file FILE`
+can supply it for automation. Plans do not read either secret file or prompt.
+For local full-media installation, use the same credential options with
+`nixberry-install-local --target rpi-demo`. Installation stays in recovery;
+rebooting and removal of the recovery medium are separate operator steps.
+
+Credentials travel through the pinned SSH connection as standard input and
+exist temporarily under `/run/nixberry` on tmpfs. They are checked before any
+formatting. After formatting, the installer verifies the mounted root is LUKS2
+before storing the boot SSH private key inside it. The volume passphrase is
+not installed. A preexisting runtime credential directory is never overwritten.
+
+The Raspberry Pi generational loader appends each generation's runtime initrd
+secrets before promoting its copied boot files. A missing secret aborts the
+generation update. The original initrd in the Nix store contains no private
+host key. Keep `/etc/secrets/initrd/ssh_host_ed25519_key` in the encrypted root
+for subsequent updates; its independent copy in the boot initrd is necessarily
+readable from the unencrypted firmware partition.
+
+Early SSH uses the declared primary adapter MAC and static address, including
+RPi5 RP1 and USB storage support before root is mounted. Unlock and verify with:
+
+```bash
+nixberry unlock rpi-demo --address 192.168.50.20
+nixberry verify rpi-demo
+```
+
+Verification checks the actual root mapping, LUKS2 header, root/boot disk link
+and physical SSD serial. An update to a LUKS declaration is rejected if the
+running system still uses a plaintext root. Exported RPi images are recovery
+media with the target's public policy and prebuilt outputs; they contain no
+volume passphrase or runtime private host key.

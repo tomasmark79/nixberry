@@ -41,6 +41,8 @@ _nb_translate() {
     'Proxmox does not have the expected vmbr0 bridge.') REPLY='Proxmox nemá očekávaný bridge vmbr0.' ;;
     'Proxmox has no available KVM device.') REPLY='Proxmox nemá dostupné zařízení KVM.' ;;
     'RPi does not match.') REPLY='Nesouhlasí RPi.' ;;
+    'RPi installation secrets require /run on tmpfs.') REPLY='Tajné údaje pro instalaci RPi vyžadují /run na tmpfs.' ;;
+    'Runtime LUKS and initrd SSH secrets are missing; the disk was not changed.') REPLY='Chybí tajné údaje LUKS a initrd SSH pro běh; disk nebyl změněn.' ;;
     'System does not match.') REPLY='Nesouhlasí systém.' ;;
     'Target disk size does not match.') REPLY='Nesouhlasí velikost cílového disku.' ;;
     'The EFI bootloader is missing.') REPLY='Chybí EFI zavaděč.' ;;
@@ -67,6 +69,7 @@ _nb_translate() {
     'The disk is mounted.') REPLY='Disk je připojený.' ;;
     'The disk is too small.') REPLY='Disk je příliš malý.' ;;
     'The disk name does not match the test VM.') REPLY='Název disku neodpovídá testovací VM.' ;;
+    'The encrypted mapping does not belong to the verified RPi disk.') REPLY='Šifrované mapování nepatří k ověřenému disku RPi.' ;;
     'The guest did not boot through UEFI.') REPLY='Host nenaběhl přes UEFI.' ;;
     'The guest is not ARM64.') REPLY='Host není ARM64.' ;;
     'The guest is not an installation environment.') REPLY='Host není instalační prostředí.' ;;
@@ -74,8 +77,11 @@ _nb_translate() {
     'The guest is not x86_64.') REPLY='Host není x86_64.' ;;
     'The installation ISO is not attached.') REPLY='Instalační ISO není připojené.' ;;
     'The installation VM did not boot through UEFI.') REPLY='Instalační VM neběží přes UEFI.' ;;
+    'The mounted RPi root is not LUKS2.') REPLY='Připojený kořenový oddíl RPi nepoužívá LUKS2.' ;;
+    'The mounted RPi root is not the expected encrypted mapping.') REPLY='Připojený kořenový oddíl RPi není očekávané šifrované mapování.' ;;
     'The network is inactive.') REPLY='Síť není aktivní.' ;;
     'The prebuilt system disk is missing: %s') REPLY='Chybí hotový systémový disk: %s' ;;
+    'The private initrd SSH key does not match the trusted RPi public key.') REPLY='Soukromý SSH klíč initrd neodpovídá důvěryhodnému veřejnému klíči RPi.' ;;
     'The root filesystem is not the installation tmpfs.') REPLY='Kořen není instalační tmpfs.' ;;
     'The storage is inactive.') REPLY='Úložiště není aktivní.' ;;
     'The storage path does not match the manifest.') REPLY='Cesta úložiště neodpovídá manifestu.' ;;
@@ -87,6 +93,7 @@ _nb_translate() {
     'The target is not a block device.') REPLY='Cíl není blokové zařízení.' ;;
     'The test VM already exists. It will not be overwritten or rebooted.') REPLY='Testovací VM již existuje. Příkaz ji nepřepíše ani nerestartuje.' ;;
     'The test network must use NAT.') REPLY='Testovací síť musí používat NAT.' ;;
+    'Unknown RPi security mode.') REPLY='Neznámý režim zabezpečení RPi.' ;;
     'Unknown option: %s') REPLY='Neznámá volba: %s' ;;
     'Usage: nixberry-vm-create [--dry-run|--apply]') REPLY='Použití: nixberry-vm-create [--dry-run|--apply]' ;;
     'VM UUID does not match.') REPLY='Nesouhlasí UUID VM.' ;;

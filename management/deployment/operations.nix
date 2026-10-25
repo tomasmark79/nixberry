@@ -8,7 +8,9 @@ in
   "show"
   "export"
 ]
-++ optional ((target.security.mode or "none") != "none") [ "prepare-image" "unlock" ]
+++ optional ((target.security.mode or "none") != "none") (
+  [ "unlock" ] ++ optional (target.backend != "rpi") [ "prepare-image" ]
+)
 ++ optional caps.system [
   "status"
   "doctor"

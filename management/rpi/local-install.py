@@ -4,6 +4,7 @@
 from messages import _, ArgumentParser, info, shell_script, error as report_error
 
 import argparse
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -18,6 +19,8 @@ def main(argv=None):
     modes.add_argument("--apply", action="store_true")
     modes.add_argument("--dry-run", action="store_true")
     parser.add_argument("--erase-existing", action="store_true")
+    parser.add_argument("--key-file", help=_("Private runtime LUKS passphrase file; otherwise prompt securely"))
+    parser.add_argument("--initrd-key-file", help=_("Private runtime SSH host key matching the trusted initrd public key"))
     args = parser.parse_args(argv)
     api = runpy.run_path(os.environ["NIXBERRY_RPI_MODULE"])
     try:
@@ -26,6 +29,8 @@ def main(argv=None):
         raise RuntimeError(_("This command requires the prepared full-SD installation environment.")) from None
     api["require"](args.target in manifests, _("This target is not included on the installation SD."))
     target = manifests[args.target]
+    encrypted = target.get("security", {}).get("mode", "none") == "luks"
+    api["require"](encrypted or not (args.key_file or args.initrd_key_file), _("Runtime encryption keys require an encrypted RPi target."))
     probe = subprocess.check_output(["bash", os.environ["NIXBERRY_RPI_PROBE"], target["diskDevice"]], text=True)
     snapshot = api["parse_probe"](probe)
     api["validate"](snapshot, target, installation=True, erase_existing=args.erase_existing)
@@ -40,8 +45,14 @@ def main(argv=None):
                  target["diskDevice"], target["diskSerial"], str(target["minimumDiskBytes"]),
                  target["systemPath"], target["diskoPath"], target["bootLabel"], target["rootLabel"],
                  jq + "/bin/jq", "erase-existing" if args.erase_existing else "clean-only"]
-    return subprocess.run(arguments, input=shell_script(os.environ["NIXBERRY_RPI_GUEST"]),
-                          text=True, check=True).returncode
+    secrets = nullcontext()
+    if encrypted:
+        from rpi_secrets import credentials, local
+        secrets = local(credentials(target, args.key_file, args.initrd_key_file))
+        arguments += ["luks", target["security"]["initrdHostKey"]]
+    with secrets:
+        return subprocess.run(arguments, input=shell_script(os.environ["NIXBERRY_RPI_GUEST"]),
+                              text=True, check=True).returncode
 
 
 if __name__ == "__main__":

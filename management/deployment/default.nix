@@ -98,8 +98,10 @@ let
     spec = builtins.removeAttrs target [
       "adminKeyFile"
       "configuration"
+      "security"
     ];
-  }) (import ../rpi/targets);
+  } // (let security = import ../rpi/security.nix { security = target.security or { }; };
+    in if security.mode == "none" then { } else { inherit security; })) (import ../rpi/targets);
 in
 assert builtins.intersectAttrs instances rpiTargets == { };
 {

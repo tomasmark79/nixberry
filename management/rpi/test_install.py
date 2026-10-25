@@ -24,6 +24,14 @@ SNAPSHOT = {
 
 
 class RpiChecks(unittest.TestCase):
+    def test_encrypted_policy_and_host_keys_must_match_the_prepared_medium(self):
+        target, snapshot = deepcopy(TARGET), deepcopy(SNAPSHOT)
+        target["security"] = {"mode": "luks", "initrdHostKey": "ssh-ed25519 EXPECTED"}
+        with self.assertRaisesRegex(RuntimeError, "different RPi encryption policy"):
+            API["validate"](snapshot, target, installation=True)
+        snapshot["installer"]["test"]["security"] = target["security"]
+        API["validate"](snapshot, target, installation=True)
+
     def test_flat_lsblk_output_rejected(self):
         snapshot = deepcopy(SNAPSHOT)
         snapshot["disks"].append({"path": "/dev/sda2", "type": "part", "mountpoints": ["/"]})

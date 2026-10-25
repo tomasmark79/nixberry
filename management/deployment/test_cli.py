@@ -42,6 +42,21 @@ class HelpChecks(unittest.TestCase):
 
 
 class DispatchChecks(unittest.TestCase):
+    def test_encrypted_rpi_paths_are_forwarded_without_reading_credentials(self):
+        registry = {"rpi-demo": {"backend": "rpi", "spec": {"hostName": "rpi-demo"},
+                                 "security": {"mode": "luks"}}}
+        with patch("pathlib.Path.read_text", return_value=json.dumps(registry)), \
+                patch.dict(os.environ, {"NIXBERRY_RECIPE": "/recipe"}), \
+                patch.dict(MAIN.__globals__, {"materialized_recipe": lambda _: contextlib.nullcontext("/recipe")}), \
+                patch("subprocess.run", return_value=subprocess.CompletedProcess([], 0)) as run:
+            for mode in ([], ["--apply"]):
+                self.assertEqual(MAIN(["reproduce", "rpi-demo", "--key-file", "/missing/password",
+                    "--initrd-key-file", "/missing/initrd-key", *mode]), 0)
+                command = run.call_args.args[0]
+                self.assertIn("--apply" if mode else "--dry-run", command)
+                self.assertEqual(command[command.index("--key-file") + 1], "/missing/password")
+                self.assertEqual(command[command.index("--initrd-key-file") + 1], "/missing/initrd-key")
+
     def test_encrypted_declaration_hints_prepare_before_plan_or_export(self):
         create = Mock(return_value=(Path("/recipe/instances/vm-demo-secured.nix"), "{}"))
         with patch("pathlib.Path.read_text", return_value="{}"), \

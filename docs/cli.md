@@ -124,10 +124,13 @@ See [bundle contents and handoff](offline.md).
 | `--offline` | Only `new-*` without `--host`. |
 | `--ssh root@HOST[:PORT]` | Offline VM `status`, `ssh`, `doctor`, `verify`, `update`, `diff`, `diffg`. |
 | `--host` | Hypervisor host for `new-*`; an alternative to `--ssh` for direct offline VM management. |
-| `--output DIRECTORY` | Only `export`. |
+| `--output DIRECTORY` | `export` and VM `prepare-image`. |
 | `--artifact-root DIRECTORY` | Only `cleanup`; repeatable. |
-| `--address SD_IP`, `--erase-existing` | Only RPi `plan` and `reproduce`. |
-| `--json` | `list`, `show`, `status`, `verify`, `doctor`, `cleanup`, `export`. |
+| `--address IP` | RPi `plan`/`reproduce`, or early-boot `unlock` for encrypted VMs and RPi. |
+| `--erase-existing` | Only RPi `plan` and `reproduce`. |
+| `--key-file FILE` | VM `prepare-image`, or encrypted RPi `plan`/`reproduce`; otherwise prompt on execution. |
+| `--initrd-key-file FILE` | Encrypted RPi `plan`/`reproduce`; private SSH key matching `security.initrdHostKey`. |
+| `--json` | `list`, `show`, `status`, `verify`, `doctor`, `cleanup`, `export`, `prepare-image`. |
 
 `--apply` and `--dry-run` are mutually exclusive. For `doctor` and `cleanup`,
 `--dry-run` does not skip read-only queries. `ssh` and `list` do not accept it.

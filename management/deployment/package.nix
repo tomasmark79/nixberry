@@ -14,6 +14,7 @@ let
         ./runtime.py
         ./scaffold.py
         ./security.py
+        ./rpi_secrets.py
         ./exporter.py
         ./guest-install.sh
         ./updater.py

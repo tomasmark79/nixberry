@@ -4,6 +4,7 @@
 from messages import _, ArgumentParser, info, success, warning, shell_script, forward_stderr, error as report_error
 
 import argparse
+from contextlib import nullcontext
 import ipaddress
 import json
 import os
@@ -55,6 +56,9 @@ def validate(snapshot, target, *, installation, erase_existing=False):
     require(manifest is not None, _("The guest is not running the prepared installation environment. Only --stage is available."))
     require(manifest["systemPath"] == target["systemPath"] and manifest["diskoPath"] == target["diskoPath"],
             _("The installation media contains different pinned outputs."))
+    if target.get("security", {}).get("mode", "none") != "none":
+        require(manifest.get("security") == target["security"],
+                _("The installation media contains a different RPi encryption policy or SSH identity."))
     require(not any(point for node in descendants(disk) for point in node.get("mountpoints", [])),
             _("The target disk is mounted."))
     if erase_existing:
@@ -83,6 +87,8 @@ def main():
     parser = ArgumentParser(description=_("Prepare or cleanly install a selected RPi5 from pinned declarations."))
     parser.add_argument("--target", required=True, help=_("Name from rpi/targets/default.nix"))
     parser.add_argument("--address", help=_("Current DHCP address of the installation environment, overriding the declaration"))
+    parser.add_argument("--key-file", help=_("Private runtime LUKS passphrase file; otherwise prompt securely"))
+    parser.add_argument("--initrd-key-file", help=_("Private runtime SSH host key matching the trusted initrd public key"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--dry-run", action="store_true")
     modes.add_argument("--stage", action="store_true", help=_("Only transfer outputs to the Nix store, without installation"))
@@ -93,14 +99,30 @@ def main():
     targets = json.loads(Path(os.environ["NIXBERRY_RPI_TARGETS"]).read_text())
     require(args.target in targets, _("Unknown RPi target."))
     target = targets[args.target]
+    encrypted = target.get("security", {}).get("mode", "none") == "luks"
+    require(encrypted or not (args.key_file or args.initrd_key_file), _("Runtime encryption keys require an encrypted RPi target."))
     address = validate_address(args.address or target["installerAddress"])
     with tempfile.TemporaryDirectory(prefix="nixberry-rpi-ssh-") as state:
         options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                    "-o", "StrictHostKeyChecking=accept-new",
                    "-o", f"UserKnownHostsFile={state}/known_hosts"]
-        def ssh(command, *, input_text=None):
+        if encrypted:
+            key = target["security"].get("recoveryHostKey")
+            require(key, _("Set security.recoveryHostKey to the trusted recovery medium SSH public key before connecting."))
+            alias = "nixberry-recovery-" + target["hardwareSerial"]
+            Path(state, "known_hosts").write_text(alias + " " + key + "\n")
+            options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                       "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlias=" + alias,
+                       "-o", f"UserKnownHostsFile={state}/known_hosts", "-o", "GlobalKnownHostsFile=/dev/null",
+                       "-o", "KnownHostsCommand=none", "-o", "VerifyHostKeyDNS=no", "-o", "UpdateHostKeys=no",
+                       "-o", "HostKeyAlgorithms=ssh-ed25519", "-o", "ControlMaster=no", "-o", "ControlPath=none",
+                       "-o", "ForwardAgent=no", "-o", "ForwardX11=no", "-o", "ClearAllForwardings=yes"]
+        def ssh(command, *, input_text=None, input_bytes=None):
             result = subprocess.run(["ssh", *options, "root@" + address, command],
-                                    input=input_text, text=True, capture_output=True, timeout=30, check=True)
+                                    input=input_bytes if input_bytes is not None else input_text,
+                                    text=input_bytes is None, capture_output=True, timeout=30, check=True)
+            if input_bytes is not None:
+                result.stdout, result.stderr = result.stdout.decode(), result.stderr.decode()
             forward_stderr(result.stderr)
             return result
         probe = ssh(shlex.join(["bash", "-s", "--", target["diskDevice"]]),
@@ -135,9 +157,16 @@ def main():
                            target["systemPath"], target["diskoPath"], target["bootLabel"],
                            target["rootLabel"], os.environ["NIXBERRY_RPI_JQ_STORE"] + "/bin/jq",
                            "erase-existing" if args.erase_existing else "clean-only"]
-        subprocess.run(["ssh", *options, "root@" + address, shlex.join(guest_arguments)],
-                       input=shell_script(os.environ["NIXBERRY_RPI_GUEST"]),
-                       text=True, check=True)
+        secrets = nullcontext()
+        if encrypted:
+            from rpi_secrets import credentials, remote
+            values = credentials(target, args.key_file, args.initrd_key_file)
+            secrets = remote(ssh, values)
+            guest_arguments += ["luks", target["security"]["initrdHostKey"]]
+        with secrets:
+            subprocess.run(["ssh", *options, "root@" + address, shlex.join(guest_arguments)],
+                           input=shell_script(os.environ["NIXBERRY_RPI_GUEST"]),
+                           text=True, check=True)
 
 
 if __name__ == "__main__":

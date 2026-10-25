@@ -5,6 +5,9 @@ let
 in
 {
   environment.systemPackages = [
+    pkgs.cryptsetup
+    pkgs.openssh
+    pkgs.gnutar
     (pkgs.writeShellApplication {
       name = "nixberry-install-local";
       runtimeInputs = with pkgs; [
@@ -18,6 +21,9 @@ in
         gnused
         gnugrep
         gawk
+        openssh
+        cryptsetup
+        gnutar
         nixos-install-tools
       ];
       text = ''

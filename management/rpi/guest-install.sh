@@ -15,6 +15,8 @@ boot_label=$7
 root_label=$8
 jq=$9
 mode=${10}
+security=${11:-none}
+initrd_host_key=${12:-}
 fail() { nb_error "$@"; exit 1; }
 
 [[ "$(tr -d '\0' </proc/device-tree/serial-number)" == "$expected_serial" ]] || fail 'RPi does not match.'
@@ -40,10 +42,20 @@ for label in "$boot_label" "$root_label"; do
   fi
 done
 findmnt --mountpoint /mnt >/dev/null && fail '/mnt is already mounted.'
-"$jq" -e --arg system "$system" --arg disko "$disko" \
-  'any(.[]; .systemPath == $system and .diskoPath == $disko)' \
+"$jq" -e --arg system "$system" --arg disko "$disko" --arg security "$security" --arg hostKey "$initrd_host_key" \
+  'any(.[]; .systemPath == $system and .diskoPath == $disko and (.security.mode // "none") == $security and ($security == "none" or .security.initrdHostKey == $hostKey))' \
   /etc/nixberry-rpi-targets.json >/dev/null || fail 'Pinned installation manifest does not match.'
 nix --extra-experimental-features nix-command path-info --offline "$system" "$disko"
+if [[ "$security" == luks ]]; then
+  [[ "$(stat -f -c %T /run)" == tmpfs ]] || fail 'RPi installation secrets require /run on tmpfs.'
+  [[ -s /run/nixberry/luks-password && -s /run/nixberry/ssh_host_ed25519_key ]] \
+    || fail 'Runtime LUKS and initrd SSH secrets are missing; the disk was not changed.'
+  actual_key=$(ssh-keygen -y -P '' -f /run/nixberry/ssh_host_ed25519_key)
+  [[ "${actual_key%% *} $(awk '{print $2}' <<< "$actual_key")" == "$(awk '{print $1, $2}' <<< "$initrd_host_key")" ]] \
+    || fail 'The private initrd SSH key does not match the trusted RPi public key.'
+elif [[ "$security" != none ]]; then
+  fail 'Unknown RPi security mode.'
+fi
 # Normal diskoScript preserves existing filesystems. Authorized clean recovery
 # first removes signatures and the partition table from the target SSD.
 if [[ "$mode" == erase-existing ]]; then
@@ -56,6 +68,18 @@ if [[ "$mode" == erase-existing ]]; then
   udevadm settle
 fi
 "$disko"
+if [[ "$security" == luks ]]; then
+  [[ "$(readlink -f "$(findmnt -n -o SOURCE /mnt)")" == "$(readlink -f /dev/mapper/nixberry-root)" ]] \
+    || fail 'The mounted RPi root is not the expected encrypted mapping.'
+  LC_ALL=C cryptsetup status nixberry-root | grep -Eq '^[[:space:]]*type:[[:space:]]*LUKS2$' \
+    || fail 'The mounted RPi root is not LUKS2.'
+  backing=$(LC_ALL=C cryptsetup status nixberry-root | sed -n 's/^[[:space:]]*device:[[:space:]]*//p')
+  [[ "$(readlink -e "$backing")" == "$(readlink -e "/dev/disk/by-partlabel/$root_label")" &&
+     "/dev/$(lsblk -ndo PKNAME "$backing")" == "$(readlink -e "$device")" ]] \
+    || fail 'The encrypted mapping does not belong to the verified RPi disk.'
+  install -d -m 0700 /mnt/etc/secrets/initrd
+  install -m 0600 /run/nixberry/ssh_host_ed25519_key /mnt/etc/secrets/initrd/ssh_host_ed25519_key
+fi
 nixos-install --root /mnt --system "$system" --no-root-passwd --no-channel-copy \
   --option substituters "" --option extra-substituters ""
 test -d /mnt/boot/rpi-generations || fail 'Generated RPi boot files are missing.'

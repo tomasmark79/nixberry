@@ -19,7 +19,8 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 | Online `probe/create/install/provision/reset` | yes | yes | yes | yes | yes | own probe/recovery |
 | Default `allowReset = false;` | yes | yes | yes | yes | yes | not applicable |
 | English default, optional Czech | yes | yes | yes | yes | yes | yes |
-| LUKS image preparation and pinned initrd SSH unlock | yes | yes | yes | yes | yes | not implemented |
+| LUKS root and pinned initrd SSH unlock | yes | yes | yes | yes | yes | recovery installation |
+| Runtime `prepare-image` | yes | yes | yes | yes | yes | not applicable |
 | Encrypted ISO installation | rejected | rejected | rejected | rejected | rejected | not applicable |
 | Confidential launch and attested key delivery | rejected | rejected | rejected | rejected | rejected | not applicable |
 

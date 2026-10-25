@@ -278,8 +278,15 @@ def installation_checks(target):
         '! mountpoint -q /iso',
     ]
     if backend == "rpi":
-        checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -n -o PKNAME '
-                      '$(findmnt -n -o SOURCE /)))" = ' + shlex.quote(spec["diskSerial"]))
+        from security import policy, encryption_checks
+        if policy(target)["mode"] == "luks":
+            checks += encryption_checks(target)
+            partition = shlex.quote("/dev/disk/by-partlabel/" + spec.get("rootLabel", spec["hostName"] + "-root"))
+            checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -n -o PKNAME '
+                          + partition + '))" = ' + shlex.quote(spec["diskSerial"]))
+        else:
+            checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -n -o PKNAME '
+                          '$(findmnt -n -o SOURCE /)))" = ' + shlex.quote(spec["diskSerial"]))
     else:
         checks.append('test -d /sys/firmware/efi')
         manual = target.get("offline") and direct_connection(target)

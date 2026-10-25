@@ -14,6 +14,18 @@ from exporter import export
 
 
 class ExportChecks(unittest.TestCase):
+    def test_encrypted_rpi_exports_recovery_media_instead_of_vm_disk_artifacts(self):
+        target = {**self.target, "backend": "rpi", "security": {"mode": "luks", "initrdHostKey": "ssh-ed25519 TESTKEY"}}
+        destination = self.root / "rpi-preview"
+        with patch("security.artifact") as artifact, patch("exporter.subprocess.run") as build:
+            result = export(self.recipe, "lab", target, destination, dry_run=True)
+        self.assertEqual(result["build"][-1], "path:" + str(self.recipe) + "#nixberryImages.lab")
+        self.assertEqual(result["security"]["mode"], "luks")
+        self.assertNotIn("preparedImageDirectory", result)
+        self.assertFalse(destination.exists())
+        artifact.assert_not_called()
+        build.assert_not_called()
+
     def test_linked_configuration_preview_uses_captured_source_without_building(self):
         external = self.root / "webconf"
         external.mkdir()

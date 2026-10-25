@@ -31,7 +31,7 @@ _nixberry_complete() {
         fi
         case $word in
             --) return 0 ;;
-            --host|--ssh|--output|--address|--artifact-root|--method|--configuration|--security|--key-file)
+            --host|--ssh|--output|--address|--artifact-root|--method|--configuration|--security|--key-file|--initrd-key-file)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
         esac
@@ -72,6 +72,8 @@ _nixberry_complete() {
             for name in iso image; do
                 [[ $name == "$current"* ]] && COMPREPLY+=("$name")
             done
+        elif [[ $word == --key-file || $word == --initrd-key-file ]]; then
+            mapfile -t COMPREPLY < <(compgen -f -- "$current")
         elif [[ $word == --configuration ]]; then
             local -A configurations=()
             for file in "$recipe"/configurations/*.nix "$recipe"/configurations/*/default.nix; do
@@ -112,6 +114,7 @@ _nixberry_complete() {
         if [[ $action == plan || $action == reproduce ]] && [[ -n $target ]] &&
             [[ -f $recipe/management/rpi/targets/$target.nix ]]; then
             options+=(--address --erase-existing)
+            options+=(--key-file --initrd-key-file)
         fi
         for word in "${options[@]}"; do
             [[ $word == --method && -n $target && -f $recipe/management/rpi/targets/$target.nix ]] && continue

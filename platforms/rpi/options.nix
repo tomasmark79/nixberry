@@ -8,6 +8,12 @@ let
 in
 {
   options.nixberry.rpi = {
+    security = mkOption {
+      type = types.attrs;
+      default = { };
+      apply = security: import ../../management/rpi/security.nix { inherit security; };
+      description = "Physical root encryption and pinned early-boot SSH policy; never secret material.";
+    };
     hostName = mkOption {
       type = types.strMatching "[a-zA-Z0-9][a-zA-Z0-9-]*";
       description = "Target RPi hostname.";

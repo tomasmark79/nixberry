@@ -103,7 +103,7 @@ def operations(target):
     caps = capabilities(target)
     result = ["show", "export"]
     if security_policy(target)["mode"] != "none":
-        result += ["prepare-image", "unlock"]
+        result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
         result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg"]
     if caps["hypervisor"] or target["backend"] == "rpi":
@@ -127,7 +127,8 @@ def main(argv=None):
     parser = ArgumentParser(
         prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."),
         epilog=_(HELP_COMMANDS) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths.")
-        + "\n\n" + _("Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed."),
+        + "\n\n" + _("Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed.")
+        + "\n\n" + _("Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET --address IP opens the pinned early-boot identity.\n  prepare-image applies only to VM disks. See docs/security.md."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version",
@@ -141,11 +142,12 @@ def main(argv=None):
     parser.add_argument("--offline", action="store_true", help=_("Prepare any VM offline without a hypervisor; cannot be combined with --host"))
     parser.add_argument("--configuration", help=_("Server configuration for new-*; defaults to default, other names from configurations/"))
     parser.add_argument("--security", choices=("none", "luks", "confidential"), help=_("VM protection for new-*; confidential requires attested key delivery and is currently unavailable"))
-    parser.add_argument("--key-file", help=_("Private runtime passphrase file for prepare-image; otherwise prompt securely"))
+    parser.add_argument("--key-file", help=_("Private runtime passphrase file for image preparation or encrypted RPi reproduction; otherwise prompt securely"))
+    parser.add_argument("--initrd-key-file", help=_("Private runtime SSH host key for encrypted RPi reproduction"))
     parser.add_argument("--method", choices=("iso", "image"), help=_("VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"))
     parser.add_argument("--ssh", help=_("One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"))
     parser.add_argument("--output", help=_("New offline bundle directory; relative paths are resolved from the working directory"))
-    parser.add_argument("--address", help=_("Current installation SD address, only for RPi reproduction"))
+    parser.add_argument("--address", help=_("Early-boot unlock address or current RPi recovery address"))
     parser.add_argument("--erase-existing", action="store_true", help=_("Include SSD erasure during RPi recovery"))
     parser.add_argument("--json", action="store_true", help=_("Machine-readable output for inventory, diagnostics, verify and export"))
     parser.add_argument("--artifact-root", action="append", default=[],
@@ -156,8 +158,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.security is not None and not args.action.startswith("new-"):
         parser.error(_("--security only applies to new-*-vm; edit security in existing declarations."))
-    if args.key_file and args.action != "prepare-image":
-        parser.error(_("--key-file only applies to prepare-image."))
+    if args.key_file and args.action not in ("prepare-image", "plan", "reproduce"):
+        parser.error(_("--key-file applies to prepare-image or encrypted RPi plan/reproduce."))
+    if args.initrd_key_file and args.action not in ("plan", "reproduce"):
+        parser.error(_("--initrd-key-file only applies to encrypted RPi plan/reproduce."))
     # Short names remain aliases; adapters keep the original backend identifier.
     if args.action.startswith("new-") and args.action.endswith("-vm"):
         args.action = args.action[:-3]
@@ -298,9 +302,12 @@ def main(argv=None):
     if args.target not in registry:
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
+    if (args.initrd_key_file or (args.key_file and args.action != "prepare-image")) and not (
+            target["backend"] == "rpi" and security_policy(target)["mode"] == "luks"):
+        parser.error(_("Runtime encryption keys require an encrypted RPi target."))
     if args.action in ("plan", "create", "install", "provision", "reproduce", "export", "prepare-image", "unlock", "update", "verify"):
         require_supported(target, args.method or deployment_method(target))
-    if args.action in ("plan", "create", "install", "provision", "reproduce", "export", "unlock") and security_policy(target)["mode"] == "luks":
+    if target["backend"] != "rpi" and args.action in ("plan", "create", "install", "provision", "reproduce", "export", "unlock") and security_policy(target)["mode"] == "luks":
         image_metadata(target, name=args.target)
     if args.action == "prepare-image":
         recipe = os.environ.get("NIXBERRY_RECIPE")
@@ -382,6 +389,10 @@ def main(argv=None):
             command += ["--address", args.address]
         if args.erase_existing:
             command.append("--erase-existing")
+        if args.key_file:
+            command += ["--key-file", args.key_file]
+        if args.initrd_key_file:
+            command += ["--initrd-key-file", args.initrd_key_file]
         with materialized_recipe(recipe) as source:
             command[3] = "path:" + source + "#nixberry-rpi-install"
             return subprocess.run(command, check=False).returncode

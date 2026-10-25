@@ -24,6 +24,7 @@ class CompletionTests(unittest.TestCase):
         self.recipe = Path(__file__).resolve().parents[2]
         shutil.copyfile(self.recipe / "completion.bash", self.root / "completion.bash")
         (self.root / 'management/deployment').mkdir(parents=True)
+        shutil.copyfile(self.recipe / 'management/rpi/security.nix', self.root / 'management/rpi/security.nix')
         for name in ('default.nix', 'security.nix', 'configurations.nix', 'operations.nix', 'completion-targets.nix', 'shell-path.sh', 'messages.sh'):
             shutil.copyfile(Path(__file__).with_name(name), self.root / 'management/deployment' / name)
         (self.root / 'configurations').mkdir()
