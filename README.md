@@ -139,6 +139,8 @@ nixberry show vm-demo-libvirt
 This writes `instances/vm-demo-libvirt.nix`. Review its configuration,
 network and capacity. Defaults are 4 CPUs, 4 GiB RAM and a 32 GiB disk.
 Keep the UUID and MAC when managing the same VM.
+The VM name and default guest hostname use the target name exactly as supplied,
+without adding a prefix.
 
 ```sh
 nixberry plan vm-demo-libvirt

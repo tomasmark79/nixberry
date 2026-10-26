@@ -147,7 +147,7 @@ nixberry export vm-demo-proxmox --method image --output ~/vm-demo-proxmox-vm103
 | --- | --- |
 | VMID | `103` |
 | CPU / RAM / disk | 4 CPUs / 4 GiB / 32 GiB |
-| Guest hostname | `nixberry-vm-demo-proxmox` |
+| Guest hostname | `vm-demo-proxmox` |
 | IP | `10.0.1.19/24` |
 | Gateway and DNS | `10.0.1.1` |
 

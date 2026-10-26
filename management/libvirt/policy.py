@@ -23,8 +23,8 @@ def validate(spec):
         validate_manifest(spec)
     if spec.get("uri") != "qemu:///system":
         raise RuntimeError(_("Only local qemu:///system is allowed."))
-    if not re.fullmatch(r"nixberry-[a-z0-9][a-z0-9-]{0,52}", spec["name"]):
-        raise RuntimeError(_("The VM must have a safe nixberry-… name of up to 63 characters."))
+    if not re.fullmatch(r"(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])$)[a-z][a-z0-9-]{0,62}", spec["name"]):
+        raise RuntimeError(_("Invalid VM name: use 1–63 lowercase letters, digits and hyphens, starting with a letter; reserved Windows device names are not allowed."))
     if str(uuid.UUID(spec["uuid"])) != spec["uuid"]:
         raise RuntimeError(_("UUID is not in canonical form."))
     if not legacy(spec) and spec.get("ownerId") != "nixberry-" + spec["uuid"]:

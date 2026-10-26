@@ -36,6 +36,8 @@ hypervisor management. `status` and `doctor` may explain missing access settings
 
 - New declarations use one generator. Resources, networking, configuration,
   methods and permissions have the same meaning on every backend.
+- New VM names and default guest hostnames use the supplied target name without
+  an added prefix. UUID ownership markers keep their own technical namespace.
 - VM default is `image`; `iso` is an equally supported choice.
   `--offline` is independent of the method.
 - Direct tool packages provide the same operations. Reset builds separately

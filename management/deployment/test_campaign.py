@@ -117,7 +117,7 @@ class CampaignTests(unittest.TestCase):
                     "owned": lambda *args: None, "run": run,
                 })
                 request = dict(backend="proxmox", action="cleanup", spec=dict(
-                    name="nixberry-vm-demo-test-owned", uuid="own-uuid", node="pvelab", vmid=1000))
+                    name="vm-demo-test-owned", uuid="own-uuid", node="pvelab", vmid=1000))
                 if len(snapshots) == 1:
                     module["campaign_action"](request)
                     self.assertEqual(calls[-1], ["qm", "destroy", "1000", "--purge", "1"])

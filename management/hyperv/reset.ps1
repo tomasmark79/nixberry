@@ -7,7 +7,7 @@ function Canonical([string]$path) { [IO.Path]::GetFullPath($path).TrimEnd('\') }
 Require ($Request.allowReset -is [bool] -and $Request.allowReset -eq $true) 'Reset is not explicitly allowed.'
 Require ($Request.apply -is [bool]) 'Reset requires an unambiguous apply mode.'
 Require ($env:COMPUTERNAME -eq $s.windowsComputerName) 'Windows host does not match.'
-Require ($s.name -cmatch '^nixberry-[a-z0-9][a-z0-9-]{0,52}$') 'Disallowed VM name.'
+Require ($s.name -cmatch '^(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])\z)[a-z][a-z0-9-]{0,62}\z') 'Disallowed VM name.'
 Require ($s.ownerId -ceq ('nixberry-hyperv-' + $s.uuid)) 'Declared UUID and owner do not match.'
 Require ($s.storageDirectory -match '^[A-Za-z]:\\' -and $s.storageDirectory -notmatch '\.\.') 'Disallowed path.'
 Import-Module Hyper-V -ErrorAction Stop

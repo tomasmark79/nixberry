@@ -8,7 +8,7 @@ def campaign_action(request):
     state = probe(spec, backend, directory)
     if request["action"] == "state":
         return state
-    if not spec["name"].startswith("nixberry-vm-demo-test-"):
+    if not spec["name"].startswith(("vm-demo-test-", "nixberry-vm-demo-test-")):
         raise ValueError(_("Campaign operations require a dedicated test name."))
     if state["state"] != "shut off":
         raise RuntimeError(_("Campaign cleanup requires a verified powered-off VM."))

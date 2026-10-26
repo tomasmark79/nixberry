@@ -137,6 +137,20 @@ class PortableTests(unittest.TestCase):
                     agent.host_check(spec(self.root, **change), "vmware")
                 run.assert_not_called()
 
+    def test_unprefixed_names_and_reserved_devices_across_portable_backends(self):
+        for backend in ("proxmox", "virtualbox", "vmware"):
+            settings = {"vmid": 1000, "storage": "local-lvm", "bridge": "vmbr0", "node": "pve"}
+            for name in ("a", "vm-demo-portable", "a" * 63):
+                with self.subTest(backend=backend, name=name):
+                    agent.validate(spec(self.root, name=name, **settings), backend)
+                    with self.assertRaises(ValueError):
+                        agent.validate(spec(self.root, name=name, ownerId="foreign", **settings), backend)
+            for name in ("", "../other", "Bad", "a" * 64, "a\n", "con", "nul", "com1", "lpt9"):
+                with self.subTest(backend=backend, name=name), patch.object(agent, "run") as run:
+                    with self.assertRaises(ValueError):
+                        agent.host_check(spec(self.root, name=name, **settings), backend)
+                    run.assert_not_called()
+
     def test_wrong_host_and_symlink_storage_rejected_before_cli(self):
         with patch.object(agent, "run") as run:
             with self.assertRaisesRegex(RuntimeError, "hostname"):

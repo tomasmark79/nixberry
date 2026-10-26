@@ -444,7 +444,7 @@ class Campaign:
             self.powershell("""
 if($v.State -ne 'Off'){throw 'VM is not powered off'}
 $root=[IO.Path]::GetFullPath((Join-Path $s.storageDirectory $s.name)).TrimEnd('\\')
-if(-not $s.name.StartsWith('nixberry-vm-demo-test-')){throw 'Foreign name'}
+if(-not ($s.name.StartsWith('vm-demo-test-') -or $s.name.StartsWith('nixberry-vm-demo-test-'))){throw 'Foreign name'}
 if(-not ([IO.Path]::GetFullPath($v.Path)).StartsWith($root+'\\')){throw 'Foreign path'}
 if(@(Get-VMSnapshot -VM $v).Count){throw 'Snapshots'}
 $disks=@(Get-VMHardDiskDrive -VM $v)

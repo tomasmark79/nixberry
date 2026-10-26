@@ -66,8 +66,8 @@ def validate(spec, backend):
         raise ValueError(_("Unsupported host system."))
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.-]{0,252}", spec["hostName"]):
         raise ValueError(_("Invalid host hostname."))
-    if not re.fullmatch(r"[a-z][a-z0-9-]{0,62}", spec["name"]):
-        raise ValueError(_("Invalid VM name."))
+    if not re.fullmatch(r"(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])$)[a-z][a-z0-9-]{0,62}", spec["name"]):
+        raise ValueError(_("Invalid VM name: use 1–63 lowercase letters, digits and hyphens, starting with a letter; reserved Windows device names are not allowed."))
     identity = str(uuid.UUID(spec["uuid"]))
     if identity != spec["uuid"] or spec["ownerId"] != "nixberry-" + identity:
         raise ValueError(_("Invalid UUID or owner marker."))

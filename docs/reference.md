@@ -124,6 +124,12 @@ It runs manually, creates no service and opens no ports.
 A filename determines the CLI target name. VM hostname defaults to `spec.name`;
 override with `guestHostName`. Another copy needs a new declaration, UUID and MAC.
 Keep them for subsequent management of the same VM.
+New declarations use the supplied target name as `spec.name`, without adding a
+prefix, on all five VM backends, for image and ISO deployment, online and offline.
+Target names contain 1–40 lowercase letters, digits and hyphens, begin with a
+letter and end with a letter or digit. Reserved Windows device names such as
+`con`, `nul` and `com1` are rejected across backends. Existing declarations keep
+their stored names. Ownership is verified through UUIDs and owner markers.
 
 Prepare `admin.pub` before building media. A changed administrator key reaches a
 running system only through `update`. Never put private keys in the recipe.

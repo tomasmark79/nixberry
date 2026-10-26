@@ -10,8 +10,8 @@ from vm_network import adapters
 
 def validate(spec):
     adapters(spec, "hyperv")
-    if not re.fullmatch(r"nixberry-[a-z0-9][a-z0-9-]{0,52}", spec.get("name", "")):
-        raise RuntimeError(_("A Hyper-V VM must have a safe nixberry-… name."))
+    if not re.fullmatch(r"(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])$)[a-z][a-z0-9-]{0,62}", spec.get("name", "")):
+        raise RuntimeError(_("Invalid VM name: use 1–63 lowercase letters, digits and hyphens, starting with a letter; reserved Windows device names are not allowed."))
     if not re.fullmatch(r"nixberry-hyperv-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", spec.get("ownerId", "")):
         raise RuntimeError(_("A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."))
     if spec.get("generation") != 2 or spec.get("secureBoot") is not False:

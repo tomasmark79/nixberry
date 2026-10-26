@@ -17,8 +17,22 @@ class PolicyChecks(unittest.TestCase):
     def test_new_owned_target_is_allowed(self):
         policy.validate(SPEC)
 
+    def test_unprefixed_names_keep_disk_and_owner_checks(self):
+        for name in ("a", "vm-demo-libvirt", "a" * 63):
+            spec = {**SPEC, "name": name, "volume": name + ".qcow2",
+                    "diskPath": SPEC["storageDirectory"] + "/" + name + ".qcow2"}
+            with self.subTest(name=name):
+                policy.validate(spec)
+                with self.assertRaises(RuntimeError):
+                    policy.validate({**spec, "ownerId": "foreign"})
+                with self.assertRaises(RuntimeError):
+                    policy.validate({**spec, "diskPath": "/dev/sda"})
+
     def test_unsafe_target_is_rejected(self):
-        for key, value in (("uri", "qemu+ssh://remote/system"), ("name", "existing-vm"),
+        for name in ("", "../other", "Bad", "a" * 64, "a\n", "con", "nul", "com1", "lpt9"):
+            with self.subTest(name=name), self.assertRaises(RuntimeError):
+                policy.validate({**SPEC, "name": name})
+        for key, value in (("uri", "qemu+ssh://remote/system"), ("name", "../existing-vm"),
                            ("uuid", "invalid"), ("ownerId", "foreign"),
                            ("volume", "../other.qcow2"), ("diskPath", "/dev/sda"),
                            ("storageDirectory", "/var/lib/../other"), ("diskGiB", 0),

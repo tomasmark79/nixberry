@@ -6,7 +6,7 @@ $s = $Request.spec
 function Require($condition, [string]$message) { if (-not $condition) { throw $message } }
 function Canonical([string]$path) { [IO.Path]::GetFullPath($path).TrimEnd('\') }
 Require ($env:COMPUTERNAME -eq $s.windowsComputerName) 'Windows host does not match.'
-Require ($s.name -cmatch '^nixberry-[a-z0-9][a-z0-9-]{0,52}$') 'Disallowed VM name.'
+Require ($s.name -cmatch '^(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])\z)[a-z][a-z0-9-]{0,62}\z') 'Disallowed VM name.'
 Require ($s.ownerId -cmatch '^nixberry-hyperv-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$') 'Invalid VM owner.'
 Require ($s.generation -eq 2 -and -not $s.secureBoot) 'UEFI profile does not match.'
 Require ($s.vcpus -ge 1 -and $s.memoryMiB -ge 256 -and $s.diskGiB -ge 2) 'Invalid VM capacity.'

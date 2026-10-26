@@ -45,6 +45,8 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
         raise RuntimeError(_("Unsupported backend for a new declaration."))
     if not re.fullmatch(r"[a-z](?:[a-z0-9-]{0,38}[a-z0-9])?", name) or name in registry:
         raise RuntimeError(_("Choose a new target name: 1–40 lowercase letters, digits and hyphens, starting with a letter."))
+    if re.fullmatch(r"con|prn|aux|nul|com[1-9]|lpt[1-9]", name):
+        raise RuntimeError(_("The target name must not be a reserved Windows device name."))
     candidates = [key for key, value in hosts.items() if value["backend"] == backend]
     if backend == "libvirt" and not offline:
         candidates = [key for key in candidates if hosts[key]["connection"].get("uri") == "qemu:///system"]
@@ -97,7 +99,7 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
                f'  security = {{\n    mode = {quote(security_mode)};\n    unlock = {quote(security["unlock"])};\n    port = 2222;\n'
                + '    # Prepared locally, outside the recipe and Nix store.\n'
                + f'    imageDirectory = {quote(str(Path.home() / ".local/share/nixberry/encrypted" / name))};\n  }};\n')
-            + "  spec = {\n" + f"    name = {quote('nixberry-' + name)};\n"
+            + "  spec = {\n" + f"    name = {quote(name)};\n"
             + f"    uuid = {quote(str(identity))};\n    ownerId = {quote(owner_id)};\n"
             + f"    mac = {quote(mac)};\n"
             + "    # Optional networkAdapters declares ordered named NICs; the first matches mac and the host attachment.\n"

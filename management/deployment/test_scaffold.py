@@ -15,6 +15,34 @@ HOSTS = {"local-libvirt": {"backend": "libvirt", "connection": {"uri": "qemu:///
 
 
 class ScaffoldChecks(unittest.TestCase):
+    def test_exact_names_for_all_backends_methods_and_connection_modes(self):
+        for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+            hosts = {"test-host": {"backend": backend, "connection": {"uri": "qemu:///system"}}}
+            for method in ("image", "iso"):
+                for offline in (False, True):
+                    name = f"vm-demo-{backend}-{method}-{'off' if offline else 'on'}"
+                    with self.subTest(backend=backend, method=method, offline=offline):
+                        path, text = new_vm(self.root, hosts, {}, name, backend,
+                                            offline=offline, method=method)
+                        declaration = json.loads(subprocess.check_output([
+                            "nix", "eval", "--impure", "--json", "--expr", "import " + str(path)], text=True))
+                        self.assertEqual(declaration["spec"]["name"], name)
+                        self.assertEqual(declaration["deploymentMethod"], method)
+                        prefix = "nixberry-hyperv-" if backend == "hyperv" else "nixberry-"
+                        self.assertEqual(declaration["spec"]["ownerId"], prefix + declaration["spec"]["uuid"])
+                        preview_path, preview = new_vm(self.root, hosts, {}, name + "-dry", backend,
+                                                       offline=offline, method=method, write=False)
+                        self.assertFalse(preview_path.exists())
+                        self.assertIn(f'name = "{name}-dry";', preview)
+                        self.assertEqual(path.read_text(), text)
+
+    def test_reserved_device_names_are_rejected_without_writes(self):
+        for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+            for name in ("con", "prn", "aux", "nul", "com1", "com9", "lpt1", "lpt9"):
+                with self.subTest(backend=backend, name=name), self.assertRaisesRegex(RuntimeError, "reserved"):
+                    new_vm(self.root, {}, {}, name, backend, offline=True)
+                self.assertFalse((self.root / "instances" / (name + ".nix")).exists())
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
@@ -40,6 +68,8 @@ class ScaffoldChecks(unittest.TestCase):
             with self.subTest(backend=backend):
                 path, text = new_vm(self.root, {"available": {"backend": backend}}, {}, backend, backend, offline=True)
                 target = evaluate(backend)
+                self.assertEqual(target["spec"]["name"], backend)
+                self.assertEqual(target["guestHostName"], backend)
                 self.assertTrue(target["offline"])
                 self.assertEqual(target["backend"], backend)
                 self.assertEqual(target["capabilities"], {"build": True, "export": True, "system": False, "hypervisor": False})
@@ -66,7 +96,7 @@ class ScaffoldChecks(unittest.TestCase):
         validate({**hosts["windows"]["connection"], **declaration["spec"]})
         self.assertEqual(declaration["host"], "windows")
         self.assertEqual(declaration["profile"], "nixberry-hyperv")
-        self.assertEqual(declaration["spec"]["name"], "nixberry-example")
+        self.assertEqual(declaration["spec"]["name"], "example")
         with self.assertRaises(RuntimeError):
             new_vm(self.root, hosts, {}, "example", "hyperv")
         self.assertEqual(path.read_text(), text)
@@ -197,7 +227,7 @@ class ScaffoldChecks(unittest.TestCase):
         self.assertEqual(path.read_text(), text)
         self.assertIn('profile = "nixberry-vm"', text)
         self.assertIn("allowReset = false", text)
-        self.assertIn('name = "nixberry-lab"', text)
+        self.assertIn('name = "lab"', text)
         with self.assertRaises(RuntimeError):
             new_libvirt(self.root, HOSTS, {}, "lab", "local-libvirt")
         self.assertEqual(path.read_text(), text)

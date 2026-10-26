@@ -108,9 +108,6 @@ msgstr "Na disk navazuje rozdílový obraz; reset odmítám."
 msgid "A disk, snapshot, backing image or recovery medium may be attached."
 msgstr "Může být připojený disk, snapshot, podkladový obraz nebo médium obnovy."
 
-msgid "A Hyper-V VM must have a safe nixberry-… name."
-msgstr "Hyper-V VM musí mít bezpečný název nixberry-…."
-
 msgid "A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."
 msgstr "Hyper-V VM musí mít vlastní ownerId ve tvaru nixberry-hyperv-UUID."
 
@@ -2266,8 +2263,11 @@ msgstr "VM nepoužívá očekávané ISO."
 msgid "The VM must be shut down gracefully."
 msgstr "VM musí být korektně vypnutá."
 
-msgid "The VM must have a safe nixberry-… name of up to 63 characters."
-msgstr "VM musí mít bezpečný název nixberry-… do 63 znaků."
+msgid "Invalid VM name: use 1–63 lowercase letters, digits and hyphens, starting with a letter; reserved Windows device names are not allowed."
+msgstr "Neplatný název VM: použijte 1–63 malých písmen, číslic a spojovníků, začněte písmenem; vyhrazené názvy zařízení Windows nejsou povolené."
+
+msgid "The target name must not be a reserved Windows device name."
+msgstr "Název cíle nesmí být vyhrazeným názvem zařízení Windows."
 
 msgid "The VM must have exactly one network adapter."
 msgstr "VM musí mít právě jednu síťovou kartu."

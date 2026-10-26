@@ -92,10 +92,6 @@ msgstr ""
 msgid "/mnt is mounted."
 msgstr ""
 
-#: hyperv/policy.py:14
-msgid "A Hyper-V VM must have a safe nixberry-… name."
-msgstr ""
-
 #: hyperv/policy.py:16
 msgid "A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."
 msgstr ""
@@ -1061,8 +1057,8 @@ msgstr ""
 msgid "Invalid VM capacity."
 msgstr ""
 
-#: deployment/host_agent.py:70
-msgid "Invalid VM name."
+#: deployment/host_agent.py:70 hyperv/policy.py:14 libvirt/policy.py:27
+msgid "Invalid VM name: use 1–63 lowercase letters, digits and hyphens, starting with a letter; reserved Windows device names are not allowed."
 msgstr ""
 
 #: hyperv/host.ps1:10
@@ -1786,7 +1782,7 @@ msgstr ""
 msgid "Run isolated NixBerry CI checks without contacting hosts."
 msgstr ""
 
-#: deployment/scaffold.py:63
+#: deployment/scaffold.py:65
 msgid "Run the command from a complete project recipe."
 msgstr ""
 
@@ -1866,7 +1862,7 @@ msgstr ""
 msgid "Security: {mode}; unlock: {unlock}"
 msgstr ""
 
-#: deployment/scaffold.py:53
+#: deployment/scaffold.py:55
 #, python-brace-format
 msgid "Select --host from the declared {backend} hosts: {hosts}. Use --offline to prepare without a hypervisor."
 msgstr ""
@@ -2379,10 +2375,6 @@ msgstr ""
 msgid "The VM must be shut down gracefully."
 msgstr ""
 
-#: libvirt/policy.py:27
-msgid "The VM must have a safe nixberry-… name of up to 63 characters."
-msgstr ""
-
 #: libvirt/install.py:43
 msgid "The VM must have exactly one target disk."
 msgstr ""
@@ -2581,7 +2573,7 @@ msgstr ""
 msgid "The data disk is mounted."
 msgstr ""
 
-#: deployment/scaffold.py:118
+#: deployment/scaffold.py:120
 msgid "The declaration already exists; refusing to overwrite it."
 msgstr ""
 
@@ -2733,7 +2725,7 @@ msgstr ""
 msgid "The first adapter must match the primary MAC and host attachment; it provides management access."
 msgstr ""
 
-#: deployment/scaffold.py:73
+#: deployment/scaffold.py:75
 msgid "The generated MAC conflicts with an existing one; run the command again."
 msgstr ""
 
@@ -2802,7 +2794,7 @@ msgstr ""
 msgid "The host did not return the state of all requested VMs."
 msgstr ""
 
-#: deployment/scaffold.py:59
+#: deployment/scaffold.py:61
 msgid "The host does not match the selected backend."
 msgstr ""
 
@@ -3223,6 +3215,10 @@ msgstr ""
 msgid "The target is not running; login is unavailable."
 msgstr ""
 
+#: deployment/scaffold.py:49
+msgid "The target name must not be a reserved Windows device name."
+msgstr ""
+
 #: deployment/updater.py:18
 msgid "The target or build did not return a valid system generation path."
 msgstr ""
@@ -3335,7 +3331,7 @@ msgstr ""
 msgid "This operation requires the image method."
 msgstr ""
 
-#: deployment/scaffold.py:58
+#: deployment/scaffold.py:60
 msgid "This procedure currently supports only local libvirt."
 msgstr ""
 
