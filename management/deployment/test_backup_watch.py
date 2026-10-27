@@ -54,6 +54,63 @@ class MonitoringTests(unittest.TestCase):
             attempt['startedAt']=self.now-91*60
             self.assertIn('capture_overdue',self.evaluate(None,attempt=attempt,error='repository_busy')['issues'])
 
+    def test_source_capture_reports_transport_level_without_claiming_authenticated_readback(self):
+        report=self.evaluate(self.inventory(state='recorded-captured'))
+        self.assertFalse(report['alarm'])
+        self.assertEqual(report['snapshots']['verified'],0)
+        self.assertEqual(report['snapshots']['captured'],1)
+        self.assertEqual(report['latest']['verification'],'producer-and-transport')
+        self.assertFalse(report['freshCryptographicVerification'])
+        self.assertEqual(self.evaluate(self.inventory())['latest']['verification'],'authenticated-readback')
+
+    def test_remote_source_attempt_has_no_local_pid_and_is_still_bounded(self):
+        value=self.inventory()
+        value['captureStatus']={'operationId':'b'*32,'origin':'source','state':'running','startedAt':self.now-10}
+        with patch.object(watch,'process_identity',side_effect=AssertionError('remote PID is not local')):
+            report=self.evaluate(value)
+        self.assertEqual(report['status'],'running')
+        self.assertEqual(report['lastAttempt']['location'],'source')
+        value['captureStatus']['startedAt']=self.now-91*60
+        self.assertIn('capture_overdue',self.evaluate(value)['issues'])
+        value['captureStatus'].update(state='failed',finishedAt=self.now,durationSeconds=91*60)
+        self.assertIn('last_capture_failed',self.evaluate(value)['issues'])
+
+    def test_newer_local_attempt_and_invalid_remote_metadata_are_preserved(self):
+        value=self.inventory()
+        value['captureStatus']={'operationId':'b'*32,'state':'succeeded','startedAt':self.now-20,
+                                'finishedAt':self.now-10,'durationSeconds':10}
+        local={'state':'failed','startedAt':self.now-5,'finishedAt':self.now,'durationSeconds':5}
+        report=self.evaluate(value,attempt=local)
+        self.assertEqual(report['lastAttempt'],local)
+        self.assertIn('last_capture_failed',report['issues'])
+        value['captureStatus']['operationId']='invalid'
+        self.assertIn('invalid_inventory',self.evaluate(value)['issues'])
+
+    def test_running_remote_attempt_rejects_malformed_optional_completion_fields(self):
+        for extra in [{'finishedAt':'bad'}, {'finishedAt':True}, {'durationSeconds':'bad'},
+                      {'durationSeconds':-1}, {'finishedAt':self.now-20}]:
+            value=self.inventory()
+            value['captureStatus']={'operationId':'b'*32,'state':'running','startedAt':self.now-10,**extra}
+            self.assertIn('invalid_inventory',self.evaluate(value)['issues'],extra)
+
+    def test_later_independent_controller_publication_supersedes_local_failure(self):
+        value=self.inventory()
+        remote={'operationId':'b'*32,'origin':'controller','state':'succeeded','startedAt':self.now-20,
+                'finishedAt':self.now-10,'durationSeconds':10}
+        value['captureStatus']=remote
+        local={'state':'failed','startedAt':self.now-40,'finishedAt':self.now-30,'durationSeconds':10}
+        report=self.evaluate(value,attempt=local)
+        self.assertFalse(report['alarm'])
+        self.assertEqual(report['lastAttempt']['location'],'nas-publication')
+        local.update(startedAt=self.now-25,finishedAt=self.now-15)
+        self.assertIn('last_capture_failed',self.evaluate(value,attempt=local)['issues'])
+        local={'state':'running','startedAt':self.now-30,**watch.process_identity(os.getpid())}
+        self.assertEqual(self.evaluate(value,attempt=local)['status'],'running')
+        with patch.object(watch,'process_identity',side_effect=ProcessLookupError):
+            recovered=self.evaluate(value,attempt=local)
+        self.assertFalse(recovered['alarm'])
+        self.assertEqual(recovered['lastAttempt']['location'],'nas-publication')
+
     def test_abrupt_exit_or_reused_pid_is_interruption(self):
         self.directory.mkdir(parents=True,mode=0o700)
         program='import os,sys;from pathlib import Path;from backup_watch import capture_run\nwith capture_run(Path(sys.argv[1]),"source"):os._exit(0)'

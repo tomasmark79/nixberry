@@ -10,18 +10,20 @@ from messages import _, forward_stderr
 from recipe_source import materialized_recipe
 import backup_watch
 
-ACTIONS = ('backup', 'backups', 'verify-backup', 'restore', 'recover-source', 'backup-prune', 'backup-schedule', 'backup-check', 'backup-monitor')
+ACTIONS = ('backup', 'backups', 'verify-backup', 'restore', 'recover-source', 'backup-prune', 'backup-schedule', 'backup-check', 'backup-monitor', 'backup-stage')
 BACKENDS = ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware', 'rpi')
 
 
 def policy(target):
     value = target.get('backup', {})
-    allowed = {'enable', 'provider', 'repository', 'identityFile', 'recipient', 'restoreBackends', 'schedule', 'keepLast', 'monitor'}
+    allowed = {'enable', 'provider', 'repository', 'identityFile', 'recipient', 'restoreBackends', 'schedule', 'keepLast', 'monitor', 'afterUpdate'}
     if not isinstance(value, dict) or set(value) - allowed or type(value.get('enable', False)) is not bool:
         raise ValueError(_("Invalid backup policy in the target declaration."))
-    result = {'enable': False, 'provider': None, 'repository': None, 'identityFile': None,
+    result = {'enable': False, 'afterUpdate': False, 'provider': None, 'repository': None, 'identityFile': None,
               'recipient': None, 'restoreBackends': [], 'schedule': None, 'keepLast': None, **value}
     result['monitor'] = backup_watch.monitor_policy(value.get('monitor', {}))
+    if type(result['afterUpdate']) is not bool:
+        raise ValueError(_("backup.afterUpdate must be a boolean."))
     if not result['enable']:
         return result
     provider = result['provider']
@@ -43,7 +45,7 @@ def available(target):
     if policy(target)['enable']:
         result += ['backups', 'verify-backup', 'recover-source', 'backup-prune', 'backup-schedule', 'backup-check', 'backup-monitor']
         if target['capabilities']['system']:
-            result += ['backup']
+            result += ['backup', 'backup-stage']
     if target['capabilities']['system']:
         result += ['restore']
     return result

@@ -21,11 +21,11 @@ from recipe_source import materialized_recipe
 from discovery import collect_status
 from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, ArgumentParser, error as report_error
-from backups import ACTIONS as BACKUP_ACTIONS, available as backup_operations, run as run_backup
+from backups import ACTIONS as BACKUP_ACTIONS, available as backup_operations, run as run_backup, policy as backup_policy
 
 BACKUP_HELP = """\nEncrypted backup commands:
   backup TARGET          Review coordinated capture; --apply creates an encrypted backup.
-  backups TARGET         List locally recorded snapshots without contacting the source.
+  backups TARGET         List recorded snapshots without contacting the source.
   verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.
   restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.
   recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.
@@ -33,6 +33,7 @@ BACKUP_HELP = """\nEncrypted backup commands:
   backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.
   backup-check TARGET    Check backup freshness and run history; --apply records and notifies.
   backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.
+  backup-stage TARGET    Review source-owned backup provisioning; --apply refreshes runtime access and recovery code.
 \nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.
 Restore does not create a VM, activate configuration or reboot. See docs/backups.md.
 """
@@ -153,7 +154,7 @@ def main(argv=None):
                         type=lambda value: value + "-vm" if value in ("new-libvirt", "new-hyperv", "new-proxmox", "new-virtualbox", "new-vmware") else value, choices=(
         "list", "show", "status", "ssh", "probe", "plan", "create", "install", "provision", "reset",
         "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup", "prepare-image", "unlock",
-        "backup", "backups", "verify-backup", "restore", "recover-source", "backup-prune", "backup-schedule", "backup-check", "backup-monitor"))
+        "backup", "backups", "verify-backup", "restore", "recover-source", "backup-prune", "backup-schedule", "backup-check", "backup-monitor", "backup-stage"))
     parser.add_argument("target", metavar=_("TARGET"), nargs="?", help=_("Existing target name, or a new name for new-*"))
     parser.add_argument("--host", help=_("Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"))
     parser.add_argument("--offline", action="store_true", help=_("Prepare any VM offline without a hypervisor; cannot be combined with --host"))
@@ -380,6 +381,12 @@ def main(argv=None):
     if args.action == "update":
         info(_("Server configuration: {configuration}"), configuration=target.get("configuration", "default"))
         update(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target, apply=args.apply)
+        if args.apply and backup_policy(target)['enable'] and backup_policy(target)['afterUpdate']:
+            try:
+                staged = run_backup(os.environ.get("NIXBERRY_RECIPE", ""), registry, 'backup-stage', args.target, apply=True)
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as failure:
+                raise RuntimeError(_("The system update succeeded, but backup provisioning failed. Run: nixberry backup-stage {target} --apply").format(target=args.target)) from failure
+            print(json.dumps(staged, ensure_ascii=False, indent=2))
         return 0
     if args.action == "export":
         info(_("Server configuration: {configuration}"), configuration=target.get("configuration", "default"))

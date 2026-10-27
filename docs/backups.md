@@ -17,6 +17,7 @@ backup = {
   restoreBackends = [ "libvirt" ]; # Only backends actually implemented by this provider.
   schedule = "daily";
   keepLast = 7;
+  afterUpdate = false; # Opt in only when the provider implements backup-stage.
 };
 ```
 
@@ -29,6 +30,12 @@ The controller policy is metadata; images, manifests and exported recipes do not
 include private key contents or backup data. Preserve local declarations separately.
 Both runtime paths must also remain outside the recipe and linked configurations;
 the dispatcher rejects those locations, including resolved directory links.
+
+`afterUpdate` defaults to false. When enabled, a successful `update --apply`
+also calls the provider's `backup-stage --apply` action to refresh source runtime
+access and encrypted recovery configuration. A failed provisioning step returns
+an error after the system update; inspect it and rerun `backup-stage --apply`.
+Read-only updates never provision backup access.
 
 `schedule` and `keepLast` default to `null`. `keepLast` must be at least two when
 set. Editing these fields does not install jobs or remove backups. The selecting
@@ -50,8 +57,10 @@ nixberry restore vm-demo-restore --from vm-demo-server --snapshot SNAPSHOT_ID --
 `backup`, `restore`, `recover-source` and `backup-prune` plan by default and write
 only with `--apply`. Capture/restore plans can inspect a guest read-only.
 `--dry-run` avoids provider execution, guest connections and readiness checks;
-it reports declaration policy only. The list is local receipt metadata, not a
-new cryptographic proof. `verify-backup` asks the provider for full authentication.
+it reports declaration policy only. The list is recorded repository metadata,
+not a new cryptographic proof. Providers may query remote storage without
+contacting the source. `verify-backup` asks the provider for full authentication
+and may publish a protected local cache and a verification record on the repository.
 List, verification, source recovery and retention must work without the source
 machine; capture requires a running, unlocked source.
 
@@ -104,6 +113,36 @@ source unlock and a separate recovery copy of the age identity must be arranged
 before relying on scheduled operation. Monitoring or automatic timer activation
 is not performed by bundle export.
 
+## Source-owned automation
+
+A configuration may install its own system service and timer to push encrypted
+backups directly to remote storage. This runs inside the NixOS source, on either
+a VM or RPi; it does not depend on a controller being online. The configuration
+owns the schedule, consistency protocol, storage transport and retention rules.
+The generic `backup-schedule` command continues to export controller user units.
+Choose one capture scheduler to avoid competing jobs.
+
+```sh
+nixberry backup-stage vm-demo-server --json
+nixberry backup-stage vm-demo-server --apply --json
+```
+
+`backup-stage` plans by default. `--apply` delegates runtime provisioning to the
+configuration's provider; it does not capture application data. A provider may
+generate a dedicated source SSH identity, enroll only its public key with a
+restricted storage receiver, pin storage host keys and copy an encrypted recovery
+bundle to the source. These are provider requirements, not automatic features of
+every configuration. The private decryption identity remains with the recovery
+operator, outside the source and build artifacts. Refresh provisioning after
+configuration changes, manually or with `backup.afterUpdate = true;`.
+
+Source-only captures can verify producer completion and transport checksums while
+holding only the public encryption recipient. Such records must be labeled
+`recorded-captured`; they are distinct from `recorded-verified` authenticated
+readbacks. Use `verify-backup` with the operator identity for full archive and
+application validation. Providers must bind data and recovery configuration
+inside authenticated encrypted contents before accepting a remote recovery copy.
+
 ## Freshness monitoring and notifications
 
 The controller can check repository metadata without contacting the source or
@@ -137,8 +176,11 @@ JSON. `backup-monitor` exports reviewable systemd user units; it never installs 
 enables them. Its timer first checks two minutes after activation, then at the
 configured interval with bounded jitter. The service only runs `backup-check`.
 
-Checks cover missing/old recorded-verified snapshots, invalid/partial captures,
-provider unavailability and the last recorded CLI capture attempt. Applied captures
+Checks cover missing/old recorded snapshots, invalid/partial captures,
+provider unavailability and the last recorded capture attempt. Source-owned
+providers may return source run history without a local process ID; its duration
+is still bounded by `maxRunMinutes`. Reports distinguish producer/transport
+checks from authenticated readback. Applied CLI captures
 atomically record start, successful/failed finish, duration, process identity and
 the last successful run time. Interrupted owners/PID reuse and overdue running
 captures are alarms. Legacy captures remain usable without invented run history.
@@ -190,7 +232,9 @@ capture verification, publication and running restore evidence.
 
 The declaration, CLI, completion and exported metadata are shared across QEMU/KVM
 (libvirt), Hyper-V, Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5.
-Image and ISO installations use the same post-boot interface. Offline VM declarations
+Image and ISO installations use the same post-boot interface. Source provisioning
+and the optional update hook share that interface across all six target types;
+the provider must explicitly implement them. Offline VM declarations
 retain local list/verify/recovery/retention commands; capture/restore additionally
 require declared live `access`. One-time `--ssh` overrides are not accepted by
 backup commands; declare stable access and host trust for automated operations.

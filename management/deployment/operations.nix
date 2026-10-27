@@ -23,7 +23,7 @@ in
   "restore"
 ]
 ++ optional backup [ "backups" "verify-backup" "recover-source" "backup-prune" "backup-schedule" "backup-check" "backup-monitor" ]
-++ optional (backup && caps.system) [ "backup" ]
+++ optional (backup && caps.system) [ "backup" "backup-stage" ]
 ++ optional caps.hypervisor [
   "probe"
   "create"

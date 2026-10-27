@@ -29,6 +29,9 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 This describes implemented interfaces, not proof of every live combination.
 Backup capture and restore support additionally depends on the configuration's
 provider and explicit `restoreBackends`; see [backup scope](backups.md#platform-scope).
+`backup-stage` and optional provisioning after `update --apply` use the same
+system-access contract on every backend and RPi. Source-owned automation belongs
+to the configuration and runs independently of the controller.
 See [encrypted disks](security.md) for the security boundaries and prerequisites.
 See [VM networking](vm-networking.md) for primary management identity, attachment
 variants and the VMware address-discovery limitation.

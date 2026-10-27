@@ -26,6 +26,7 @@ class CompletionTests(unittest.TestCase):
         self.assertNotIn('--apply', self.complete('backups', 'kozlonix', '--'))
         self.assertIn('--output', self.complete('backup-schedule', 'kozlonix', '--'))
         self.assertIn('--apply', self.complete('backup-check', 'kozlonix', '--'))
+        self.assertIn('--apply', self.complete('backup-stage', 'kozlonix', '--'))
         self.assertIn('--output', self.complete('backup-monitor', 'kozlonix', '--'))
         self.assertNotIn('--apply', self.complete('backup-monitor', 'kozlonix', '--'))
 

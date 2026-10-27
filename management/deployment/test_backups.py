@@ -45,14 +45,15 @@ class BackupPolicyTests(unittest.TestCase):
             self.assertNotIn('backup', values[1]['hardwareFields'])
 
     def test_nix_and_python_validation_agree(self):
-        values = [{}, settings(), settings(keepLast=2), settings(schedule=None), settings(monitor={'enable':True,'maxAgeHours':24})]
+        values = [{}, settings(), settings(afterUpdate=True), settings(keepLast=2), settings(schedule=None), settings(monitor={'enable':True,'maxAgeHours':24})]
         invalid = [settings(identityFile='/nix/store/secret'), settings(repository='./relative'),
                    settings(provider='../private.py'), settings(provider='configurations/../bad.py'),
                    settings(keepLast=True), settings(keepLast=1), settings(schedule='daily\nExecStart=bad'),
                    settings(schedule='daily\tbad'), settings(identityFile='/private/key\x7f'),
                    settings(restoreBackends=['typo']), settings(unknown=True), {'enable': 'yes'},
                    settings(monitor={'maxAgeHours':0}), settings(monitor={'notify':'yes'}),
-                   settings(monitor={'intervalMinutes':True}), settings(monitor={'unknown':True})]
+                   settings(monitor={'intervalMinutes':True}), settings(monitor={'unknown':True}),
+                   settings(afterUpdate='yes'), {'afterUpdate':1}]
         path = Path(__file__).with_name('backup-policy.nix')
         for value in values + invalid:
             result = subprocess.run(['nix', 'eval', '--impure', '--json', '--expr',
@@ -86,6 +87,7 @@ class BackupPolicyTests(unittest.TestCase):
         for target, values in zip(targets, json.loads(result.stdout), strict=True):
             self.assertEqual(set(values), set(operations(target)))
             self.assertEqual('backup' in values, target['backup']['enable'] and target['capabilities']['system'])
+            self.assertEqual('backup-stage' in values, target['backup']['enable'] and target['capabilities']['system'])
             self.assertEqual('backups' in values, target['backup']['enable'])
 
 
@@ -121,6 +123,42 @@ class ProviderTests(unittest.TestCase):
         self.provider.write_text('raise AssertionError("must not run")')
         result = self.run_provider(dry_run=True)
         self.assertFalse(result['applied']); self.assertEqual(result['readiness'], 'not-checked')
+
+    def test_source_provisioning_preserves_explicit_apply_and_has_no_capture_side_effect(self):
+        result = self.run_provider('backup-stage')
+        self.assertEqual(result['request']['action'], 'backup-stage')
+        self.assertFalse(result['request']['apply'])
+        result = self.run_provider('backup-stage', apply=True)
+        self.assertTrue(result['request']['apply'])
+
+    def test_update_provisions_only_after_successful_explicit_opt_in_activation(self):
+        manifest = self.root/'manifest.json'
+        environment = {'NIXBERRY_RECIPE':str(self.recipe), 'NIXBERRY_DEPLOYMENT':str(manifest)}
+        self.target['backup']['afterUpdate'] = True
+        manifest.write_text(json.dumps(self.registry))
+        with patch.dict(os.environ, environment), patch('cli.update') as update, \
+                patch('cli.run_backup', return_value={'applied':True}) as provision, \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main(['update','source']), 0)
+            provision.assert_not_called()
+            self.assertEqual(main(['update','source','--apply']), 0)
+            self.assertEqual(provision.call_args.args[2:], ('backup-stage','source'))
+            self.assertEqual(provision.call_args.kwargs, {'apply':True})
+            provision.reset_mock()
+            provision.side_effect = RuntimeError('provider failed')
+            with self.assertRaisesRegex(RuntimeError, 'system update succeeded.*backup-stage source --apply'):
+                main(['update','source','--apply'])
+            provision.reset_mock()
+            provision.side_effect = None
+            update.side_effect = RuntimeError('activation failed')
+            with self.assertRaisesRegex(RuntimeError,'activation failed'):
+                main(['update','source','--apply'])
+            provision.assert_not_called()
+        self.target['backup']['afterUpdate'] = False
+        manifest.write_text(json.dumps(self.registry))
+        with patch.dict(os.environ, environment), patch('cli.update'), patch('cli.run_backup') as provision:
+            self.assertEqual(main(['update','source','--apply']), 0)
+            provision.assert_not_called()
 
     def test_key_and_storage_paths_inside_recipe_or_linked_private_configuration_are_rejected(self):
         private = self.root / 'private-configuration'; private.mkdir()

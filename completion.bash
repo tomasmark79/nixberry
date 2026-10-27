@@ -20,6 +20,7 @@ _nixberry_complete() {
         reproduce verify update diff diffg export doctor cleanup prepare-image unlock
         backup backups verify-backup restore recover-source backup-prune backup-schedule
         backup-check backup-monitor
+        backup-stage
     )
     local -a options=(--help --version)
     local -A used=()
@@ -111,10 +112,10 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            list|show|status|verify|export|doctor|cleanup|prepare-image|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor) options+=(--json) ;;
+            list|show|status|verify|export|doctor|cleanup|prepare-image|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor|backup-stage) options+=(--json) ;;
         esac
         case $action in
-            update|create|install|provision|reset|reproduce|backup|restore|recover-source|backup-prune|backup-check) options+=(--apply --dry-run) ;;
+            update|create|install|provision|reset|reproduce|backup|restore|recover-source|backup-prune|backup-check|backup-stage) options+=(--apply --dry-run) ;;
             new-*|plan|diff|diffg|export|prepare-image|unlock|backups|verify-backup|backup-schedule|backup-monitor) options+=(--dry-run) ;;
         esac
         case $action in

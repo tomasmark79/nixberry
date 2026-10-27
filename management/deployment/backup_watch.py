@@ -164,21 +164,46 @@ def capture_run(directory, target):
 def evaluate(target, policy, inventory, attempt=None, previous=None, error=None, now=None):
     now = int(time.time()) if now is None else now
     critical = []; warnings = []; latest = None; active = False
+    external=False
+    local_active=False
+    if attempt and attempt.get('state')=='running':
+        try:
+            local_active=process_identity(attempt['pid'])=={key:attempt[key] for key in ['pid','startTicks','bootId']}
+        except (OSError,ValueError,IndexError,KeyError):
+            pass
+    if isinstance(inventory,dict) and inventory.get('captureStatus') is not None:
+        candidate=inventory['captureStatus']
+        if (not isinstance(candidate,dict) or candidate.get('state') not in ['running','succeeded','failed']
+                or type(candidate.get('startedAt')) is not int or candidate['startedAt']<=0
+                or not isinstance(candidate.get('operationId'),str)
+                or not re.fullmatch('[0-9a-f]{32}',candidate['operationId'])
+                or candidate.get('origin','source') not in ['source','controller']
+                or ('finishedAt' in candidate and (type(candidate['finishedAt']) is not int
+                    or candidate['finishedAt']<candidate['startedAt']))
+                or ('durationSeconds' in candidate and (type(candidate['durationSeconds']) is not int
+                    or candidate['durationSeconds']<0))
+                or (candidate['state']!='running' and not {'finishedAt','durationSeconds'} <= candidate.keys())):
+            critical.append('invalid_inventory')
+        elif (attempt is None
+              or (candidate.get('origin','source')=='source' and candidate['startedAt']>=attempt['startedAt'])
+              or (candidate.get('origin')=='controller' and not local_active
+                  and candidate['startedAt']>attempt.get('finishedAt',attempt['startedAt']))):
+            attempt={key:candidate[key] for key in ['state','startedAt','operationId','finishedAt','durationSeconds'] if key in candidate}
+            attempt['location']='source' if candidate.get('origin','source')=='source' else 'nas-publication'
+            external=True
     if attempt:
         if attempt['startedAt'] > now + 300 or attempt.get('finishedAt', 0) > now + 300:
             critical.append('clock_skew')
         if attempt['state'] == 'failed':
             critical.append('last_capture_failed')
         elif attempt['state'] == 'running':
-            try:
-                active = process_identity(attempt['pid']) == {key: attempt[key] for key in ['pid', 'startTicks', 'bootId']}
-            except (OSError, ValueError, IndexError):
-                active = False
+            if external:active=True
+            else:active=local_active
             if not active:
                 critical.append('capture_interrupted')
             elif now - attempt['startedAt'] > policy['maxRunMinutes'] * 60:
                 critical.append('capture_overdue')
-    counts = {'verified': 0, 'invalid': 0, 'pending': 0}
+    counts = {'verified': 0, 'captured': 0, 'invalid': 0, 'pending': 0}
     deferred = error == 'repository_busy' and active and 'capture_overdue' not in critical
     if inventory is not None:
         try:
@@ -189,16 +214,18 @@ def evaluate(target, policy, inventory, attempt=None, previous=None, error=None,
             for row in rows:
                 if not isinstance(row, dict) or not re.fullmatch('[0-9a-f]{32}', row.get('snapshotId', '')):
                     raise ValueError
-                if row.get('state') == 'recorded-verified':
+                if row.get('state') in ['recorded-verified','recorded-captured']:
                     timestamp = row.get('createdAt')
                     if type(timestamp) is not int or timestamp <= 0:
                         raise ValueError
                     if timestamp > now + 300:
                         critical.append('clock_skew')
-                    valid.append({'snapshotId': row['snapshotId'], 'createdAt': timestamp})
+                    valid.append({'snapshotId': row['snapshotId'], 'createdAt': timestamp,
+                                  'verification':'authenticated-readback' if row['state']=='recorded-verified' else 'producer-and-transport'})
+                    counts['verified' if row['state']=='recorded-verified' else 'captured']+=1
                 else:
                     counts['invalid'] += 1
-            counts['verified'] = len(valid); counts['pending'] = pending
+            counts['pending'] = pending
             latest = max(valid, key=lambda row: row['createdAt']) if valid else None
             if counts['invalid']: warnings.append('invalid_snapshots')
             if pending: warnings.append('partial_captures')
