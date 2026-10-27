@@ -26,12 +26,91 @@ Normal `update` does not rename partitions. Inspect them with
 | SSD serial | `EXAMPLE_SERIAL` |
 | SSD by-id | `/dev/disk/by-id/ata-EXAMPLE_SERIAL` |
 
-`installerAddress` and `gateway` require IPv4 addresses. The persistent
-`address` requires IPv4 CIDR notation with a prefix from 0 to 32; `dns` must
-contain at least one IPv4 or IPv6 address literal.
+For the original flat declaration, `installerAddress` and `gateway` require IPv4
+addresses. The persistent `address` requires IPv4 CIDR notation with a prefix
+from 0 to 32; `dns` must contain at least one IPv4 or IPv6 address literal.
 
 Another RPi or SSD needs its own declaration and newly built media.
 Firmware must permit USB boot; this tool does not configure EEPROM.
+
+### Named physical interfaces
+
+For a board with multiple Ethernet adapters, replace the flat `address`,
+`gateway`, `dns`, `lanMac` and `reserveMac` fields with one `network` declaration:
+
+```nix
+network = {
+  primary = "lan0";
+  dns = [ "10.234.0.1" ];
+  interfaces = {
+    lan0 = {
+      mac = "02:00:00:00:00:20";
+      address = "10.123.0.1/24";
+    };
+    wan0 = {
+      mac = "02:00:00:00:00:21";
+      address = "10.234.0.20/24";
+      gateway = "10.234.0.1";
+    };
+  };
+};
+```
+
+`primary` selects the normal management address and MAC; it does not select the
+default route. Here management uses `10.123.0.1`, while `wan0` supplies the
+default gateway. `installerAddress` remains the address of the recovery
+environment and can differ from both installed addresses.
+
+Declare one to eight static interfaces, with unique unicast MACs and IPv4
+addresses. Names become Linux interface names through MAC matching. Named RPi
+interfaces support static IPv4 only. Each gateway is optional, with at most one
+default gateway across the declaration. Global `network.dns` is required; it is
+assigned to the gateway-owning interface by default. Other interfaces get no
+per-link DNS unless their own `dns` list is supplied.
+The declaration does not enable `GatewayOnLink` or create supplemental routes;
+use a reachable gateway or supply explicit routing in the selected configuration.
+Installed static adapters without a gateway receive their address even without
+carrier. Network-online waits for the primary and gateway-owning adapters;
+secondary adapters do not hold up that target.
+
+Do not mix named and flat network fields. Existing flat declarations retain
+their `enx<MAC>` names and leave the optional spare adapter unaddressed. Merely
+declaring adapters does not enable routing, DHCP service or firewall access.
+
+`network.recoveryInterface` optionally selects the bootstrap adapter and defaults
+to `network.primary`. Named SD/RAM recovery uses DHCP only on that adapter;
+secondary adapters have no address, DHCP or IPv6 router discovery. Recovery does
+not activate the desired installed LAN/WAN addresses, gateway or DNS settings.
+Read the actual recovery DHCP address and use `installerAddress` or `--address`
+for that installation session.
+
+The installed management address, recovery connection and early-boot SSH address
+can have different roles. For a WAN-managed gateway that recovers and unlocks
+over its LAN adapter, change the example's selectors and add the security fields:
+
+```nix
+network.primary = "wan0";
+network.recoveryInterface = "lan0";
+security.interface = "lan0";
+security.address = "10.123.0.59/24";
+```
+
+The installed system keeps LAN `10.123.0.1/24` and WAN `10.234.0.20/24`. SD/RAM
+recovery uses LAN DHCP. Installed initrd enables only LAN `10.123.0.59/24`, so it
+can wait for manual unlock while another gateway still owns the future installed
+LAN address. Reserve the early-boot address so no other device uses it.
+Complete the gateway handover before unlocking: stage2 activates the declared
+installed addresses after the encrypted root opens.
+`security.address` is optional and must share the selected adapter's IPv4 subnet
+and prefix; it changes neither installed addressing nor recovery DHCP. Without
+it, initrd uses that adapter's installed address. Without `security.interface`,
+initrd selects the primary adapter. See [physical encryption](security.md#raspberry-pi-5).
+The protected installation/router-address checks remain in force; declaring a
+future gateway address does not authorize contacting the existing router.
+
+Shared services can read the platform-independent
+[declared network facts](reference.md#declared-network-facts). Those facts are
+outputs, while hardware identities and addressing stay in this target file.
 
 Export from the project root:
 
@@ -93,6 +172,25 @@ See [troubleshooting](../README.md#troubleshooting) for login and new SSH keys.
 The installed system has no configured console password.
 Success includes the declared system, root on the correct SSD, active SSH and
 networkd, and no failed units.
+
+## Updating network declarations
+
+Named physical networking supports fresh or separately reviewed recovery
+installations, and ordinary updates when the running network already matches the
+declaration. Before activating an update for a named RPi target, NixBerry checks
+each declared adapter's MAC, Linux interface name, IPv4 address and prefix against
+the running system. Existing flat declarations retain their identity checks.
+
+An ordinary update cannot convert a running flat declaration to named adapters,
+rename an adapter, or first establish a new declared address/prefix: those changes
+fail the pre-activation check. Plan that transition separately. A recovery or
+reinstallation procedure requires its own review of the board, storage and data;
+installation may erase the SSD.
+
+`security.interface` and `security.address` configure the installed initrd for the
+next boot. They do not change the live NIC names or addresses, and they do not
+bypass the update identity check. An explicit `--address` selects a connection
+endpoint; the declared hardware and network checks still apply.
 
 ## Technical notes
 

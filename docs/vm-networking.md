@@ -122,5 +122,17 @@ exports without named adapters retain their flexible importer-assigned MAC polic
 No adapter CLI flag is needed: select a host when scaffolding, then edit the stored
 declaration. CLI aliases and completion retain the same operations on all five
 backends. Raspberry Pi 5 uses its physical target MAC bindings; it is not a VM and
-does not accept `spec.networkAdapters`. Shared service configuration should consume
-logical roles while platform declarations provide hardware identity.
+does not accept `spec.networkAdapters`. Its optional
+[named physical network](rpi-recovery.md#named-physical-interfaces) uses a separate
+target declaration and supports static interfaces, with an explicit management
+primary independent of the default gateway.
+
+Shared services should consume the read-only
+[`nixberry.network` facts](reference.md#declared-network-facts), available for all
+five VM backends and RPi. Explicit VM adapter lists retain their existing first
+management interface and networking behavior. A VM without an explicit adapter
+list exposes an empty interface map and a null primary because its MAC/name are
+discovered dynamically. RPi flat declarations expose their existing `enx<MAC>`
+names, including a disabled spare; named declarations expose the chosen roles.
+This common view does not change VM adapter order, attachment, initrd networking
+or physical hardware identity checks.

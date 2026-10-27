@@ -10,12 +10,49 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from security import FORMATS, artifact, binding, digest, policy, prepare_image, read_password, require_supported, unlock, unlock_for_install, validate_manifest
+from security import FORMATS, artifact, binding, default_unlock_address, digest, policy, prepare_image, read_password, require_supported, unlock, unlock_for_install, validate_manifest
 from scaffold import new_vm
 from test_support import copy_test_recipe
 
 
 class SecurityTests(unittest.TestCase):
+    def local_unlock_target(self):
+        return {"backend": "rpi", "security": {"mode": "luks", "interface": "lan0", "address": "192.168.79.59/24",
+                                                 "initrdHostKey": "ssh-ed25519 TESTKEY"},
+                "spec": {"hardwareSerial": "0000000000000001", "network": {
+                    "primary": "wan0", "recoveryInterface": "lan0", "interfaces": {
+                        "wan0": {"mode": "static", "address": "10.40.50.25/24", "gateway": "10.40.50.1"},
+                        "lan0": {"mode": "static", "address": "192.168.79.1/24", "gateway": ""}}}}}
+
+    def test_rpi_local_initrd_override_selects_temporary_address_with_strict_key_pin(self):
+        target = self.local_unlock_target()
+        self.assertEqual(default_unlock_address(target), "192.168.79.59")
+
+        def inspect(command, **kwargs):
+            self.assertEqual(command[-1], "root@192.168.79.59")
+            self.assertIn("StrictHostKeyChecking=yes", command)
+            self.assertIn("GlobalKnownHostsFile=/dev/null", command)
+            self.assertIn("ForwardAgent=no", command)
+            known = next(value.split("=", 1)[1] for value in command if value.startswith("UserKnownHostsFile="))
+            self.assertIn(target["security"]["initrdHostKey"], Path(known).read_text())
+            return subprocess.CompletedProcess(command, 0)
+
+        with patch("security.subprocess.run", side_effect=inspect):
+            self.assertEqual(unlock(target), 0)
+
+    def test_rpi_initrd_override_rejects_wrong_network_and_preserves_protected_address_guard(self):
+        target = self.local_unlock_target()
+        with patch("security.subprocess.run") as run:
+            for address in ("192.168.79.59/25", "192.168.78.59/24", "192.168.79.59"):
+                with self.subTest(address=address), self.assertRaises(ValueError):
+                    policy({**target, "security": {**target["security"], "address": address}})
+            with self.assertRaises(ValueError):
+                unlock(target, "192.168.79.1")
+            target["security"]["address"] = "192.168.79.1/24"
+            with self.assertRaises(ValueError):
+                unlock(target)
+            run.assert_not_called()
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

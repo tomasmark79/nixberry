@@ -29,6 +29,52 @@ separately. A commit of the public recipe does not include ignored configuration
 files. Use `path:` inputs to include them without `git add`.
 Empty inventory is valid; an unknown host is an error.
 
+## Declared network facts
+
+Shared service configurations can read `config.nixberry.network` on VM and RPi
+systems without depending on `nixberry.vm` or `nixberry.rpi` implementation fields:
+
+| Field | Meaning |
+| --- | --- |
+| `primaryInterface` | Declared management interface name, or `null` for a VM with dynamically discovered interfaces. |
+| `interfaces.NAME` | Effective declared `name`, `mac`, `mode`, `address`, `gateway` and `dns`. |
+| `networkdUnits.NAME` | The platform-generated networkd configuration key for that declared interface. |
+
+These are read-only outputs. An address includes its IPv4 prefix; absent addresses
+or gateways use an empty string. A secondary or spare interface may have mode
+`disabled`; VM declarations also support `dhcp`. The map describes declared
+physical/virtual adapters, rather than runtime-discovered VPN or container links.
+
+For example, a configuration requiring a declared `lan0` can use:
+
+```nix
+{ config, lib, ... }:
+let lan = config.nixberry.network.interfaces.lan0; in {
+  services.adguardhome.settings.dns.bind_hosts = [
+    "127.0.0.1" (builtins.head (lib.splitString "/" lan.address))
+  ];
+}
+```
+
+The requiring role should validate that `lan0` exists and has the expected mode.
+Declare hardware identities and addresses in the target; use the common facts to
+configure services. `networkdUnits` lets a role locate the correct generated unit
+without hardcoding VM or physical platform file names. Preserve the platform's
+MAC matching and management settings when adding role-specific routes.
+
+VMs without an explicit `spec.networkAdapters` list have an empty map and a null
+primary. Named VM adapters keep the first-adapter management contract across
+QEMU/KVM (libvirt), Hyper-V, Proxmox VE, VirtualBox and VMware Workstation, for
+image/ISO and online/offline variants. Named RPi adapters use the explicit
+`network.primary`; their default gateway may belong to a different interface.
+Target-specific named RPi RAM recovery exposes its bootstrap facts instead:
+`network.recoveryInterface` uses DHCP and secondary adapters are disabled. The
+target declaration and exported manifests retain the desired installed network.
+See [VM adapters](vm-networking.md) and [RPi physical networking](rpi-recovery.md#named-physical-interfaces).
+Ordinary RPi updates require the running network to match its declaration;
+see [RPi network transitions](rpi-recovery.md#updating-network-declarations) before
+changing interface names or converting a flat declaration to named adapters.
+
 ## Named configurations
 
 Every target selects one `configuration`, defaulting to `default`.

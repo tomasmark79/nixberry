@@ -206,10 +206,12 @@ def status(target):
         if len(candidates) != 1:
             raise RuntimeError(_("The declared IPv4 address is not enabled on the RPi."))
         # Verify identity using hardware, not just hostname or IP.
+        named_network = spec.get("network")
+        link_probe = "ip -j address" if named_network else "ip -j link"
         script = (
             "set -eu; uname -m; "
             "tr -d '\\000' < /proc/device-tree/serial-number; printf '\\n'; "
-            "hostname; ip -j link; findmnt -n -o SOURCE /"
+            "hostname; " + link_probe + "; findmnt -n -o SOURCE /"
         )
         output = read(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                        "--", "root@" + candidates[0], script]).splitlines()
@@ -218,6 +220,15 @@ def status(target):
         interfaces = json.loads(output[3])
         if not any(mac(item.get("address", "")) == mac(spec["lanMac"]) for item in interfaces):
             raise RuntimeError(_("The RPi network adapter does not match the declaration."))
+        if named_network:
+            for name, adapter in named_network["interfaces"].items():
+                matching = [item for item in interfaces if mac(item.get("address", "")) == mac(adapter["mac"])
+                            and item.get("ifname") == name]
+                expected_address, expected_prefix = adapter["address"].split("/", 1)
+                if len(matching) != 1 or not any(row.get("local") == expected_address
+                                               and row.get("prefixlen") == int(expected_prefix)
+                                               for row in matching[0].get("addr_info", [])):
+                    raise RuntimeError(_("The RPi network adapter does not match the declaration."))
         return {"state": "running", "addresses": candidates,
                 "hostname": output[2], "hardwareSerial": output[1], "root": output[4]}
     if target["backend"] == "libvirt":

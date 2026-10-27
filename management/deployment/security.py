@@ -21,7 +21,7 @@ FORMATS = {"libvirt": "qcow2", "proxmox": "qcow2", "hyperv": "vhdx",
 def policy(target):
     value = target.get("security", {})
     rpi = target.get("backend") == "rpi"
-    fields = {"mode", "unlock", "port", "initrdHostKey", "recoveryHostKey"} if rpi else {"mode", "unlock", "port", "imageDirectory"}
+    fields = {"mode", "unlock", "port", "initrdHostKey", "recoveryHostKey", "interface", "address"} if rpi else {"mode", "unlock", "port", "imageDirectory"}
     if not isinstance(value, dict) or set(value) - fields:
         raise ValueError(_("VM security contains unsupported fields; keep secrets outside declarations."))
     mode = value.get("mode", "none")
@@ -39,11 +39,37 @@ def policy(target):
         raise ValueError(_("Early-boot SSH must use a different port from ordinary SSH (22)."))
     if rpi:
         import re
+        interface = value.get("interface")
+        if interface is not None:
+            network = target.get("spec", {}).get("network", {})
+            adapter = network.get("interfaces", {}).get(interface, {}) if isinstance(interface, str) else {}
+            if (not isinstance(interface, str) or not re.fullmatch(r"[a-z][a-z0-9-]{0,14}", interface)
+                    or interface == "lo" or not adapter or adapter.get("mode", "static") != "static"):
+                raise ValueError(_("The RPi network adapter does not match the declaration."))
+        early_address = value.get("address")
+        if early_address is not None:
+            import ipaddress
+            network = target.get("spec", {}).get("network", {})
+            selected = interface or network.get("primary")
+            adapter = network.get("interfaces", {}).get(selected, {})
+            try:
+                if (not isinstance(early_address, str) or not re.fullmatch(r"[0-9.]+/(?:0|[1-9][0-9]?)", early_address)
+                        or adapter.get("mode", "static") != "static"):
+                    raise ValueError
+                override = ipaddress.IPv4Interface(early_address)
+                original = ipaddress.IPv4Interface(adapter["address"])
+                if override.network != original.network:
+                    raise ValueError
+            except (ValueError, KeyError, TypeError):
+                raise ValueError(_("The RPi early-boot address must use the selected interface's IPv4 subnet and prefix.")) from None
         for field in ("initrdHostKey", "recoveryHostKey"):
             key = value.get(field)
             if key is not None and (not isinstance(key, str) or not re.fullmatch(r"ssh-ed25519 [A-Za-z0-9+/]+=*( [^\n\r]*)?", key)):
                 raise ValueError(_("RPi host-key pins must be public Ed25519 SSH keys."))
-    return {**value, "mode": mode, "unlock": unlock, "port": port}
+    result = {**value, "mode": mode, "unlock": unlock, "port": port}
+    if rpi and result.get("address") is None:
+        result.pop("address", None)
+    return result
 
 
 def require_supported(target, method="image"):
@@ -236,7 +262,19 @@ def prepare_image(recipe, name, target, destination, *, key_file=None, dry_run=F
     return plan | {"systemPath": system, "initrdHostKey": public_key}
 
 
-def unlock(target, address, *, dry_run=False):
+def default_unlock_address(target):
+    """Only named physical targets declare a deterministic early-boot endpoint."""
+    if target["backend"] != "rpi" or not target["spec"].get("network"):
+        return None
+    network = target["spec"]["network"]
+    security = policy(target)
+    if security.get("address") is not None:
+        return security["address"].split("/", 1)[0]
+    interface = security.get("interface") or network["primary"]
+    return network["interfaces"][interface]["address"].split("/", 1)[0]
+
+
+def unlock(target, address=None, *, dry_run=False):
     security = require_supported(target)
     if security["mode"] != "luks":
         raise ValueError(_("unlock requires security.mode = luks."))
@@ -251,6 +289,9 @@ def unlock(target, address, *, dry_run=False):
         image, metadata = artifact(target)
         identity = target["spec"]["uuid"]
     import ipaddress
+    address = address or default_unlock_address(target)
+    if not address:
+        raise ValueError(_("Specify the early-boot VM IP address with unlock TARGET --address IP."))
     address = str(ipaddress.ip_address(address))
     if "%" in address:
         raise ValueError(_("Use an IPv4 or unscoped IPv6 guest address."))

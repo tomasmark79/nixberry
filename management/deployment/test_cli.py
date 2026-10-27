@@ -3,6 +3,7 @@
 
 import contextlib
 import ast
+import gettext
 import io
 import json
 import os
@@ -15,6 +16,90 @@ import unittest
 from unittest.mock import Mock, patch
 
 MAIN = runpy.run_path(str(Path(__file__).with_name("cli.py")))["main"]
+
+
+class NamedShowChecks(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        source = Path(__file__).with_name("locales") / "cs/LC_MESSAGES/nixberry.po"
+        result = subprocess.run(["msgfmt", "--check", "-o", "-", str(source)], capture_output=True, check=True)
+        cls.czech = gettext.GNUTranslations(io.BytesIO(result.stdout))
+
+    def rpi(self):
+        return {"backend": "rpi", "host": "rpi-demo", "profile": "rpi-demo", "configuration": "default",
+                "capabilities": {"build": True, "export": True, "hypervisor": False, "system": True}, "commands": {"probe": "/unused"},
+                "security": {"mode": "luks", "interface": "wan0"},
+                "spec": {"hostName": "rpi-demo", "address": "192.168.50.1/24", "hardwareSerial": "0000000000000001",
+                         "diskDevice": "/dev/disk/by-id/usb-EXAMPLE", "network": {
+                             "primary": "lan0", "recoveryInterface": "lan0", "dns": ["1.1.1.1"], "interfaces": {
+                                 "lan0": {"mac": "02:00:00:00:00:01", "mode": "static", "address": "192.168.50.1/24", "gateway": ""},
+                                 "wan0": {"mac": "02:00:00:00:00:02", "mode": "static", "address": "10.0.0.2/24", "gateway": "10.0.0.1"}}}}}
+
+    def vm(self, named=True):
+        target = {"backend": "libvirt", "host": "test-host", "profile": "nixberry-vm", "configuration": "default",
+                  "capabilities": {"build": True, "export": True, "hypervisor": True, "system": True}, "commands": {"probe": "/unused"},
+                  "network": {"mode": "dhcp", "interfaces": {"lan0": {"mode": "static", "address": "192.168.50.1/24"}}},
+                  "spec": {"name": "vm-demo-test", "vcpus": 2, "memoryMiB": 2048, "diskGiB": 16}}
+        if named:
+            target["spec"]["networkAdapters"] = [{"name": "wan0", "mac": "52:54:00:00:00:01"},
+                                                   {"name": "lan0", "mac": "52:54:00:00:00:02"}]
+        return target
+
+    def show(self, target, language="en", as_json=False):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with tempfile.TemporaryDirectory() as directory:
+            registry = Path(directory) / "registry.json"
+            registry.write_text(json.dumps({"test": target}))
+            return self.show_from_registry(target, language, as_json, registry, stdout, stderr)
+
+    def show_from_registry(self, target, language, as_json, registry, stdout, stderr):
+        with patch.dict(MAIN.__globals__, {"operations": Mock(return_value=["show"])}), \
+                patch.dict(os.environ, {"NIXBERRY_LANG": language, "NIXBERRY_DEPLOYMENT": str(registry)}), \
+                patch("messages._catalog", side_effect=lambda lang: self.czech if lang == "cs" else gettext.NullTranslations()), \
+                patch("subprocess.run", side_effect=AssertionError("show must not contact machines")), \
+                contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            self.assertEqual(MAIN(["show", "test", *(["--json"] if as_json else [])]), 0)
+        self.assertNotIn("[nixberry]", stdout.getvalue())
+        return stdout.getvalue()
+
+    def test_named_rpi_show_explains_management_recovery_and_unlock_in_english_and_czech(self):
+        for language, primary, recovery, unlock, row in [
+            ("en", "Primary interface: lan0", "Recovery interface: lan0", "Early-unlock interface: wan0", "Interface wan0: MAC"),
+            ("cs", "Primární rozhraní: lan0", "Obnovovací rozhraní: lan0", "Rozhraní počátečního odemčení: wan0", "Rozhraní wan0: MAC"),
+        ]:
+            with self.subTest(language=language):
+                output = self.show(self.rpi(), language)
+                for expected in [primary, recovery, unlock, row, "10.0.0.2/24", "10.0.0.1", "luks"]:
+                    self.assertIn(expected, output)
+        self.assertIn("Security: luks; unlock: manual", self.show(self.rpi()))
+        target = self.rpi()
+        target["security"].update(interface="lan0", address="192.168.50.59/24")
+        self.assertIn("Early-unlock address: 192.168.50.59/24", self.show(target))
+        self.assertIn("Adresa počátečního odemčení: 192.168.50.59/24", self.show(target, "cs"))
+        self.assertIn("address 192.168.50.1/24", self.show(target))
+
+    def test_named_vm_show_and_legacy_output_boundary(self):
+        for language, primary, row in [("en", "Primary interface: wan0", "Interface lan0: MAC"),
+                                       ("cs", "Primární rozhraní: wan0", "Rozhraní lan0: MAC")]:
+            with self.subTest(language=language):
+                output = self.show(self.vm(), language)
+                self.assertIn(primary, output)
+                self.assertIn(row, output)
+                self.assertIn("192.168.50.1/24", output)
+                self.assertIn("dhcp", output)
+                self.assertNotIn("Recovery interface:", output)
+        output = self.show(self.vm(named=False))
+        self.assertIn("Network: DHCP", output)
+        self.assertNotIn("Primary interface:", output)
+        self.assertNotIn("MAC", output)
+
+    def test_show_json_keeps_the_original_data_for_both_languages_and_platforms(self):
+        for target in [self.rpi(), self.vm()]:
+            for language in ["en", "cs"]:
+                with self.subTest(backend=target["backend"], language=language):
+                    output = self.show(target, language, as_json=True)
+                    self.assertEqual(json.loads(output), {**{key: value for key, value in target.items() if key != "commands"},
+                                                         "operations": ["show"]})
 
 
 class HelpChecks(unittest.TestCase):

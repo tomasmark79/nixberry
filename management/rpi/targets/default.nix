@@ -8,6 +8,6 @@ in
 builtins.listToAttrs (
   map (file: {
     name = builtins.substring 0 (builtins.stringLength file - 4) file;
-    value = import (./. + "/${file}");
+    value = import ../normalize-target.nix (import (./. + "/${file}"));
   }) names
 )

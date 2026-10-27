@@ -66,7 +66,12 @@
               ./platforms/rpi/configuration.nix
               ./platforms/rpi/boot.nix
               configurations.modules.${configurations.select target}
-              { nixberry.rpi = builtins.removeAttrs target [ "configuration" "backup" ]; }
+              {
+                nixberry.rpi = builtins.removeAttrs target [
+                  "configuration"
+                  "backup"
+                ];
+              }
             ];
           };
         in
@@ -92,9 +97,15 @@
         _: target:
         nixos-raspberrypi.lib.nixosSystem {
           system = "aarch64-linux";
+          specialArgs.nixberryRpiRecovery = true;
           modules = [
             ./management/rpi/recovery.nix
-            { nixberry.rpi = builtins.removeAttrs target [ "configuration" "backup" ]; }
+            {
+              nixberry.rpi = builtins.removeAttrs target [
+                "configuration"
+                "backup"
+              ];
+            }
           ];
         }
       ) rpiTargets;
@@ -121,11 +132,33 @@
           systemPath = toString system.config.system.build.toplevel;
           diskoPath = toString system.config.system.build.diskoScript;
         }
+        // lib.optionalAttrs (cfg.network != null) { inherit (cfg) network gateway dns; }
         // lib.optionalAttrs (cfg.security.mode != "none") { inherit (cfg) security; }
       ) rpiSystems;
       encryptedRpiConfigs = builtins.filter (cfg: cfg.security.mode == "luks") (
         map (system: system.config.nixberry.rpi) (builtins.attrValues rpiSystems)
       );
+      recoveryAdapters =
+        cfg:
+        if cfg.network == null then
+          [
+            {
+              unit = cfg.hardwareSerial;
+              mac = cfg.lanMac;
+              dhcp = false;
+              inherit (cfg) address gateway dns;
+            }
+          ]
+        else
+          lib.mapAttrsToList (name: value: {
+            unit = "${cfg.hardwareSerial}-${name}";
+            inherit (value) mac;
+            dhcp = name == cfg.network.recoveryInterface;
+            address = "";
+            gateway = "";
+            dns = [ ];
+          }) cfg.network.interfaces;
+      encryptedRpiAdapters = lib.concatMap recoveryAdapters encryptedRpiConfigs;
       mkRpiInstaller =
         offline:
         nixos-raspberrypi.nixosConfigurations.rpi5-installer.extendModules {
@@ -136,8 +169,8 @@
                 assertions = [
                   {
                     assertion =
-                      builtins.length encryptedRpiConfigs
-                      == builtins.length (lib.unique (map (cfg: cfg.lanMac) encryptedRpiConfigs));
+                      builtins.length encryptedRpiAdapters
+                      == builtins.length (lib.unique (map (adapter: adapter.mac) encryptedRpiAdapters));
                     message = "Encrypted RPi recovery targets must have distinct primary MAC addresses.";
                   }
                 ];
@@ -147,19 +180,23 @@
                   enable = true;
                   networks =
                     builtins.listToAttrs (
-                      map (cfg: {
-                        name = "00-nixberry-${cfg.hardwareSerial}";
+                      map (adapter: {
+                        name = "00-nixberry-${adapter.unit}";
                         value = {
-                          matchConfig.MACAddress = cfg.lanMac;
-                          address = [ cfg.address ];
-                          gateway = [ cfg.gateway ];
-                          dns = cfg.dns;
-                          networkConfig = {
-                            DHCP = "no";
-                            IPv6AcceptRA = false;
+                          matchConfig.MACAddress = adapter.mac;
+                          address = lib.optional (adapter.address != "") adapter.address;
+                          gateway = lib.optional (adapter.gateway != "") adapter.gateway;
+                          dns = adapter.dns;
+                          linkConfig = lib.optionalAttrs (adapter.address == "") {
+                            RequiredForOnline = if adapter.dhcp then "yes" else "no";
                           };
+                          networkConfig = {
+                            DHCP = if adapter.dhcp then "ipv4" else "no";
+                            IPv6AcceptRA = false;
+                          }
+                          // lib.optionalAttrs (adapter.address == "") { LinkLocalAddressing = "no"; };
                         };
-                      }) encryptedRpiConfigs
+                      }) encryptedRpiAdapters
                     )
                     // {
                       "90-recovery-dhcp" = {

@@ -177,10 +177,14 @@ security = {
 
 Use real public keys from that trusted preparation. Remote encrypted installation
 requires the recovery pin and checks it before connecting. It never learns the
-key from an unverified network connection. Physical board serial, primary MAC,
+key from an unverified network connection. Physical board serial, declared adapter MACs,
 disk serial, mounted disks and prepared-media policy are checked independently.
-Recovery images use each encrypted target's declared static address for its
-primary MAC. Other Ethernet interfaces retain DHCP recovery access.
+Named targets use bootstrap-only networking in SD/RAM recovery: DHCP on
+`network.recoveryInterface` (default `network.primary`), with other declared
+adapters unaddressed and DHCP/RA disabled. Desired installed addresses, gateways
+and DNS are not activated before installation. Flat targets retain their existing
+primary-MAC static recovery setup. Other Ethernet interfaces retain the legacy
+DHCP recovery policy.
 
 ```bash
 nixberry plan rpi-demo --address 192.168.50.20 --erase-existing
@@ -207,8 +211,34 @@ host key. Keep `/etc/secrets/initrd/ssh_host_ed25519_key` in the encrypted root
 for subsequent updates; its independent copy in the boot initrd is necessarily
 readable from the unencrypted firmware partition.
 
-Early SSH uses the declared primary adapter MAC and static address, including
-RPi5 RP1 and USB storage support before root is mounted. Unlock and verify with:
+Early SSH uses the primary adapter by default. A named physical declaration may
+select another static adapter with `security.interface = "wan0";`. Initrd enables
+only that adapter, with its declared address, gateway and per-link DNS; ordinary
+management still uses `network.primary`. Omitting the selector in a flat
+declaration preserves the existing primary-MAC behavior.
+
+Named RPi networks may optionally use a separate early-boot IPv4 CIDR through `security.address`.
+For example, an installed WAN primary and LAN `10.123.0.1/24` can unlock locally
+with `security.interface = "lan0"; security.address = "10.123.0.59/24";`. Reserve
+that address independently of DHCP leases. The override must use the selected
+adapter's subnet and prefix; its gateway and per-link DNS stay unchanged. Installed
+network facts and SD/RAM recovery networking remain unchanged. Omitting the field
+or setting it to `null` retains the selected adapter's installed address. VM
+security declarations do not support this physical-board setting.
+These settings apply to the next installed boot and do not bypass live network
+identity checks during an update. See [RPi network transitions](rpi-recovery.md#updating-network-declarations).
+
+RPi5 RP1, storage and common USB Ethernet modules are available before root is
+mounted. Evaluation and image builds do not prove that a particular USB adapter
+works in initrd; verify cold boot and remote unlock on the intended hardware.
+
+For named RPi targets, `unlock` can derive the selected static address when
+`--address` is omitted, including a declared `security.address` override. Flat RPi
+declarations and VM targets retain their explicit
+early-boot address requirement. An explicit `--address` still overrides discovery.
+Protected router-address checks remain unchanged; a gateway can use a declared
+WAN management/unlock interface or another explicitly selected valid endpoint.
+Unlock and verify with:
 
 ```bash
 nixberry unlock rpi-demo --address 192.168.50.20

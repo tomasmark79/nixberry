@@ -2867,8 +2867,8 @@ msgstr "Adresa pro odemknutí při počátečním startu nebo aktuální adresa 
 msgid "The encrypted mapping does not belong to the verified RPi disk."
 msgstr "Šifrované mapování nepatří k ověřenému disku RPi."
 
-msgid "Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET --address IP opens the pinned early-boot identity.\n  prepare-image applies only to VM disks. See docs/security.md."
-msgstr "Šifrované Raspberry Pi:\n  V deklaraci fyzického cíle nastav security.mode = luks.\n  Nastav security.initrdHostKey a security.recoveryHostKey podle důvěryhodné přípravy média.\n  reproduce používá obnovovací médium a --initrd-key-file; vyžádá si heslo LUKS.\n  unlock TARGET --address IP otevře ověřenou identitu počátečního startu.\n  prepare-image platí pouze pro disky VM. Viz docs/security.md."
+msgid "Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET [--address IP] opens the pinned early-boot identity.\n  Named networks use security.interface or network.primary; legacy targets require --address.\n  prepare-image applies only to VM disks. See docs/security.md."
+msgstr "Šifrované Raspberry Pi:\n  V deklaraci fyzického cíle nastavte security.mode = luks.\n  Uložte security.initrdHostKey a security.recoveryHostKey z důvěryhodné přípravy média.\n  reproduce používá obnovovací médium a --initrd-key-file; vyžádá si heslo LUKS.\n  unlock TARGET [--address IP] otevře ověřenou identitu počátečního spouštění.\n  Pojmenované sítě používají security.interface nebo network.primary; starší cíle vyžadují --address.\n  prepare-image se vztahuje pouze na disky VM. Viz docs/security.md."
 
 msgid "\nNamed adapters: read NETWORKS.txt and preserve all declared MAC addresses.\n"
 msgstr "\nPojmenované adaptéry: přečti NETWORKS.txt a zachovej všechny deklarované MAC adresy.\n"
@@ -3065,3 +3065,21 @@ msgstr "Aktualizace systému proběhla úspěšně, ale příprava záloh selhal
 
 msgid "\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.\n  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review source-owned backup provisioning; --apply refreshes runtime access and recovery code.\n\nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
 msgstr "\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek s --output DIR ke kontrole; nezapíná je.\n  backup-check TARGET    Kontrola stáří záloh a historie běhů; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled přípravy záloh na zdroji; --apply obnoví provozní přístup a kód pro obnovu.\n\nPravidla záloh jsou v deklaraci cíle. Klíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
+
+msgid "Primary interface: {interface}"
+msgstr "Primární rozhraní: {interface}"
+
+msgid "Recovery interface: {interface}"
+msgstr "Obnovovací rozhraní: {interface}"
+
+msgid "Early-unlock interface: {interface}"
+msgstr "Rozhraní počátečního odemčení: {interface}"
+
+msgid "Interface {name}: MAC {mac}; mode {mode}; address {address}; gateway {gateway}"
+msgstr "Rozhraní {name}: MAC {mac}; režim {mode}; adresa {address}; brána {gateway}"
+
+msgid "Early-unlock address: {address}"
+msgstr "Adresa počátečního odemčení: {address}"
+
+msgid "The RPi early-boot address must use the selected interface's IPv4 subnet and prefix."
+msgstr "Adresa počátečního spouštění RPi musí používat IPv4 podsíť a prefix vybraného rozhraní."

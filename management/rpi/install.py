@@ -45,6 +45,9 @@ def validate(snapshot, target, *, installation, erase_existing=False):
     require(snapshot["serial"] == target["hardwareSerial"], _("RPi serial number does not match."))
     require(any(link.get("address") == target["lanMac"] for link in snapshot["links"]),
             _("Primary adapter MAC address does not match."))
+    for adapter in target.get("network", {}).get("interfaces", {}).values():
+        require(any(link.get("address", "").lower() == adapter["mac"] for link in snapshot["links"]),
+                _("The RPi network adapter does not match the declaration."))
     disks = [disk for disk in snapshot["disks"] if disk["path"] == snapshot["device"]]
     require(len(disks) == 1 and disks[0]["type"] == "disk", _("The target is not an unambiguous physical disk."))
     disk = disks[0]

@@ -135,6 +135,40 @@ def operations(target):
 HELP_COMMANDS = "Everyday management:\n  list                         Local target inventory and available management capabilities.\n  show TARGET                  Target declaration, capacity, network and available operations.\n  status [TARGET]              Live status; hosts are queried concurrently and rows appear as ready.\n  ssh TARGET [-- COMMAND ...]  Log in or run a command on the server.\n  verify TARGET                Check the running system against the recipe, disk and services.\n  doctor [TARGET]              Diagnose one or all targets.\n  probe TARGET                 Detailed platform discovery for troubleshooting.\n\nUpdates and comparisons:\n  update TARGET                Update plan; --apply builds and activates the system.\n  diff TARGET                  Running system against the current recipe BEFORE an update.\n  diffg TARGET                 The two highest retained server generations.\n                               diff builds locally; diffg runs on the server.\n\nNew VM declarations (write a local file, do not create a VM):\n  new-libvirt-vm NAME          VM declaration for QEMU/KVM (libvirt).\n  new-hyperv-vm NAME           VM declaration for Hyper-V.\n  new-proxmox-vm NAME          Proxmox VE VM declaration with editable networking.\n  new-virtualbox-vm NAME       VM declaration for VirtualBox.\n  new-vmware-vm NAME           VM declaration for VMware Workstation.\n                               --host selects a host; a sole matching host is selected automatically.\n                               --offline prepares any backend without a hypervisor.\n                               --configuration NAME selects a server configuration; default is default.\n                               --dry-run does not write the file. new-* names without -vm are aliases.\n\nDeployment, recovery and offline transfer (subject to platform capabilities):\n  plan TARGET                  Read-only VM creation or RPi recovery plan.\n  reproduce TARGET             Complete deployment/recovery; execution requires --apply.\n  create TARGET                Create a VM; execution requires --apply.\n  install TARGET               Complete the selected deployment method; requires --apply.\n  provision TARGET             Create and install; execution requires --apply.\n  reset TARGET                 Remove an authorized VM on any of the five backends.\n                               Requires allowReset = true in the instance; without --apply, verifies only.\n  export TARGET --output DIR   Offline bundle with disk or ISO and recipe in a new directory.\n  cleanup [TARGET]             Preview cleanup candidates; deletes nothing.\n                               --artifact-root DIR adds image inspection.\n\nUsage and modes:\n  Without a command, list is shown. TARGET is a declaration name, not an IP address.\n  show TARGET lists the operations available for a particular target.\n  update/create/install/provision/reproduce/reset only plan without --apply.\n  new-* and export normally write locally; --dry-run shows a plan without writing.\n  diff/diffg may read the server and diff builds the recipe; --dry-run only shows the plan.\n  --ssh root@HOST:PORT overrides SSH access to an offline VM of any backend.\n  --method image is the default for all VMs: import a prebuilt disk and verify boot.\n  --method iso installs to a blank disk, detaches the ISO and verifies system boot.\n  Set deploymentMethod in a declaration for a persistent default; --method overrides it.\n  Applies to new-*, show, plan, create, install, provision, reproduce and export.\n  --offline prepares without a hypervisor, independently of the method. RPi uses SD.\n  diff shows pending changes. After an update it is usually empty; use diffg.\n\nExamples:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOST\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan rpi-demo --address 192.168.50.20\n\nDetailed operating guide: README.md in the NixBerry recipe root.\nComplete command and option reference: docs/cli.md.\n"
 
 
+def show_named_network(target):
+    """Show explicit NIC declarations without querying a guest or changing JSON."""
+    spec = target["spec"]
+    if target["backend"] == "rpi":
+        network = spec.get("network")
+        if not network:
+            return
+        primary = network["primary"]
+        print(_("Primary interface: {interface}").format(interface=primary))
+        print(_("Recovery interface: {interface}").format(interface=network.get("recoveryInterface", primary)))
+        security = security_policy(target)
+        if security["mode"] == "luks":
+            print(_("Early-unlock interface: {interface}").format(interface=security.get("interface") or primary))
+            if security.get("address") is not None:
+                print(_("Early-unlock address: {address}").format(address=security["address"]))
+        rows = [{"name": name, **value} for name, value in sorted(network["interfaces"].items())]
+    else:
+        adapters = spec.get("networkAdapters", [])
+        if not adapters:
+            return
+        print(_("Primary interface: {interface}").format(interface=adapters[0]["name"]))
+        network = target.get("network", {})
+        rows = []
+        for index, adapter in enumerate(adapters):
+            value = network if index == 0 else network.get("interfaces", {}).get(adapter["name"], {})
+            rows.append({"name": adapter["name"], "mac": adapter["mac"],
+                         "mode": value.get("mode", "dhcp" if index == 0 else "disabled"),
+                         "address": value.get("address", ""), "gateway": value.get("gateway", "")})
+    for row in rows:
+        print(_("Interface {name}: MAC {mac}; mode {mode}; address {address}; gateway {gateway}").format(
+            name=row["name"], mac=row["mac"], mode=row.get("mode", "static"),
+            address=row.get("address") or "-", gateway=row.get("gateway") or "-"))
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     remote_command = []
@@ -145,7 +179,7 @@ def main(argv=None):
         prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."),
         epilog=_(HELP_COMMANDS) + _(BACKUP_HELP) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths.")
         + "\n\n" + _("Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed.")
-        + "\n\n" + _("Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET --address IP opens the pinned early-boot identity.\n  prepare-image applies only to VM disks. See docs/security.md."),
+        + "\n\n" + _("Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET [--address IP] opens the pinned early-boot identity.\n  Named networks use security.interface or network.primary; legacy targets require --address.\n  prepare-image applies only to VM disks. See docs/security.md."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version",
@@ -362,7 +396,8 @@ def main(argv=None):
         print(json.dumps(result, indent=2) if args.json or args.dry_run else result["destination"])
         return 0
     if args.action == "unlock":
-        if not args.address:
+        from security import default_unlock_address
+        if not args.address and default_unlock_address(target) is None:
             parser.error(_("Specify the early-boot VM IP address with unlock TARGET --address IP."))
         result = unlock(target, args.address, dry_run=args.dry_run)
         if args.dry_run:
@@ -455,7 +490,7 @@ def main(argv=None):
             print(_("Hypervisor: {value1}").format(value1=target["host"] if caps["hypervisor"] else _("unmanaged")))
             if target["backend"] != "rpi":
                 print(_("Deployment method: {method}").format(method=args.method or deployment_method(target)))
-                print(_("Security: {mode}; unlock: {unlock}").format(**security_policy(target)))
+            print(_("Security: {mode}; unlock: {unlock}").format(**security_policy(target)))
             print(_("Build/export: yes; system management: {value1}").format(value1=_("configured") if caps["system"] else _("unconfigured")))
             print(_("Platform profile: {value1}").format(value1=target["profile"]))
             if target["backend"] != "rpi":
@@ -479,6 +514,7 @@ def main(argv=None):
                     print(_("Network: {value1}, gateway {value2}, DNS {value3}").format(value1=network["address"], value2=network["gateway"], value3=", ".join(network["dns"])))
                 else:
                     print(_("Network: DHCP"))
+            show_named_network(target)
             print(_("Operation: {value1}").format(value1=", ".join(operations(target))))
             if not caps["system"]:
                 info(_("Export: {command}"), command=f"nixberry export {args.target} --output ~/{args.target}-offline")
