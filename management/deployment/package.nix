@@ -9,6 +9,7 @@ let
       root = ./.;
       fileset = pkgs.lib.fileset.unions [
         ./cli.py
+        ./backups.py
         ./dispatch.py
         ./discovery.py
         ./runtime.py
@@ -135,10 +136,16 @@ in
     pkgs.nix
     pkgs.nvd
     pkgs.qemu
+    pkgs.age
+    pkgs.zstd
+    pkgs.gnutar
+    pkgs.git
+    pkgs.systemd
     pkgs.openssh
   ];
   text = ''
     export NIXBERRY_VERSION=${pkgs.lib.escapeShellArg version}
+    export NIXBERRY_BACKUP_GUEST_PYTHON=${pkgs.python3}/bin/python3
     export NIXBERRY_DEPLOYMENT=${manifest}
     export NIXBERRY_DEPLOYMENT_HOSTS=${hosts}
     export PYTHONPATH=${source}

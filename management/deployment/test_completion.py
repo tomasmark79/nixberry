@@ -1,6 +1,7 @@
 """Základní doplňování bez nástrojů; schopnosti z místního Nixu, bez sítě a buildů."""
 
 import ast
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -9,6 +10,22 @@ import unittest
 
 
 class CompletionTests(unittest.TestCase):
+    def test_backup_options_source_selection_and_local_snapshot_completion(self):
+        repository = Path(self.tmp.name) / 'private-backups'; repository.mkdir(mode=0o700)
+        identity = 'b' * 32
+        directory = repository / ('snapshot-' + identity); directory.mkdir(mode=0o700)
+        (directory / 'receipt.json').write_text(json.dumps({'target': 'kozlonix', 'snapshotId': identity, 'verification': {'status': 'ok'}}))
+        declaration = self.root / 'instances/kozlonix.nix'
+        declaration.write_text('{ host="local"; spec.name="kozlonix"; backup={'
+            'enable=true; provider="configurations/server/provider.py"; repository=' + json.dumps(str(repository)) + ';'
+            'identityFile="/private/key"; recipient="age1' + 'a'*58 + '"; restoreBackends=["libvirt"]; }; }')
+        self.assertEqual(self.complete('restore', 'kozlonix', '--from', 'koz'), ['kozlonix'])
+        self.assertEqual(self.complete('verify-backup', 'kozlonix', '--snapshot', 'b'), [identity])
+        self.assertEqual(self.complete('restore', 'other', '--from', 'kozlonix', '--snapshot', 'b'), [identity])
+        self.assertIn('--apply', self.complete('backup', 'kozlonix', '--'))
+        self.assertNotIn('--apply', self.complete('backups', 'kozlonix', '--'))
+        self.assertIn('--output', self.complete('backup-schedule', 'kozlonix', '--'))
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
@@ -25,7 +42,7 @@ class CompletionTests(unittest.TestCase):
         shutil.copyfile(self.recipe / "completion.bash", self.root / "completion.bash")
         (self.root / 'management/deployment').mkdir(parents=True)
         shutil.copyfile(self.recipe / 'management/rpi/security.nix', self.root / 'management/rpi/security.nix')
-        for name in ('default.nix', 'security.nix', 'vm-network.nix', 'configurations.nix', 'operations.nix', 'completion-targets.nix', 'shell-path.sh', 'messages.sh'):
+        for name in ('default.nix', 'security.nix', 'vm-network.nix', 'configurations.nix', 'operations.nix', 'backup-policy.nix', 'completion-targets.nix', 'completion-snapshots.nix', 'shell-path.sh', 'messages.sh'):
             shutil.copyfile(Path(__file__).with_name(name), self.root / 'management/deployment' / name)
         (self.root / 'configurations').mkdir()
         (self.root / 'flake.nix').write_text('{}')
@@ -64,7 +81,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
             for keyword in node.keywords if keyword.arg == "choices"
         )
         self.assertEqual(self.complete(""), list(choices))
-        self.assertEqual(self.complete("ver"), ["verify"])
+        self.assertEqual(self.complete("ver"), ["verify", "verify-backup"])
 
     def test_targets_and_prefix(self):
         self.assertEqual(self.complete("verify", ""), ["kozlonix", "nixberry"])
@@ -215,7 +232,7 @@ NIXBERRY_RECIPE=/missing-nixberry-recipe
                 self.assertIn("--offline", self.complete(action, "nova", "--"))
 
     def test_options_and_consumed_target(self):
-        self.assertEqual(self.complete("--json", "ver"), ["verify"])
+        self.assertEqual(self.complete("--json", "ver"), ["verify", "verify-backup"])
         self.assertEqual(self.complete("--host", "example", "verify", "koz"), ["kozlonix"])
         self.assertEqual(self.complete("verify", "--ssh=example", "koz"), ["kozlonix"])
         self.assertEqual(self.complete("verify", "--ssh", ""), [])

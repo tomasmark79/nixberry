@@ -8,6 +8,24 @@ not prove a real hypervisor works.
 
 ## Isolated checks
 
+The backup controller tests compare policy validation and operation availability
+for all five VM backends and RPi, including image/ISO and offline/direct-access
+variants. Provider fixtures check explicit recipe selection, snapshot/target
+identity, JSON/error streams, no provider execution during dry-run, private timer
+export and refusal to overwrite an existing export. Completion tests use only
+local declarations/receipts. Configuration-specific tests must additionally cover
+crypto EOF, interrupted transport, retained-copy verification, concurrent access
+and retention refusal for partial, corrupt, unknown or changed state.
+
+Live backup acceptance is separate: use an authorized isolated source/restore
+target and host fence, capture through the main CLI, authenticate complete payloads,
+restore only into an empty distinct target and activate recovered configuration
+separately. Verify existing data without recreating it, numeric ownership and
+service identities, then gracefully reboot and repeat application checks. Keep
+protected evidence outside Git. Timer export/validation does not prove scheduled
+execution or authorize activation; backup tests do not authorize VM creation,
+reinstallation or removal. See [the backup contract](backups.md).
+
 The named-adapter contract is exercised by `test_multinic.py` across all five VM
 backends, including guest addressing, LUKS initrd selection, adapter identity and
 management endpoint rejection. For live verification, use a separately authorized

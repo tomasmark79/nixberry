@@ -21,6 +21,19 @@ from recipe_source import materialized_recipe
 from discovery import collect_status
 from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, ArgumentParser, error as report_error
+from backups import ACTIONS as BACKUP_ACTIONS, available as backup_operations, run as run_backup
+
+BACKUP_HELP = """\nEncrypted backup commands:
+  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.
+  backups TARGET         List locally recorded snapshots without contacting the source.
+  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.
+  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.
+  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.
+  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.
+  backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.
+\nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.
+Restore does not create a VM, activate configuration or reboot. See docs/backups.md.
+"""
 
 
 def table(headers, rows):
@@ -102,6 +115,7 @@ def image_table(images):
 def operations(target):
     caps = capabilities(target)
     result = ["show", "export"]
+    result += backup_operations(target)
     if security_policy(target)["mode"] != "none":
         result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
@@ -126,7 +140,7 @@ def main(argv=None):
         argv, remote_command = argv[:delimiter], argv[delimiter + 1:]
     parser = ArgumentParser(
         prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."),
-        epilog=_(HELP_COMMANDS) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths.")
+        epilog=_(HELP_COMMANDS) + _(BACKUP_HELP) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths.")
         + "\n\n" + _("Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed.")
         + "\n\n" + _("Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET --address IP opens the pinned early-boot identity.\n  prepare-image applies only to VM disks. See docs/security.md."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -136,7 +150,8 @@ def main(argv=None):
     parser.add_argument("action", metavar=_("COMMAND"), help=_("Command from the list below (default: list)"), nargs="?", default="list",
                         type=lambda value: value + "-vm" if value in ("new-libvirt", "new-hyperv", "new-proxmox", "new-virtualbox", "new-vmware") else value, choices=(
         "list", "show", "status", "ssh", "probe", "plan", "create", "install", "provision", "reset",
-        "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup", "prepare-image", "unlock"))
+        "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup", "prepare-image", "unlock",
+        "backup", "backups", "verify-backup", "restore", "recover-source", "backup-prune", "backup-schedule"))
     parser.add_argument("target", metavar=_("TARGET"), nargs="?", help=_("Existing target name, or a new name for new-*"))
     parser.add_argument("--host", help=_("Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"))
     parser.add_argument("--offline", action="store_true", help=_("Prepare any VM offline without a hypervisor; cannot be combined with --host"))
@@ -146,7 +161,9 @@ def main(argv=None):
     parser.add_argument("--initrd-key-file", help=_("Private runtime SSH host key for encrypted RPi reproduction"))
     parser.add_argument("--method", choices=("iso", "image"), help=_("VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"))
     parser.add_argument("--ssh", help=_("One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"))
-    parser.add_argument("--output", help=_("New offline bundle directory; relative paths are resolved from the working directory"))
+    parser.add_argument("--output", help=_("New export, source recovery or backup schedule directory; relative paths use the working directory"))
+    parser.add_argument("--snapshot", help=_("Explicit encrypted snapshot ID from backups TARGET"))
+    parser.add_argument("--from", dest="backup_source", help=_("Declared backup source for restoration into a distinct target"))
     parser.add_argument("--address", help=_("Early-boot unlock address or current RPi recovery address"))
     parser.add_argument("--erase-existing", action="store_true", help=_("Include SSD erasure during RPi recovery"))
     parser.add_argument("--json", action="store_true", help=_("Machine-readable output for inventory, diagnostics, verify and export"))
@@ -156,6 +173,10 @@ def main(argv=None):
     modes.add_argument("--apply", action="store_true", help=_("Apply changes for update and deployment/recovery operations"))
     modes.add_argument("--dry-run", action="store_true", help=_("Show the plan without writing; diff/diffg without connections or builds"))
     args = parser.parse_args(argv)
+    if args.snapshot and args.action not in ("verify-backup", "restore", "recover-source"):
+        parser.error(_("--snapshot only applies to verify-backup, restore and recover-source."))
+    if args.backup_source and args.action != "restore":
+        parser.error(_("--from only applies to restore TARGET --from SOURCE."))
     if args.security is not None and not args.action.startswith("new-"):
         parser.error(_("--security only applies to new-*-vm; edit security in existing declarations."))
     if args.key_file and args.action not in ("prepare-image", "plan", "reproduce"):
@@ -196,11 +217,13 @@ def main(argv=None):
             parser.error(str(error))
     if (args.target in registry and args.action not in ("list", "show", "export", "status", "doctor")
             and not args.action.startswith("new-") and args.action not in registry[args.target]["operations"]):
+        if args.action in BACKUP_ACTIONS:
+            parser.error(_("Backup operation unavailable: enable source backup policy and configure live access for capture or restore."))
         parser.error(_("Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."))
     if args.artifact_root and args.action != "cleanup":
         parser.error(_("--artifact-root only applies to cleanup."))
-    if args.output and args.action not in ("export", "prepare-image"):
-        parser.error(_("--output only applies to export or prepare-image."))
+    if args.output and args.action not in ("export", "prepare-image", "recover-source", "backup-schedule"):
+        parser.error(_("--output applies to export, prepare-image, recover-source and backup-schedule."))
     if args.action.startswith("new-"):
         if args.apply or args.json or args.address or args.erase_existing:
             parser.error(_("new-* only creates a local declaration; it does not accept these options."))
@@ -244,9 +267,11 @@ def main(argv=None):
             args.action in ("plan", "reproduce") and args.target in registry
             and registry[args.target]["backend"] == "rpi"):
         parser.error(_("--address and --erase-existing only apply to plan/reproduce for RPi targets."))
-    if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup", "prepare-image"):
+    if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup", "prepare-image", *BACKUP_ACTIONS):
         parser.error(_("--json is available for list, show, status, verify, export, doctor and cleanup."))
     if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup", "prepare-image", "unlock") and args.apply:
+        parser.error(_("This operation does not accept --apply."))
+    if args.action in ("backups", "verify-backup", "backup-schedule") and args.apply:
         parser.error(_("This operation does not accept --apply."))
     if args.action in ("doctor", "cleanup"):
         if args.target and args.target not in registry:
@@ -302,6 +327,19 @@ def main(argv=None):
     if args.target not in registry:
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
+    if args.action in BACKUP_ACTIONS:
+        if args.action == "recover-source" and not args.output:
+            parser.error(_("recover-source requires --output NEW_DIRECTORY."))
+        result = run_backup(os.environ.get("NIXBERRY_RECIPE", ""), registry, args.action, args.target,
+                            source=args.backup_source, snapshot=args.snapshot, output=args.output,
+                            apply=args.apply, dry_run=args.dry_run)
+        if args.action == "backups" and not args.json and not args.dry_run:
+            table([_("Snapshot"), _("Created (UTC)"), _("State")], [
+                [row["snapshotId"], datetime.fromtimestamp(row["createdAt"], timezone.utc).strftime("%Y-%m-%d %H:%M"), row["state"]]
+                for row in result.get("snapshots", [])])
+        else:
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
     if (args.initrd_key_file or (args.key_file and args.action != "prepare-image")) and not (
             target["backend"] == "rpi" and security_policy(target)["mode"] == "luks"):
         parser.error(_("Runtime encryption keys require an encrypted RPi target."))

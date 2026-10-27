@@ -78,6 +78,7 @@ class ConfigurationChecks(unittest.TestCase):
     def test_vm_and_rpi_registry_keep_selection_out_of_hardware_spec(self):
         shutil.copyfile(Path(__file__).with_name("default.nix"), self.root / "management/deployment/default.nix")
         shutil.copyfile(Path(__file__).with_name("security.nix"), self.root / "management/deployment/security.nix")
+        shutil.copyfile(Path(__file__).with_name("backup-policy.nix"), self.root / "management/deployment/backup-policy.nix")
         shutil.copyfile(Path(__file__).with_name("vm-network.nix"), self.root / "management/deployment/vm-network.nix")
         (self.root / "hosts.nix").write_text("{}")
         (self.root / "instances/default.nix").write_text(
@@ -86,7 +87,7 @@ class ConfigurationChecks(unittest.TestCase):
         shutil.copyfile(Path(__file__).resolve().parents[1] / "rpi/security.nix", self.root / "management/rpi/security.nix")
         targets = self.root / "management/rpi/targets"
         targets.mkdir(parents=True)
-        (targets / "default.nix").write_text('{ pi = { configuration = "web"; hostName = "pi"; }; }')
+        (targets / "default.nix").write_text('{ pi = { configuration = "web"; hostName = "pi"; backup.enable = false; }; }')
         def registry():
             return json.loads(subprocess.check_output([
                 "nix", "eval", "--impure", "--json", "--expr",
@@ -94,5 +95,7 @@ class ConfigurationChecks(unittest.TestCase):
         for target in registry().values():
             self.assertEqual(target["configuration"], "web")
             self.assertNotIn("configuration", target["spec"])
+            self.assertNotIn("backup", target["spec"])
+            self.assertFalse(target['backup']['enable'])
         (targets / "default.nix").write_text('{ pi = { hostName = "pi"; }; }')
         self.assertEqual(registry()["pi"]["configuration"], "default")

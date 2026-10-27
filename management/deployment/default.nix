@@ -59,6 +59,7 @@ let
       configuration = configurations.select instance;
       deploymentMethod = instance.deploymentMethod or "image";
       security = import ./security.nix { security = instance.security or { }; };
+      backup = import ./backup-policy.nix (instance.backup or { });
       capabilities = {
         build = true;
         export = true;
@@ -98,6 +99,7 @@ let
     profile = name;
     backend = "rpi";
     configuration = configurations.select target;
+    backup = import ./backup-policy.nix (target.backup or { });
     capabilities = {
       build = true;
       export = true;
@@ -108,6 +110,7 @@ let
       "adminKeyFile"
       "configuration"
       "security"
+      "backup"
     ];
   } // (let security = import ../rpi/security.nix { security = target.security or { }; };
     in if security.mode == "none" then { } else { inherit security; })) (import ../rpi/targets);

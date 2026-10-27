@@ -3,6 +3,7 @@
 from messages import _, info, shell_script
 from runtime import deployment_method
 from recipe_source import materialized_recipe
+from backups import policy as backup_policy
 
 import hashlib
 import json
@@ -40,6 +41,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         return {"target": target_name, "destination": str(destination), "deploymentMethod": selected,
                 "configuration": target.get("configuration", "default"),
                 "allowReset": target.get("allowReset", False),
+                "backup": backup_policy(target),
                 **({"security": security} if security["mode"] != "none" else {}),
                 **({"preparedImageDirectory": security.get("imageDirectory")}
                    if security["mode"] != "none" and target["backend"] != "rpi" else {"build": [*command[:-1], "--no-link", command[-1]]})}
@@ -102,6 +104,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
             shutil.copyfile(Path(target["security"]["imageDirectory"]) / "encryption.json", root / "encryption.json")
         shutil.copyfile(artifacts[0], root / filename)
         manifest = {"target": target_name, "backend": backend, "profile": target["profile"], "deploymentMethod": selected,
+                    "backup": backup_policy(target),
                     "configuration": target.get("configuration", "default"),
                     "allowReset": target.get("allowReset", False),
                     "artifact": filename, "format": extension, "spec": target["spec"],

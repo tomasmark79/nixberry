@@ -95,6 +95,7 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
             + placement + f"  configuration = {quote(configuration)};\n" + network + f"  deploymentMethod = {quote(method or 'image')};\n"
             + f"  profile = {quote('nixberry-vm' if backend == 'libvirt' else 'nixberry-' + backend)};\n"
             + "  # Instance removal is disabled by default.\n  allowReset = false;\n"
+            + "  # Optional controller backup policy is described in docs/backups.md.\n"
             + ("" if security_mode == "none" else
                f'  security = {{\n    mode = {quote(security_mode)};\n    unlock = {quote(security["unlock"])};\n    port = 2222;\n'
                + '    # Prepared locally, outside the recipe and Nix store.\n'

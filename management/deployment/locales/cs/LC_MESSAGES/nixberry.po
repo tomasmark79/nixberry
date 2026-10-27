@@ -2926,3 +2926,85 @@ msgstr "Adaptéry VMware vyžadují připojení nat nebo pojmenované vmnet0–v
 
 msgid "networkAdapters must contain 1–8 ordered adapters."
 msgstr "networkAdapters musí obsahovat 1–8 adaptérů v určeném pořadí."
+
+msgid "\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List locally recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.\n\nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
+msgstr "\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam místních záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek s --output DIR ke kontrole; nezapíná je.\n\nPravidla záloh jsou v deklaraci cíle. Klíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
+
+msgid "--from only applies to restore TARGET --from SOURCE."
+msgstr "--from platí pouze pro restore TARGET --from SOURCE."
+
+msgid "--output applies to export, prepare-image, recover-source and backup-schedule."
+msgstr "--output platí pro export, prepare-image, recover-source a backup-schedule."
+
+msgid "--snapshot only applies to verify-backup, restore and recover-source."
+msgstr "--snapshot platí pouze pro verify-backup, restore a recover-source."
+
+msgid "Backup controller operations currently require Linux."
+msgstr "Operace řadiče záloh nyní vyžadují Linux."
+
+msgid "Backup operation unavailable: enable source backup policy and configure live access for capture or restore."
+msgstr "Operace záloh není dostupná: zapněte zálohování zdroje a pro pořízení zálohy nebo obnovu nastavte přístup k běžícímu cíli."
+
+#, python-brace-format
+msgid "Backup provider failed: {code}. Inspect retained private state before retrying."
+msgstr "Poskytovatel záloh selhal: {code}. Před dalším pokusem zkontrolujte zachovaný soukromý stav."
+
+msgid "Choose a new backup schedule directory outside the recipe."
+msgstr "Zvolte nový adresář s plánem záloh mimo recept."
+
+msgid "Declared backup source for restoration into a distinct target"
+msgstr "Deklarovaný zdroj záloh pro obnovu do jiného cíle"
+
+msgid "Enable backup in the source target declaration first."
+msgstr "Nejprve zapněte zálohování v deklaraci zdrojového cíle."
+
+msgid "Enabled backup requires a provider, private runtime paths, a public age recipient and valid scheduling/retention settings."
+msgstr "Zapnuté zálohování vyžaduje poskytovatele, soukromé provozní cesty, veřejného příjemce age a platné nastavení plánu a retence."
+
+msgid "Explicit encrypted snapshot ID from backups TARGET"
+msgstr "Výslovné ID šifrované zálohy ze seznamu backups TARGET"
+
+msgid "Invalid backup policy in the target declaration."
+msgstr "Neplatná pravidla záloh v deklaraci cíle."
+
+msgid "New export, source recovery or backup schedule directory; relative paths use the working directory"
+msgstr "Nový adresář exportu, obnovy zdrojů nebo plánu záloh; relativní cesty vycházejí z pracovního adresáře"
+
+msgid "Run backup operations through a complete NixBerry recipe."
+msgstr "Operace záloh spouštějte prostřednictvím úplného receptu NixBerry."
+
+msgid "Select a snapshot ID from backups TARGET using --snapshot ID."
+msgstr "Vyberte ID zálohy ze seznamu backups TARGET pomocí --snapshot ID."
+
+msgid "Snapshot"
+msgstr "Záloha"
+
+msgid "The backup provider does not support this distinct restore target backend."
+msgstr "Poskytovatel záloh nepodporuje backend tohoto odlišného cíle obnovy."
+
+msgid "The backup provider must be a regular file inside the captured configuration."
+msgstr "Poskytovatel záloh musí být běžný soubor uvnitř zachycené konfigurace."
+
+msgid "The backup provider returned an invalid protocol response."
+msgstr "Poskytovatel záloh vrátil neplatnou odpověď protokolu."
+
+msgid "The backup schedule is not a valid systemd calendar."
+msgstr "Plán záloh není platným kalendářem systemd."
+
+msgid "The selected recipe has no nixberry launcher."
+msgstr "Vybraný recept nemá spouštěč nixberry."
+
+msgid "backup-schedule requires backup.schedule and --output NEW_DIRECTORY."
+msgstr "backup-schedule vyžaduje backup.schedule a --output NEW_DIRECTORY."
+
+msgid "recover-source requires --output NEW_DIRECTORY."
+msgstr "recover-source vyžaduje --output NEW_DIRECTORY."
+
+msgid "restore requires --from with a declared backup source."
+msgstr "restore vyžaduje --from s deklarovaným zdrojem záloh."
+
+msgid "Backup schedule target names require lowercase letters, digits and hyphens, starting with a letter."
+msgstr "Názvy cílů plánu záloh vyžadují malá písmena, číslice a pomlčky a musí začínat písmenem."
+
+msgid "Keep backup storage and identities outside the recipe and linked configurations."
+msgstr "Úložiště záloh a identity ponechte mimo recept a připojené konfigurace."

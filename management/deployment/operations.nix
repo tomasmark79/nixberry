@@ -3,6 +3,7 @@ target:
 let
   optional = condition: values: if condition then values else [ ];
   caps = target.capabilities;
+  backup = target.backup.enable or false;
 in
 [
   "show"
@@ -19,7 +20,10 @@ in
   "update"
   "diff"
   "diffg"
+  "restore"
 ]
+++ optional backup [ "backups" "verify-backup" "recover-source" "backup-prune" "backup-schedule" ]
+++ optional (backup && caps.system) [ "backup" ]
 ++ optional caps.hypervisor [
   "probe"
   "create"

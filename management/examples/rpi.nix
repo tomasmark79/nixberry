@@ -15,4 +15,5 @@
   rootGiB = 32;
   adminKeyFile = ../../../admin.pub;
   # Optional: security.mode = "luks"; see docs/security.md for recovery and SSH key pins.
+  # Optional: backup controller policy stays outside nixberry.rpi; see docs/backups.md.
 }

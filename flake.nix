@@ -66,7 +66,7 @@
               ./platforms/rpi/configuration.nix
               ./platforms/rpi/boot.nix
               configurations.modules.${configurations.select target}
-              { nixberry.rpi = builtins.removeAttrs target [ "configuration" ]; }
+              { nixberry.rpi = builtins.removeAttrs target [ "configuration" "backup" ]; }
             ];
           };
         in
@@ -94,7 +94,7 @@
           system = "aarch64-linux";
           modules = [
             ./management/rpi/recovery.nix
-            { nixberry.rpi = builtins.removeAttrs target [ "configuration" ]; }
+            { nixberry.rpi = builtins.removeAttrs target [ "configuration" "backup" ]; }
           ];
         }
       ) rpiTargets;

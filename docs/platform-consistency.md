@@ -17,6 +17,7 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 | Ordered named VM adapters | yes | yes | yes | yes | yes | physical target bindings |
 | System and recipe export | yes | yes | yes | yes | yes | yes |
 | System management over SSH | yes | yes | yes | yes | yes | yes |
+| Backup policy/provider interface (Linux controller) | yes | yes | yes | yes | yes | yes |
 | Online `probe/create/install/provision/reset` | yes | yes | yes | yes | yes | own probe/recovery |
 | Default `allowReset = false;` | yes | yes | yes | yes | yes | not applicable |
 | English default, optional Czech | yes | yes | yes | yes | yes | yes |
@@ -26,6 +27,8 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 | Confidential launch and attested key delivery | rejected | rejected | rejected | rejected | rejected | not applicable |
 
 This describes implemented interfaces, not proof of every live combination.
+Backup capture and restore support additionally depends on the configuration's
+provider and explicit `restoreBackends`; see [backup scope](backups.md#platform-scope).
 See [encrypted disks](security.md) for the security boundaries and prerequisites.
 See [VM networking](vm-networking.md) for primary management identity, attachment
 variants and the VMware address-discovery limitation.

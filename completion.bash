@@ -9,7 +9,7 @@ _nixberry_completion_recipe=$(cd -- "$_nixberry_completion_recipe" && pwd -P)
 source "$_nixberry_completion_recipe/management/deployment/shell-path.sh"
 
 _nixberry_complete() {
-    local current=${COMP_WORDS[COMP_CWORD]} action= target= word file name
+    local current=${COMP_WORDS[COMP_CWORD]} action= target= word file name backup_source=
     local skip_value=0 i
     local recipe
     COMPREPLY=()
@@ -18,6 +18,7 @@ _nixberry_complete() {
         list show status ssh probe plan create install provision reset
         new-libvirt-vm new-hyperv-vm new-proxmox-vm new-virtualbox-vm new-vmware-vm
         reproduce verify update diff diffg export doctor cleanup prepare-image unlock
+        backup backups verify-backup restore recover-source backup-prune backup-schedule
     )
     local -a options=(--help --version)
     local -A used=()
@@ -31,7 +32,8 @@ _nixberry_complete() {
         fi
         case $word in
             --) return 0 ;;
-            --host|--ssh|--output|--address|--artifact-root|--method|--configuration|--security|--key-file|--initrd-key-file)
+            --from) backup_source=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
+            --host|--ssh|--output|--address|--artifact-root|--method|--configuration|--security|--key-file|--initrd-key-file|--snapshot)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
         esac
@@ -72,6 +74,20 @@ _nixberry_complete() {
             for name in iso image; do
                 [[ $name == "$current"* ]] && COMPREPLY+=("$name")
             done
+        elif [[ $word == --from ]]; then
+            while IFS= read -r name || [[ -n $name ]]; do
+                [[ -n $name && $name == "$current"* ]] && COMPREPLY+=("$name")
+            done < <(NIXBERRY_COMPLETION_ACTION=backups NIXBERRY_COMPLETION_DIRECT=0 \
+                nix eval --offline --impure --raw --option allow-import-from-derivation false \
+                --file "$recipe/management/deployment/completion-targets.nix" 2>/dev/null)
+        elif [[ $word == --snapshot ]]; then
+            while IFS= read -r name || [[ -n $name ]]; do
+                [[ -n $name && $name == "$current"* ]] && COMPREPLY+=("$name")
+            done < <(NIXBERRY_COMPLETION_SOURCE="${backup_source:-$target}" \
+                nix eval --offline --impure --raw --option allow-import-from-derivation false \
+                --file "$recipe/management/deployment/completion-snapshots.nix" 2>/dev/null)
+        elif [[ $word == --output ]]; then
+            mapfile -t COMPREPLY < <(compgen -d -- "$current")
         elif [[ $word == --key-file || $word == --initrd-key-file ]]; then
             mapfile -t COMPREPLY < <(compgen -f -- "$current")
         elif [[ $word == --configuration ]]; then
@@ -94,11 +110,11 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            list|show|status|verify|export|doctor|cleanup|prepare-image) options+=(--json) ;;
+            list|show|status|verify|export|doctor|cleanup|prepare-image|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule) options+=(--json) ;;
         esac
         case $action in
-            update|create|install|provision|reset|reproduce) options+=(--apply --dry-run) ;;
-            new-*|plan|diff|diffg|export|prepare-image|unlock) options+=(--dry-run) ;;
+            update|create|install|provision|reset|reproduce|backup|restore|recover-source|backup-prune) options+=(--apply --dry-run) ;;
+            new-*|plan|diff|diffg|export|prepare-image|unlock|backups|verify-backup|backup-schedule) options+=(--dry-run) ;;
         esac
         case $action in
             new-*|show|plan|create|install|provision|reproduce|export) options+=(--method) ;;
@@ -107,6 +123,10 @@ _nixberry_complete() {
             new-*) options+=(--host --offline --configuration --security) ;;
             update|ssh|verify|status|doctor|diff|diffg) options+=(--host --ssh) ;;
             export) options+=(--output) ;;
+            recover-source) options+=(--output --snapshot) ;;
+            backup-schedule) options+=(--output) ;;
+            verify-backup) options+=(--snapshot) ;;
+            restore) options+=(--from --snapshot) ;;
             prepare-image) options+=(--output --key-file) ;;
             unlock) options+=(--address) ;;
             cleanup) options+=(--artifact-root) ;;
