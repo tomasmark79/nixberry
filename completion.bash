@@ -19,6 +19,7 @@ _nixberry_complete() {
         new-libvirt-vm new-hyperv-vm new-proxmox-vm new-virtualbox-vm new-vmware-vm
         reproduce verify update diff diffg export doctor cleanup prepare-image unlock
         backup backups verify-backup restore recover-source backup-prune backup-schedule
+        backup-check backup-monitor
     )
     local -a options=(--help --version)
     local -A used=()
@@ -110,11 +111,11 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            list|show|status|verify|export|doctor|cleanup|prepare-image|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule) options+=(--json) ;;
+            list|show|status|verify|export|doctor|cleanup|prepare-image|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor) options+=(--json) ;;
         esac
         case $action in
-            update|create|install|provision|reset|reproduce|backup|restore|recover-source|backup-prune) options+=(--apply --dry-run) ;;
-            new-*|plan|diff|diffg|export|prepare-image|unlock|backups|verify-backup|backup-schedule) options+=(--dry-run) ;;
+            update|create|install|provision|reset|reproduce|backup|restore|recover-source|backup-prune|backup-check) options+=(--apply --dry-run) ;;
+            new-*|plan|diff|diffg|export|prepare-image|unlock|backups|verify-backup|backup-schedule|backup-monitor) options+=(--dry-run) ;;
         esac
         case $action in
             new-*|show|plan|create|install|provision|reproduce|export) options+=(--method) ;;
@@ -125,6 +126,7 @@ _nixberry_complete() {
             export) options+=(--output) ;;
             recover-source) options+=(--output --snapshot) ;;
             backup-schedule) options+=(--output) ;;
+            backup-monitor) options+=(--output) ;;
             verify-backup) options+=(--snapshot) ;;
             restore) options+=(--from --snapshot) ;;
             prepare-image) options+=(--output --key-file) ;;

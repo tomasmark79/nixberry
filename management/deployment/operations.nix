@@ -22,7 +22,7 @@ in
   "diffg"
   "restore"
 ]
-++ optional backup [ "backups" "verify-backup" "recover-source" "backup-prune" "backup-schedule" ]
+++ optional backup [ "backups" "verify-backup" "recover-source" "backup-prune" "backup-schedule" "backup-check" "backup-monitor" ]
 ++ optional (backup && caps.system) [ "backup" ]
 ++ optional caps.hypervisor [
   "probe"

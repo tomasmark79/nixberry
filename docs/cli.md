@@ -24,7 +24,8 @@ Preparation accepts `--json`; unlocking is interactive. Neither command accepts
 ## Inventory and management
 
 Encrypted application backups use `backup`, `backups`, `verify-backup`, `restore`,
-`recover-source`, `backup-prune` and `backup-schedule`. They require an explicit
+`recover-source`, `backup-prune`, `backup-schedule`, `backup-check` and
+`backup-monitor`. They require an explicit
 target backup policy and a configuration-owned provider. See the complete
 [backup commands and write boundaries](backups.md).
 

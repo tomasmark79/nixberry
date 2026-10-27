@@ -16,6 +16,10 @@ export and refusal to overwrite an existing export. Completion tests use only
 local declarations/receipts. Configuration-specific tests must additionally cover
 crypto EOF, interrupted transport, retained-copy verification, concurrent access
 and retention refusal for partial, corrupt, unknown or changed state.
+Monitoring tests cover freshness boundaries, failed/interrupted/overdue captures,
+PID reuse, private state, read-only behavior, notification deduplication/reminders
+and recovery, transport failure and monitoring-only timer exports. A desktop
+notification transport acknowledgement is separate from visual/user receipt.
 
 Live backup acceptance is separate: use an authorized isolated source/restore
 target and host fence, capture through the main CLI, authenticate complete payloads,

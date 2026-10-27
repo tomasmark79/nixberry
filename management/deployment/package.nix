@@ -10,6 +10,7 @@ let
       fileset = pkgs.lib.fileset.unions [
         ./cli.py
         ./backups.py
+        ./backup_watch.py
         ./dispatch.py
         ./discovery.py
         ./runtime.py
@@ -141,6 +142,7 @@ in
     pkgs.gnutar
     pkgs.git
     pkgs.systemd
+    pkgs.libnotify
     pkgs.openssh
   ];
   text = ''

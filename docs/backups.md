@@ -104,6 +104,65 @@ source unlock and a separate recovery copy of the age identity must be arranged
 before relying on scheduled operation. Monitoring or automatic timer activation
 is not performed by bundle export.
 
+## Freshness monitoring and notifications
+
+The controller can check repository metadata without contacting the source or
+reading its decryption identity. Enable a separate monitoring policy:
+
+```nix
+backup.monitor = {
+  enable = true;
+  maxAgeHours = 36;
+  intervalMinutes = 15;
+  maxRunMinutes = 90;
+  notify = true;
+  repeatHours = 24;
+};
+```
+
+These values are defaults except `enable`, which defaults to false. Monitoring is
+independent of the capture schedule. Exporting monitoring units does not enable
+capture or retention jobs, start a VM or modify guest data.
+
+```sh
+nixberry backup-check vm-demo-server --json
+nixberry backup-check vm-demo-server --apply --json
+nixberry backup-monitor vm-demo-server --output /private/monitor-units
+```
+
+`backup-check` is read-only by default; `--dry-run` skips provider execution.
+`--apply` records a protected report and sends configured desktop notifications.
+An actionable alarm or failed notification delivery returns nonzero with valid
+JSON. `backup-monitor` exports reviewable systemd user units; it never installs or
+enables them. Its timer first checks two minutes after activation, then at the
+configured interval with bounded jitter. The service only runs `backup-check`.
+
+Checks cover missing/old recorded-verified snapshots, invalid/partial captures,
+provider unavailability and the last recorded CLI capture attempt. Applied captures
+atomically record start, successful/failed finish, duration, process identity and
+the last successful run time. Interrupted owners/PID reuse and overdue running
+captures are alarms. Legacy captures remain usable without invented run history.
+Repository contention during a known live capture defers inventory inspection;
+a cached stale backup still alarms, and runtime limits bound deferral. A deferred
+report is `running`, not a fresh integrity proof.
+
+Reports/run history live in owned mode `0700` directories under
+`$XDG_STATE_HOME/nixberry/backup-monitor/` (default `~/.local/state/`), separated by
+recipe/target/repository identity. Files are mode `0600`; unsafe links, malformed
+state and unknown run fields are refused. State is separate from the repository,
+so a missing backup mount cannot erase its failure history. No private key contents,
+application responses or raw error text are persisted.
+
+Desktop alerts are sent locally through `notify-send` and the user's notification
+service. Repeated unchanged alarms are suppressed until `repeatHours`; a new failed
+run or changed alarm alerts again. A return to healthy state sends a recovery
+notification. Delivery failure is recorded and retried, without hiding the backup
+finding. A graphical/user bus must be available; this is not remote email/webhook
+delivery. Receipt freshness is not new cryptographic authentication: run
+`verify-backup` separately to detect ciphertext corruption.
+Periodic checks require the controller's user manager to be running. Export does
+not enable user lingering or install a system-wide service.
+
 ## Provider protocol
 
 The provider is captured with the configuration and run using the packaged Python,

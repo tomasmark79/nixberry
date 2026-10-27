@@ -31,6 +31,8 @@ BACKUP_HELP = """\nEncrypted backup commands:
   recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.
   backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.
   backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.
+  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.
+  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.
 \nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.
 Restore does not create a VM, activate configuration or reboot. See docs/backups.md.
 """
@@ -151,7 +153,7 @@ def main(argv=None):
                         type=lambda value: value + "-vm" if value in ("new-libvirt", "new-hyperv", "new-proxmox", "new-virtualbox", "new-vmware") else value, choices=(
         "list", "show", "status", "ssh", "probe", "plan", "create", "install", "provision", "reset",
         "new-libvirt-vm", "new-hyperv-vm", "new-proxmox-vm", "new-virtualbox-vm", "new-vmware-vm", "reproduce", "verify", "update", "diff", "diffg", "export", "doctor", "cleanup", "prepare-image", "unlock",
-        "backup", "backups", "verify-backup", "restore", "recover-source", "backup-prune", "backup-schedule"))
+        "backup", "backups", "verify-backup", "restore", "recover-source", "backup-prune", "backup-schedule", "backup-check", "backup-monitor"))
     parser.add_argument("target", metavar=_("TARGET"), nargs="?", help=_("Existing target name, or a new name for new-*"))
     parser.add_argument("--host", help=_("Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"))
     parser.add_argument("--offline", action="store_true", help=_("Prepare any VM offline without a hypervisor; cannot be combined with --host"))
@@ -222,8 +224,8 @@ def main(argv=None):
         parser.error(_("Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."))
     if args.artifact_root and args.action != "cleanup":
         parser.error(_("--artifact-root only applies to cleanup."))
-    if args.output and args.action not in ("export", "prepare-image", "recover-source", "backup-schedule"):
-        parser.error(_("--output applies to export, prepare-image, recover-source and backup-schedule."))
+    if args.output and args.action not in ("export", "prepare-image", "recover-source", "backup-schedule", "backup-monitor"):
+        parser.error(_("--output applies to export, prepare-image, recover-source, backup-schedule and backup-monitor."))
     if args.action.startswith("new-"):
         if args.apply or args.json or args.address or args.erase_existing:
             parser.error(_("new-* only creates a local declaration; it does not accept these options."))
@@ -271,7 +273,7 @@ def main(argv=None):
         parser.error(_("--json is available for list, show, status, verify, export, doctor and cleanup."))
     if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup", "prepare-image", "unlock") and args.apply:
         parser.error(_("This operation does not accept --apply."))
-    if args.action in ("backups", "verify-backup", "backup-schedule") and args.apply:
+    if args.action in ("backups", "verify-backup", "backup-schedule", "backup-monitor") and args.apply:
         parser.error(_("This operation does not accept --apply."))
     if args.action in ("doctor", "cleanup"):
         if args.target and args.target not in registry:
@@ -339,7 +341,7 @@ def main(argv=None):
                 for row in result.get("snapshots", [])])
         else:
             print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0
+        return int(bool(result.get('alarm')) or result.get('notification', {}).get('state') == 'failed') if args.action == 'backup-check' else 0
     if (args.initrd_key_file or (args.key_file and args.action != "prepare-image")) and not (
             target["backend"] == "rpi" and security_policy(target)["mode"] == "luks"):
         parser.error(_("Runtime encryption keys require an encrypted RPi target."))

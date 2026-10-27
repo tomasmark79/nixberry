@@ -45,12 +45,14 @@ class BackupPolicyTests(unittest.TestCase):
             self.assertNotIn('backup', values[1]['hardwareFields'])
 
     def test_nix_and_python_validation_agree(self):
-        values = [{}, settings(), settings(keepLast=2), settings(schedule=None)]
+        values = [{}, settings(), settings(keepLast=2), settings(schedule=None), settings(monitor={'enable':True,'maxAgeHours':24})]
         invalid = [settings(identityFile='/nix/store/secret'), settings(repository='./relative'),
                    settings(provider='../private.py'), settings(provider='configurations/../bad.py'),
                    settings(keepLast=True), settings(keepLast=1), settings(schedule='daily\nExecStart=bad'),
                    settings(schedule='daily\tbad'), settings(identityFile='/private/key\x7f'),
-                   settings(restoreBackends=['typo']), settings(unknown=True), {'enable': 'yes'}]
+                   settings(restoreBackends=['typo']), settings(unknown=True), {'enable': 'yes'},
+                   settings(monitor={'maxAgeHours':0}), settings(monitor={'notify':'yes'}),
+                   settings(monitor={'intervalMinutes':True}), settings(monitor={'unknown':True})]
         path = Path(__file__).with_name('backup-policy.nix')
         for value in values + invalid:
             result = subprocess.run(['nix', 'eval', '--impure', '--json', '--expr',
@@ -91,6 +93,8 @@ class ProviderTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(); self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name); self.recipe = self.root / 'recipe'
+        self.environment = patch.dict(os.environ, {'XDG_STATE_HOME': str(self.root / 'controller-state')})
+        self.environment.start(); self.addCleanup(self.environment.stop)
         self.recipe.mkdir(); (self.recipe / 'flake.nix').write_text('{}')
         (self.recipe / 'nixberry').write_text('#!/bin/sh\nexit 0\n')
         self.provider = self.recipe / 'configurations/server/provider.py'

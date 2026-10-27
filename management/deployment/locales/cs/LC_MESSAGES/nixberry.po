@@ -3008,3 +3008,50 @@ msgstr "Názvy cílů plánu záloh vyžadují malá písmena, číslice a poml�
 
 msgid "Keep backup storage and identities outside the recipe and linked configurations."
 msgstr "Úložiště záloh a identity ponechte mimo recept a připojené konfigurace."
+
+msgid "\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List locally recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.\n  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n\nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
+msgstr "\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam místních záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek s --output DIR ke kontrole; nezapíná je.\n  backup-check TARGET    Kontrola stáří záloh a historie běhů; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n\nPravidla záloh jsou v deklaraci cíle. Klíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
+
+msgid "Backup monitoring needs an absolute runtime XDG_STATE_HOME outside the Nix store."
+msgstr "Dohled nad zálohami vyžaduje absolutní provozní XDG_STATE_HOME mimo Nix store."
+
+#, python-brace-format
+msgid "Backup monitoring needs attention. Run: nixberry backup-check {target}"
+msgstr "Dohled nad zálohami vyžaduje pozornost. Spusťte: nixberry backup-check {target}"
+
+msgid "Backup monitoring recovered; the latest recorded backup is recent."
+msgstr "Dohled nad zálohami je opět v pořádku; poslední zaznamenaná záloha je aktuální."
+
+msgid "Backup monitoring requires booleans and positive bounded age, interval, runtime and reminder values."
+msgstr "Dohled nad zálohami vyžaduje booleovské hodnoty a kladné hodnoty stáří, intervalu, délky běhu a připomenutí v povoleném rozsahu."
+
+msgid "Backup monitoring state has unsafe ownership, permissions or links."
+msgstr "Stav dohledu nad zálohami má nebezpečného vlastníka, oprávnění nebo odkazy."
+
+msgid "Backup notification delivery failed; inspect the protected health report."
+msgstr "Doručení oznámení o záloze selhalo; zkontrolujte chráněný stavový report."
+
+msgid "Could not persist the failed backup attempt; inspect controller state."
+msgstr "Nezdařený pokus o zálohu se nepodařilo uložit; zkontrolujte stav řadiče."
+
+msgid "Invalid backup monitoring policy."
+msgstr "Neplatná pravidla dohledu nad zálohami."
+
+msgid "Keep backup monitoring state outside the recipe and linked configurations."
+msgstr "Stav dohledu nad zálohami ponechte mimo recept a připojené konfigurace."
+
+#, python-brace-format
+msgid "NixBerry backup: {target}"
+msgstr "Záloha NixBerry: {target}"
+
+msgid "The backup monitoring state is invalid."
+msgstr "Stav dohledu nad zálohami je neplatný."
+
+msgid "backup-monitor requires backup.monitor.enable and --output NEW_DIRECTORY."
+msgstr "backup-monitor vyžaduje backup.monitor.enable a --output NEW_DIRECTORY."
+
+msgid "Could not persist backup monitoring state; inspect controller permissions."
+msgstr "Stav dohledu nad zálohami se nepodařilo uložit; zkontrolujte oprávnění řadiče."
+
+msgid "--output applies to export, prepare-image, recover-source, backup-schedule and backup-monitor."
+msgstr "--output platí pro export, prepare-image, recover-source, backup-schedule a backup-monitor."

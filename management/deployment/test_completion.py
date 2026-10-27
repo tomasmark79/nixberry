@@ -25,6 +25,9 @@ class CompletionTests(unittest.TestCase):
         self.assertIn('--apply', self.complete('backup', 'kozlonix', '--'))
         self.assertNotIn('--apply', self.complete('backups', 'kozlonix', '--'))
         self.assertIn('--output', self.complete('backup-schedule', 'kozlonix', '--'))
+        self.assertIn('--apply', self.complete('backup-check', 'kozlonix', '--'))
+        self.assertIn('--output', self.complete('backup-monitor', 'kozlonix', '--'))
+        self.assertNotIn('--apply', self.complete('backup-monitor', 'kozlonix', '--'))
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
