@@ -206,13 +206,17 @@ class UpdateChecks(unittest.TestCase):
         self.assertNotIn("Verified:", self.messages.getvalue())
         self.assertEqual(self.output.getvalue(), "")
 
-    def test_protected_address_is_rejected_before_ssh_or_build(self):
+    def test_protected_vm_address_is_rejected_before_ssh_or_build(self):
         with patch.object(updater, "freeze_recipe", return_value=self.recipe), \
                 patch.object(updater, "status", return_value={
                 "state": "running", "addresses": ["192.168.79.1"]}), \
                 patch.object(updater, "read") as read, patch.object(updater, "build") as build:
-            with self.assertRaises(RuntimeError):
-                updater.update(self.recipe, "test", RPI, apply=True)
+            for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+                with self.subTest(backend=backend):
+                    target = {**LIBVIRT, "backend": backend,
+                              "spec": {**LIBVIRT["spec"], "mac": "02:00:00:00:00:01"}}
+                    with self.assertRaises(RuntimeError):
+                        updater.update(self.recipe, "test", target, apply=True)
             read.assert_not_called()
             build.assert_not_called()
 

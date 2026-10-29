@@ -460,7 +460,7 @@ msgstr ""
 msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
 msgstr ""
 
-#: deployment/runtime.py:353
+#: deployment/runtime.py:356
 #, python-brace-format
 msgid "Check failed: {check}"
 msgstr ""
@@ -667,7 +667,7 @@ msgstr ""
 msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/dispatch.py:21 deployment/host_agent.py:1023 deployment/runtime.py:245 hyperv/host.ps1:44 hyperv/manage.py:95
+#: deployment/dispatch.py:21 deployment/host_agent.py:1023 deployment/runtime.py:246 hyperv/host.ps1:44 hyperv/manage.py:95
 msgid "Deployment method must be iso or image."
 msgstr ""
 
@@ -710,7 +710,7 @@ msgstr ""
 msgid "Disallowed SSH account."
 msgstr ""
 
-#: deployment/portable.py:42 deployment/runtime.py:280 deployment/security.py:318
+#: deployment/portable.py:42 deployment/runtime.py:281 deployment/security.py:318
 msgid "Disallowed SSH host or account."
 msgstr ""
 
@@ -1935,7 +1935,7 @@ msgstr ""
 msgid "Running CI check: {check}."
 msgstr ""
 
-#: deployment/runtime.py:360
+#: deployment/runtime.py:363
 #, c-format
 msgid "Running system: %s"
 msgstr ""
@@ -2114,7 +2114,7 @@ msgstr ""
 msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
 msgstr ""
 
-#: deployment/runtime.py:239
+#: deployment/runtime.py:240
 msgid "Status queries are not implemented for this host type."
 msgstr ""
 
@@ -2343,11 +2343,11 @@ msgstr ""
 msgid "The RPi early-boot address must use the selected interface's IPv4 subnet and prefix."
 msgstr ""
 
-#: deployment/runtime.py:219
+#: deployment/runtime.py:220
 msgid "The RPi hardware does not match the declared machine."
 msgstr ""
 
-#: deployment/runtime.py:222 deployment/runtime.py:231 deployment/security.py:48 rpi/install.py:50
+#: deployment/runtime.py:223 deployment/runtime.py:232 deployment/security.py:48 rpi/install.py:50
 msgid "The RPi network adapter does not match the declaration."
 msgstr ""
 
@@ -2741,7 +2741,7 @@ msgstr ""
 msgid "The declaration already exists; refusing to overwrite it."
 msgstr ""
 
-#: deployment/runtime.py:207
+#: deployment/runtime.py:208
 msgid "The declared IPv4 address is not enabled on the RPi."
 msgstr ""
 
@@ -2897,7 +2897,7 @@ msgstr ""
 msgid "The guest address is outside the expected network."
 msgstr ""
 
-#: deployment/runtime.py:283
+#: deployment/runtime.py:284
 msgid "The guest address must differ from the Windows host address."
 msgstr ""
 
@@ -3248,7 +3248,7 @@ msgstr ""
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
-#: deployment/runtime.py:358
+#: deployment/runtime.py:361
 #, python-brace-format
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
@@ -3298,7 +3298,7 @@ msgstr ""
 msgid "The storage path must not contain a symbolic link."
 msgstr ""
 
-#: deployment/runtime.py:367
+#: deployment/runtime.py:370
 msgid "The system check did not return the expected result."
 msgstr ""
 
@@ -3359,7 +3359,7 @@ msgstr ""
 msgid "The target disk is too small."
 msgstr ""
 
-#: deployment/runtime.py:267
+#: deployment/runtime.py:268
 msgid "The target does not have exactly one usable IPv4 address. Details: probe TARGET."
 msgstr ""
 
@@ -3384,7 +3384,7 @@ msgstr ""
 msgid "The target is not running: {value1}"
 msgstr ""
 
-#: deployment/runtime.py:251
+#: deployment/runtime.py:252
 msgid "The target is not running; login is unavailable."
 msgstr ""
 

@@ -13,7 +13,7 @@ from unittest.mock import patch
 import backups
 from cli import main, operations
 from check_inventory import nix
-from check_ci import public_recipe
+from test_support import copy_test_recipe
 
 
 def settings(**extra):
@@ -28,7 +28,7 @@ class BackupPolicyTests(unittest.TestCase):
         source = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temporary:
             recipe = Path(temporary) / 'recipe'
-            public_recipe(source, recipe)
+            copy_test_recipe(source, recipe)
             target = recipe / 'management/rpi/targets/rpi-demo.nix'
             original = (recipe / 'management/examples/rpi.nix').read_text()
             expression = 'let f=builtins.getFlake ' + nix('path:' + str(recipe)) + '; in {' \
