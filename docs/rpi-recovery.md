@@ -106,7 +106,9 @@ and prefix; it changes neither installed addressing nor recovery DHCP. Without
 it, initrd uses that adapter's installed address. Without `security.interface`,
 initrd selects the primary adapter. See [physical encryption](security.md#raspberry-pi-5).
 The protected installation/router-address checks remain in force; declaring a
-future gateway address does not authorize contacting the existing router.
+future gateway address does not authorize installing over the existing router.
+Installed-system management accepts the explicitly declared gateway address and
+checks the board serial and adapter identity over SSH port 22.
 
 Shared services can read the platform-independent
 [declared network facts](reference.md#declared-network-facts). Those facts are

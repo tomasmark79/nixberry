@@ -29,7 +29,7 @@ def mac(value):
     return value.replace(":", "").replace("-", "").lower()
 
 
-def addresses(values, excluded=()):
+def addresses(values, excluded=(), *, declared_rpi=False):
     networks = [ipaddress.ip_network(value) for value in
                 ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")]
     result = set()
@@ -39,7 +39,7 @@ def addresses(values, excluded=()):
         except ValueError:
             continue
         if address.version == 4 and any(address in net for net in networks):
-            if str(address) not in {"192.168.79.1", *excluded}:
+            if str(address) not in excluded and (declared_rpi or str(address) != "192.168.79.1"):
                 result.add(str(address))
     return sorted(result)
 
@@ -202,7 +202,8 @@ def status(target):
         result["addresses"] = addresses(result["addresses"], excluded=(spec.get("sshHost", ""),))
         return result
     if target["backend"] == "rpi":
-        candidates = addresses([spec["address"]])
+        # Installed gateways are valid management targets; installation guards are separate.
+        candidates = addresses([spec["address"]], declared_rpi=True)
         if len(candidates) != 1:
             raise RuntimeError(_("The declared IPv4 address is not enabled on the RPi."))
         # Verify identity using hardware, not just hostname or IP.
@@ -214,7 +215,7 @@ def status(target):
             "hostname; " + link_probe + "; findmnt -n -o SOURCE /"
         )
         output = read(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                       "--", "root@" + candidates[0], script]).splitlines()
+                       "-p", "22", "--", "root@" + candidates[0], script]).splitlines()
         if len(output) != 5 or output[0] != "aarch64" or output[1] != spec["hardwareSerial"]:
             raise RuntimeError(_("The RPi hardware does not match the declared machine."))
         interfaces = json.loads(output[3])
@@ -262,7 +263,7 @@ def ssh_command(target, snapshot):
         if direct.get("hostKeyAlias"):
             command += ["-o", "HostKeyAlias=" + direct["hostKeyAlias"]]
         return command + ["--", direct["user"] + "@" + direct["host"]]
-    candidates = addresses(snapshot["addresses"])
+    candidates = addresses(snapshot["addresses"], declared_rpi=target["backend"] == "rpi")
     if len(candidates) != 1:
         raise RuntimeError(_("The target does not have exactly one usable IPv4 address. Details: probe TARGET."))
     if target["backend"] in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
@@ -281,6 +282,8 @@ def ssh_command(target, snapshot):
         command += ["-J", spec["sshUser"] + "@" + spec["sshHost"]]
         if candidates[0] == spec["sshHost"]:
             raise RuntimeError(_("The guest address must differ from the Windows host address."))
+    if target["backend"] == "rpi":
+        command += ["-p", "22"]
     return command + ["--", "root@" + candidates[0]]
 
 

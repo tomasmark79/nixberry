@@ -186,11 +186,19 @@ lsblk() {
                 self.assertEqual(result.returncode == 0, serial == "expected-ssd")
                 self.assertEqual(result.stderr, "")
 
-    def test_rpi_cannot_connect_to_protected_address(self):
+    def test_declared_rpi_gateway_address_uses_identity_checks_and_port_22(self):
         target = {**RPI, "spec": {**RPI["spec"], "address": "192.168.79.1/24"}}
-        with patch.object(runtime, "read") as read, self.assertRaises(RuntimeError):
-            runtime.status(target)
-        read.assert_not_called()
+        with patch.object(runtime, "read", return_value=RPI_OUTPUT) as read:
+            result = runtime.status(target)
+        self.assertEqual(result["addresses"], ["192.168.79.1"])
+        probe = read.call_args.args[0]
+        self.assertEqual(probe[probe.index("-p") + 1], "22")
+        command = runtime.ssh_command(target, result)
+        self.assertEqual(command[-1], "root@192.168.79.1")
+        self.assertEqual(command[command.index("-p") + 1], "22")
+        with patch.object(runtime, "read", return_value=RPI_OUTPUT.replace("0000000000000000", "foreign")):
+            with self.assertRaises(RuntimeError):
+                runtime.status(target)
 
     def test_only_safe_lan_addresses(self):
         self.assertEqual(runtime.addresses([
