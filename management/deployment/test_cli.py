@@ -2,7 +2,6 @@
 """Ověření, že společný vstup nepovolí nechtěný zápis nebo jiný cíl."""
 
 import contextlib
-import ast
 import gettext
 import io
 import json
@@ -14,6 +13,8 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+
+from cli_args import COMMANDS
 
 MAIN = runpy.run_path(str(Path(__file__).with_name("cli.py")))["main"]
 
@@ -165,11 +166,7 @@ class HelpChecks(unittest.TestCase):
         self.assertEqual(result.exception.code, 0)
         run.assert_not_called()
         text = output.getvalue()
-        tree = ast.parse(Path(__file__).with_name("cli.py").read_text())
-        actions = next(ast.literal_eval(keyword.value)
-                       for node in ast.walk(tree) if isinstance(node, ast.Call)
-                       for keyword in node.keywords if keyword.arg == "choices")
-        for action in actions:
+        for action in COMMANDS:
             self.assertRegex(text, r"(?m)^  " + action + r"(?:\s|$)")
         self.assertIn("nixberry update vm-demo-libvirt --apply", text)
         self.assertIn("BEFORE an update", text)

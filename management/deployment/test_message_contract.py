@@ -25,7 +25,7 @@ class MessageContractChecks(unittest.TestCase):
         self.assertEqual((ROOT / "deployment/locales/nixberry.pot").read_text(), template(ROOT),
                          "Obnov katalog přes management/deployment/extract_messages.py")
         locations = {location.split(":")[0] for values in collect(ROOT).values() for location in values}
-        for source in ("deployment/cli.py", "deployment/exporter.py", "deployment/cleanup.py",
+        for source in ("deployment/cli.py", "deployment/cli_args.py", "deployment/exporter.py", "deployment/cleanup.py",
                        "deployment/host_agent.py", "libvirt/install.py", "libvirt/create.sh",
                        "hyperv/manage.py", "hyperv/host.ps1", "hyperv/guest-install.sh",
                        "rpi/install.py", "rpi/local-install.py", "rpi/guest-install.sh"):

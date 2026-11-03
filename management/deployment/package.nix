@@ -9,6 +9,7 @@ let
       root = ./.;
       fileset = pkgs.lib.fileset.unions [
         ./cli.py
+        ./cli_args.py
         ./backups.py
         ./backup_watch.py
         ./dispatch.py

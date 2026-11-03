@@ -17,6 +17,7 @@
 | Physical system, recovery media and tool composition | [management/rpi/systems.nix](../management/rpi/systems.nix) |
 | VM system, installation media and tool composition | [management/vm/systems.nix](../management/vm/systems.nix) |
 | Registry and CLI | [management/deployment/](../management/deployment/default.nix) |
+| CLI arguments, command names and help | [cli_args.py](../management/deployment/cli_args.py) |
 | Shared VM adapters | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
 
 Use the selected configuration for application-specific services and `modules/`

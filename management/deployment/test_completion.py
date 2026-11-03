@@ -1,12 +1,13 @@
 """Základní doplňování bez nástrojů; schopnosti z místního Nixu, bez sítě a buildů."""
 
-import ast
 import json
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import unittest
+
+from cli_args import COMMANDS
 
 
 class CompletionTests(unittest.TestCase):
@@ -80,13 +81,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
         return result.stdout.splitlines()
 
     def test_commands_match_cli(self):
-        tree = ast.parse((Path(__file__).with_name("cli.py")).read_text())
-        choices = next(
-            ast.literal_eval(keyword.value)
-            for node in ast.walk(tree) if isinstance(node, ast.Call)
-            for keyword in node.keywords if keyword.arg == "choices"
-        )
-        self.assertEqual(self.complete(""), list(choices))
+        self.assertEqual(self.complete(""), list(COMMANDS))
         self.assertEqual(self.complete("ver"), ["verify", "verify-backup"])
 
     def test_targets_and_prefix(self):
