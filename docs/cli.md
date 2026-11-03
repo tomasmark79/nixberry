@@ -29,6 +29,14 @@ Encrypted application backups use `backup`, `backups`, `verify-backup`, `restore
 target backup policy and a configuration-owned provider. See the complete
 [backup commands and write boundaries](backups.md).
 
+`backup-schedule TARGET --output NEW_DIRECTORY --dry-run` previews systemd user
+units for the controller running NixBerry. It requires `backup.enable = true`
+and `backup.schedule` in that target's declaration. Without `--dry-run`, it
+writes the unit files locally; it does not install or enable them.
+It does not configure a timer on the target. If the server already schedules
+its own backups, for example through NixOS Restic, edit that configuration
+instead of adding a second capture scheduler.
+
 | Command | Result |
 | --- | --- |
 | `list` | Local targets, configurations and management capabilities. |

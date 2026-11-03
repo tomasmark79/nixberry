@@ -30,10 +30,17 @@ BACKUP_HELP = """\nEncrypted backup commands:
   restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.
   recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.
   backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.
-  backup-schedule TARGET Export reviewable user units with --output DIR; never enables them.
+  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.
   backup-check TARGET    Check backup freshness and run history; --apply records and notifies.
   backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.
   backup-stage TARGET    Review source-owned backup provisioning; --apply refreshes runtime access and recovery code.
+\nController-side scheduling:
+  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run
+  Requires backup.enable = true and backup.schedule in the target declaration.
+  Without --dry-run, writes user service/timer files on this controller, not on TARGET.
+  It does not install or enable units and does not change a server-owned timer.
+  If the server already runs scheduled backups (for example Restic), manage that
+  schedule in its NixOS configuration; keep one capture scheduler.
 \nBackup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.
 Restore does not create a VM, activate configuration or reboot. See docs/backups.md.
 """
@@ -261,6 +268,8 @@ def main(argv=None):
     if (args.target in registry and args.action not in ("list", "show", "export", "status", "doctor")
             and not args.action.startswith("new-") and args.action not in registry[args.target]["operations"]):
         if args.action in BACKUP_ACTIONS:
+            if args.action == "backup-schedule":
+                parser.error(_("backup-schedule requires backup.enable = true and backup.schedule in the target declaration. It exports user units on this controller. If the server already schedules its own backups (for example Restic), manage that schedule in its NixOS configuration."))
             parser.error(_("Backup operation unavailable: enable source backup policy and configure live access for capture or restore."))
         parser.error(_("Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."))
     if args.artifact_root and args.action != "cleanup":
@@ -368,6 +377,8 @@ def main(argv=None):
             print(json.dumps(snapshots, ensure_ascii=False, indent=2))
         return int(any("error" in data for data in snapshots.values()))
     if args.target not in registry:
+        if args.action == "backup-schedule" and not args.target:
+            parser.error(_("Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Available targets: {targets}.").format(targets=", ".join(sorted(registry))))
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
     if args.action in BACKUP_ACTIONS:

@@ -88,8 +88,6 @@ format rather than treating the filesystem as portable.
 ```sh
 nixberry backup-prune vm-demo-server --json
 nixberry backup-prune vm-demo-server --apply --json
-nixberry backup-schedule vm-demo-server --output /private/backup-units --dry-run
-nixberry backup-schedule vm-demo-server --output /private/backup-units
 ```
 
 The retention plan names the exact candidates. The provider must authenticate
@@ -98,6 +96,19 @@ unrelated data and snapshots currently used by another operation. Pruning is
 separate from capture and is not authorized by a plain plan or list command.
 Configuration-owned formats define additional rules such as retaining copies
 separately for each source machine identity.
+
+Choose where backups are scheduled: `backup-schedule` prepares user units on
+the controller running NixBerry. A server-owned scheduler, such as a NixOS
+Restic timer, is configured on the server instead (see [source-owned automation](#source-owned-automation)).
+Keep one capture scheduler; this command does not inspect or change a server's timer.
+
+For controller scheduling, enable `backup.enable` and set `backup.schedule` in
+the target declaration. Both the target name and `--output` are required:
+
+```sh
+nixberry backup-schedule vm-demo-server --output /private/backup-units --dry-run
+nixberry backup-schedule vm-demo-server --output /private/backup-units
+```
 
 `backup-schedule` validates the calendar and writes a private, new directory with
 a systemd user service/timer. Like `export`, it writes locally by default;

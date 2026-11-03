@@ -103,6 +103,58 @@ class NamedShowChecks(unittest.TestCase):
 
 
 class HelpChecks(unittest.TestCase):
+    def test_czech_backup_schedule_help_and_errors_are_translated(self):
+        source = Path(__file__).with_name("locales") / "cs/LC_MESSAGES/nixberry.po"
+        binary = subprocess.check_output(["msgfmt", "--check", "-o", "-", str(source)])
+        catalog = gettext.GNUTranslations(io.BytesIO(binary))
+        registry = {"rpi-demo": {"backend": "rpi", "host": "rpi-demo", "commands": {}}}
+        for arguments, expected, code in [
+            (["backup-schedule", "--help"], "Plánování na řídicím počítači:", 0),
+            (["backup-schedule", "--dry-run"], "Použití: nixberry backup-schedule TARGET", 2),
+            (["backup-schedule", "rpi-demo", "--dry-run"], "Pokud server už plánuje vlastní zálohy", 2),
+        ]:
+            output, errors = io.StringIO(), io.StringIO()
+            with patch.dict(os.environ, {"NIXBERRY_LANG": "cs", "NIXBERRY_DEPLOYMENT": "/unused"}), \
+                    patch("messages._catalog", return_value=catalog), \
+                    patch("pathlib.Path.read_text", return_value=json.dumps(registry)), \
+                    patch("subprocess.run", side_effect=AssertionError("Help and errors must not run commands")), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors), \
+                    self.assertRaises(SystemExit) as result:
+                MAIN(arguments)
+            self.assertEqual(result.exception.code, code)
+            self.assertIn(expected, output.getvalue() if code == 0 else errors.getvalue())
+
+    def test_backup_schedule_help_explains_controller_and_server_scheduling(self):
+        for arguments in (["--help"], ["backup-schedule", "--help"]):
+            output = io.StringIO()
+            with patch.dict(os.environ, {"NIXBERRY_LANG": "en"}, clear=True), \
+                    patch("pathlib.Path.read_text", side_effect=AssertionError("Help must not read inventory")), \
+                    patch("subprocess.run", side_effect=AssertionError("Help must not run commands")), \
+                    contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as result:
+                MAIN(arguments)
+            self.assertEqual(result.exception.code, 0)
+            for expected in ("Controller-side scheduling:", "backup.enable = true", "backup.schedule",
+                             "nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run",
+                             "Restic", "does not change a server-owned timer"):
+                self.assertIn(expected, output.getvalue())
+
+    def test_backup_schedule_errors_offer_usage_and_explain_disabled_policy(self):
+        registry = {"rpi-demo": {"backend": "rpi", "host": "rpi-demo", "commands": {}}}
+        for arguments, expected in [
+            (["backup-schedule", "--dry-run"], "Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY"),
+            (["backup-schedule", "rpi-demo", "--dry-run"], "server already schedules its own backups"),
+        ]:
+            output, errors = io.StringIO(), io.StringIO()
+            with patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT": "/unused", "NIXBERRY_LANG": "en"}), \
+                    patch("pathlib.Path.read_text", return_value=json.dumps(registry)), \
+                    patch("subprocess.run", side_effect=AssertionError("Invalid scheduling must not run commands")), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors), \
+                    self.assertRaises(SystemExit) as result:
+                MAIN(arguments)
+            self.assertEqual(result.exception.code, 2)
+            self.assertEqual(output.getvalue(), "")
+            self.assertIn(expected, errors.getvalue())
+
     def test_help_describes_all_commands_without_registry_or_network(self):
         output = io.StringIO()
         with patch.dict(os.environ, {}, clear=True), \
