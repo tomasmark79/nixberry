@@ -82,7 +82,16 @@ Keyboard is `en-us`, country is Czechia and timezone is `Europe/Prague`.
 Root gets a random password and the public key from `admin.pub`.
 Private credentials do not enter Git or the Nix store.
 
-After installation finishes and the host boots from disk:
+Automatic installation may leave the new VM shut off. Check its state and
+persistent CD-ROM attachment before starting the installed system:
+
+```sh
+virsh -c qemu:///system domstate nixberry-pvelab
+virsh -c qemu:///system domblklist nixberry-pvelab --details
+virsh -c qemu:///system start nixberry-pvelab # only if shut off after installation and CD-ROM is empty
+```
+
+After the host boots from disk:
 
 ```sh
 python3 management/proxmox/lab/finish.py

@@ -20,7 +20,9 @@
 | CLI arguments, command names and help | [cli_args.py](../management/deployment/cli_args.py) |
 | Shared VM adapters | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
 | Host identity, ownership and filesystem checks | [host_backends/common.py](../management/deployment/host_backends/common.py) |
-| Proxmox, VirtualBox and VMware host operations | [host_backends/](../management/deployment/host_backends/__init__.py) |
+| Proxmox host operations | [host_backends/proxmox.py](../management/deployment/host_backends/proxmox.py) |
+| VirtualBox host operations | [host_backends/virtualbox.py](../management/deployment/host_backends/virtualbox.py) |
+| VMware host operations | [host_backends/vmware.py](../management/deployment/host_backends/vmware.py) |
 
 Use the selected configuration for application-specific services and `modules/`
 for shared behavior. Platforms handle boot, disks, drivers and guest support;
