@@ -19,11 +19,18 @@
 | Registry and CLI | [management/deployment/](../management/deployment/default.nix) |
 | CLI arguments, command names and help | [cli_args.py](../management/deployment/cli_args.py) |
 | Shared VM adapters | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
+| Host identity, ownership and filesystem checks | [host_backends/common.py](../management/deployment/host_backends/common.py) |
+| Proxmox, VirtualBox and VMware host operations | [host_backends/](../management/deployment/host_backends/__init__.py) |
 
 Use the selected configuration for application-specific services and `modules/`
 for shared behavior. Platforms handle boot, disks, drivers and guest support;
 they do not choose application configurations. Declarations contain identity,
 networking and resources.
+
+`host_agent.py` coordinates the shared transfer and reset workflow; each module
+in `host_backends/` owns its hypervisor commands. The RPC bundles these modules,
+the network helpers and translations into memory over stdin. Remote hosts need
+Python and their native hypervisor tools, without a NixBerry installation.
 
 NixBerry has its own recipe and lock and works independently of notebook configuration.
 Declaration directories track only loaders and ignore rules. Back up VM/RPi

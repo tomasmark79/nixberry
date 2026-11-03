@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import patch
 
 import host_agent
+from host_backends import common as host_common, virtualbox as host_virtualbox
 import reset
 
 
@@ -22,14 +23,14 @@ class ResetChecks(unittest.TestCase):
 
     def test_rpc_rejects_missing_or_truthy_permission_before_host_access(self):
         for allowed in (None, False, 1, "true"):
-            with self.subTest(allowed=allowed), patch.object(host_agent, "host_check") as host:
+            with self.subTest(allowed=allowed), patch.object(host_common, "host_check") as host:
                 with self.assertRaises(ValueError):
                     host_agent.dispatch({"spec": {}, "backend": "proxmox", "action": "reset",
                                          "apply": True, "allowReset": allowed})
                 host.assert_not_called()
 
     def test_rpc_rejects_ambiguous_apply_before_host_access(self):
-        with patch.object(host_agent, "host_check") as host:
+        with patch.object(host_common, "host_check") as host:
             with self.assertRaises(ValueError):
                 host_agent.dispatch({"spec": {}, "backend": "vmware", "action": "reset",
                                      "apply": "false", "allowReset": True})
@@ -38,7 +39,7 @@ class ResetChecks(unittest.TestCase):
     def test_read_only_reset_never_stops_or_deletes(self):
         plan = {"state": "running", "uuid": "id", "directory": "/owned"}
         with patch.object(host_agent, "reset_checks", return_value=plan), \
-                patch.object(host_agent, "run") as run, patch.object(host_agent.shutil, "rmtree") as remove:
+                patch.object(host_common, "run") as run, patch.object(host_agent.shutil, "rmtree") as remove:
             result = host_agent.reset_vm({}, "virtualbox", Path("/owned"), apply=False)
         self.assertTrue(result["readOnly"])
         run.assert_not_called()
@@ -50,7 +51,7 @@ class ResetChecks(unittest.TestCase):
         second = {"state": "shut off", "uuid": "different", "directory": "/owned"}
         with patch.object(host_agent, "reset_checks", side_effect=[first, second]), \
                 patch.object(host_agent, "probe", return_value={"state": "shut off"}), \
-                patch.object(host_agent, "run") as run, patch.object(host_agent.shutil, "rmtree") as remove:
+                patch.object(host_common, "run") as run, patch.object(host_agent.shutil, "rmtree") as remove:
             with self.assertRaises(RuntimeError):
                 host_agent.reset_vm(spec, "virtualbox", Path("/owned"), apply=True)
         self.assertEqual(run.call_args_list[0].args[0], ["VBoxManage", "controlvm", "id", "acpipowerbutton"])
@@ -84,8 +85,8 @@ class ResetChecks(unittest.TestCase):
                     details += f'\nSATA-1-0="{directory / "installer.iso"}"'
                 medium = f'UUID: {spec["uuid"]}\nParent UUID: base\nIn use by VMs: {spec["uuid"]}'
                 with patch.object(host_agent, "probe", return_value={"state": "shut off"}), \
-                        patch.object(host_agent, "vbox_registry", return_value=[]), \
-                        patch.object(host_agent, "run", side_effect=[details, medium, ""]) as run:
+                        patch.object(host_virtualbox, "registry", return_value=[]), \
+                        patch.object(host_common, "run", side_effect=[details, medium, ""]) as run:
                     plan = host_agent.reset_vm(spec, "virtualbox", directory, apply=False)
                 self.assertTrue(plan["readOnly"])
                 self.assertEqual(plan["disk"], str(disk))
@@ -104,7 +105,7 @@ class ResetChecks(unittest.TestCase):
             foreign = Path(temporary) / "foreign.vbox"
             foreign.write_text("<VirtualBox/>")
             with patch.object(host_agent, "probe", return_value={"state": "shut off"}), \
-                    patch.object(host_agent, "run", return_value=f'CfgFile="{foreign}"') as run:
+                    patch.object(host_common, "run", return_value=f'CfgFile="{foreign}"') as run:
                 with self.assertRaisesRegex(RuntimeError, "configuration is outside"):
                     host_agent.reset_vm(spec, "virtualbox", directory, apply=False)
             run.assert_called_once()

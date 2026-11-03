@@ -12,6 +12,7 @@ from unittest.mock import patch
 import xml.etree.ElementTree as ET
 
 import host_agent
+from host_backends import common as host_common, proxmox as host_proxmox, virtualbox as host_virtualbox, vmware as host_vmware
 import runtime
 from messages import python_script
 from vm_network import adapters, guest_checks, libvirt_matches
@@ -77,15 +78,15 @@ function Get-VMNetworkAdapter { param($VM) return $actual }
                 second = value['networkAdapters'][1]['mac']
                 if backend == 'virtualbox':
                     response = f'macaddress1="{second.replace(":", "")}"'
-                    registry = patch.object(host_agent, 'vbox_registry', return_value=[{'uuid': 'other'}])
+                    registry = patch.object(host_virtualbox, 'registry', return_value=[{'uuid': 'other'}])
                 elif backend == 'proxmox':
                     response = json.dumps({'net0': f'virtio={second},bridge=vmbr1'})
-                    registry = patch.object(host_agent, 'proxmox_registry', return_value=[{'type': 'qemu', 'node': 'pve', 'vmid': 101}])
+                    registry = patch.object(host_proxmox, 'registry', return_value=[{'type': 'qemu', 'node': 'pve', 'vmid': 101}])
                 else:
                     (Path(directory) / 'other.vmx').write_text(f'ethernet0.address = "{second}"\n')
                     response = 'Total running VMs: 0'
-                    registry = patch.object(host_agent, 'proxmox_registry')
-                with self.subTest(backend=backend), registry, patch.object(host_agent, 'run', return_value=response), self.assertRaisesRegex(RuntimeError, 'already used'):
+                    registry = patch.object(host_proxmox, 'registry')
+                with self.subTest(backend=backend), registry, patch.object(host_common, 'run', return_value=response), self.assertRaisesRegex(RuntimeError, 'already used'):
                     host_agent.network_conflicts(value, backend)
 
     def test_primary_aliases_and_legacy_defaults_for_all_backends(self):
@@ -151,7 +152,7 @@ function Get-VMNetworkAdapter { param($VM) return $actual }
         for backend in ("proxmox", "virtualbox", "vmware"):
             value = spec(backend)
             if backend == "vmware":
-                info = host_agent.pairs(host_agent.vmx_text(value))
+                info = host_agent.pairs(host_vmware.vmx_text(value))
                 change = ("ethernet1.vnet", "vmnet3")
                 extra = ("ethernet2.present", "TRUE")
             elif backend == "proxmox":

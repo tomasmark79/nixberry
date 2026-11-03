@@ -22,6 +22,7 @@ let
     fileset = pkgs.lib.fileset.unions [
       ../deployment/portable.py
       ../deployment/host_agent.py
+      (pkgs.lib.fileset.fileFilter (file: file.hasExt "py") ../deployment/host_backends)
       ../deployment/guest-install.sh
       ../deployment/runtime.py
       ../deployment/vm_network.py

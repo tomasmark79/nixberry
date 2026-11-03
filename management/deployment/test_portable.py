@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 import host_agent as agent
+from host_backends import common as host_common, proxmox as host_proxmox, virtualbox as host_virtualbox, vmware as host_vmware
 import portable
 import runtime
 from scaffold import new_vm
@@ -52,12 +53,12 @@ class PortableTests(unittest.TestCase):
     def test_windows_private_directory_grants_actual_user_sid(self):
         directory = Mock()
         with patch.object(agent.os, "name", "nt"), \
-                patch.object(agent, "run", side_effect=['"WINDOWS-DEMO\\user","S-1-5-21-123-456-789-1001"', "OK"]) as run:
+                patch.object(host_common, "run", side_effect=['"WINDOWS-DEMO\\user","S-1-5-21-123-456-789-1001"', "OK"]) as run:
             agent.private_directory(directory)
         directory.mkdir.assert_called_once_with(mode=0o700)
         self.assertEqual(run.call_args.args[0], ["icacls.exe", str(directory), "/inheritance:r", "/grant:r",
             "*S-1-5-21-123-456-789-1001:(OI)(CI)F", "*S-1-5-18:(OI)(CI)F", "*S-1-5-32-544:(OI)(CI)F"])
-        with patch.object(agent.os, "name", "nt"), patch.object(agent, "run", return_value="bad") as run:
+        with patch.object(agent.os, "name", "nt"), patch.object(host_common, "run", return_value="bad") as run:
             with self.assertRaisesRegex(RuntimeError, "SID"):
                 agent.private_directory(Mock())
             run.assert_called_once()
@@ -83,7 +84,7 @@ class PortableTests(unittest.TestCase):
 
     def test_inventory_rpc_dispatch_calls_inventory_for_each_backend(self):
         for backend in ("virtualbox", "vmware", "proxmox"):
-            with self.subTest(backend=backend), patch.object(agent, "host_check", return_value=Path("/owned")), \
+            with self.subTest(backend=backend), patch.object(host_common, "host_check", return_value=Path("/owned")), \
                     patch.object(agent, "inventory", return_value={"images": []}) as inventory:
                 request = {"spec": {"name": "test"}, "backend": backend,
                            "action": "inventory", "declared": [{"name": "test"}]}
@@ -110,7 +111,7 @@ class PortableTests(unittest.TestCase):
         table = "\n".join(f"{key:45} = '{value}' @ 2026-10-18T09:03:18.035Z TRANSIENT" for key, value in values.items())
         for output in (legacy, table):
             with self.subTest(output=output):
-                self.assertEqual(agent.vbox_guest_properties(output), values)
+                self.assertEqual(host_virtualbox.guest_properties(output), values)
 
     def test_offline_rpc_never_connects(self):
         with patch("subprocess.run") as run, self.assertRaisesRegex(RuntimeError, "The offline target"):
@@ -132,7 +133,7 @@ class PortableTests(unittest.TestCase):
     def test_invalid_specs_fail_before_subprocess(self):
         for change in ({"ownerId": "foreign"}, {"uuid": "bad"}, {"mac": "01:00:00:00:00:01"},
                        {"name": "../foreign"}, {"memoryMiB": True}, {"diskGiB": 0}, {"mac": "02:79:81:00:00:01"}):
-            with self.subTest(change=change), patch.object(agent, "run") as run:
+            with self.subTest(change=change), patch.object(host_common, "run") as run:
                 with self.assertRaises(ValueError):
                     agent.host_check(spec(self.root, **change), "vmware")
                 run.assert_not_called()
@@ -146,13 +147,13 @@ class PortableTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         agent.validate(spec(self.root, name=name, ownerId="foreign", **settings), backend)
             for name in ("", "../other", "Bad", "a" * 64, "a\n", "con", "nul", "com1", "lpt9"):
-                with self.subTest(backend=backend, name=name), patch.object(agent, "run") as run:
+                with self.subTest(backend=backend, name=name), patch.object(host_common, "run") as run:
                     with self.assertRaises(ValueError):
                         agent.host_check(spec(self.root, name=name, **settings), backend)
                     run.assert_not_called()
 
     def test_wrong_host_and_symlink_storage_rejected_before_cli(self):
-        with patch.object(agent, "run") as run:
+        with patch.object(host_common, "run") as run:
             with self.assertRaisesRegex(RuntimeError, "hostname"):
                 agent.host_check(spec(self.root, hostName="foreign"), "vmware")
             link = self.root / "link"
@@ -165,7 +166,7 @@ class PortableTests(unittest.TestCase):
         s = spec(self.root)
         directory = self.marker(s)
         (directory / "system.vmdk").write_bytes(b"corrupted")
-        with patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "checksum"):
+        with patch.object(host_common, "run") as run, self.assertRaisesRegex(RuntimeError, "checksum"):
             agent.create(s, "vmware", directory)
         run.assert_not_called()
         with self.assertRaisesRegex(RuntimeError, "declaration"):
@@ -173,14 +174,14 @@ class PortableTests(unittest.TestCase):
 
     def test_vmx_round_trip_and_foreign_config_rejected(self):
         s = spec(self.root)
-        self.assertEqual(agent.bios_uuid(s), "78 56 34 12 34 12 21 43-81 23 12 34 56 78 9a bc")
+        self.assertEqual(host_vmware.bios_uuid(s), "78 56 34 12 34 12 21 43-81 23 12 34 56 78 9a bc")
         directory = self.marker(s)
         vmx = directory / (s["name"] + ".vmx")
-        vmx.write_text(agent.vmx_text(s))
-        with patch.object(agent, "run", return_value="Total running VMs: 0"):
+        vmx.write_text(host_vmware.vmx_text(s))
+        with patch.object(host_common, "run", return_value="Total running VMs: 0"):
             self.assertEqual(agent.probe(s, "vmware", directory)["state"], "shut off")
             for key in ("annotation", "sata0:0.fileName", "ethernet0.address", "uuid.bios", "firmware"):
-                vmx.write_text(agent.vmx_text(s).replace(key + ' = "', key + ' = "foreign'))
+                vmx.write_text(host_vmware.vmx_text(s).replace(key + ' = "', key + ' = "foreign'))
                 with self.subTest(key=key), self.assertRaises(RuntimeError):
                     agent.probe(s, "vmware", directory)
 
@@ -188,14 +189,14 @@ class PortableTests(unittest.TestCase):
         s = spec(self.root)
         directory = self.marker(s)
         vmx = directory / (s["name"] + ".vmx")
-        vmx.write_text(agent.vmx_text(s))
+        vmx.write_text(host_vmware.vmx_text(s))
         def run(command, **kwargs):
             if command[1] == "list":
                 return "Total running VMs: 1\n" + str(vmx)
             self.assertEqual(command[-1], "-wait")
             self.assertEqual(kwargs["timeout"], 5)
             raise subprocess.TimeoutExpired(command, 5)
-        with patch.object(agent, "run", side_effect=run):
+        with patch.object(host_common, "run", side_effect=run):
             self.assertEqual(agent.probe(s, "vmware", directory), {"state": "running", "addresses": []})
 
     def test_actual_rpc_stream_upload_exclusive_create_and_probe(self):
@@ -228,10 +229,10 @@ class PortableTests(unittest.TestCase):
         directory = self.marker(s, data=b"expected")
         (directory / "system.vmdk").unlink()
         stream = type("Input", (), {"buffer": io.BytesIO(b"wrong")})()
-        with patch.object(agent, "host_check", return_value=directory), patch.object(agent.sys, "stdin", stream):
+        with patch.object(host_common, "host_check", return_value=directory), patch.object(agent.sys, "stdin", stream):
             with self.assertRaisesRegex(RuntimeError, "corrupted"):
                 agent.dispatch({"spec": s, "backend": "vmware", "action": "upload"})
-        with patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "checksum"):
+        with patch.object(host_common, "run") as run, self.assertRaisesRegex(RuntimeError, "checksum"):
             agent.create(s, "vmware", directory)
         run.assert_not_called()
 
@@ -262,14 +263,14 @@ class PortableTests(unittest.TestCase):
                       'Name: /VirtualBox/GuestInfo/Net/0/V4/IP, value: 192.168.79.130, timestamp: 1\n'
                       'Name: /VirtualBox/GuestInfo/Net/1/MAC, value: AABBCCDDEEFF, timestamp: 1\n'
                       'Name: /VirtualBox/GuestInfo/Net/1/V4/IP, value: 192.168.79.1, timestamp: 1')
-        with patch.object(agent, "run", side_effect=[f'"{s["name"]}" {{{s["uuid"]}}}', info,
+        with patch.object(host_common, "run", side_effect=[f'"{s["name"]}" {{{s["uuid"]}}}', info,
                                                     "Value: " + s["ownerId"], properties]):
             self.assertEqual(agent.probe(s, "virtualbox", directory)["addresses"], ["192.168.79.130"])
 
     def test_proxmox_collision_in_cluster_rejected(self):
         s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
-        with patch.object(agent, "proxmox_registry", return_value=[{"vmid": 1000, "name": "foreign", "node": "other"}]), \
-                patch.object(agent, "run") as run, self.assertRaisesRegex(RuntimeError, "already in use"):
+        with patch.object(host_proxmox, "registry", return_value=[{"vmid": 1000, "name": "foreign", "node": "other"}]), \
+                patch.object(host_common, "run") as run, self.assertRaisesRegex(RuntimeError, "already in use"):
             agent.absent(s, "proxmox", self.root / s["name"])
         run.assert_not_called()
 
@@ -291,19 +292,19 @@ class PortableTests(unittest.TestCase):
                     return json.dumps({"status": current})
                 self.assertEqual(command[2], "/nodes/pve/qemu")
                 return json.dumps([{"vmid": 1000, "name": s["name"], "status": "stopped"}])
-            with self.subTest(current=current), patch.object(agent, "proxmox_registry", return_value=cluster), \
-                    patch.object(agent, "run", side_effect=respond):
+            with self.subTest(current=current), patch.object(host_proxmox, "registry", return_value=cluster), \
+                    patch.object(host_common, "run", side_effect=respond):
                 self.assertEqual(agent.probe(s, "proxmox", directory)["state"],
                                  "running" if current == "running" else "shut off")
         config["description"] = "foreign-owner"
-        with patch.object(agent, "proxmox_registry", return_value=[]), \
-                patch.object(agent, "run", side_effect=respond), self.assertRaisesRegex(RuntimeError, "owner"):
+        with patch.object(host_proxmox, "registry", return_value=[]), \
+                patch.object(host_common, "run", side_effect=respond), self.assertRaisesRegex(RuntimeError, "owner"):
             agent.probe(s, "proxmox", directory)
 
     def test_proxmox_creation_uses_uefi_virtio_import_and_owner(self):
         s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
         directory = self.marker(s, backend="proxmox")
-        with patch.object(agent, "proxmox_registry", return_value=[]), patch.object(agent, "run", side_effect=["", '{"virtio0":"local-lvm:vm-1000-disk-1,size=32G","efidisk0":"local-lvm:vm-1000-disk-0"}']) as run, \
+        with patch.object(host_proxmox, "registry", return_value=[]), patch.object(host_common, "run", side_effect=["", '{"virtio0":"local-lvm:vm-1000-disk-1,size=32G","efidisk0":"local-lvm:vm-1000-disk-0"}']) as run, \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
             agent.create(s, "proxmox", directory)
         command = run.call_args_list[0].args[0]
@@ -327,9 +328,9 @@ class PortableTests(unittest.TestCase):
             hardware = directory / "hardware.json"
             if hardware.exists():
                 hardware.unlink()
-            with self.subTest(method=method), patch.object(agent, "proxmox_registry", return_value=[]), \
-                    patch.object(agent, "proxmox_iso_medium", return_value=("local:iso/lab.iso", directory / "managed.iso")), \
-                    patch.object(agent, "run", side_effect=["", '{"virtio0":"local-lvm:vm-1000-disk-1","efidisk0":"local-lvm:vm-1000-disk-0"}']) as run, \
+            with self.subTest(method=method), patch.object(host_proxmox, "registry", return_value=[]), \
+                    patch.object(host_proxmox, "iso_medium", return_value=("local:iso/lab.iso", directory / "managed.iso")), \
+                    patch.object(host_common, "run", side_effect=["", '{"virtio0":"local-lvm:vm-1000-disk-1","efidisk0":"local-lvm:vm-1000-disk-0"}']) as run, \
                     patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
                 agent.create(s, "proxmox", directory)
             command = run.call_args_list[0].args[0]
@@ -346,23 +347,23 @@ class PortableTests(unittest.TestCase):
         volume = "local:iso/nixberry-" + s["uuid"] + ".iso"
         config = dict(virtio0="local-lvm:vm-1000-disk-0,size=32G",
                       efidisk0="local-lvm:vm-1000-disk-1,size=4M", ide2=volume + ",media=cdrom")
-        with patch.object(agent, "proxmox_registry", return_value=[]), \
-                patch.object(agent, "proxmox_iso_medium", return_value=(volume, medium)), \
+        with patch.object(host_proxmox, "registry", return_value=[]), \
+                patch.object(host_proxmox, "iso_medium", return_value=(volume, medium)), \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}), \
-                patch.object(agent, "run", side_effect=["", json.dumps(config)]) as run:
+                patch.object(host_common, "run", side_effect=["", json.dumps(config)]) as run:
             agent.create(s, "proxmox", directory)
             self.assertIn(volume + ",media=cdrom", run.call_args_list[0].args[0])
         self.assertEqual(medium.read_bytes(), b"disk")
-        with patch.object(agent, "proxmox_iso_medium", return_value=(volume, medium)), \
+        with patch.object(host_proxmox, "iso_medium", return_value=(volume, medium)), \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}), \
-                patch.object(agent, "run", return_value=json.dumps({**config, "ide2": "local:iso/foreign.iso"})) as run:
+                patch.object(host_common, "run", return_value=json.dumps({**config, "ide2": "local:iso/foreign.iso"})) as run:
             with self.assertRaisesRegex(RuntimeError, "expected ISO"):
                 agent.installer_media(s, "proxmox", directory, detach=True)
             self.assertEqual(run.call_count, 1)
             self.assertTrue(medium.exists())
-        with patch.object(agent, "proxmox_iso_medium", return_value=(volume, medium)), \
+        with patch.object(host_proxmox, "iso_medium", return_value=(volume, medium)), \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}), \
-                patch.object(agent, "run", side_effect=[json.dumps(config), ""]) as run:
+                patch.object(host_common, "run", side_effect=[json.dumps(config), ""]) as run:
             agent.installer_media(s, "proxmox", directory, detach=True)
             self.assertIn("--delete", run.call_args.args[0])
         self.assertFalse(medium.exists())
@@ -370,13 +371,13 @@ class PortableTests(unittest.TestCase):
 
     def test_proxmox_iso_refuses_existing_file_and_storage_without_iso(self):
         s = spec(self.root, vmid=1000, node="pve", storage="local-lvm", bridge="vmbr0")
-        with patch.object(agent, "run", return_value='{"content":"images"}') as run:
+        with patch.object(host_common, "run", return_value='{"content":"images"}') as run:
             with self.assertRaisesRegex(RuntimeError, "enabled for ISO"):
-                agent.proxmox_iso_medium(s)
+                host_proxmox.iso_medium(s)
             self.assertEqual(run.call_count, 1)
-        with patch.object(agent, "run", side_effect=['{"content":"iso"}', '{"active":0,"enabled":1}']) as run:
+        with patch.object(host_common, "run", side_effect=['{"content":"iso"}', '{"active":0,"enabled":1}']) as run:
             with self.assertRaisesRegex(RuntimeError, "inactive"):
-                agent.proxmox_iso_medium(s)
+                host_proxmox.iso_medium(s)
             self.assertEqual(run.call_count, 2)
         directory = self.marker(s, backend="proxmox")
         marker = json.loads((directory / "nixberry.json").read_text())
@@ -385,9 +386,9 @@ class PortableTests(unittest.TestCase):
         (directory / "system.qcow2").rename(directory / "installer.iso")
         medium = self.root / "foreign.iso"
         medium.write_bytes(b"keep")
-        with patch.object(agent, "proxmox_registry", return_value=[]), \
-                patch.object(agent, "proxmox_iso_medium", return_value=("local:iso/owned.iso", medium)), \
-                patch.object(agent, "run") as run:
+        with patch.object(host_proxmox, "registry", return_value=[]), \
+                patch.object(host_proxmox, "iso_medium", return_value=("local:iso/owned.iso", medium)), \
+                patch.object(host_common, "run") as run:
             with self.assertRaises(FileExistsError):
                 agent.create(s, "proxmox", directory)
             run.assert_not_called()
@@ -417,8 +418,8 @@ class PortableTests(unittest.TestCase):
             self.assertEqual(command[2], "/nodes/" + node + "/qemu")
             return json.dumps(machines)
         request = {"spec": first, "backend": "proxmox", "action": "probe-many", "specs": [first, second]}
-        with patch.object(agent, "proxmox_registry", return_value=machines) as cluster, \
-                patch.object(agent, "run", side_effect=respond) as run:
+        with patch.object(host_proxmox, "registry", return_value=machines) as cluster, \
+                patch.object(host_common, "run", side_effect=respond) as run:
             self.assertEqual([row["state"] for row in agent.dispatch(request)], ["shut off", "shut off"])
             cluster.assert_called_once()
             self.assertEqual(sum(call.args[0] == ["pveversion"] for call in run.call_args_list), 1)
@@ -431,7 +432,7 @@ class PortableTests(unittest.TestCase):
     def test_virtualbox_creation_has_unique_medium_uuid_before_attach(self):
         s = spec(self.root, bridge="Ethernet Adapter")
         directory = self.marker(s, backend="virtualbox")
-        with patch.object(agent, "vbox_registry", return_value=[]), patch.object(agent, "run") as run, \
+        with patch.object(host_virtualbox, "registry", return_value=[]), patch.object(host_common, "run") as run, \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
             agent.create(s, "virtualbox", directory)
         commands = [call.args[0] for call in run.call_args_list]
@@ -448,7 +449,7 @@ class PortableTests(unittest.TestCase):
         s["networkAdapters"] = [{"name": "wan0", "mac": s["mac"], "bridge": "WAN"},
                                 {"name": "lan0", "mac": "00:50:56:12:34:57", "bridge": "LAN"}]
         directory = self.marker(s, backend="virtualbox")
-        with patch.object(agent, "vbox_registry", return_value=[]), patch.object(agent, "run") as run, \
+        with patch.object(host_virtualbox, "registry", return_value=[]), patch.object(host_common, "run") as run, \
                 patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
             agent.create(s, "virtualbox", directory)
         command = next(call.args[0] for call in run.call_args_list if call.args[0][1] == "modifyvm")
@@ -457,7 +458,7 @@ class PortableTests(unittest.TestCase):
 
     def test_insufficient_space_leaves_no_directory(self):
         s = spec(self.root)
-        with patch.object(agent, "host_check", return_value=self.root / s["name"]), \
+        with patch.object(host_common, "host_check", return_value=self.root / s["name"]), \
                 patch.object(agent, "absent"), patch.object(agent.shutil, "disk_usage", return_value=type("Disk", (), {"free": 10})()):
             for action in ("plan", "prepare"):
                 with self.subTest(action=action), self.assertRaisesRegex(RuntimeError, "space"):
@@ -505,8 +506,8 @@ class PortableTests(unittest.TestCase):
         listing = (f'UUID: {first}\nParent UUID: base\nLocation: {self.root / "base.vdi"}\nCapacity: 32768 MBytes\n\n'
                    f'UUID: {second}\nParent UUID: {first}\nLocation: {self.root / "snapshot.vdi"}\nCapacity: 32768 MBytes')
         s = spec(self.root, bridge="bridge")
-        with patch.object(agent, "run", side_effect=[f'"old-vm" {{{s["uuid"]}}}', f'VMState="poweroff"\nCfgFile="{cfg}"', listing]):
-            result = agent.virtualbox_inventory(s, [])
+        with patch.object(host_common, "run", side_effect=[f'"old-vm" {{{s["uuid"]}}}', f'VMState="poweroff"\nCfgFile="{cfg}"', listing]):
+            result = host_virtualbox.inventory(s, self.root, [])
         self.assertEqual(result["errors"], [])
         self.assertEqual([i["classification"] for i in result["images"]], ["protected", "protected"])
         self.assertEqual(result["machines"][0]["classification"], "review")
@@ -515,9 +516,9 @@ class PortableTests(unittest.TestCase):
     def test_vmware_inventory_includes_stopped_vm_and_recovery_files(self):
         s = spec(self.root)
         directory = self.marker(s)
-        (directory / (s["name"] + ".vmx")).write_text(agent.vmx_text(s))
+        (directory / (s["name"] + ".vmx")).write_text(host_vmware.vmx_text(s))
         (directory / "old-snapshot.vmdk").write_bytes(b"snapshot")
-        with patch.object(agent, "run", return_value="Total running VMs: 0"):
+        with patch.object(host_common, "run", return_value="Total running VMs: 0"):
             result = agent.inventory(s, "vmware", directory, [s])
         self.assertEqual(result["errors"], [])
         self.assertEqual(result["machines"][0]["state"], "shut off")
@@ -534,8 +535,8 @@ class PortableTests(unittest.TestCase):
             if path.endswith("/config"): return '{"virtio0":"local-lvm:vm-1000-current,size=32G"}'
             if path.endswith("/content"): return '[{"volid":"local-lvm:vm-1000-current","size":1024},{"volid":"local-lvm:vm-1000-old","size":1024}]'
             raise AssertionError(command)
-        with patch.object(agent, "proxmox_registry", return_value=machines), patch.object(agent, "run", side_effect=respond):
-            result = agent.proxmox_inventory(s, [s])
+        with patch.object(host_proxmox, "registry", return_value=machines), patch.object(host_common, "run", side_effect=respond):
+            result = host_proxmox.inventory(s, self.root, [s])
         self.assertEqual(result["errors"], [])
         self.assertTrue(all(image["classification"] == "protected" for image in result["images"]))
         self.assertIsNone(result["machines"][0]["allocatedBytes"])

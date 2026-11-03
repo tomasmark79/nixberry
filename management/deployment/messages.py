@@ -125,10 +125,30 @@ def python_script(path):
         prelude += (f"_nb_catalog = gettext.GNUTranslations(io.BytesIO({catalog.read_bytes()!r}))\n"
                     "_nb_messages._catalog = lambda language: _nb_catalog\n")
     source = Path(path).read_text()
-    if "from vm_network import " in source:
+    host_package = Path(path).parent / "host_backends"
+    bundle_hosts = "from host_backends import " in source
+    if "from vm_network import " in source or bundle_hosts:
         prelude += ("_nb_network = types.ModuleType('vm_network')\n"
                     "sys.modules['vm_network'] = _nb_network\n"
                     f"exec({(root / 'vm_network.py').read_text()!r}, _nb_network.__dict__)\n")
+    if bundle_hosts:
+        # Normal package imports also work when the RPC host has no source files.
+        prelude += (
+            "_nb_hosts = types.ModuleType('host_backends')\n"
+            "_nb_hosts.__package__ = 'host_backends'\n"
+            "_nb_hosts.__path__ = []\n"
+            "sys.modules['host_backends'] = _nb_hosts\n"
+            f"exec({(host_package / '__init__.py').read_text()!r}, _nb_hosts.__dict__)\n"
+        )
+        for name in ("common", "proxmox", "virtualbox", "vmware"):
+            prelude += (
+                f"_nb_backend = types.ModuleType('host_backends.{name}')\n"
+                f"_nb_backend.__package__ = 'host_backends'\n"
+                f"_nb_backend.__file__ = '__nixberry_host_{name}__.py'\n"
+                f"sys.modules['host_backends.{name}'] = _nb_backend\n"
+                f"_nb_hosts.{name} = _nb_backend\n"
+                f"exec({(host_package / (name + '.py')).read_text()!r}, _nb_backend.__dict__)\n"
+            )
     return prelude + source
 
 

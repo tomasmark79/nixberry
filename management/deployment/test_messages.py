@@ -254,5 +254,32 @@ class MessageChecks(unittest.TestCase):
                 messages._catalog.cache_clear()
 
 
+class HostBundleTests(unittest.TestCase):
+    def test_standalone_host_package_preserves_relative_imports_without_installed_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            package = root / "host_backends"
+            package.mkdir()
+            (package / "__init__.py").write_text('"""Host backend fixtures."""\n')
+            (package / "common.py").write_text('identity = "verified"\n')
+            for backend in ("proxmox", "virtualbox", "vmware"):
+                (package / (backend + ".py")).write_text(
+                    'from .common import identity\ndef probe(): return identity\n')
+            agent = root / "host_agent.py"
+            agent.write_text('from host_backends import proxmox, virtualbox, vmware\n'
+                             'import json\nprint(json.dumps([p.probe() for p in '
+                             '(proxmox, virtualbox, vmware)]))\n')
+            source = messages.python_script(agent)
+            # Execute after removing the local source tree: stdin must be sufficient.
+            shutil.rmtree(package)
+            agent.unlink()
+            result = subprocess.run([sys.executable, "-I", "-c", source], cwd=root,
+                                    text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout), ["verified"] * 3)
+            self.assertEqual(result.stderr, "")
+            self.assertEqual(list(root.iterdir()), [])
+
+
 if __name__ == "__main__":
     unittest.main()

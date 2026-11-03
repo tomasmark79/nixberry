@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 
 import host_agent as agent
+from host_backends import common as host_common, proxmox as host_proxmox
 import portable
 from exporter import export
 from runtime import deployment_method
@@ -42,7 +43,7 @@ class MethodTests(unittest.TestCase):
             data = b"prepared-iso"
             (directory / "nixberry.json").write_text(json.dumps({"spec": s, "method": "iso",
                 "sha256": hashlib.sha256(data).hexdigest(), "imageBytes": len(data)}))
-            with patch.object(agent, "host_check", return_value=directory), \
+            with patch.object(host_common, "host_check", return_value=directory), \
                     patch.object(agent.sys, "stdin", SimpleNamespace(buffer=io.BytesIO(data))):
                 request = {"spec": s, "backend": "vmware", "action": "upload", "method": "iso"}
                 agent.dispatch(request)
@@ -71,8 +72,8 @@ class MethodTests(unittest.TestCase):
                             return '{"active":1,"enabled":1}'
                         return '{"virtio0":"local-lvm:vm-1000-disk-1,size=32G","efidisk0":"local-lvm:vm-1000-disk-0"}'
                     return ""
-                with patch.object(agent, "run", side_effect=run) as call, \
-                        patch.object(agent, "proxmox_registry", return_value=[]), \
+                with patch.object(host_common, "run", side_effect=run) as call, \
+                        patch.object(host_proxmox, "registry", return_value=[]), \
                         patch.object(agent, "probe", return_value={"state": "shut off", "addresses": []}):
                     agent.create(s, backend, directory)
                 commands = [c.args[0] for c in call.call_args_list]
@@ -91,9 +92,9 @@ class MethodTests(unittest.TestCase):
 
     def test_foreign_iso_is_never_detached(self):
         s = spec("/tmp", bridge="vmbr0")
-        with patch.object(agent, "owned", return_value={"method": "iso"}), \
+        with patch.object(host_common, "owned", return_value={"method": "iso"}), \
                 patch.object(agent, "probe", return_value={"state": "shut off"}), \
-                patch.object(agent, "run", return_value='"SATA-1-0"="/foreign.iso"') as run:
+                patch.object(host_common, "run", return_value='"SATA-1-0"="/foreign.iso"') as run:
             with self.assertRaisesRegex(RuntimeError, "expected ISO"):
                 agent.installer_media(s, "virtualbox", Path("/tmp/own-vm"), detach=True)
             self.assertEqual(run.call_count, 1)

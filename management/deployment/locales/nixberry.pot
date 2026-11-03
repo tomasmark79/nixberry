@@ -124,7 +124,7 @@ msgstr ""
 msgid "A command after -- is only available for ssh TARGET -- COMMAND."
 msgstr ""
 
-#: deployment/host_agent.py:238
+#: deployment/host_agent.py:50
 msgid "A declared adapter MAC is already used by another VM."
 msgstr ""
 
@@ -132,11 +132,11 @@ msgstr ""
 msgid "A default route is present."
 msgstr ""
 
-#: deployment/host_agent.py:854
+#: deployment/host_backends/virtualbox.py:486
 msgid "A differencing image depends on this disk; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:700
+#: deployment/host_backends/vmware.py:251
 msgid "A disk, snapshot, backing image or recovery medium may be attached."
 msgstr ""
 
@@ -152,7 +152,7 @@ msgstr ""
 msgid "A partition extends beyond the disk."
 msgstr ""
 
-#: deployment/host_agent.py:79 deployment/vm_network.py:39
+#: deployment/host_backends/common.py:107 deployment/vm_network.py:39
 msgid "A static VMware MAC must be in the range 00:50:56:00:00:00–00:50:56:3f:ff:ff."
 msgstr ""
 
@@ -236,24 +236,24 @@ msgstr ""
 msgid "Allocation"
 msgstr ""
 
-#: deployment/messages.py:157
+#: deployment/messages.py:177
 #, python-brace-format
 msgid "Ambiguous option {option}. Choices: {choices}"
 msgstr ""
 
-#: deployment/host_agent.py:866
+#: deployment/host_backends/virtualbox.py:517
 msgid "Another VM or its snapshot uses a file belonging to this VM; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:861 deployment/host_agent.py:896 hyperv/reset.ps1:87
+#: deployment/host_backends/virtualbox.py:503 deployment/host_backends/vmware.py:397 hyperv/reset.ps1:87
 msgid "Another VM uses a file belonging to this VM; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:955
+#: deployment/host_backends/proxmox.py:602
 msgid "Another VM, container or snapshot uses the volume or ISO; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:906
+#: deployment/host_backends/vmware.py:412
 msgid "Another VMware image depends on this disk; refusing reset."
 msgstr ""
 
@@ -281,12 +281,12 @@ msgstr ""
 msgid "Apply changes for update and deployment/recovery operations"
 msgstr ""
 
-#: deployment/messages.py:166
+#: deployment/messages.py:186
 #, python-brace-format
 msgid "Argument {option}: invalid value {value}. Choices: {choices}"
 msgstr ""
 
-#: deployment/messages.py:147
+#: deployment/messages.py:167
 msgid "Arguments"
 msgstr ""
 
@@ -378,7 +378,7 @@ msgstr ""
 msgid "Building the target configuration…"
 msgstr ""
 
-#: deployment/host_agent.py:1005
+#: deployment/host_agent.py:233
 msgid "Bulk status requires 1–128 VM declarations."
 msgstr ""
 
@@ -434,7 +434,7 @@ msgstr ""
 msgid "Cannot safely identify all protected generations."
 msgstr ""
 
-#: deployment/host_agent.py:950
+#: deployment/host_backends/proxmox.py:589
 msgid "Cannot safely verify another VM's snapshot; refusing reset."
 msgstr ""
 
@@ -455,7 +455,7 @@ msgstr ""
 msgid "Cannot verify disk image {path}. Check read access and qemu-img diagnostics; nothing was removed."
 msgstr ""
 
-#: deployment/host_agent.py:56
+#: deployment/host_backends/common.py:62
 msgid "Cannot verify the user SID for the private VM directory."
 msgstr ""
 
@@ -597,7 +597,7 @@ msgstr ""
 msgid "Could not confirm activation (SSH or systemd-run). Check {logs} and {verify}. The generation may already have been set; no reboot was performed."
 msgstr ""
 
-#: deployment/host_agent.py:992
+#: deployment/host_agent.py:204
 msgid "Could not confirm removal of the VM or its directory."
 msgstr ""
 
@@ -683,7 +683,7 @@ msgstr ""
 msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/dispatch.py:21 deployment/host_agent.py:1023 deployment/runtime.py:246 hyperv/host.ps1:44 hyperv/manage.py:95
+#: deployment/dispatch.py:21 deployment/host_agent.py:257 deployment/runtime.py:246 hyperv/host.ps1:44 hyperv/manage.py:95
 msgid "Deployment method must be iso or image."
 msgstr ""
 
@@ -762,7 +762,7 @@ msgstr ""
 msgid "Disallowed libvirt VM MAC address."
 msgstr ""
 
-#: deployment/host_agent.py:999 hyperv/host.ps1:184
+#: deployment/host_agent.py:223 hyperv/host.ps1:184
 msgid "Disallowed operation."
 msgstr ""
 
@@ -974,7 +974,7 @@ msgstr ""
 msgid "ISO detached; waiting for SSH on the installed system."
 msgstr ""
 
-#: deployment/host_agent.py:1035
+#: deployment/host_backends/vmware.py:445
 msgid "ISO installation requires vmware-vdiskmanager next to vmrun."
 msgstr ""
 
@@ -982,7 +982,7 @@ msgstr ""
 msgid "ISO method: install boots the installation ISO and writes the system only to a verified blank disk."
 msgstr ""
 
-#: deployment/host_agent.py:440
+#: deployment/host_backends/proxmox.py:58
 #, python-brace-format
 msgid "ISO storage {storage} is inactive on the target node."
 msgstr ""
@@ -991,7 +991,7 @@ msgstr ""
 msgid "Image"
 msgstr ""
 
-#: deployment/host_agent.py:457
+#: deployment/host_agent.py:82
 msgid "Image checksum does not match."
 msgstr ""
 
@@ -1149,15 +1149,15 @@ msgstr ""
 msgid "Invalid Hyper-V capacity: {key}"
 msgstr ""
 
-#: deployment/host_agent.py:75 hyperv/host.ps1:13
+#: deployment/host_backends/common.py:99 hyperv/host.ps1:13
 msgid "Invalid MAC address."
 msgstr ""
 
-#: deployment/host_agent.py:90
+#: deployment/host_backends/common.py:127
 msgid "Invalid Proxmox ISO storage."
 msgstr ""
 
-#: deployment/host_agent.py:88
+#: deployment/host_backends/common.py:123
 #, python-brace-format
 msgid "Invalid Proxmox resource: {key}"
 msgstr ""
@@ -1174,7 +1174,7 @@ msgstr ""
 msgid "Invalid SSH target IPv4 address."
 msgstr ""
 
-#: deployment/host_agent.py:73
+#: deployment/host_backends/common.py:97
 msgid "Invalid UUID or owner marker."
 msgstr ""
 
@@ -1182,7 +1182,7 @@ msgstr ""
 msgid "Invalid VM capacity."
 msgstr ""
 
-#: deployment/host_agent.py:70 hyperv/policy.py:14 libvirt/policy.py:27
+#: deployment/host_backends/common.py:91 hyperv/policy.py:14 libvirt/policy.py:27
 msgid "Invalid VM name: use 1–63 lowercase letters, digits and hyphens, starting with a letter; reserved Windows device names are not allowed."
 msgstr ""
 
@@ -1190,7 +1190,7 @@ msgstr ""
 msgid "Invalid VM owner."
 msgstr ""
 
-#: deployment/host_agent.py:85
+#: deployment/host_backends/common.py:120
 msgid "Invalid VMID."
 msgstr ""
 
@@ -1202,7 +1202,7 @@ msgstr ""
 msgid "Invalid backup policy in the target declaration."
 msgstr ""
 
-#: deployment/host_agent.py:82
+#: deployment/host_backends/common.py:117
 #, python-brace-format
 msgid "Invalid capacity: {key}"
 msgstr ""
@@ -1219,7 +1219,7 @@ msgstr ""
 msgid "Invalid format, capacity or unexpected backing file."
 msgstr ""
 
-#: deployment/host_agent.py:68
+#: deployment/host_backends/common.py:86
 msgid "Invalid host hostname."
 msgstr ""
 
@@ -1243,7 +1243,7 @@ msgstr ""
 msgid "Invalid or incomplete generation inventory."
 msgstr ""
 
-#: deployment/host_agent.py:97
+#: deployment/host_backends/common.py:142
 msgid "Invalid storage path."
 msgstr ""
 
@@ -1263,7 +1263,7 @@ msgstr ""
 msgid "Invalid upload identifier."
 msgstr ""
 
-#: deployment/host_agent.py:736
+#: deployment/host_backends/vmware.py:303
 msgid "Inventory is read-only. VMware: running VMs and files in the dedicated directory, not all stopped VMs on the host. unknown is not a deletion candidate. Snapshots and saved states in each VM directory are also protected. On Windows, allocation is read through GetCompressedFileSizeW; logicalBytes is the file length."
 msgstr ""
 
@@ -1362,7 +1362,7 @@ msgstr ""
 msgid "Machine-readable output for inventory, diagnostics, verify and export"
 msgstr ""
 
-#: deployment/host_agent.py:499 deployment/host_agent.py:764
+#: deployment/host_backends/proxmox.py:272 deployment/host_backends/proxmox.py:481
 msgid "Managed ISO checksum does not match."
 msgstr ""
 
@@ -1394,7 +1394,7 @@ msgstr ""
 msgid "Mode: %s; URI: %s; VM: %s"
 msgstr ""
 
-#: deployment/host_agent.py:77
+#: deployment/host_backends/common.py:101
 msgid "Multicast MAC addresses are not allowed."
 msgstr ""
 
@@ -1557,21 +1557,21 @@ msgstr ""
 msgid "Operation: {value1}"
 msgstr ""
 
-#: deployment/messages.py:162
+#: deployment/messages.py:182
 #, python-brace-format
 msgid "Option {option} does not accept a value {value}."
 msgstr ""
 
-#: deployment/messages.py:160
+#: deployment/messages.py:180
 #, python-brace-format
 msgid "Option {option} requires a value."
 msgstr ""
 
-#: deployment/messages.py:148
+#: deployment/messages.py:168
 msgid "Options"
 msgstr ""
 
-#: deployment/messages.py:164
+#: deployment/messages.py:184
 #, python-brace-format
 msgid "Options {option} and {other} cannot be combined."
 msgstr ""
@@ -1716,7 +1716,7 @@ msgstr ""
 msgid "Protection"
 msgstr ""
 
-#: deployment/host_agent.py:512
+#: deployment/host_backends/proxmox.py:335
 msgid "Proxmox created a disk outside the declared storage."
 msgstr ""
 
@@ -1738,12 +1738,12 @@ msgstr ""
 msgid "Proxmox lab preparation failed: {error}"
 msgstr ""
 
-#: deployment/host_agent.py:436
+#: deployment/host_backends/proxmox.py:41
 #, python-brace-format
 msgid "Proxmox storage {storage} is not enabled for ISO content."
 msgstr ""
 
-#: deployment/host_agent.py:661
+#: deployment/host_backends/proxmox.py:452
 msgid "Proxmox: node VMs and snapshots, images in the selected storage. Block/thin storage may not report physical allocation; null is not zero. Storage shared with other nodes prevents proof that orphaned volumes are unused."
 msgstr ""
 
@@ -1868,7 +1868,7 @@ msgstr ""
 msgid "Required CI tools are missing: {tools}."
 msgstr ""
 
-#: deployment/messages.py:158
+#: deployment/messages.py:178
 #, python-brace-format
 msgid "Required arguments are missing: {arguments}"
 msgstr ""
@@ -1913,7 +1913,7 @@ msgstr ""
 msgid "Reset requires allowReset = true; for this instance and a declared hypervisor host."
 msgstr ""
 
-#: deployment/host_agent.py:810
+#: deployment/host_agent.py:156
 msgid "Reset requires an existing running or stopped VM; partial operation remnants will not be deleted."
 msgstr ""
 
@@ -1921,7 +1921,7 @@ msgstr ""
 msgid "Reset requires an unambiguous apply mode."
 msgstr ""
 
-#: deployment/host_agent.py:1001
+#: deployment/host_agent.py:228
 msgid "Reset requires explicit permission and an unambiguous apply mode."
 msgstr ""
 
@@ -2018,7 +2018,7 @@ msgstr ""
 msgid "SSH is not available yet."
 msgstr ""
 
-#: deployment/host_agent.py:117
+#: deployment/host_backends/common.py:169
 msgid "SSH must connect directly to the declared Proxmox node."
 msgstr ""
 
@@ -2026,7 +2026,7 @@ msgstr ""
 msgid "SSH requires a specific host address."
 msgstr ""
 
-#: deployment/host_agent.py:609
+#: deployment/host_backends/virtualbox.py:371
 msgid "SSH user's VirtualBox registry, including media and snapshot references. review requires checking usage outside this registry. Do not add shared disk sizes across VMs."
 msgstr ""
 
@@ -2124,7 +2124,7 @@ msgstr ""
 msgid "Set security.recoveryHostKey to the trusted recovery medium SSH public key before connecting."
 msgstr ""
 
-#: deployment/messages.py:150
+#: deployment/messages.py:170
 msgid "Show help and exit"
 msgstr ""
 
@@ -2149,7 +2149,7 @@ msgstr ""
 msgid "Specify direct SSH as root@HOST[:PORT]."
 msgstr ""
 
-#: deployment/messages.py:159
+#: deployment/messages.py:179
 #, python-brace-format
 msgid "Specify one of these options: {arguments}"
 msgstr ""
@@ -2158,11 +2158,11 @@ msgstr ""
 msgid "Specify the early-boot VM IP address with unlock TARGET --address IP."
 msgstr ""
 
-#: deployment/host_agent.py:683
+#: deployment/host_agent.py:128
 msgid "Staging, recovery or interrupted creation; review is required."
 msgstr ""
 
-#: deployment/host_agent.py:1077
+#: deployment/host_agent.py:325
 msgid "Starting requires an existing powered-off VM with a verified owner."
 msgstr ""
 
@@ -2340,39 +2340,39 @@ msgstr ""
 msgid "The NixBerry recipe is incomplete or unavailable: %s"
 msgstr ""
 
-#: deployment/host_agent.py:485
+#: deployment/host_backends/proxmox.py:258
 msgid "The Proxmox VM already exists."
 msgstr ""
 
-#: deployment/host_agent.py:923
+#: deployment/host_backends/proxmox.py:532
 msgid "The Proxmox VM disk is not a verified volume of this instance; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:930
+#: deployment/host_backends/proxmox.py:548
 msgid "The Proxmox VM has an additional disk or foreign medium; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:350 deployment/host_agent.py:358
+#: deployment/host_backends/proxmox.py:164 deployment/host_backends/proxmox.py:189
 msgid "The Proxmox VM identity or node does not match."
 msgstr ""
 
-#: deployment/host_agent.py:911
+#: deployment/host_backends/proxmox.py:504
 msgid "The Proxmox VM is locked, protected or a template; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:254
+#: deployment/host_backends/proxmox.py:106
 msgid "The Proxmox VMID or name is already in use in the cluster."
 msgstr ""
 
-#: deployment/host_agent.py:263
+#: deployment/host_backends/proxmox.py:130
 msgid "The Proxmox bridge does not exist."
 msgstr ""
 
-#: deployment/host_agent.py:364
+#: deployment/host_backends/proxmox.py:210
 msgid "The Proxmox configuration does not match the owner or hardware."
 msgstr ""
 
-#: deployment/host_agent.py:99
+#: deployment/host_backends/common.py:144
 msgid "The Proxmox import path must not contain a comma."
 msgstr ""
 
@@ -2392,15 +2392,15 @@ msgstr ""
 msgid "The Proxmox lab identity does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:257
+#: deployment/host_backends/proxmox.py:120
 msgid "The Proxmox storage is inactive."
 msgstr ""
 
-#: deployment/host_agent.py:260
+#: deployment/host_backends/proxmox.py:124
 msgid "The Proxmox storage lacks space for the declared disk capacity and EFI."
 msgstr ""
 
-#: deployment/host_agent.py:370
+#: deployment/host_backends/proxmox.py:218
 msgid "The Proxmox system disk was changed outside the declared creation."
 msgstr ""
 
@@ -2448,7 +2448,7 @@ msgstr ""
 msgid "The VM did not shut down gracefully; nothing will be deleted."
 msgstr ""
 
-#: deployment/host_agent.py:974
+#: deployment/host_agent.py:188
 msgid "The VM did not shut down gracefully; reset will delete nothing."
 msgstr ""
 
@@ -2468,7 +2468,7 @@ msgstr ""
 msgid "The VM directory already exists."
 msgstr ""
 
-#: deployment/host_agent.py:792
+#: deployment/host_backends/common.py:300
 msgid "The VM directory contains a link, mount point or shared file; refusing reset."
 msgstr ""
 
@@ -2480,7 +2480,7 @@ msgstr ""
 msgid "The VM directory contains a link; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:131
+#: deployment/host_backends/common.py:192
 msgid "The VM directory is missing or is a link."
 msgstr ""
 
@@ -2504,7 +2504,7 @@ msgstr ""
 msgid "The VM has a lock or snapshot; cleanup was stopped."
 msgstr ""
 
-#: deployment/host_agent.py:877
+#: deployment/host_backends/vmware.py:355
 msgid "The VM has a snapshot, saved state or lock; refusing reset."
 msgstr ""
 
@@ -2512,11 +2512,11 @@ msgstr ""
 msgid "The VM has a snapshot; cleanup was stopped."
 msgstr ""
 
-#: deployment/host_agent.py:874
+#: deployment/host_backends/vmware.py:348
 msgid "The VM has additional disks or unexpected disk files; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:836
+#: deployment/host_backends/virtualbox.py:449
 msgid "The VM has additional or foreign media; refusing reset."
 msgstr ""
 
@@ -2524,7 +2524,7 @@ msgstr ""
 msgid "The VM has checkpoints; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:727
+#: deployment/host_backends/vmware.py:289
 msgid "The VM has media outside its own directory; total allocation is unknown."
 msgstr ""
 
@@ -2544,7 +2544,7 @@ msgstr ""
 msgid "The VM has snapshots; refusing removal."
 msgstr ""
 
-#: deployment/host_agent.py:833 deployment/host_agent.py:879 deployment/host_agent.py:914
+#: deployment/host_backends/proxmox.py:510 deployment/host_backends/virtualbox.py:443 deployment/host_backends/vmware.py:360
 msgid "The VM has snapshots; refusing reset."
 msgstr ""
 
@@ -2560,7 +2560,7 @@ msgstr ""
 msgid "The VM is not in a supported state."
 msgstr ""
 
-#: deployment/host_agent.py:745
+#: deployment/host_agent.py:146
 msgid "The VM is not in the required state for ISO operations."
 msgstr ""
 
@@ -2576,7 +2576,7 @@ msgstr ""
 msgid "The VM is not running."
 msgstr ""
 
-#: deployment/host_agent.py:750 deployment/host_agent.py:759 deployment/host_agent.py:773 hyperv/manage.py:200 libvirt/install.py:53
+#: deployment/host_backends/proxmox.py:476 deployment/host_backends/virtualbox.py:383 deployment/host_backends/vmware.py:317 hyperv/manage.py:200 libvirt/install.py:53
 msgid "The VM is not using the expected ISO."
 msgstr ""
 
@@ -2596,7 +2596,7 @@ msgstr ""
 msgid "The VM network adapter does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:978
+#: deployment/host_agent.py:197
 msgid "The VM or its resources changed during reset; nothing will be deleted."
 msgstr ""
 
@@ -2612,11 +2612,11 @@ msgstr ""
 msgid "The VM was created with a prebuilt system disk; it has not been started yet."
 msgstr ""
 
-#: deployment/host_agent.py:742
+#: deployment/host_agent.py:143
 msgid "The VM was not created for ISO installation."
 msgstr ""
 
-#: deployment/host_agent.py:985
+#: deployment/host_backends/proxmox.py:633
 msgid "The VM was removed, but its volume remains; keeping records for manual inspection."
 msgstr ""
 
@@ -2630,35 +2630,35 @@ msgstr ""
 msgid "The VM was started, but system verification failed: {error}"
 msgstr ""
 
-#: deployment/host_agent.py:871
+#: deployment/host_backends/vmware.py:336
 msgid "The VMware VM has additional or foreign media; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:395
+#: deployment/host_backends/vmware.py:145
 msgid "The VMware configuration does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:883
+#: deployment/host_backends/vmware.py:367
 msgid "The VMware disk has a backing image or unverified origin; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:886
+#: deployment/host_backends/vmware.py:376
 msgid "The VMware disk references additional or unverified files; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:461
+#: deployment/host_backends/virtualbox.py:142
 msgid "The VirtualBox VM already exists."
 msgstr ""
 
-#: deployment/host_agent.py:831
+#: deployment/host_backends/virtualbox.py:438
 msgid "The VirtualBox VM configuration is outside its dedicated directory; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:325
+#: deployment/host_backends/virtualbox.py:97
 msgid "The VirtualBox VM identity does not match."
 msgstr ""
 
-#: deployment/host_agent.py:247
+#: deployment/host_backends/virtualbox.py:58
 msgid "The VirtualBox VM name or UUID is already in use."
 msgstr ""
 
@@ -2810,7 +2810,7 @@ msgstr ""
 msgid "The declared IPv4 address is not enabled on the RPi."
 msgstr ""
 
-#: deployment/host_agent.py:251
+#: deployment/host_backends/virtualbox.py:66
 msgid "The declared VirtualBox bridge adapter does not exist."
 msgstr ""
 
@@ -2818,7 +2818,7 @@ msgstr ""
 msgid "The declared host is unavailable over verified SSH."
 msgstr ""
 
-#: deployment/host_agent.py:111
+#: deployment/host_backends/common.py:159
 msgid "The dedicated storageDirectory must be an existing absolute directory outside the drive root."
 msgstr ""
 
@@ -2830,7 +2830,7 @@ msgstr ""
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr ""
 
-#: deployment/host_agent.py:243
+#: deployment/host_agent.py:56
 msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
 msgstr ""
 
@@ -2862,7 +2862,7 @@ msgstr ""
 msgid "The disk file still exists after removal."
 msgstr ""
 
-#: deployment/host_agent.py:847
+#: deployment/host_backends/virtualbox.py:475
 msgid "The disk has a backing image or unverified origin; refusing reset."
 msgstr ""
 
@@ -2882,7 +2882,7 @@ msgstr ""
 msgid "The disk is too small."
 msgstr ""
 
-#: deployment/host_agent.py:851
+#: deployment/host_backends/virtualbox.py:481
 msgid "The disk is used by another VM or snapshot; refusing reset."
 msgstr ""
 
@@ -2902,7 +2902,7 @@ msgstr ""
 msgid "The disk or environment does not match the installation; this may be an installation ISO or recovery SD."
 msgstr ""
 
-#: deployment/host_agent.py:367
+#: deployment/host_backends/proxmox.py:214
 msgid "The disk record must not be a link."
 msgstr ""
 
@@ -3027,19 +3027,19 @@ msgstr ""
 msgid "The host does not match the selected backend."
 msgstr ""
 
-#: deployment/host_agent.py:105
+#: deployment/host_backends/common.py:150
 msgid "The host hostname does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:108
+#: deployment/host_backends/common.py:154
 msgid "The host operating system does not match the declaration."
 msgstr ""
 
-#: deployment/host_agent.py:95
+#: deployment/host_backends/common.py:138
 msgid "The hypervisor tool path is missing."
 msgstr ""
 
-#: deployment/host_agent.py:1046
+#: deployment/host_agent.py:278
 msgid "The image SHA256 is missing."
 msgstr ""
 
@@ -3052,7 +3052,7 @@ msgstr ""
 msgid "The image root must be a directory: {value1}"
 msgstr ""
 
-#: deployment/host_agent.py:1071
+#: deployment/host_agent.py:318
 msgid "The image transfer is incomplete or corrupted."
 msgstr ""
 
@@ -3159,19 +3159,19 @@ msgstr ""
 msgid "The local manager currently supports Linux; use SSH for Windows."
 msgstr ""
 
-#: deployment/host_agent.py:938
+#: deployment/host_backends/proxmox.py:565
 msgid "The managed ISO has different content; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:935
+#: deployment/host_backends/proxmox.py:557
 msgid "The managed ISO is not verified; refusing reset."
 msgstr ""
 
-#: deployment/host_agent.py:444
+#: deployment/host_backends/proxmox.py:69
 msgid "The managed ISO path is not a safe existing directory."
 msgstr ""
 
-#: deployment/host_agent.py:761
+#: deployment/host_backends/proxmox.py:478
 msgid "The managed installation ISO is missing."
 msgstr ""
 
@@ -3179,7 +3179,7 @@ msgstr ""
 msgid "The manually created VM did not obtain an address."
 msgstr ""
 
-#: deployment/host_agent.py:272
+#: deployment/host_backends/vmware.py:99
 msgid "The matching VMware VM is already running."
 msgstr ""
 
@@ -3195,7 +3195,7 @@ msgstr ""
 msgid "The media path for the selected deployment method is missing."
 msgstr ""
 
-#: deployment/host_agent.py:1053 hyperv/host.ps1:72
+#: deployment/host_agent.py:299 hyperv/host.ps1:72
 msgid "The method differs from the created VM; use the original --method."
 msgstr ""
 
@@ -3256,7 +3256,7 @@ msgstr ""
 msgid "The output directory already exists; refusing to overwrite it."
 msgstr ""
 
-#: deployment/host_agent.py:134
+#: deployment/host_backends/common.py:195
 msgid "The owner marker must not be a link."
 msgstr ""
 
@@ -3276,7 +3276,7 @@ msgstr ""
 msgid "The plan includes erasing existing partitions; this only happens with --apply."
 msgstr ""
 
-#: deployment/host_agent.py:453
+#: deployment/host_agent.py:78
 msgid "The prebuilt image is missing."
 msgstr ""
 
@@ -3338,7 +3338,7 @@ msgstr ""
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
 
-#: deployment/host_agent.py:137
+#: deployment/host_backends/common.py:199
 msgid "The saved VM declaration differs from the current one; nothing will be overwritten."
 msgstr ""
 
@@ -3379,7 +3379,7 @@ msgstr ""
 msgid "The storage path does not match the manifest."
 msgstr ""
 
-#: deployment/host_agent.py:114
+#: deployment/host_backends/common.py:165
 msgid "The storage path must not contain a symbolic link."
 msgstr ""
 
@@ -3505,7 +3505,7 @@ msgstr ""
 msgid "The target system changed while reading metadata. Run diff again."
 msgstr ""
 
-#: deployment/host_agent.py:1039
+#: deployment/host_backends/proxmox.py:649
 msgid "The target's managed ISO already exists; nothing will be overwritten."
 msgstr ""
 
@@ -3525,7 +3525,7 @@ msgstr ""
 msgid "The test network must use NAT."
 msgstr ""
 
-#: deployment/host_agent.py:1067
+#: deployment/host_agent.py:314
 msgid "The transfer exceeded the declared length."
 msgstr ""
 
@@ -3573,11 +3573,11 @@ msgstr ""
 msgid "The volume uses a backing image."
 msgstr ""
 
-#: deployment/host_agent.py:1041
+#: deployment/host_backends/proxmox.py:653
 msgid "There is not enough free space in the Proxmox ISO storage."
 msgstr ""
 
-#: deployment/host_agent.py:1043
+#: deployment/host_agent.py:272
 msgid "There is not enough storage space for the image and declared VM capacity."
 msgstr ""
 
@@ -3670,7 +3670,7 @@ msgstr ""
 msgid "Unknown RPi target."
 msgstr ""
 
-#: deployment/host_agent.py:189
+#: deployment/host_backends/virtualbox.py:21
 msgid "Unknown VBoxManage list vms output."
 msgstr ""
 
@@ -3711,7 +3711,7 @@ msgstr ""
 msgid "Unlocking the encrypted VM through its pinned early-boot SSH identity…"
 msgstr ""
 
-#: deployment/messages.py:155
+#: deployment/messages.py:175
 #, python-brace-format
 msgid "Unrecognized arguments: {arguments}"
 msgstr ""
@@ -3720,11 +3720,11 @@ msgstr ""
 msgid "Unsupported backend for a new declaration."
 msgstr ""
 
-#: deployment/host_agent.py:63
+#: deployment/host_backends/common.py:79
 msgid "Unsupported backend."
 msgstr ""
 
-#: deployment/host_agent.py:66
+#: deployment/host_backends/common.py:84
 msgid "Unsupported host system."
 msgstr ""
 
@@ -3748,7 +3748,7 @@ msgstr ""
 msgid "Upload length does not match."
 msgstr ""
 
-#: deployment/messages.py:137
+#: deployment/messages.py:157
 msgid "Usage: "
 msgstr ""
 
@@ -3866,7 +3866,7 @@ msgstr ""
 msgid "VM: {value1}; UUID: {value2}; state: {state}"
 msgstr ""
 
-#: deployment/host_agent.py:234 deployment/host_agent.py:388
+#: deployment/host_backends/vmware.py:132 deployment/host_backends/vmware.py:77
 msgid "VMX must not be a link."
 msgstr ""
 
@@ -3907,11 +3907,11 @@ msgstr ""
 msgid "Verify the SSH key and known host key; for a network error, also check the cable, port and declared MAC. Diagnostics do not scan the network or bypass identity checks."
 msgstr ""
 
-#: deployment/host_agent.py:334
+#: deployment/host_backends/virtualbox.py:114
 msgid "VirtualBox owner, disk, firmware or network does not match."
 msgstr ""
 
-#: deployment/host_agent.py:93
+#: deployment/host_backends/common.py:134
 msgid "VirtualBox requires an existing bridge adapter."
 msgstr ""
 

@@ -32,6 +32,7 @@ let
         ./cleanup.py
         ./portable.py
         ./host_agent.py
+        (pkgs.lib.fileset.fileFilter (file: file.hasExt "py") ./host_backends)
         ./reset.py
       ];
     };
