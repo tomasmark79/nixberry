@@ -131,4 +131,28 @@ in
     fi
   '';
   systemd.services.adguardhome.serviceConfig.StateDirectoryMode = "0700";
+
+  # A fresh RPi can boot with an old clock: HTTPS filter downloads then fail.
+  # Keep DHCP/DNS independent of NTP; retry once after the first successful sync.
+  systemd.paths.playground-adguard-bootstrap = {
+    wantedBy = [ "multi-user.target" ];
+    pathConfig = {
+      PathExists = "/run/systemd/timesync/synchronized";
+      Unit = "playground-adguard-bootstrap.service";
+    };
+  };
+  systemd.services.playground-adguard-bootstrap = {
+    description = "Retry the initial AdGuard filter download after clock synchronization";
+    after = [ "adguardhome.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      # PathExists remains true; staying active prevents repeated restarts.
+      RemainAfterExit = true;
+    };
+    script = ''
+      if [ ! -s /var/lib/AdGuardHome/data/filters/1.txt ]; then
+        ${pkgs.systemd}/bin/systemctl try-restart adguardhome.service
+      fi
+    '';
+  };
 }

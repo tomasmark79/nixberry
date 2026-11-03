@@ -58,8 +58,16 @@ pkgs.testers.runNixOSTest {
           };
         };
       };
-      # Test without downloading filters or contacting external DNS services.
-      services.adguardhome.settings.filters = lib.mkForce [ ];
+      # Simulate a failed first download, then a working server after clock sync.
+      services.timesyncd.enable = lib.mkForce false;
+      services.adguardhome.settings.filters = lib.mkForce [
+        {
+          id = 1;
+          enabled = true;
+          name = "Controlled test filter";
+          url = "http://192.168.79.1/filters.txt";
+        }
+      ];
       services.adguardhome.settings.user_rules = [ "||ads.example.test^" ];
       virtualisation.vlans = [
         1
@@ -101,6 +109,10 @@ pkgs.testers.runNixOSTest {
       services.nginx = {
         enable = true;
         virtualHosts.default.locations."/".return = ''200 "$remote_addr"'';
+        virtualHosts.default.locations."/filters.txt".extraConfig = ''
+          if (!-f /run/filter-ready) { return 503; }
+          return 200 "||downloaded-ad.example.test^\n";
+        '';
       };
       networking.firewall.allowedUDPPorts = [ 53 ];
       networking.firewall.allowedTCPPorts = [
@@ -123,6 +135,20 @@ pkgs.testers.runNixOSTest {
     client.succeed("ip route | grep 'default via 192.168.192.1'")
     client.wait_until_succeeds("dig @192.168.192.1 example.test +short | grep -x 203.0.113.1")
     client.succeed("dig @192.168.192.1 ads.example.test +short | grep -x 0.0.0.0")
+    router.succeed("systemctl is-active playground-adguard-bootstrap.path")
+    router.wait_until_succeeds("journalctl -u adguardhome -b --no-pager | grep 'updating filter.*err='", timeout=30)
+    router.succeed("test ! -s /var/lib/AdGuardHome/data/filters/1.txt")
+    client.succeed("dig @192.168.192.1 downloaded-ad.example.test +short | grep -x 203.0.113.1")
+    upstream.succeed("touch /run/filter-ready")
+    router.succeed("mkdir -p /run/systemd/timesync; touch /run/systemd/timesync/synchronized")
+    router.wait_for_unit("playground-adguard-bootstrap.service", timeout=30)
+    client.wait_until_succeeds("dig @192.168.192.1 downloaded-ad.example.test +short | grep -x 0.0.0.0", timeout=30)
+    router.succeed("test -s /var/lib/AdGuardHome/data/filters/1.txt")
+    pid = router.succeed("systemctl show adguardhome -p MainPID --value")
+    router.succeed("touch /run/systemd/timesync/synchronized")
+    assert router.succeed("systemctl show adguardhome -p MainPID --value") == pid
+    router.succeed("systemctl restart playground-adguard-bootstrap.service")
+    assert router.succeed("systemctl show adguardhome -p MainPID --value") == pid
     assert client.succeed("curl -fsS --max-time 10 http://203.0.113.1/").strip() == "192.168.79.2"
     page = client.succeed("curl -fsSL --max-time 10 http://192.168.192.1:3000/")
     assert "<html" in page.lower(), page[:500]

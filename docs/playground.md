@@ -67,6 +67,9 @@ password. The password is unique, created at first start and kept outside Git
 and the Nix store. Change it through AdGuard Home if desired; the file then
 still contains only the initial password. The web UI and DNS
 are available on LAN only; SSH management is also available through WAN.
+If a fresh RPi boots with an incorrect clock, a missing default filter is retried
+automatically after NTP synchronization. DHCP/DNS do not wait for the clock;
+the retry briefly restarts AdGuard once, and leaves an existing filter alone.
 
 ## Change or make another one
 
