@@ -1,9 +1,74 @@
-# Raspberry Pi 5 recovery from SD
+# Raspberry Pi 5 installation and recovery
 
 [← Main guide](../README.md) · [Offline bundle](offline.md)
 
 This procedure restores an SSD from a full SD image. Booting the card alone
 erases nothing. Steps distinguish the management computer from the RPi.
+For an SSD attached to a Linux workstation, use
+[direct SSD preparation](#prepare-an-attached-ssd-on-linux) instead.
+
+## Prepare an attached SSD on Linux
+
+This alternative installs the declared ARM system and RPi boot files directly
+onto an SSD attached to the management computer. It needs no installation
+medium, intermediate disk image, SSH connection or running RPi. The existing
+SD/USB recovery procedure below remains available.
+
+Use an unencrypted RPi target declaration. LUKS targets must use recovery media;
+local installation refuses them rather than changing their security policy.
+The supported workstation is x86_64 Linux with Nix, sudo and working
+`aarch64-linux` binfmt emulation. On NixOS, declare
+`boot.binfmt.emulatedSystems = [ "aarch64-linux" ];` in the workstation's own
+configuration. Disk and installation tools come from the pinned recipe.
+
+1. Connect the SSD and inspect it locally:
+
+   ```sh
+   lsblk -o NAME,PATH,MODEL,SERIAL,SIZE,TYPE,MOUNTPOINTS
+   ls -l /dev/disk/by-id/
+   ```
+
+   Choose its **whole-disk** by-id path, not a `-partN` link. Unmount its
+   partitions, close any file-manager window showing them, and disconnect
+   unrelated removable disks. Its serial must match the target's `diskSerial`;
+   a different USB enclosure may expose a different by-id path. `--local-disk`
+   selects the workstation path without changing the target declaration.
+
+2. Review the plan, then explicitly authorize writing:
+
+   ```sh
+   nixberry plan rpi-demo --local-disk /dev/disk/by-id/usb-EXAMPLE_SERIAL
+   nixberry reproduce rpi-demo --local-disk /dev/disk/by-id/usb-EXAMPLE_SERIAL --apply
+   ```
+
+   For a previously used SSD, add `--erase-existing` to **both** commands after
+   deciding its contents may be lost. Without `--apply`, no disk contents change.
+   Even planning may ask for sudo to inspect signatures and mount namespaces.
+   Nix may build or download the selected system and tools on the workstation.
+
+The installer verifies the serial, capacity, writable physical disk, partitions,
+mounts, swap, holders and partition-label collisions. It rechecks identity under
+a disk lock and tests ARM execution before any erasure. Installation mounts live
+in a private namespace. It copies the system closure, registers the installed
+generation and uses the pinned native RPi boot generator; target services are
+not started on the workstation. Success includes syncing and unmounting the SSD.
+
+The layout follows `rootGiB` from the declaration, with a 512 MiB boot partition;
+remaining SSD space is left unused. Set `rootGiB` for the actual disk capacity
+before installation if desired. This command does not resize existing systems.
+Custom disk-layout overrides are refused; use recovery media for those layouts.
+The target's hardware serial, network identities and EEPROM USB-boot support
+must already be correct: they cannot be checked while the board is disconnected.
+
+After successful installation, safely disconnect the SSD, attach it to the RPi
+and boot from it. Run `nixberry verify rpi-demo` once it is reachable. An installed
+ARM closure and generated boot files are not proof of physical firmware boot.
+Application data, credentials and service identities still need their normal
+backup restoration; this command does not clone a running server's mutable data.
+
+If installation fails after partitioning, the SSD is incomplete. Correct the
+reported problem and repeat the reviewed plan with `--erase-existing`; do not
+boot the partial installation. The source server remains independent.
 
 ## 1. Check the declaration and prepare SD — management computer
 

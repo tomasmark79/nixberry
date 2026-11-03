@@ -35,7 +35,7 @@ _nixberry_complete() {
         case $word in
             --) return 0 ;;
             --from) backup_source=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
-            --host|--ssh|--output|--address|--artifact-root|--method|--configuration|--security|--key-file|--initrd-key-file|--snapshot)
+            --host|--ssh|--output|--address|--local-disk|--artifact-root|--method|--configuration|--security|--key-file|--initrd-key-file|--snapshot)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
         esac
@@ -90,7 +90,7 @@ _nixberry_complete() {
                 --file "$recipe/management/deployment/completion-snapshots.nix" 2>/dev/null)
         elif [[ $word == --output ]]; then
             mapfile -t COMPREPLY < <(compgen -d -- "$current")
-        elif [[ $word == --key-file || $word == --initrd-key-file ]]; then
+        elif [[ $word == --key-file || $word == --initrd-key-file || $word == --local-disk ]]; then
             mapfile -t COMPREPLY < <(compgen -f -- "$current")
         elif [[ $word == --configuration ]]; then
             local -A configurations=()
@@ -137,13 +137,15 @@ _nixberry_complete() {
         if [[ $action == plan || $action == reproduce ]] && [[ -n $target ]] &&
             [[ -f $recipe/management/rpi/targets/$target.nix ]]; then
             options+=(--address --erase-existing)
-            options+=(--key-file --initrd-key-file)
+            options+=(--key-file --initrd-key-file --local-disk)
         fi
         for word in "${options[@]}"; do
             [[ $word == --method && -n $target && -f $recipe/management/rpi/targets/$target.nix ]] && continue
             # Only image roots are repeatable; do not offer mutually exclusive options.
             [[ $word != --artifact-root && ${used[$word]-} ]] && continue
             case $word in
+                --local-disk) [[ ${used[--address]-} || ${used[--key-file]-} || ${used[--initrd-key-file]-} ]] && continue ;;
+                --address|--key-file|--initrd-key-file) [[ ${used[--local-disk]-} ]] && continue ;;
                 --apply) [[ ${used[--dry-run]-} ]] && continue ;;
                 --dry-run) [[ ${used[--apply]-} ]] && continue ;;
                 --host) [[ ${used[--ssh]-} || ${used[--offline]-} ]] && continue ;;

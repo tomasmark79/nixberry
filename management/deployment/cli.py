@@ -178,6 +178,7 @@ def main(argv=None):
     parser = ArgumentParser(
         prog="nixberry", description=_("Unified management of declared RPi and VMs: operations, deployment and offline export."),
         epilog=_(HELP_COMMANDS) + _(BACKUP_HELP) + "\n" + _("Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths.")
+        + "\n\n" + _("Local Raspberry Pi SSD installation:\n  plan/reproduce TARGET --local-disk /dev/disk/by-id/ID prepares an attached SSD on Linux.\n  Unencrypted targets only; requires sudo and ARM binfmt emulation on x86.\n  --apply authorizes writes; --erase-existing additionally authorizes erasing existing data.\n  No RPi connection is made. Verify physical boot and restore application state separately.")
         + "\n\n" + _("Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed.")
         + "\n\n" + _("Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET [--address IP] opens the pinned early-boot identity.\n  Named networks use security.interface or network.primary; legacy targets require --address.\n  prepare-image applies only to VM disks. See docs/security.md."),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -202,6 +203,7 @@ def main(argv=None):
     parser.add_argument("--snapshot", help=_("Explicit encrypted snapshot ID from backups TARGET"))
     parser.add_argument("--from", dest="backup_source", help=_("Declared backup source for restoration into a distinct target"))
     parser.add_argument("--address", help=_("Early-boot unlock address or current RPi recovery address"))
+    parser.add_argument("--local-disk", help=_("Install an RPi SSD attached to this Linux workstation; use a whole-disk /dev/disk/by-id/ path"))
     parser.add_argument("--erase-existing", action="store_true", help=_("Include SSD erasure during RPi recovery"))
     parser.add_argument("--json", action="store_true", help=_("Machine-readable output for inventory, diagnostics, verify and export"))
     parser.add_argument("--artifact-root", action="append", default=[],
@@ -232,6 +234,10 @@ def main(argv=None):
     if remote_command and args.action != "ssh":
         parser.error(_("A command after -- is only available for ssh TARGET -- COMMAND."))
     registry = json.loads(Path(os.environ["NIXBERRY_DEPLOYMENT"]).read_text())
+    if args.local_disk and (args.action not in ("plan", "reproduce")
+                           or args.target not in registry or registry[args.target]["backend"] != "rpi"
+                           or args.address or args.key_file or args.initrd_key_file):
+        parser.error(_("--local-disk only applies to unencrypted RPi plan/reproduce and cannot be combined with --address or runtime keys."))
     if args.ssh and (args.host or args.action.startswith("new-")):
         parser.error(_("--ssh applies to server management and cannot be combined with --host or new-*."))
     override = args.ssh or (args.host if not args.action.startswith("new-") else None)
@@ -477,6 +483,12 @@ def main(argv=None):
             command += ["--initrd-key-file", args.initrd_key_file]
         with materialized_recipe(recipe) as source:
             command[3] = "path:" + source + "#nixberry-rpi-install"
+            if args.local_disk:
+                command[3] = "path:" + source + "#nixberryRpiDiskTools." + args.target
+                command[5:] = ["--local-disk", args.local_disk,
+                               "--apply" if args.apply else "--dry-run"]
+                if args.erase_existing:
+                    command.append("--erase-existing")
             return subprocess.run(command, check=False).returncode
     if args.action == "show":
         if args.json:

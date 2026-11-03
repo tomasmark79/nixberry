@@ -269,6 +269,16 @@ NIXBERRY_RECIPE=/missing-nixberry-recipe
             self.assertIn("--erase-existing", options)
             self.assertNotIn("--address", self.complete(action, "kozlonix", "--"))
 
+    def test_local_disk_options_are_rpi_only_and_exclude_remote_access(self):
+        for action in ("plan", "reproduce"):
+            self.assertIn("--local-disk", self.complete(action, "nixberry", "--"))
+            self.assertNotIn("--local-disk", self.complete(action, "kozlonix", "--"))
+            options = self.complete(action, "nixberry", "--local-disk", "/dev/disk/by-id/usb-TEST", "--")
+            self.assertNotIn("--address", options)
+            self.assertNotIn("--key-file", options)
+            self.assertIn("--erase-existing", options)
+            self.assertNotIn("--local-disk", self.complete(action, "nixberry", "--address", "192.168.50.20", "--"))
+
     def test_used_and_conflicting_options(self):
         for action in ("new-libvirt", "new-hyperv", "new-proxmox", "new-virtualbox", "new-vmware"):
             self.assertIn("--offline", self.complete(action, "nova", "--"))

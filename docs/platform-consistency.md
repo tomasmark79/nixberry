@@ -60,7 +60,12 @@ hypervisor management. `status` and `doctor` may explain missing access settings
 
 ## Intentional differences
 
-RPi recovers from SD. Libvirt supports local `qemu:///system`;
+RPi recovers from SD/USB media or prepares an attached SSD directly on Linux
+with `plan/reproduce --local-disk`. Direct preparation supports unencrypted
+targets and verifies the SSD rather than a disconnected board; physical boot
+and state restoration remain separate. This physical-disk option does not apply
+to VM backends, whose image/ISO methods are unchanged.
+Libvirt supports local `qemu:///system`;
 other adapters define their supported host operating systems and transports.
 Disk formats, controllers, agents and storage match each hypervisor.
 

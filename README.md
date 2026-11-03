@@ -14,7 +14,8 @@ defines the system; each machine declaration selects its configuration,
 platform, network and resources.
 
 VMs default to a prebuilt system disk (`image`). Every VM backend also
-supports installation from ISO. Raspberry Pi uses a recovery SD card.
+supports installation from ISO. Raspberry Pi supports recovery media and
+direct preparation of an attached SSD on Linux.
 
 ## A real-world setup
 
@@ -274,8 +275,10 @@ A full recovery uses SD media:
 nixberry export rpi-demo --output ~/rpi-demo-sd
 ```
 
-Follow [RPi SD recovery](docs/rpi-recovery.md). Booting the SD alone erases nothing.
-Writing the SSD requires explicit execution and verified RPi and disk identity.
+Follow [RPi recovery](docs/rpi-recovery.md). Booting the recovery medium alone
+erases nothing. Alternatively, [prepare the SSD directly on Linux](docs/rpi-recovery.md#prepare-an-attached-ssd-on-linux)
+without booting the RPi. Both paths require explicit execution and verified disk
+identity; direct preparation cannot verify the disconnected board's identity.
 VM `--method` selection and hypervisor reset do not apply.
 
 <a id="konfigurace"></a>

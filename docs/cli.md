@@ -133,6 +133,7 @@ See [bundle contents and handoff](offline.md).
 | `--output DIRECTORY` | `export` and VM `prepare-image`. |
 | `--artifact-root DIRECTORY` | Only `cleanup`; repeatable. |
 | `--address IP` | RPi `plan`/`reproduce`, or early-boot `unlock` for encrypted VMs and RPi. |
+| `--local-disk /dev/disk/by-id/ID` | RPi `plan`/`reproduce`: prepare an attached SSD on Linux without contacting the board. Unencrypted targets only; incompatible with `--address` and runtime keys. |
 | `--erase-existing` | Only RPi `plan` and `reproduce`. |
 | `--key-file FILE` | VM `prepare-image`, or encrypted RPi `plan`/`reproduce`; otherwise prompt on execution. |
 | `--initrd-key-file FILE` | Encrypted RPi `plan`/`reproduce`; private SSH key matching `security.initrdHostKey`. |

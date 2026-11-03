@@ -78,6 +78,18 @@ Linux and Windows example host declarations, and builds the empty CLI. RPi-speci
 installation behavior is covered by mocked regression checks; CI does not
 prove physical recovery, boot or live deployment on any platform.
 
+The separate direct-SSD integration check boots an isolated x86 Linux workstation
+VM with a disposable virtual SSD and ARM binfmt. It performs real partitioning,
+installs the ARM closure, generates RPi boot files, checks mount protection and
+repeats an explicitly authorized erase. It never contacts a physical board:
+
+```sh
+nix build --no-link path:.#checks.x86_64-linux.rpi-local-ssd
+```
+
+This needs KVM and several GiB of temporary storage. It verifies installation
+output, not RPi firmware boot; physical boot remains a separate hardware check.
+
 For focused checks, use tools from the development shell and English defaults:
 
 ```sh

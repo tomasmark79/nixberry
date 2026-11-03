@@ -93,6 +93,14 @@
           ];
         };
       rpiSystems = builtins.mapAttrs (_: target: mkRpi target) rpiTargets;
+      rpiDiskTools = builtins.mapAttrs (
+        name: system:
+        import ./management/rpi/disk-package.nix {
+          pkgs = vmPkgs;
+          target = rpiManifests.${name};
+          inherit system disko;
+        }
+      ) rpiSystems;
       rpiRecoveries = builtins.mapAttrs (
         _: target:
         nixos-raspberrypi.lib.nixosSystem {
@@ -109,14 +117,14 @@
           ];
         }
       ) rpiTargets;
-      rpiManifests = builtins.mapAttrs (
-        name: system:
+      mkRpiManifest =
+        name: target: system:
         let
           cfg = system.config.nixberry.rpi;
         in
         {
           target = name;
-          configuration = configurations.select rpiTargets.${name};
+          configuration = configurations.select target;
           inherit (cfg)
             hostName
             hardwareSerial
@@ -133,7 +141,9 @@
           diskoPath = toString system.config.system.build.diskoScript;
         }
         // lib.optionalAttrs (cfg.network != null) { inherit (cfg) network gateway dns; }
-        // lib.optionalAttrs (cfg.security.mode != "none") { inherit (cfg) security; }
+        // lib.optionalAttrs (cfg.security.mode != "none") { inherit (cfg) security; };
+      rpiManifests = builtins.mapAttrs (
+        name: system: mkRpiManifest name rpiTargets.${name} system
       ) rpiSystems;
       encryptedRpiConfigs = builtins.filter (cfg: cfg.security.mode == "luks") (
         map (system: system.config.nixberry.rpi) (builtins.attrValues rpiSystems)
@@ -485,6 +495,25 @@
       nixberryDeployment = deployment;
       # Unified verify/export outputs never select a first or fixed instance.
       nixberrySystems = rpiSystems // vmSystems;
+      checks.x86_64-linux.rpi-local-ssd =
+        let
+          target = (import ./management/examples/rpi.nix) // {
+            diskSerial = "SSD-TEST";
+            rootGiB = 8;
+            adminKeyFile = vmPkgs.writeText "rpi-test-admin.pub" "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA test-only\n";
+          };
+          system = mkRpi target;
+          manifest = mkRpiManifest "rpi-demo" target system;
+        in
+        import ./management/rpi/disk-install-test.nix {
+          pkgs = vmPkgs;
+          target = manifest;
+          installer = import ./management/rpi/disk-package.nix {
+            pkgs = vmPkgs;
+            target = manifest;
+            inherit system disko;
+          };
+        };
       nixberryConfigurations = builtins.attrNames configurations.modules;
       nixberryImages = images;
       nixberryImageBuilders = builtins.mapAttrs (
@@ -521,6 +550,7 @@
           shellcheck
         ];
       };
+      nixberryRpiDiskTools = rpiDiskTools;
       packages.x86_64-linux = {
         inherit (emcx.packages.x86_64-linux) emcx emcx-tests;
         hstr = vmPkgs.callPackage ./modules/applications/hstr/package.nix { };

@@ -127,6 +127,31 @@ class HelpChecks(unittest.TestCase):
 
 
 class DispatchChecks(unittest.TestCase):
+    def test_local_rpi_disk_uses_local_tool_without_remote_address(self):
+        registry = {"rpi-demo": {"backend": "rpi", "commands": {}, "host": "rpi-demo"}}
+        with patch("pathlib.Path.read_text", return_value=json.dumps(registry)), \
+                patch.dict(os.environ, {"NIXBERRY_RECIPE": "/recipe"}), \
+                patch.dict(MAIN.__globals__, {"materialized_recipe": lambda _: contextlib.nullcontext("/recipe")}), \
+                patch("subprocess.run", return_value=subprocess.CompletedProcess([], 0)) as run:
+            for action, extra in (("plan", []), ("reproduce", ["--apply", "--erase-existing"])):
+                self.assertEqual(MAIN([action, "rpi-demo", "--local-disk", "/dev/disk/by-id/usb-TEST", *extra]), 0)
+                command = run.call_args.args[0]
+                self.assertIn("path:/recipe#nixberryRpiDiskTools.rpi-demo", command)
+                self.assertEqual(command[command.index("--local-disk") + 1], "/dev/disk/by-id/usb-TEST")
+                self.assertIn("--apply" if extra else "--dry-run", command)
+                self.assertNotIn("--address", command)
+
+    def test_local_disk_rejects_vm_other_actions_and_address(self):
+        for backend, args in (("libvirt", ["plan"]), ("rpi", ["update"]),
+                              ("rpi", ["plan", "--address", "192.168.50.20"])):
+            registry = {"test": {"backend": backend}}
+            with self.subTest(backend=backend, args=args), \
+                    patch("pathlib.Path.read_text", return_value=json.dumps(registry)), \
+                    patch("subprocess.run") as run, contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit):
+                    MAIN([*args, "test", "--local-disk", "/dev/disk/by-id/usb-TEST"])
+                run.assert_not_called()
+
     def test_encrypted_rpi_paths_are_forwarded_without_reading_credentials(self):
         registry = {"rpi-demo": {"backend": "rpi", "spec": {"hostName": "rpi-demo"},
                                  "security": {"mode": "luks"}}}

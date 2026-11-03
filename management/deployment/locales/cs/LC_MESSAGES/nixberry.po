@@ -3083,3 +3083,76 @@ msgstr "Adresa počátečního odemčení: {address}"
 
 msgid "The RPi early-boot address must use the selected interface's IPv4 subnet and prefix."
 msgstr "Adresa počátečního spouštění RPi musí používat IPv4 podsíť a prefix vybraného rozhraní."
+
+msgid "--local-disk only applies to unencrypted RPi plan/reproduce and cannot be combined with --address or runtime keys."
+msgstr "--local-disk platí pouze pro plan/reproduce nešifrovaného RPi a nelze jej kombinovat s --address ani běhovými klíči."
+
+msgid "ARM execution in the installation chroot is unavailable; enable aarch64-linux binfmt before erasing the SSD."
+msgstr "V instalačním chrootu nelze spouštět ARM programy; před smazáním SSD zapněte binfmt pro aarch64-linux."
+
+msgid "Another disk uses the target partition label."
+msgstr "Označení cílového oddílu používá jiný disk."
+
+msgid "Cannot inspect all mount namespaces safely."
+msgstr "Nelze bezpečně zkontrolovat všechny jmenné prostory připojení."
+
+msgid "Direct RPi SSD installation requires a Linux workstation."
+msgstr "Přímá instalace RPi na SSD vyžaduje pracovní stanici s Linuxem."
+
+msgid "Direct SSD installation currently supports unencrypted RPi targets only; use recovery media for LUKS."
+msgstr "Přímá instalace na SSD nyní podporuje pouze nešifrované cíle RPi; pro LUKS použijte médium pro obnovu."
+
+msgid "Install an RPi SSD attached to this Linux workstation; use a whole-disk /dev/disk/by-id/ path"
+msgstr "Nainstalovat RPi na SSD připojené k této stanici s Linuxem; použijte cestu /dev/disk/by-id/ celého disku"
+
+msgid "Local Raspberry Pi SSD installation:\n  plan/reproduce TARGET --local-disk /dev/disk/by-id/ID prepares an attached SSD on Linux.\n  Unencrypted targets only; requires sudo and ARM binfmt emulation on x86.\n  --apply authorizes writes; --erase-existing additionally authorizes erasing existing data.\n  No RPi connection is made. Verify physical boot and restore application state separately."
+msgstr "Místní instalace Raspberry Pi na SSD:\n  plan/reproduce CÍL --local-disk /dev/disk/by-id/ID připraví připojené SSD na Linuxu.\n  Pouze nešifrované cíle; vyžaduje sudo a na x86 emulaci ARM přes binfmt.\n  --apply povolí zápis; --erase-existing navíc povolí smazání existujících dat.\n  K RPi se nepřipojuje. Fyzický start ověřte a stav aplikací obnovte samostatně."
+
+msgid "Local SSD installation plan verified; nothing was changed. No RPi connection was made."
+msgstr "Plán místní instalace na SSD ověřen; nic se nezměnilo. K RPi nebylo navázáno spojení."
+
+msgid "Local SSD installation requires util-linux unshare."
+msgstr "Místní instalace na SSD vyžaduje unshare z util-linux."
+
+#, python-brace-format
+msgid "Local SSD: {device}; serial: {serial}; capacity: {capacity} bytes."
+msgstr "Místní SSD: {device}; sériové číslo: {serial}; kapacita: {capacity} bajtů."
+
+msgid "Local installation requires a real /mnt directory."
+msgstr "Místní instalace vyžaduje skutečný adresář /mnt."
+
+msgid "Prepare a declared RPi SSD on a Linux workstation without contacting the RPi."
+msgstr "Připravit deklarované SSD pro RPi na stanici s Linuxem bez spojení s RPi."
+
+msgid "SSD installation completed and unmounted. Connect it to the declared RPi and verify boot; application data restoration is separate."
+msgstr "Instalace na SSD dokončena a disk odpojen. Připojte jej k deklarovanému RPi a ověřte start; data aplikací se obnovují samostatně."
+
+msgid "Select a whole SSD using its local /dev/disk/by-id/ path."
+msgstr "Vyberte celé SSD pomocí jeho místní cesty /dev/disk/by-id/."
+
+msgid "The installed system profile is missing."
+msgstr "Chybí profil nainstalovaného systému."
+
+msgid "The local SSD target manifest is missing."
+msgstr "Chybí manifest cíle pro místní SSD."
+
+msgid "The local disk identity changed after planning; the disk was not changed."
+msgstr "Identita místního disku se po plánování změnila; na disk se nezapisovalo."
+
+msgid "The local installation worker requires a private mount namespace."
+msgstr "Místní instalační proces vyžaduje soukromý jmenný prostor připojení."
+
+msgid "The local installation worker requires root."
+msgstr "Místní instalační proces vyžaduje práva root."
+
+msgid "The target disk contains data; review the plan with --erase-existing."
+msgstr "Cílový disk obsahuje data; zkontrolujte plán s --erase-existing."
+
+msgid "The target disk is mounted, used as swap, or held by another device or mount namespace."
+msgstr "Cílový disk je připojen, používán jako swap nebo obsazen jiným zařízením či jmenným prostorem připojení."
+
+msgid "The target disk is read-only."
+msgstr "Cílový disk je pouze pro čtení."
+
+msgid "SSD installation is incomplete. Do not boot it; fix the error and repeat the reviewed plan with --erase-existing."
+msgstr "Instalace na SSD není dokončena. Nespouštějte z něj systém; opravte chybu a zopakujte zkontrolovaný plán s --erase-existing."
