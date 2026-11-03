@@ -13,7 +13,9 @@
 | Services, packages, system settings | `modules/services/`, `modules/applications/`, `modules/system/` |
 | Hardware and boot | `platforms/rpi/`, `platforms/vm/` |
 | Physical RPi and SSD | [machines/rpi/](../machines/rpi/default.nix) |
-| System, media and tool composition | [flake.nix](../flake.nix) |
+| Public Nix outputs and composition entry point | [flake.nix](../flake.nix) |
+| Physical system, recovery media and tool composition | [management/rpi/systems.nix](../management/rpi/systems.nix) |
+| VM system, installation media and tool composition | [management/vm/systems.nix](../management/vm/systems.nix) |
 | Registry and CLI | [management/deployment/](../management/deployment/default.nix) |
 | Shared VM adapters | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
 
