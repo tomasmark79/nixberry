@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="nb-architecture-title nb-architecture-desc" id="architecture-root">
+  <title id="nb-architecture-title">NixBerry — one recipe, multiple platforms</title>
+  <desc id="nb-architecture-desc">Local declarations, a selected server configuration importing common modules, and automatically attached platform modules feed Nix flake composition. The CLI builds this recipe and uses management tools to inspect and deploy targets. Outputs include NixOS systems, VM disk images and ISOs, RPi recovery SD media, and offline exports. VM targets run on libvirt, Hyper-V, Proxmox VE, VirtualBox or VMware Workstation; Raspberry Pi 5 is a separate physical target.</desc>
+  <defs>
+      <style>#architecture-root { color-scheme: light; background: #faf8f9; color: #242d39; }
+      #architecture-root { font-family: system-ui, sans-serif; }
+      #architecture-root .diagram-container { width: 100%; overflow-x: auto; }
+      #architecture-root a { color: #a1264a; }
+      #architecture-root .diagram-container { overflow: visible; }
+      #architecture-root text { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #242d39; }
+      #architecture-root .title { font-size: 36px; font-weight: 720; letter-spacing: -1px; }
+      #architecture-root .heading { font-size: 22px; font-weight: 650; }
+      #architecture-root .body { font-size: 16px; fill: #505c6b; }
+      #architecture-root .code { font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 14px; fill: #505c6b; }
+      #architecture-root .tag { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; fill: #a1264a; }
+      #architecture-root .box { fill: #fff; stroke: #d6d7dd; stroke-width: 1.5; }
+      #architecture-root .focus { fill: #fff0f4; stroke: #b42e53; stroke-width: 2; }
+      #architecture-root .flow { fill: none; stroke: #7b8490; stroke-width: 1.5; marker-end: url(#architecture-nb-arrow); }</style>
+    <marker id="architecture-nb-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#7b8490" stroke-width="1.5"/></marker>
+    <style>
+      text { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #242d39; }
+      .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; fill: #a1264a; }
+      .title { font-size: 36px; font-weight: 720; letter-spacing: -1px; }
+      .heading { font-size: 22px; font-weight: 650; }
+      .body { font-size: 16px; fill: #505c6b; }
+      .code { font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 14px; fill: #505c6b; }
+      .tag { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; fill: #a1264a; }
+      .box { fill: #fff; stroke: #d6d7dd; stroke-width: 1.5; }
+      .focus { fill: #fff0f4; stroke: #b42e53; stroke-width: 2; }
+      .flow { fill: none; stroke: #7b8490; stroke-width: 1.5; marker-end: url(#architecture-nb-arrow); }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="#faf8f9"/>
+  <text x="48" y="44" class="eyebrow">NIXBERRY / SYSTEM DESIGN</text>
+  <text x="48" y="92" class="title">One recipe. Multiple platforms.</text>
+
+  <!-- Connections precede nodes; each composition input has its own port. -->
+  <path class="flow" d="M224 264 V284 Q224 292 232 292 H528 Q536 292 536 300 V324"/>
+  <path class="flow" d="M624 264 V324"/>
+  <path class="flow" d="M1024 264 V284 Q1024 292 1016 292 H720 Q712 292 712 300 V324"/>
+  <path class="flow" d="M800 376 H848"/>
+  <path class="flow" d="M224 480 V396 Q224 388 232 388 H448"/>
+  <path class="flow" d="M400 536 H448"/>
+  <path class="flow" d="M800 552 H848"/>
+  <path class="flow" d="M1024 432 V480"/>
+
+  <rect x="48" y="128" width="352" height="136" rx="6" class="box"/>
+  <text x="72" y="156" class="tag">LOCAL INPUTS</text>
+  <text x="72" y="188" class="heading">Machine declarations</text>
+  <text x="72" y="216" class="body">Identity, network, resources, host</text>
+  <text x="72" y="244" class="code">instances/ · rpi/targets/ · hosts</text>
+
+  <rect x="448" y="128" width="352" height="136" rx="6" class="box"/>
+  <text x="472" y="156" class="tag">WHAT THE SERVER DOES</text>
+  <text x="472" y="188" class="heading">Selected configuration</text>
+  <text x="472" y="216" class="body">Common modules + custom services</text>
+  <text x="472" y="244" class="code">configurations/ → modules/common.nix</text>
+
+  <rect x="848" y="128" width="352" height="136" rx="6" class="box"/>
+  <text x="872" y="156" class="tag">HOW THE MACHINE BOOTS</text>
+  <text x="872" y="188" class="heading">Platform modules</text>
+  <text x="872" y="216" class="body">Boot, disks, drivers, guest support</text>
+  <text x="872" y="244" class="code">platforms/vm/ · platforms/rpi/</text>
+
+  <rect x="448" y="324" width="352" height="108" rx="6" class="focus"/>
+  <text x="472" y="356" class="tag">COMPOSE + BUILD</text>
+  <text x="472" y="388" class="heading">Nix flake</text>
+  <text x="472" y="416" class="code">flake.nix + shared flake.lock</text>
+
+  <rect x="848" y="324" width="352" height="108" rx="6" class="box"/>
+  <text x="872" y="356" class="heading">Systems &amp; media</text>
+  <text x="872" y="384" class="body">NixOS system · VM image / ISO</text>
+  <text x="872" y="412" class="body">RPi recovery SD · offline export</text>
+
+  <rect x="48" y="480" width="352" height="136" rx="6" class="focus"/>
+  <text x="72" y="512" class="tag">OPERATOR ENTRY POINT</text>
+  <text x="72" y="544" class="heading">nixberry CLI</text>
+  <text x="72" y="572" class="body">Inspect, plan, build, update, verify</text>
+  <text x="72" y="600" class="code">management/deployment/</text>
+
+  <rect x="448" y="480" width="352" height="136" rx="6" class="box"/>
+  <text x="472" y="512" class="tag">MANAGE + TRANSFER</text>
+  <text x="472" y="544" class="heading">Management tools</text>
+  <text x="472" y="572" class="body">Backend adapters · SSH · guest agents</text>
+  <text x="472" y="600" class="body">Identity checks and operation policies</text>
+
+  <rect x="848" y="480" width="352" height="136" rx="6" class="box"/>
+  <text x="872" y="512" class="heading">Virtual machines + RPi 5</text>
+  <text x="872" y="544" class="body">QEMU/KVM (libvirt) · Hyper-V</text>
+  <text x="872" y="568" class="body">Proxmox VE · VirtualBox · VMware</text>
+  <text x="872" y="600" class="body">RPi 5: recovery SD → SSD</text>
+
+  <line x1="48" y1="656" x2="1200" y2="656" stroke="#d6d7dd"/>
+  <text x="48" y="688" class="body">Local declarations stay outside public Git.</text>
+  <text x="624" y="688" class="body">VMs: image or ISO; offline preparation needs no hypervisor.</text>
+</svg>

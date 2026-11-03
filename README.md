@@ -16,6 +16,30 @@ platform, network and resources.
 VMs default to a prebuilt system disk (`image`). Every VM backend also
 supports installation from ISO. Raspberry Pi uses a recovery SD card.
 
+## A real-world setup
+
+<p align="center">
+  <img src="assets/broucek-setup.jpg" alt="Brouček, the author's Raspberry Pi 5 setup, with an external SSD and an e-paper status display" width="880">
+</p>
+
+**Brouček — the author's NixBerry setup.** A Raspberry Pi 5 with an external
+SSD and an e-paper display showing system, network and service status.
+This is one example of a custom configuration; the display is optional.
+
+## How NixBerry fits together
+
+![NixBerry architecture: local declarations, server configurations and platform modules compose a Nix flake; the CLI builds artifacts and manages VM backends or Raspberry Pi 5](assets/nixberry-architecture.svg)
+
+Each target selects a server configuration, which explicitly imports the common
+modules. The flake attaches its platform and builds the system and installation
+media from the same locked inputs. The CLI handles planning, inspection and
+explicit write operations through the management tools.
+
+All five VM backends support disk images and ISO installation, including offline
+preparation. Raspberry Pi 5 uses recovery SD media and an SSD instead of a
+hypervisor. See the [technical reference](docs/reference.md#configuration-boundaries)
+for source locations and the [editable diagram](docs/architecture.html).
+
 ## Get started
 
 NixBerry is in active development. The [platform guide](docs/vm.md) describes
