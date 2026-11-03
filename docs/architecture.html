@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NixBerry architecture</title>
 <style>
-  :root { color-scheme: light; background: #faf8f9; color: #242d39; }
+  :root { color: var(--nb-text); background: transparent; }
   body { margin: 0; font-family: system-ui, sans-serif; }
   main { max-width: 1280px; margin: auto; min-width: 0; }
   .diagram-container { width: 100%; overflow-x: auto; }
   svg { display: block; width: 100%; min-width: 1280px; }
   p { margin: 20px 48px 32px; line-height: 1.6; }
-  a { color: #a1264a; }
+  a { color: var(--nb-accent); }
   @media print { svg { min-width: 0; } .diagram-container { overflow: visible; } }
 </style>
 </head>
@@ -24,19 +24,34 @@
   <defs>
     <marker id="nb-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#7b8490" stroke-width="1.5"/></marker>
     <style>
-      text { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; fill: #242d39; }
-      .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; fill: #a1264a; }
+      :root {
+        color-scheme: light dark;
+        background: transparent;
+        --nb-text: #242d39;
+        --nb-muted: #505c6b;
+        --nb-accent: #a1264a;
+        --nb-border: #c6ced6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --nb-text: #e6edf3;
+          --nb-muted: #b1bac4;
+          --nb-accent: #f28ca7;
+          --nb-border: #697586;
+        }
+      }
+      text { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; fill: var(--nb-text); }
+      .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; fill: var(--nb-accent); }
       .title { font-size: 36px; font-weight: 720; letter-spacing: -1px; }
       .heading { font-size: 22px; font-weight: 650; }
-      .body { font-size: 16px; fill: #505c6b; }
-      .code { font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 14px; fill: #505c6b; }
-      .tag { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; fill: #a1264a; }
-      .box { fill: #fff; stroke: #d6d7dd; stroke-width: 1.5; }
-      .focus { fill: #fff0f4; stroke: #b42e53; stroke-width: 2; }
+      .body { font-size: 16px; fill: var(--nb-muted); }
+      .code { font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 14px; fill: var(--nb-muted); }
+      .tag { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; fill: var(--nb-accent); }
+      .box { fill: none; stroke: var(--nb-border); stroke-width: 1.5; }
+      .focus { fill: #b42e5312; stroke: var(--nb-accent); stroke-width: 2; }
       .flow { fill: none; stroke: #7b8490; stroke-width: 1.5; marker-end: url(#nb-arrow); }
     </style>
   </defs>
-  <rect width="1280" height="720" fill="#faf8f9"/>
   <text x="48" y="44" class="eyebrow">NIXBERRY / SYSTEM DESIGN</text>
   <text x="48" y="92" class="title">One recipe. Multiple platforms.</text>
 
