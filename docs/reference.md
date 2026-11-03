@@ -7,12 +7,12 @@
 | Area | Source |
 | --- | --- |
 | Hosts and connections | Local `hosts.local.nix`, loaded through [hosts.nix](../hosts.nix) |
-| Local VM declarations and loader | [instances/](../instances/default.nix) |
+| Local VM declarations and loader | [machines/vm/](../machines/vm/default.nix) |
 | Server configurations | [configurations/](../configurations/default.nix) |
 | Shared base | [modules/common.nix](../modules/common.nix) |
 | Services, packages, system settings | `modules/services/`, `modules/applications/`, `modules/system/` |
 | Hardware and boot | `platforms/rpi/`, `platforms/vm/` |
-| Physical RPi and SSD | [management/rpi/targets/](../management/rpi/targets/default.nix) |
+| Physical RPi and SSD | [machines/rpi/](../machines/rpi/default.nix) |
 | System, media and tool composition | [flake.nix](../flake.nix) |
 | Registry and CLI | [management/deployment/](../management/deployment/default.nix) |
 | Shared VM adapters | [portable.py](../management/deployment/portable.py), [host_agent.py](../management/deployment/host_agent.py) |
@@ -28,6 +28,12 @@ declarations, `hosts.local.nix`, `admin.pub` and any ignored private configurati
 separately. A commit of the public recipe does not include ignored configuration
 files. Use `path:` inputs to include them without `git add`.
 Empty inventory is valid; an unknown host is an error.
+
+When updating a checkout with the previous layout, move its ignored VM `.nix`
+files from `instances/` into `machines/vm/`, and RPi `.nix` files from
+`management/rpi/targets/` into `machines/rpi/`. Keep the new tracked loaders.
+In moved declarations, adjust relative paths: the usual RPi administrator key
+is now `../../admin.pub`. Filenames and CLI target names stay the same.
 
 ## Declared network facts
 

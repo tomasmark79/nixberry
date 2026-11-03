@@ -72,8 +72,8 @@ boot the partial installation. The source server remains independent.
 
 ## 1. Check the declaration and prepare SD — management computer
 
-Copy the [RPi template](../management/examples/rpi.nix) into
-`management/rpi/targets/rpi-demo.nix`. Replace its fictional identifiers with
+Copy the [RPi template](../examples/rpi.nix) into
+`machines/rpi/rpi-demo.nix`. Replace its fictional identifiers with
 the actual RPi and SSD values, and prepare your own `admin.pub`.
 
 The filename without `.nix` determines the CLI target, for example

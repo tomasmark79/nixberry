@@ -68,8 +68,8 @@ class NamedNetworkChecks(unittest.TestCase):
         for name, target in [("rpi-named", cls.named), ("rpi-locked", cls.locked),
                              ("rpi-staged", cls.staged), ("rpi-early-lan", cls.early_lan),
                              ("rpi-legacy", cls.legacy)]:
-            text = nix(target)[:-1] + " adminKeyFile = ../../../admin.pub; }"
-            (cls.recipe / "management/rpi/targets" / (name + ".nix")).write_text(text)
+            text = nix(target)[:-1] + " adminKeyFile = ../../admin.pub; }"
+            (cls.recipe / "machines/rpi" / (name + ".nix")).write_text(text)
 
     def normalize_target(self, target):
         return evaluate("import " + str(self.normalize) + " " + nix(target))
@@ -342,8 +342,8 @@ class NamedNetworkChecks(unittest.TestCase):
         target = copy.deepcopy(self.named)
         target.update(hostName="rpi-protected", hardwareSerial="0000000000000045", installerAddress="192.168.79.1",
                       rootLabel="guard-root", bootLabel="guard-boot")
-        path = self.recipe / "management/rpi/targets/rpi-protected.nix"
-        path.write_text(nix(target)[:-1] + " adminKeyFile = ../../../admin.pub; }")
+        path = self.recipe / "machines/rpi/rpi-protected.nix"
+        path.write_text(nix(target)[:-1] + " adminKeyFile = ../../admin.pub; }")
         try:
             result = subprocess.run(["nix", "eval", "--raw", "--no-write-lock-file",
                                      "path:" + str(self.recipe) + "#nixberrySystems.rpi-protected.config.system.build.toplevel.drvPath"],

@@ -135,7 +135,7 @@ and receives a system disk. Create the example declaration:
 nixberry new-proxmox-vm vm-demo-proxmox --offline
 ```
 
-Set `spec.vmid = 103` and networking in `instances/vm-demo-proxmox.nix`.
+Set `spec.vmid = 103` and networking in `machines/vm/vm-demo-proxmox.nix`.
 Replace VMID and addresses with values assigned to your VM, then:
 
 ```sh

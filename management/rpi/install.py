@@ -88,7 +88,7 @@ def validate_address(address):
 
 def main():
     parser = ArgumentParser(description=_("Prepare or cleanly install a selected RPi5 from pinned declarations."))
-    parser.add_argument("--target", required=True, help=_("Name from rpi/targets/default.nix"))
+    parser.add_argument("--target", required=True, help=_("Name from machines/rpi/default.nix"))
     parser.add_argument("--address", help=_("Current DHCP address of the installation environment, overriding the declaration"))
     parser.add_argument("--key-file", help=_("Private runtime LUKS passphrase file; otherwise prompt securely"))
     parser.add_argument("--initrd-key-file", help=_("Private runtime SSH host key matching the trusted initrd public key"))

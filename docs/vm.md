@@ -10,7 +10,7 @@
 
 Declare connections and existing resources in local `hosts.local.nix`.
 [hosts.nix](../hosts.nix) loads it, or returns an empty inventory when absent.
-[Host templates](../management/examples/hosts.nix) cover all five hypervisors.
+[Host templates](../examples/hosts.nix) cover all five hypervisors.
 Adding an entry does not install a hypervisor or create networks or storage.
 
 | Platform (backend) | Host environment | System disk and network |

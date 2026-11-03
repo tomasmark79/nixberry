@@ -876,8 +876,8 @@ msgstr "Režim: %s; URI: %s; VM: %s"
 msgid "Multicast MAC addresses are not allowed."
 msgstr "Multicast MAC není povolená."
 
-msgid "Name from rpi/targets/default.nix"
-msgstr "Název z rpi/targets/default.nix"
+msgid "Name from machines/rpi/default.nix"
+msgstr "Název z machines/rpi/default.nix"
 
 msgid "Nested AMD KVM is not enabled."
 msgstr "Nested AMD KVM není zapnuté."
@@ -1134,8 +1134,8 @@ msgstr "Obnova ze samotné plné SD; bez internetu, SSH nebo sestavování na da
 msgid "Removal allowed: {value}"
 msgstr "Povolení odstranění: {value}"
 
-msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
-msgstr "Odstranění není povolené. Nastav allowReset = true; v deklaraci této VM v instances/, potom zkontroluj reset CÍL bez --apply."
+msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in machines/vm/, then review reset TARGET without --apply."
+msgstr "Odstranění není povolené. Nastav allowReset = true; v deklaraci této VM v machines/vm/, potom zkontroluj reset CÍL bez --apply."
 
 msgid "Removal of this instance is not declaratively allowed."
 msgstr "Odstranění této instance není deklarativně povolené."

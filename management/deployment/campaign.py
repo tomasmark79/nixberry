@@ -166,7 +166,7 @@ class Campaign:
         if self.case["method"] == "iso":
             args += ["--method", "iso"]
         self.cli(*args)
-        file = self.work / "instances" / (name + ".nix")
+        file = self.work / "machines/vm" / (name + ".nix")
         text = file.read_text().replace("vcpus = 4;", "vcpus = " + str(self.case.get("vcpus", 2)) + ";")
         # Hypervisor identities stay unique; a shared hostname lets sequential
         # cases of the same profile reuse identical artifacts.
@@ -299,7 +299,7 @@ class Campaign:
             network = self.settings.get("networks", {}).get(self.case["host"])
             if not network:
                 raise Blocked(_("The reserved static address for the test NAT network is missing."))
-            file = self.work / "instances" / (self.case["target"] + ".nix")
+            file = self.work / "machines/vm" / (self.case["target"] + ".nix")
             text, count = re.subn(r'network = \{.*?\n  \};', "network = " + nix_attrs(network) + ";", file.read_text(), flags=re.S)
             if count != 1 or network.get("mode") != "static":
                 raise RuntimeError(_("The static network test did not change exactly one declaration to static configuration."))
@@ -355,7 +355,7 @@ class Campaign:
     def offline(self):
         self.fresh_recipe(offline=True)
         name = self.case["target"]
-        file = self.work / "instances" / (name + ".nix")
+        file = self.work / "machines/vm" / (name + ".nix")
         opposite = "iso" if self.case["method"] == "image" else "image"
         file.write_text(file.read_text().replace('deploymentMethod = "' + self.case["method"] + '";',
                                                 'deploymentMethod = "' + opposite + '";'))
@@ -426,7 +426,7 @@ class Campaign:
         target = self.case["targetSpec"]
         info(_("Cleaning up the dedicated test target: {name}"), name=self.case["target"])
         if not self.case.get("manual") or target["backend"] == "libvirt":
-            file = self.work / "instances" / (self.case["target"] + ".nix")
+            file = self.work / "machines/vm" / (self.case["target"] + ".nix")
             text = file.read_text()
             if "allowReset = false;" not in text:
                 raise RuntimeError(_("The test declaration does not have the expected default permission; stopping cleanup."))
@@ -553,7 +553,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
         shutil.copytree(bundle / "recipe", self.work, symlinks=True)
         # Exported Nix store sources are read-only. Only change access and the
         # test revision in a separate working copy.
-        for path in (self.work / "instances" / (manifest["target"] + ".nix"),
+        for path in (self.work / "machines/vm" / (manifest["target"] + ".nix"),
                      self.work / "platforms/vm/configuration.nix"):
             if path.is_symlink():
                 raise RuntimeError(_("The handoff bundle's working declaration must not be a symbolic link."))
@@ -728,7 +728,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
                   "knownHostsFile": str(known), "hostKeyAlias": alias}
         # Port is a Nix integer, other fields are strings; access validates the schema.
         expression = nix_attrs(access).replace('port = "' + str(port) + '";', 'port = ' + str(port) + ';')
-        file = self.work / "instances" / (self.case["target"] + ".nix")
+        file = self.work / "machines/vm" / (self.case["target"] + ".nix")
         file.write_text(file.read_text().replace("{\n", "{\n  access = " + expression + ";\n", 1))
         self.wait_verified()
 

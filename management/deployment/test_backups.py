@@ -29,8 +29,8 @@ class BackupPolicyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             recipe = Path(temporary) / 'recipe'
             copy_test_recipe(source, recipe)
-            target = recipe / 'management/rpi/targets/rpi-demo.nix'
-            original = (recipe / 'management/examples/rpi.nix').read_text()
+            target = recipe / 'machines/rpi/rpi-demo.nix'
+            original = (recipe / 'examples/rpi.nix').read_text()
             expression = 'let f=builtins.getFlake ' + nix('path:' + str(recipe)) + '; in {' \
                 'system=f.nixberrySystems.rpi-demo.config.system.build.toplevel.outPath;' \
                 'recovery=f.nixberryRpiRecoveries.rpi-demo.config.system.build.toplevel.outPath;' \

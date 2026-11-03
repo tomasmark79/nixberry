@@ -1403,7 +1403,7 @@ msgid "NVRAM still exists after removal."
 msgstr ""
 
 #: rpi/install.py:91
-msgid "Name from rpi/targets/default.nix"
+msgid "Name from machines/rpi/default.nix"
 msgstr ""
 
 #: deployment/exporter.py:161
@@ -1823,7 +1823,7 @@ msgid "Removal cancelled; nothing was changed."
 msgstr ""
 
 #: deployment/cli.py:421
-msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."
+msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in machines/vm/, then review reset TARGET without --apply."
 msgstr ""
 
 #: libvirt/reset.py:121

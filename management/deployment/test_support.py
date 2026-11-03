@@ -6,7 +6,7 @@ import shutil
 
 def copy_test_recipe(recipe, destination):
     recipe = Path(recipe)
-    declarations = {recipe / 'instances', recipe / 'management/rpi/targets'}
+    declarations = {recipe / 'machines/vm', recipe / 'machines/rpi'}
 
     def ignore(directory, names):
         excluded = set(shutil.ignore_patterns(

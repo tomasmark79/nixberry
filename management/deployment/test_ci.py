@@ -31,18 +31,18 @@ class PublicRecipeChecks(unittest.TestCase):
         return path
 
     def test_exports_current_tracked_contents_without_local_data(self):
-        self.track(".gitignore", "admin.pub\nhosts.local.nix\ninstances/*.nix\n"
-                   "!instances/default.nix\nmanagement/rpi/targets/*.nix\n"
-                   "!management/rpi/targets/default.nix\n")
+        self.track(".gitignore", "admin.pub\nhosts.local.nix\nmachines/vm/*.nix\n"
+                   "!machines/vm/default.nix\nmachines/rpi/*.nix\n"
+                   "!machines/rpi/default.nix\n")
         module = self.track("configurations/default.nix", '"staged version"\n')
         module.write_text('"current version"\n')
-        self.track("instances/default.nix", "{}\n")
-        self.track("management/rpi/targets/default.nix", "{}\n")
+        self.track("machines/vm/default.nix", "{}\n")
+        self.track("machines/rpi/default.nix", "{}\n")
         local_files = {
             "admin.pub": "private-local-identity\n",
             "hosts.local.nix": "private-local-connections\n",
-            "instances/local.nix": "private-local-vm\n",
-            "management/rpi/targets/local.nix": "private-local-rpi\n",
+            "machines/vm/local.nix": "private-local-vm\n",
+            "machines/rpi/local.nix": "private-local-rpi\n",
             "untracked.txt": "untracked-local-data\n",
         }
         for name, content in local_files.items():
@@ -53,8 +53,8 @@ class PublicRecipeChecks(unittest.TestCase):
         self.assertEqual((self.destination / "configurations/default.nix").read_text(),
                          '"current version"\n')
         self.assertEqual((self.destination / "admin.pub").read_text(), TEST_KEY)
-        self.assertTrue((self.destination / "instances/default.nix").is_file())
-        self.assertTrue((self.destination / "management/rpi/targets/default.nix").is_file())
+        self.assertTrue((self.destination / "machines/vm/default.nix").is_file())
+        self.assertTrue((self.destination / "machines/rpi/default.nix").is_file())
         self.assertFalse((self.destination / ".git").exists())
         for name, content in local_files.items():
             with self.subTest(path=name):

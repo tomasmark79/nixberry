@@ -24,8 +24,8 @@ class MethodTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "flake.nix").touch()
-            (root / "instances").mkdir()
-            (root / "instances/default.nix").touch()
+            (root / "machines/vm").mkdir(parents=True)
+            (root / "machines/vm/default.nix").touch()
             (root / "configurations").mkdir()
             (root / "configurations/default.nix").write_text("{}")
             for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):

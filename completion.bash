@@ -135,12 +135,12 @@ _nixberry_complete() {
             cleanup) options+=(--artifact-root) ;;
         esac
         if [[ $action == plan || $action == reproduce ]] && [[ -n $target ]] &&
-            [[ -f $recipe/management/rpi/targets/$target.nix ]]; then
+            [[ -f $recipe/machines/rpi/$target.nix ]]; then
             options+=(--address --erase-existing)
             options+=(--key-file --initrd-key-file --local-disk)
         fi
         for word in "${options[@]}"; do
-            [[ $word == --method && -n $target && -f $recipe/management/rpi/targets/$target.nix ]] && continue
+            [[ $word == --method && -n $target && -f $recipe/machines/rpi/$target.nix ]] && continue
             # Only image roots are repeatable; do not offer mutually exclusive options.
             [[ $word != --artifact-root && ${used[$word]-} ]] && continue
             case $word in
@@ -184,7 +184,7 @@ _nixberry_complete() {
                 return 0 ;;
         esac
         # Only regular declarations, matching Nix loaders; never cache this inventory.
-        for file in "$recipe"/instances/*.nix "$recipe"/management/rpi/targets/*.nix; do
+        for file in "$recipe"/machines/vm/*.nix "$recipe"/machines/rpi/*.nix; do
             [[ -f $file && ! -L $file ]] || continue
             name=${file##*/}
             [[ $name == default.nix ]] && continue

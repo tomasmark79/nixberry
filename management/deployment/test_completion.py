@@ -15,7 +15,7 @@ class CompletionTests(unittest.TestCase):
         identity = 'b' * 32
         directory = repository / ('snapshot-' + identity); directory.mkdir(mode=0o700)
         (directory / 'receipt.json').write_text(json.dumps({'target': 'kozlonix', 'snapshotId': identity, 'verification': {'status': 'ok'}}))
-        declaration = self.root / 'instances/kozlonix.nix'
+        declaration = self.root / 'machines/vm/kozlonix.nix'
         declaration.write_text('{ host="local"; spec.name="kozlonix"; backup={'
             'enable=true; provider="configurations/server/provider.py"; repository=' + json.dumps(str(repository)) + ';'
             'identityFile="/private/key"; recipient="age1' + 'a'*58 + '"; restoreBackends=["libvirt"]; }; }')
@@ -34,17 +34,18 @@ class CompletionTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name) / "recept s mezerou"
-        for directory in ("instances", "management/rpi/targets"):
+        for directory in ("machines/vm", "machines/rpi"):
             (self.root / directory).mkdir(parents=True)
             shutil.copyfile(Path(__file__).resolve().parents[2] / directory / "default.nix",
                             self.root / directory / "default.nix")
-        (self.root / "instances/kozlonix.nix").write_text('{ host = "local"; spec.name = "kozlonix"; }')
-        (self.root / "management/rpi/targets/nixberry.nix").write_text('{ hostName = "pi"; }')
-        (self.root / "instances/adresar.nix").mkdir()
-        (self.root / "instances/link.nix").symlink_to("kozlonix.nix")
+        (self.root / "machines/vm/kozlonix.nix").write_text('{ host = "local"; spec.name = "kozlonix"; }')
+        (self.root / "machines/rpi/nixberry.nix").write_text('{ hostName = "pi"; }')
+        (self.root / "machines/vm/adresar.nix").mkdir()
+        (self.root / "machines/vm/link.nix").symlink_to("kozlonix.nix")
         self.recipe = Path(__file__).resolve().parents[2]
         shutil.copyfile(self.recipe / "completion.bash", self.root / "completion.bash")
         (self.root / 'management/deployment').mkdir(parents=True)
+        (self.root / 'management/rpi').mkdir(parents=True)
         for name in ('security.nix', 'normalize-target.nix', 'network.nix'):
             shutil.copyfile(self.recipe / 'management/rpi' / name, self.root / 'management/rpi' / name)
         for name in ('default.nix', 'security.nix', 'vm-network.nix', 'configurations.nix', 'operations.nix', 'backup-policy.nix', 'completion-targets.nix', 'completion-snapshots.nix', 'shell-path.sh', 'messages.sh'):
@@ -97,7 +98,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
 
     def test_offline_capabilities_for_every_backend_and_method(self):
         for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware'):
-            path = self.root / 'instances/demo.nix'
+            path = self.root / 'machines/vm/demo.nix'
             for method in ('image', 'iso'):
                 for access in ('', 'access = { host = "10.0.1.19"; user = "root"; port = 22; };'):
                     path.write_text('{ backend = "' + backend + '"; deploymentMethod = "' + method + '"; '
@@ -115,7 +116,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
         for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware'):
             (self.root / 'hosts.nix').write_text('{ local = { backend = "' + backend + '"; connection = {}; }; }')
             for method in ('image', 'iso'):
-                (self.root / 'instances/demo.nix').write_text('{ host = "local"; deploymentMethod = "' + method + '"; spec.name = "demo"; }')
+                (self.root / 'machines/vm/demo.nix').write_text('{ host = "local"; deploymentMethod = "' + method + '"; spec.name = "demo"; }')
                 with self.subTest(backend=backend, method=method):
                     for action in ('probe', 'create', 'install', 'provision', 'reset', 'plan', 'reproduce', 'cleanup', 'verify', 'update'):
                         self.assertEqual(self.complete(action, 'dem'), ['demo'])
@@ -123,14 +124,14 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
     def test_no_nix_or_invalid_declaration_does_not_guess_capabilities(self):
         self.assertEqual(self.complete('show', 'koz', nix=False), ['kozlonix'])
         self.assertEqual(self.complete('update', 'koz', nix=False), [])
-        (self.root / 'instances/kozlonix.nix').write_text('not valid nix')
+        (self.root / 'machines/vm/kozlonix.nix').write_text('not valid nix')
         self.assertEqual(self.complete('reset', 'koz'), [])
 
     def test_changed_host_is_reflected_in_same_shell_without_cache(self):
         self.assertEqual(self.complete('reset', 'koz', before='''
 COMP_WORDS=(nixberry reset koz); COMP_CWORD=2; _nixberry_complete
 [[ ${COMPREPLY[*]} == kozlonix ]] || exit 1
-printf '%s' '{ backend = "proxmox"; spec.name = "kozlonix"; }' > "$1/instances/kozlonix.nix"
+printf '%s' '{ backend = "proxmox"; spec.name = "kozlonix"; }' > "$1/machines/vm/kozlonix.nix"
 '''), [])
 
     def test_deployment_methods_complete_values_and_preserve_target_parsing(self):
@@ -189,11 +190,11 @@ printf '%s' '{ backend = "proxmox"; spec.name = "kozlonix"; }' > "$1/instances/k
         self.assertEqual(self.complete("show", "nova", before='''
 COMP_WORDS=(nixberry show nova); COMP_CWORD=2; _nixberry_complete
 [[ ${#COMPREPLY[@]} == 0 ]] || exit 1
-: > "$1/instances/nova.nix"
+: > "$1/machines/vm/nova.nix"
 '''), ["nova"])
 
     def test_recipe_override_and_empty_inventory(self):
-        self.assertEqual(self.complete("show", "", before='NIXBERRY_RECIPE="$1/instances"'), [])
+        self.assertEqual(self.complete("show", "", before='NIXBERRY_RECIPE="$1/machines/vm"'), [])
 
     def test_invalid_recipe_clears_previous_completions(self):
         for command, words in (("nixberry", ("show", "")), ("nixrebuildberry", ("",))):

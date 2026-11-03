@@ -418,7 +418,7 @@ def main(argv=None):
         return compare(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target,
                        generations=args.action == "diffg", dry_run=args.dry_run)
     if args.action == "reset" and target.get("allowReset", target["spec"].get("allowReset", False)) is not True:
-        parser.error(_("Removal is not allowed. Set allowReset = true; in this VM's declaration in instances/, then review reset TARGET without --apply."))
+        parser.error(_("Removal is not allowed. Set allowReset = true; in this VM's declaration in machines/vm/, then review reset TARGET without --apply."))
     if args.action == "update":
         info(_("Server configuration: {configuration}"), configuration=target.get("configuration", "default"))
         update(os.environ.get("NIXBERRY_RECIPE", ""), args.target, target, apply=args.apply)

@@ -2,8 +2,8 @@
 
 [Main guide](../README.md) · [CLI](cli.md) · [Platform contract](platform-consistency.md)
 
-Backup policy belongs to a target declaration in `instances/` or
-`management/rpi/targets/`. A configuration supplies a local provider for its
+Backup policy belongs to a target declaration in `machines/vm/` or
+`machines/rpi/`. A configuration supplies a local provider for its
 application format, consistency requirements and restore checks. NixBerry
 dispatches through that provider using one controller interface for every backend.
 

@@ -168,7 +168,7 @@ class DispatchChecks(unittest.TestCase):
                 self.assertEqual(command[command.index("--initrd-key-file") + 1], "/missing/initrd-key")
 
     def test_encrypted_declaration_hints_prepare_before_plan_or_export(self):
-        create = Mock(return_value=(Path("/recipe/instances/vm-demo-secured.nix"), "{}"))
+        create = Mock(return_value=(Path("/recipe/machines/vm/vm-demo-secured.nix"), "{}"))
         with patch("pathlib.Path.read_text", return_value="{}"), \
                 patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT_HOSTS": "/hosts"}), \
                 patch.dict(MAIN.__globals__, {"new_vm": create, "new_libvirt": create}), \
@@ -202,7 +202,7 @@ class DispatchChecks(unittest.TestCase):
             run.assert_not_called()
 
     def test_configuration_is_persisted_by_all_new_commands_and_not_an_update_override(self):
-        create = Mock(return_value=(Path("/recipe/instances/demo.nix"), "{}"))
+        create = Mock(return_value=(Path("/recipe/machines/vm/demo.nix"), "{}"))
         with patch("pathlib.Path.read_text", return_value="{}"), \
                 patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT_HOSTS": "/hosts"}), \
                 patch.dict(MAIN.__globals__, {"new_vm": create, "new_libvirt": create}), \
@@ -216,7 +216,7 @@ class DispatchChecks(unittest.TestCase):
             self.assertEqual(result.exception.code, 2)
 
     def test_every_new_vm_supports_offline_without_live_dispatch(self):
-        create = Mock(return_value=(Path("/recipe/instances/offline.nix"), 'backend = "libvirt";'))
+        create = Mock(return_value=(Path("/recipe/machines/vm/offline.nix"), 'backend = "libvirt";'))
         with patch("pathlib.Path.read_text", return_value="{}"), \
                 patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT_HOSTS": "/hosts"}), \
                 patch.dict(MAIN.__globals__, {"new_vm": create}), patch("subprocess.run") as run:
@@ -232,7 +232,7 @@ class DispatchChecks(unittest.TestCase):
             run.assert_not_called()
 
     def test_new_vm_names_and_legacy_aliases_select_online_hints(self):
-        create = Mock(return_value=(Path("/recipe/instances/example.nix"), 'host = "pve";'))
+        create = Mock(return_value=(Path("/recipe/machines/vm/example.nix"), 'host = "pve";'))
         with patch("pathlib.Path.read_text", return_value="{}"), \
                 patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT_HOSTS": "/hosts"}), \
                 patch.dict(MAIN.__globals__, {"new_vm": create, "new_libvirt": create}):
@@ -246,7 +246,7 @@ class DispatchChecks(unittest.TestCase):
                         self.assertNotIn("nixberry export", hints.getvalue())
 
     def test_offline_virtualbox_scaffold_dispatch_and_invalid_combinations(self):
-        create = Mock(return_value=(Path("/recipe/instances/offline.nix"), 'backend = "virtualbox";'))
+        create = Mock(return_value=(Path("/recipe/machines/vm/offline.nix"), 'backend = "virtualbox";'))
         with patch("pathlib.Path.read_text", return_value="{}"), \
                 patch.dict(os.environ, {"NIXBERRY_DEPLOYMENT": "/registry", "NIXBERRY_DEPLOYMENT_HOSTS": "/hosts"}), \
                 patch.dict(MAIN.__globals__, {"new_vm": create}), \
@@ -458,7 +458,7 @@ class DispatchChecks(unittest.TestCase):
         (root / "flake.nix").touch()
         (root / "configurations").mkdir()
         (root / "configurations/default.nix").write_text("{}")
-        directory = root / "instances"
+        directory = root / "machines/vm"
         directory.mkdir(parents=True)
         (directory / "default.nix").touch()
         hosts = root / "hosts.json"

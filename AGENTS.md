@@ -4,7 +4,7 @@
 
 - Write source, comments and primary documentation in English. Keep technical identifiers unchanged. Czech is an additional CLI language supplied through gettext. User documentation is English-only.
 - Make a local Git commit after each completed, appropriately verified step. Include only related changes and explain the purpose. Push only when explicitly requested.
-- `hosts.local.nix`, `admin.pub`, concrete VM files in `instances/` and RPi files in `management/rpi/targets/` are local, ignored data. Preserve local files when removing them from tracking. Version only `.gitignore` and `default.nix` in declaration directories; keep fictional examples separately. Back up local data separately.
+- `hosts.local.nix`, `admin.pub`, concrete VM files in `machines/vm/` and RPi files in `machines/rpi/` are local, ignored data. Preserve local files when removing them from tracking. Version only `.gitignore` and `default.nix` in declaration directories; keep fictional examples separately. Back up local data separately.
 - Launchers and exports use `path:` recipes so ignored declarations work without `git add`.
 - Nixon independently consumes the local launcher. Do not introduce a dependency on its checkout or a shared lockfile. Documentation or translation work does not authorize changes to live machines.
 

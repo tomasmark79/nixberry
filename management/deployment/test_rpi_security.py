@@ -17,12 +17,12 @@ class RpiSecurityTests(unittest.TestCase):
         cls.recipe = Path(temporary.name) / 'recipe'
         copy_test_recipe(Path(__file__).parents[2], cls.recipe)
         for name, mode in [('rpi-demo', 'luks'), ('rpi-plain', 'none')]:
-            (cls.recipe / 'management/rpi/targets' / (name + '.nix')).write_text('''{
+            (cls.recipe / 'machines/rpi' / (name + '.nix')).write_text('''{
               hostName = "''' + name + '''"; hardwareSerial = "0000000000000001";
               installerAddress = "192.168.50.20"; address = "192.168.50.20/24";
               gateway = "192.168.50.1"; dns = [ "192.168.50.1" ];
               lanMac = "02:00:00:00:00:01"; diskDevice = "/dev/disk/by-id/usb-TEST_DISK";
-              diskSerial = "TEST_DISK"; rootGiB = 32; adminKeyFile = ../../../admin.pub;
+              diskSerial = "TEST_DISK"; rootGiB = 32; adminKeyFile = ../../admin.pub;
               security.mode = "''' + mode + '''";
             }''')
 

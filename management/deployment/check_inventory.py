@@ -55,7 +55,7 @@ def main():
     recipe = Path(__file__).resolve().parents[2]
     root = Path(tempfile.mkdtemp(prefix="nixberry-management-check-"))
     info(_("Copies and results: {value1}"), value1=str(root))
-    raw = evaluate("import " + str(recipe / "instances"))
+    raw = evaluate("import " + str(recipe / "machines/vm"))
     initial = registry(recipe)
     records = {}
 
@@ -68,10 +68,10 @@ def main():
     def remove_vm(destination, predicate):
         for name, target in initial["instances"].items():
             if predicate(name, target):
-                (destination / "instances" / (name + ".nix")).unlink()
+                (destination / "machines/vm" / (name + ".nix")).unlink()
 
     def remove_rpi(destination):
-        for path in (destination / "management/rpi/targets").glob("*.nix"):
+        for path in (destination / "machines/rpi").glob("*.nix"):
             if path.name != "default.nix":
                 path.unlink()
 
@@ -95,13 +95,13 @@ def main():
             hosts = {"renamed-" + key: value for key, value in initial["hosts"].items()}
             (destination / "hosts.local.nix").write_text(nix(hosts) + "\n")
             for name, instance in raw.items():
-                old = destination / "instances" / (name + ".nix")
+                old = destination / "machines/vm" / (name + ".nix")
                 old.unlink()
                 new = dict(instance)
                 if "host" in instance:
                     new["host"] = "renamed-" + instance["host"]
                 old.with_name("renamed-" + name + ".nix").write_text(nix(new) + "\n")
-            for path in (destination / "management/rpi/targets").glob("*.nix"):
+            for path in (destination / "machines/rpi").glob("*.nix"):
                 if path.name != "default.nix":
                     path.rename(path.with_name("renamed-" + path.name))
         if case == "two-hyperv":
@@ -116,15 +116,15 @@ def main():
                 "name": "nixberry-another-hv", "ownerId": "nixberry-hyperv-85a5abbf-ac9f-44ad-9f34-34dd14b77123",
                 "generation": 2, "secureBoot": False, "mac": "027981000055",
                 "memoryMiB": 6144, "vcpus": 2, "diskGiB": 48}}
-            (destination / "instances/another-hv.nix").write_text(nix(target) + "\n")
+            (destination / "machines/vm/another-hv.nix").write_text(nix(target) + "\n")
             if not any(item["backend"] == "hyperv" for item in initial["instances"].values()):
                 # The regression needs two VMs even after all original declarations are removed.
                 control = {**target, "spec": {**target["spec"], "name": "nixberry-control-hv",
                     "ownerId": "nixberry-hyperv-95a5abbf-ac9f-44ad-9f34-34dd14b77123",
                     "mac": "027981000056", "diskGiB": 32}}
-                (destination / "instances/control-hv.nix").write_text(nix(control) + "\n")
+                (destination / "machines/vm/control-hv.nix").write_text(nix(control) + "\n")
         if case == "portable":
-            hosts = evaluate("import " + str(destination / "management/examples/hosts.nix"))
+            hosts = evaluate("import " + str(destination / "examples/hosts.nix"))
             (destination / "hosts.local.nix").write_text(nix(hosts) + "\n")
             remove_vm(destination, lambda *_: True)
             remove_rpi(destination)
@@ -136,7 +136,7 @@ def main():
                     "mac": f"00:50:56:12:34:{index:02x}", "memoryMiB": 4096, "vcpus": 2, "diskGiB": 32}}
                 if backend == "proxmox":
                     target["spec"]["vmid"] = 9000 + index
-                (destination / f"instances/portable-{index}.nix").write_text(nix(target) + "\n")
+                (destination / f"machines/vm/portable-{index}.nix").write_text(nix(target) + "\n")
         state = summary(destination)
         expected = registry(destination)
         assert sorted(state["manifest"]) == sorted(expected["targets"]), case
@@ -182,7 +182,7 @@ def main():
 
     destination = copy("missing-host")
     (destination / "hosts.local.nix").write_text("{}\n")
-    (destination / "instances/orphan.nix").write_text(
+    (destination / "machines/vm/orphan.nix").write_text(
         '{ host = "missing"; spec.name = "nixberry-orphan"; }\n')
     try:
         registry(destination)

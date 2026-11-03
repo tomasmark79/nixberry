@@ -8,7 +8,7 @@ _nixberry_recipe_dir() (
   else
     recipe=$1
   fi
-  if [[ ! -f $recipe/flake.nix || ! -d $recipe/instances || ! -d $recipe/management/rpi/targets ]]; then
+  if [[ ! -f $recipe/flake.nix || ! -d $recipe/machines/vm || ! -d $recipe/machines/rpi ]]; then
     nb_error 'The NixBerry recipe is incomplete or unavailable: %s' "$recipe"
     return 1
   fi

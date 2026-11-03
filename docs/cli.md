@@ -72,7 +72,7 @@ and verify the server before retrying.
 | `new-virtualbox-vm NAME` | VirtualBox |
 | `new-vmware-vm NAME` | VMware Workstation |
 
-Each command writes local `instances/NAME.nix`; it does not create a VM.
+Each command writes local `machines/vm/NAME.nix`; it does not create a VM.
 Names contain 1–40 lowercase letters, digits and hyphens, start with a letter,
 and end with a letter or digit. Existing declarations are not overwritten.
 

@@ -9,7 +9,7 @@
   diskDevice = "/dev/disk/by-id/ata-Patriot_Burst_A32D0711017000104638";
   diskSerial = "A32D0711017000104638";
   rootGiB = 256;
-  adminKeyFile = ../../../admin.pub;
+  adminKeyFile = ../../admin.pub;
   security.mode = "none";
   installerAddress = "192.168.79.2";
   network = {

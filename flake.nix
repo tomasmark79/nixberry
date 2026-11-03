@@ -50,7 +50,7 @@
       vmPkgs = nixos-raspberrypi.inputs.nixpkgs.legacyPackages.x86_64-linux;
       deployment = import ./management/deployment;
       configurations = import ./management/deployment/configurations.nix;
-      rpiTargets = import ./management/rpi/targets;
+      rpiTargets = import ./machines/rpi;
       mkRpi =
         target:
         let
@@ -501,7 +501,7 @@
       };
       checks.x86_64-linux.rpi-local-ssd =
         let
-          target = (import ./management/examples/rpi.nix) // {
+          target = (import ./examples/rpi.nix) // {
             diskSerial = "SSD-TEST";
             rootGiB = 8;
             adminKeyFile = vmPkgs.writeText "rpi-test-admin.pub" "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA test-only\n";

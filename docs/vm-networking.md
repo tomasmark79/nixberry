@@ -16,7 +16,7 @@ as a laboratory management network.
 ## Declare a libvirt gateway
 
 Create a declaration with `nixberry new-libvirt-vm vm-demo-gateway --host HOST`,
-then edit the ignored `instances/vm-demo-gateway.nix` before building:
+then edit the ignored `machines/vm/vm-demo-gateway.nix` before building:
 
 ```nix
 {

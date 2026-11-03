@@ -18,8 +18,8 @@ class ConfigurationChecks(unittest.TestCase):
         (self.root / "configurations/web").mkdir(parents=True)
         (self.root / "configurations/default.nix").write_text("{}")
         (self.root / "configurations/web/default.nix").write_text("{}")
-        (self.root / "instances").mkdir()
-        (self.root / "instances/default.nix").write_text("{}")
+        (self.root / "machines/vm").mkdir(parents=True)
+        (self.root / "machines/vm/default.nix").write_text("{}")
         (self.root / "flake.nix").write_text("{}")
         (self.root / "management/deployment").mkdir(parents=True)
         shutil.copyfile(Path(__file__).with_name("configurations.nix"),
@@ -42,7 +42,7 @@ class ConfigurationChecks(unittest.TestCase):
         for name in ("typo", "../web", "", "${builtins.abort}"):
             with self.subTest(name=name), self.assertRaisesRegex(RuntimeError, "Available configurations: default, web"):
                 new_vm(self.root, {}, {}, "demo", "libvirt", offline=True, configuration=name)
-        self.assertFalse((self.root / "instances/demo.nix").exists())
+        self.assertFalse((self.root / "machines/vm/demo.nix").exists())
         for value in ('"typo"', '"../web"', 'null', '[ "web" ]'):
             self.assertIn("Available configurations: default, web", self.nix("c.select { configuration = " + value + "; }", success=False))
 
@@ -81,11 +81,11 @@ class ConfigurationChecks(unittest.TestCase):
         shutil.copyfile(Path(__file__).with_name("backup-policy.nix"), self.root / "management/deployment/backup-policy.nix")
         shutil.copyfile(Path(__file__).with_name("vm-network.nix"), self.root / "management/deployment/vm-network.nix")
         (self.root / "hosts.nix").write_text("{}")
-        (self.root / "instances/default.nix").write_text(
+        (self.root / "machines/vm/default.nix").write_text(
             '{ demo = { backend = "libvirt"; configuration = "web"; spec.name = "demo"; }; }')
         (self.root / "management/rpi").mkdir(parents=True, exist_ok=True)
         shutil.copyfile(Path(__file__).resolve().parents[1] / "rpi/security.nix", self.root / "management/rpi/security.nix")
-        targets = self.root / "management/rpi/targets"
+        targets = self.root / "machines/rpi"
         targets.mkdir(parents=True)
         (targets / "default.nix").write_text('{ pi = { configuration = "web"; hostName = "pi"; backup.enable = false; }; }')
         def registry():

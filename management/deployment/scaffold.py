@@ -60,7 +60,7 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
             raise RuntimeError(_("This procedure currently supports only local libvirt."))
         raise RuntimeError(_("The host does not match the selected backend."))
     root = Path(recipe)
-    directory = root / "instances"
+    directory = root / "machines/vm"
     if not (root / "flake.nix").is_file() or not (directory / "default.nix").is_file():
         raise RuntimeError(_("Run the command from a complete project recipe."))
     identity = uuid.uuid4()

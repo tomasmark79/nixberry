@@ -1,7 +1,7 @@
 let
   hosts = import ../../hosts.nix;
   configurations = import ./configurations.nix;
-  vmInstances = import ../../instances;
+  vmInstances = import ../../machines/vm;
   instances = builtins.mapAttrs (
     name: instance:
     let
@@ -113,7 +113,7 @@ let
       "backup"
     ];
   } // (let security = import ../rpi/security.nix { security = target.security or { }; };
-    in if security.mode == "none" then { } else { inherit security; })) (import ../rpi/targets);
+    in if security.mode == "none" then { } else { inherit security; })) (import ../../machines/rpi);
 in
 assert builtins.intersectAttrs instances rpiTargets == { };
 assert builtins.all (value: builtins.length (builtins.filter (other: other == value) adapterMacs) == 1)

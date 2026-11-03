@@ -41,25 +41,25 @@ class ScaffoldChecks(unittest.TestCase):
             for name in ("con", "prn", "aux", "nul", "com1", "com9", "lpt1", "lpt9"):
                 with self.subTest(backend=backend, name=name), self.assertRaisesRegex(RuntimeError, "reserved"):
                     new_vm(self.root, {}, {}, name, backend, offline=True)
-                self.assertFalse((self.root / "instances" / (name + ".nix")).exists())
+                self.assertFalse((self.root / "machines/vm" / (name + ".nix")).exists())
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        (self.root / "instances").mkdir(parents=True)
+        (self.root / "machines/vm").mkdir(parents=True)
         (self.root / "flake.nix").touch()
-        (self.root / "instances/default.nix").touch()
+        (self.root / "machines/vm/default.nix").touch()
         (self.root / "configurations").mkdir()
         (self.root / "configurations/default.nix").write_text("{}")
 
     def test_every_backend_prepares_offline_without_hosts_and_can_attach(self):
         recipe = Path(__file__).parents[2]
         shutil.copytree(recipe / "management/deployment", self.root / "management/deployment", dirs_exist_ok=True)
-        shutil.copyfile(recipe / "instances/default.nix", self.root / "instances/default.nix")
+        shutil.copyfile(recipe / "machines/vm/default.nix", self.root / "machines/vm/default.nix")
         (self.root / "hosts.nix").write_text("{}")
-        (self.root / "management/rpi/targets").mkdir(parents=True)
-        (self.root / "management/rpi/targets/default.nix").write_text("{}")
+        (self.root / "machines/rpi").mkdir(parents=True)
+        (self.root / "machines/rpi/default.nix").write_text("{}")
         def evaluate(name):
             return json.loads(subprocess.check_output([
                 "nix", "eval", "--impure", "--json", "--expr",
@@ -104,10 +104,10 @@ class ScaffoldChecks(unittest.TestCase):
     def test_offline_proxmox_defaults_evaluate_and_can_attach_to_host(self):
         recipe = Path(__file__).parents[2]
         shutil.copytree(recipe / "management/deployment", self.root / "management/deployment", dirs_exist_ok=True)
-        shutil.copyfile(recipe / "instances/default.nix", self.root / "instances/default.nix")
+        shutil.copyfile(recipe / "machines/vm/default.nix", self.root / "machines/vm/default.nix")
         (self.root / "hosts.nix").write_text("{}")
-        (self.root / "management/rpi/targets").mkdir(parents=True)
-        (self.root / "management/rpi/targets/default.nix").write_text("{}")
+        (self.root / "machines/rpi").mkdir(parents=True)
+        (self.root / "machines/rpi/default.nix").write_text("{}")
         registry = {"other": {"backend": "proxmox", "host": "other-pve", "spec": {"vmid": 1000}}}
         # Výslovná offline volba nesmí vybrat ani dostupného hostitele.
         path, original = new_vm(self.root, {"pve": {"backend": "proxmox"}}, registry, "offline", "proxmox", offline=True)
@@ -163,10 +163,10 @@ class ScaffoldChecks(unittest.TestCase):
     def test_virtualbox_offline_evaluates_without_host_and_attaches_without_changing_system(self):
         recipe = Path(__file__).parents[2]
         shutil.copytree(recipe / "management/deployment", self.root / "management/deployment", dirs_exist_ok=True)
-        shutil.copyfile(recipe / "instances/default.nix", self.root / "instances/default.nix")
+        shutil.copyfile(recipe / "machines/vm/default.nix", self.root / "machines/vm/default.nix")
         (self.root / "hosts.nix").write_text("{}")
-        (self.root / "management/rpi/targets").mkdir(parents=True)
-        (self.root / "management/rpi/targets/default.nix").write_text("{}")
+        (self.root / "machines/rpi").mkdir(parents=True)
+        (self.root / "machines/rpi/default.nix").write_text("{}")
         path, original = new_vm(self.root, {}, {}, "offlinevbox", "virtualbox", offline=True)
         def evaluate():
             return json.loads(subprocess.check_output([
@@ -223,7 +223,7 @@ class ScaffoldChecks(unittest.TestCase):
 
     def test_new_declaration_is_stable_and_keeps_role(self):
         path, text = new_libvirt(self.root, HOSTS, {}, "lab", "local-libvirt")
-        self.assertEqual(path, self.root / "instances/lab.nix")
+        self.assertEqual(path, self.root / "machines/vm/lab.nix")
         self.assertEqual(path.read_text(), text)
         self.assertIn('profile = "nixberry-vm"', text)
         self.assertIn("allowReset = false", text)

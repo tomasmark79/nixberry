@@ -11,7 +11,7 @@ Run from the NixBerry checkout on the management computer. No hypervisor is need
 ```sh
 export PATH="$PWD:$PATH"
 export NIXBERRY_RECIPE="$PWD"
-cp -i management/examples/rpi-playground.nix management/rpi/targets/rpi5playground.nix
+cp -i examples/rpi-playground.nix machines/rpi/rpi5playground.nix
 test -e admin.pub || cp ~/.ssh/id_ed25519.pub admin.pub
 ```
 

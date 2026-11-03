@@ -89,8 +89,8 @@ class CampaignTests(unittest.TestCase):
             with self.subTest(backend=backend), tempfile.TemporaryDirectory() as root:
                 task = Campaign("/recipe", "/run-test")
                 task.work = Path(root)
-                (task.work / 'instances').mkdir()
-                declaration = task.work / 'instances/owned.nix'
+                (task.work / 'machines/vm').mkdir(parents=True)
+                declaration = task.work / 'machines/vm/owned.nix'
                 declaration.write_text('{\n  allowReset = false;\n}')
                 task.case = dict(target="owned", targetSpec=dict(backend=backend, spec={}))
                 with patch.object(task, "snapshot", side_effect=[{"state": "shut off"}, {"state": "absent"}]), \

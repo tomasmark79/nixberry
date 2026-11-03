@@ -56,11 +56,11 @@ nixberry --help
 ```
 
 Prepare your public SSH key and host connections using the
-[host templates](management/examples/hosts.nix):
+[host templates](examples/hosts.nix):
 
 ```sh
 cp ~/.ssh/id_ed25519.pub admin.pub
-cp management/examples/hosts.nix hosts.local.nix
+cp examples/hosts.nix hosts.local.nix
 ```
 
 Keep only your hosts in `hosts.local.nix` and adjust their parameters.
@@ -162,7 +162,7 @@ nixberry new-libvirt-vm vm-demo-libvirt --host local-libvirt
 nixberry show vm-demo-libvirt
 ```
 
-This writes `instances/vm-demo-libvirt.nix`. Review its configuration,
+This writes `machines/vm/vm-demo-libvirt.nix`. Review its configuration,
 network and capacity. Defaults are 4 CPUs, 4 GiB RAM and a 32 GiB disk.
 Keep the UUID and MAC when managing the same VM.
 The VM name and default guest hostname use the target name exactly as supplied,
@@ -273,7 +273,7 @@ with two Ethernet interfaces into an independent NAT router with DHCP and
 AdGuard Home DNS filtering. Copy one target example and edit its hardware and
 network values; it does not include the author's production services.
 
-RPi declarations live in `management/rpi/targets/`. Everyday management uses
+RPi declarations live in `machines/rpi/`. Everyday management uses
 the same `status`, `ssh`, `diff`, `update` and `verify` commands.
 A full recovery uses SD media:
 
@@ -292,11 +292,25 @@ VM `--method` selection and hypervisor reset do not apply.
 
 ## Configuration and local declarations
 
+For everyday administration, start with `machines/` (which device) and
+`configurations/` (what it runs). Each machine has one declaration, named after
+its CLI target; it selects a configuration through `configuration`.
+
+```text
+machines/rpi/     Physical Raspberry Pi declarations: board, SSD and network
+machines/vm/      Virtual machine declarations: host, network and capacity
+configurations/  Packages and services selected by each machine
+examples/        Starting points for new machines and hypervisor connections
+modules/         Reusable system and service settings
+platforms/       Platform-specific boot, disks, drivers and guest support
+management/      Implementation of NixBerry commands and deployment tools
+```
+
 | Setting | Location |
 | --- | --- |
 | Hypervisor connections and resources | Local `hosts.local.nix`, loaded by [hosts.nix](hosts.nix) |
-| A VM's identity, network and capacity | `instances/NAME.nix` |
-| RPi, SSD and network | [management/rpi/targets/](management/rpi/targets/default.nix) |
+| A VM's identity, network and capacity | `machines/vm/NAME.nix` |
+| RPi, SSD and network | [machines/rpi/](machines/rpi/default.nix) |
 | Packages and services | [configurations/](configurations/default.nix) |
 | Shared system base | [modules/common.nix](modules/common.nix) and `modules/` |
 | Boot, disks, drivers and guest support | `platforms/` |

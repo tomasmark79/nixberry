@@ -197,7 +197,7 @@ class AdapterNixTests(unittest.TestCase):
             copy_test_recipe(Path(__file__).resolve().parents[2], recipe)
             value = {"backend": "libvirt", "network": {"mode": "dhcp", "interfaces": {
                 "lan0": {"mode": "static", "address": "10.123.0.1/24"}}}, "spec": spec('libvirt')}
-            (recipe / 'instances/vm-demo-gateway.nix').write_text(nix(value))
+            (recipe / 'machines/vm/vm-demo-gateway.nix').write_text(nix(value))
             result = evaluate('''let f = builtins.getFlake ''' + nix('path:' + str(recipe)) + '''; in {
               target = f.nixberryDeployment.targets.vm-demo-gateway.spec.networkAdapters;
               guest = f.nixberrySystems.vm-demo-gateway.config.nixberry.vm.adapters;
@@ -206,7 +206,7 @@ class AdapterNixTests(unittest.TestCase):
             self.assertTrue(result['installer'].endswith('.drv'))
             self.assertEqual([item['name'] for item in result['guest']], ['wan0', 'lan0'])
             duplicate = {"backend": "libvirt", "spec": {"name": "vm-demo-other", "mac": value['spec']['networkAdapters'][1]['mac']}}
-            (recipe / 'instances/vm-demo-other.nix').write_text(nix(duplicate))
+            (recipe / 'machines/vm/vm-demo-other.nix').write_text(nix(duplicate))
             expression = '(builtins.tryEval (import ' + str(recipe / 'management/deployment') + ')).success'
             self.assertFalse(evaluate(expression))
 

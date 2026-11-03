@@ -483,7 +483,7 @@ class PortableTests(unittest.TestCase):
         (self.root / "flake.nix").touch()
         (self.root / "configurations").mkdir()
         (self.root / "configurations/default.nix").write_text("{}")
-        directory = self.root / "instances"
+        directory = self.root / "machines/vm"
         directory.mkdir(parents=True)
         (directory / "default.nix").touch()
         for backend in ("proxmox", "virtualbox", "vmware"):
