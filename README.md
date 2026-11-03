@@ -96,6 +96,7 @@ tool output do not change language. Documentation is maintained in English.
 | Hand off a system without hypervisor access | [Offline handoff](#offline) |
 | Change packages, services or declarations | [Configuration](#configuration) |
 | Recover Raspberry Pi | [SD recovery](docs/rpi-recovery.md) |
+| Try a useful Raspberry Pi router | [Playground quick start](docs/playground.md) |
 | Look up commands and options | [CLI reference](docs/cli.md) |
 | Prepare an encrypted VM disk | [LUKS and remote unlocking](docs/security.md) |
 | Review planned work | [Roadmap](docs/roadmap.md) |
@@ -266,6 +267,11 @@ See [disk, ISO and Proxmox handoff](docs/offline.md).
 <a id="obnova-rpi"></a>
 
 ## Raspberry Pi 5
+
+New to NixBerry? The [playground quick start](docs/playground.md) turns an RPi5
+with two Ethernet interfaces into an independent NAT router with DHCP and
+AdGuard Home DNS filtering. Copy one target example and edit its hardware and
+network values; it does not include the author's production services.
 
 RPi declarations live in `management/rpi/targets/`. Everyday management uses
 the same `status`, `ssh`, `diff`, `update` and `verify` commands.

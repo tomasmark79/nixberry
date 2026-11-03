@@ -495,6 +495,10 @@
       nixberryDeployment = deployment;
       # Unified verify/export outputs never select a first or fixed instance.
       nixberrySystems = rpiSystems // vmSystems;
+      checks.x86_64-linux.playground = import ./tests/playground.nix {
+        pkgs = vmPkgs;
+        inherit emcx;
+      };
       checks.x86_64-linux.rpi-local-ssd =
         let
           target = (import ./management/examples/rpi.nix) // {
