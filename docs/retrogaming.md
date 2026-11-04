@@ -88,6 +88,11 @@ into a temporary directory and create a ZIP with the same internal paths before
 copying it to `roms/dos/`; retain the original archive separately. Its initial
 program picker lets you select a game's executable or batch file.
 
+DOSBox Pure uses the bundled GeneralUser GS SoundFont through its internal
+synthesizer. It does not require a hardware or frontend MIDI output. Existing
+DOSBox Pure preferences are preserved: if they still select `Frontend MIDI
+driver`, change the core's `Audio > MIDI Output` option to `GeneralUser-GS.sf2`.
+
 The packaged DOSBox Pure core aligns its executable cache to the Linux host's
 page size. This preserves dynamic CPU recompilation on both 4 KiB VM kernels
 and the Raspberry Pi's 16 KiB kernel; the DOS guest still uses 4 KiB pages.

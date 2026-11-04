@@ -55,6 +55,9 @@ assert lib.assertMsg (builtins.any (
 assert lib.assertMsg
   (builtins.elem "d /var/lib/retrogaming/roms 0750 player users - -" cfg.systemd.tmpfiles.rules)
   "The ROM parent must belong to the player before tmpfiles traverses its collections.";
+assert lib.assertMsg (lib.hasInfix ''dosbox_pure_midi = "GeneralUser-GS.sf2"''
+  cfg.environment.etc."retrogaming/dosbox-pure-defaults.opt".text
+) "DOS MIDI must use the installed internal soundfont.";
 pkgs.runCommand "retrogaming-launch-targets"
   {
     nativeBuildInputs = [

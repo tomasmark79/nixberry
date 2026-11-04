@@ -16,6 +16,8 @@ let
     "screenshots"
     ".config"
     ".config/retroarch"
+    ".config/retroarch/config"
+    ".config/retroarch/config/DOSBox-pure"
     ".config/pegasus-frontend"
     ".config/pegasus-frontend/metafiles"
   ]
@@ -123,6 +125,10 @@ in
       sort_savefiles_enable = "true"
       sort_savestates_enable = "true"
     '';
+    "retrogaming/dosbox-pure-defaults.opt".text = ''
+      dosbox_pure_cpu_core = "auto"
+      dosbox_pure_midi = "GeneralUser-GS.sf2"
+    '';
   };
   systemd.tmpfiles.rules =
     map (directory: "d ${home}/${directory} 0750 player users - -") directories
@@ -131,8 +137,12 @@ in
       "L+ ${home}/roms/doom/freedoom1.wad - - - - ${pkgs.freedoom}/share/games/doom/freedoom1.wad"
       "L+ ${home}/roms/doom/freedoom2.wad - - - - ${pkgs.freedoom}/share/games/doom/freedoom2.wad"
       "L+ ${home}/bios/prboom.wad - - - - ${pkgs.libretro.prboom.src}/prboom.wad"
+      "L+ ${home}/bios/GeneralUser-GS.sf2 - - - - ${pkgs.soundfont-generaluser-gs}/share/soundfonts/GeneralUser-GS.sf2"
       "C ${home}/.config/retroarch/retroarch.cfg 0640 player users - ${
         config.environment.etc."retrogaming/retroarch-defaults.cfg".source
+      }"
+      "C ${home}/.config/retroarch/config/DOSBox-pure/DOSBox-pure.opt 0640 player users - ${
+        config.environment.etc."retrogaming/dosbox-pure-defaults.opt".source
       }"
     ];
 }
