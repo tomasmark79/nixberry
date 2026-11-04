@@ -137,6 +137,10 @@
         inherit emcx;
       };
       checks.x86_64-linux.retrogaming = import ./tests/retrogaming.nix { pkgs = vmPkgs; };
+      checks.x86_64-linux.dosbox-pure = import ./tests/dosbox-pure.nix { pkgs = vmPkgs; };
+      checks.aarch64-linux.dosbox-pure = import ./tests/dosbox-pure.nix {
+        pkgs = nixos-raspberrypi.inputs.nixpkgs.legacyPackages.aarch64-linux;
+      };
       checks.x86_64-linux.rpi-local-ssd =
         let
           target = (import ./examples/rpi.nix) // {

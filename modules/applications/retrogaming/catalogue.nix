@@ -1,6 +1,7 @@
 # Each core supplies its own launcher with the exact library path baked in.
 { pkgs }:
 let
+  dosboxPure = import ./dosbox-pure.nix { inherit pkgs; };
   core = id: name: extensions: package: {
     inherit
       id
@@ -31,7 +32,7 @@ with pkgs.libretro;
   (core "dreamcast" "Dreamcast" "gdi, cdi, chd, m3u" flycast)
   (core "arcade" "Arcade (FinalBurn Neo)" "zip, 7z" fbneo)
   (core "neogeo" "Neo Geo" "zip, 7z" fbneo)
-  (core "dos" "DOS" "zip, dosz, conf" dosbox-pure)
+  (core "dos" "DOS" "zip, dosz, conf" dosboxPure)
   (core "doom" "Doom and Freedoom" "wad" prboom)
   (core "scummvm" "ScummVM" "scummvm" scummvm)
   (core "msx" "MSX" "rom, mx1, mx2, dsk, m3u" bluemsx)

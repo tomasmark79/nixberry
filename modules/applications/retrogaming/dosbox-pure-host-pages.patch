@@ -1,0 +1,15 @@
+--- a/src/cpu/dyn_cache.h
++++ b/src/cpu/dyn_cache.h
+@@ -675,7 +675,11 @@ static void dyn_run_code(void);
+ #endif
+ 
+ /* Define temporary pagesize so the MPROTECT case and the regular case share as much code as possible */
+-#if (C_HAVE_MPROTECT)
++#if (C_HAVE_MPROTECT) && defined(__linux__)
++#include <unistd.h>
++/* Executable memory must follow the host page size, not the DOS guest's. */
++#define PAGESIZE_TEMP ((Bitu)sysconf(_SC_PAGESIZE))
++#elif (C_HAVE_MPROTECT)
+ #define PAGESIZE_TEMP PAGESIZE
+ #else 
+ #define PAGESIZE_TEMP 4096

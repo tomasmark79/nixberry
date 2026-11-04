@@ -88,6 +88,12 @@ into a temporary directory and create a ZIP with the same internal paths before
 copying it to `roms/dos/`; retain the original archive separately. Its initial
 program picker lets you select a game's executable or batch file.
 
+The packaged DOSBox Pure core aligns its executable cache to the Linux host's
+page size. This preserves dynamic CPU recompilation on both 4 KiB VM kernels
+and the Raspberry Pi's 16 KiB kernel; the DOS guest still uses 4 KiB pages.
+The CPU core can remain on `auto`, which selects the interpreter for real-mode
+games and the dynamic recompiler for protected-mode games.
+
 ## BIOS, saves and settings
 
 | Path under `/var/lib/retrogaming/` | Contents |
@@ -176,3 +182,15 @@ system confirms configuration consistency; building confirms artifacts can be
 realized. Neither proves a physical RPi boot, accelerated rendering, HDMI audio,
 controller operation or a game's performance. Test these after deployment,
 including save persistence, returning to Pegasus, and a clean reboot.
+
+The separate CPU regression check executes an original DOS COM program with
+dynamic recompilation, rather than stopping at the executable-selection menu:
+
+```sh
+nix build 'path:.#checks.x86_64-linux.dosbox-pure' --no-link
+nix build 'path:.#checks.aarch64-linux.dosbox-pure' --no-link
+```
+
+Its output records the builder's host page size. Run the ARM check natively on
+a 16 KiB Raspberry Pi kernel to exercise that page-size boundary; an emulated
+ARM build on a 4 KiB host does not prove it.
