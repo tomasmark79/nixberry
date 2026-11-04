@@ -1,0 +1,120 @@
+{ lib, pkgs, ... }:
+let
+  home = "/var/lib/retrogaming";
+  catalogue = import ./catalogue.nix { inherit pkgs; };
+  directories = [
+    "bios"
+    "saves"
+    "states"
+    "screenshots"
+    ".config"
+    ".config/retroarch"
+    ".config/pegasus-frontend"
+    ".config/pegasus-frontend/metafiles"
+  ]
+  ++ map (entry: "roms/${entry.id}") catalogue;
+in
+{
+  # These redistributable cores restrict commercial use; keep the exception local.
+  nixpkgs.config.allowUnfreePredicate =
+    package:
+    builtins.elem (lib.getName package) [
+      "libretro-snes9x"
+      "libretro-genesis-plus-gx"
+      "libretro-fbneo"
+    ];
+  users.users.player = {
+    isNormalUser = true;
+    description = "Retro gaming player";
+    inherit home;
+    createHome = true;
+    extraGroups = [
+      "video"
+      "render"
+    ];
+  };
+
+  hardware.graphics.enable = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
+  services.udev.packages = [ pkgs.game-devices-udev-rules ];
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    pulse.enable = true;
+  };
+
+  services.xserver = {
+    enable = true;
+    displayManager.lightdm.enable = true;
+    windowManager.session = [
+      {
+        name = "retrogaming";
+        start = ''
+          ${pkgs.xset}/bin/xset s off
+          ${pkgs.xset}/bin/xset -dpms
+          ${pkgs.openbox}/bin/openbox &
+          ${lib.getExe pkgs.pegasus-frontend} &
+          waitPID=$!
+        '';
+      }
+    ];
+  };
+  services.displayManager = {
+    autoLogin = {
+      enable = true;
+      user = "player";
+    };
+    defaultSession = "none+retrogaming";
+  };
+
+  environment.systemPackages = [
+    pkgs.pegasus-frontend
+    pkgs.retroarch
+    pkgs.ppsspp
+    pkgs.pavucontrol
+  ];
+  environment.etc = {
+    "xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt".text = lib.concatMapStringsSep "\n" (
+      entry: ''
+        collection: ${entry.name}
+        shortname: ${entry.id}
+        directories: ${home}/roms/${entry.id}
+        extensions: ${entry.extensions}
+        launch: ${lib.getExe entry.package} ${entry.arguments} "{file.path}"
+      '') catalogue;
+    # Reapplied at launch so package upgrades cannot leave stale store paths.
+    "retrogaming/paths.cfg".text = ''
+      assets_directory = "${pkgs.retroarch-assets}/share/retroarch/assets"
+      joypad_autoconfig_dir = "${pkgs.retroarch-joypad-autoconfig}/share/libretro/autoconfig"
+      libretro_info_path = "${pkgs.libretro-core-info}/share/retroarch/cores"
+      system_directory = "${home}/bios"
+      savefile_directory = "${home}/saves"
+      savestate_directory = "${home}/states"
+      screenshot_directory = "${home}/screenshots"
+    '';
+    # Seed once: controller remaps and preferences remain writable and persistent.
+    "retrogaming/retroarch-defaults.cfg".text = ''
+      menu_driver = "ozone"
+      video_driver = "gl"
+      audio_driver = "pulse"
+      input_joypad_driver = "sdl2"
+      input_autodetect_enable = "true"
+      input_menu_toggle_gamepad_combo = "2"
+      config_save_on_exit = "true"
+      quit_press_twice = "true"
+      menu_show_core_updater = "false"
+      sort_savefiles_enable = "true"
+      sort_savestates_enable = "true"
+    '';
+  };
+  systemd.tmpfiles.rules =
+    map (directory: "d ${home}/${directory} 0750 player users - -") directories
+    ++ [
+      "L+ ${home}/.config/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt - - - - /etc/xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt"
+      "C ${home}/.config/retroarch/retroarch.cfg 0640 player users - /etc/retrogaming/retroarch-defaults.cfg"
+    ];
+}

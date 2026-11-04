@@ -136,6 +136,7 @@
         pkgs = vmPkgs;
         inherit emcx;
       };
+      checks.x86_64-linux.retrogaming = import ./tests/retrogaming.nix { pkgs = vmPkgs; };
       checks.x86_64-linux.rpi-local-ssd =
         let
           target = (import ./examples/rpi.nix) // {

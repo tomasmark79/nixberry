@@ -323,6 +323,8 @@ nixberry new-libvirt-vm vm-demo-nixoncpp --configuration nixoncpp
 
 For an existing machine, edit its declaration and continue with `diff` and `update`.
 See [custom configurations, applications and builds](docs/reference.md).
+For a gamepad-operated Raspberry Pi or VM, select `retrogaming`; see the
+[retro gaming console guide](docs/retrogaming.md).
 
 **Concrete VM and RPi declarations, `hosts.local.nix` and `admin.pub` are not tracked in Git.**
 They work without `git add`; back them up separately. Declaration directories
