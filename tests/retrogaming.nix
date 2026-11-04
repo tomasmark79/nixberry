@@ -52,6 +52,9 @@ assert lib.assertMsg (builtins.any (rule: lib.hasSuffix " ${seed}" rule)
 assert lib.assertMsg (builtins.any (
   entry: entry.id == "doom"
 ) catalogue) "The installed starter games must have an emulator collection.";
+assert lib.assertMsg
+  (builtins.elem "d /var/lib/retrogaming/roms 0750 player users - -" cfg.systemd.tmpfiles.rules)
+  "The ROM parent must belong to the player before tmpfiles traverses its collections.";
 pkgs.runCommand "retrogaming-launch-targets"
   {
     nativeBuildInputs = [

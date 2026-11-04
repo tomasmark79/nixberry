@@ -7,7 +7,9 @@
 let
   home = "/var/lib/retrogaming";
   catalogue = import ./catalogue.nix { inherit pkgs; };
+  # Explicit parents prevent root-owned implicit directories inside the player home.
   directories = [
+    "roms"
     "bios"
     "saves"
     "states"
