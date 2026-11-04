@@ -17,16 +17,6 @@ VMs default to a prebuilt system disk (`image`). Every VM backend also
 supports installation from ISO. Raspberry Pi supports recovery media and
 direct preparation of an attached SSD on Linux.
 
-## A real-world setup
-
-<p align="center">
-  <img src="assets/broucek-setup.jpg" alt="Brouček, the author's Raspberry Pi 5 setup, with an external SSD and an e-paper status display" width="880">
-</p>
-
-**Brouček — the author's NixBerry setup.** A Raspberry Pi 5 with an external
-SSD and an e-paper display showing system, network and service status.
-This is one example of a custom configuration; the display is optional.
-
 ## How NixBerry fits together
 
 ![NixBerry architecture: local declarations, server configurations and platform modules compose a Nix flake; the CLI builds artifacts and manages VM backends or Raspberry Pi 5](assets/nixberry-architecture.svg)
@@ -289,6 +279,14 @@ VM `--method` selection and hypervisor reset do not apply.
 
 <a id="konfigurace"></a>
 <a id="configuration"></a>
+
+## A real-world setup 
+
+<p align="left">
+  <img src="assets/broucek-setup.jpg" alt="Brouček, the author's Raspberry Pi 5 setup, with an external SSD and an e-paper status display" width="60%">
+  </br>
+  Photo · live metrics · Powered by Raspberry Pi
+</p>
 
 ## Configuration and local declarations
 
