@@ -94,13 +94,19 @@ in
         directories: ${home}/roms/${entry.id}
         extensions: ${entry.extensions}
         launch: ${lib.getExe entry.package} ${entry.arguments} "{file.path}"
-        ${lib.optionalString (entry.id == "doom") ''
-          game: Freedoom - Phase 1
-          file: ${home}/roms/doom/freedoom1.wad
-          game: Freedoom - Phase 2
-          file: ${home}/roms/doom/freedoom2.wad
-        ''}
       '') catalogue;
+    # Explicit games inherit all collections declared earlier in their file.
+    # Keep bundled game records separate from the multi-collection definitions.
+    "xdg/pegasus-frontend/metafiles/freedoom.metadata.pegasus.txt".text = ''
+      collection: Doom and Freedoom
+      shortname: doom
+      game: Freedoom - Phase 1
+      file: ${home}/roms/doom/freedoom1.wad
+      launch: ${lib.getExe pkgs.libretro.prboom} --appendconfig /etc/retrogaming/paths.cfg --fullscreen "{file.path}"
+      game: Freedoom - Phase 2
+      file: ${home}/roms/doom/freedoom2.wad
+      launch: ${lib.getExe pkgs.libretro.prboom} --appendconfig /etc/retrogaming/paths.cfg --fullscreen "{file.path}"
+    '';
     # Reapplied at launch so package upgrades cannot leave stale store paths.
     "retrogaming/paths.cfg".text = ''
       assets_directory = "${pkgs.retroarch-assets}/share/retroarch/assets"
@@ -134,6 +140,7 @@ in
     map (directory: "d ${home}/${directory} 0750 player users - -") directories
     ++ [
       "L+ ${home}/.config/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt - - - - /etc/xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt"
+      "L+ ${home}/.config/pegasus-frontend/metafiles/freedoom.metadata.pegasus.txt - - - - /etc/xdg/pegasus-frontend/metafiles/freedoom.metadata.pegasus.txt"
       "L+ ${home}/roms/doom/freedoom1.wad - - - - ${pkgs.freedoom}/share/games/doom/freedoom1.wad"
       "L+ ${home}/roms/doom/freedoom2.wad - - - - ${pkgs.freedoom}/share/games/doom/freedoom2.wad"
       "L+ ${home}/bios/prboom.wad - - - - ${pkgs.libretro.prboom.src}/prboom.wad"

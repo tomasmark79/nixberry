@@ -72,8 +72,10 @@ Restart Pegasus from its menu after adding files. Empty collections do not appea
 until matching games exist. The declarative collection definitions are in
 `/etc/xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt`;
 the player configuration's `metafiles` directory links to this managed file so
-Pegasus discovers it automatically. Additional game metadata and artwork can
-live beside ROMs. See the
+Pegasus discovers it automatically. Bundled Freedoom game records use a separate
+metadata file so they belong only to their own collection. Put custom explicit
+game records in separate `.metadata.pegasus.txt` files in the player's `metafiles`
+directory, declaring only the intended collection in each file. See the
 [Pegasus metadata format](https://pegasus-frontend.org/docs/user-guide/meta-files/).
 
 Disc collections accept their listed launch descriptors, such as `.cue`, `.gdi`,
@@ -181,7 +183,8 @@ nix build 'path:.#checks.x86_64-linux.retrogaming' --no-link
 ```
 
 It checks the desktop account policy, installed launcher paths, writable settings
-creation and Pegasus's discovery of the bundled games and a dummy game in an
+creation and Pegasus's discovery and collection membership of the bundled games
+and a dummy game in an
 isolated virtual display. Evaluating a
 system confirms configuration consistency; building confirms artifacts can be
 realized. Neither proves a physical RPi boot, accelerated rendering, HDMI audio,

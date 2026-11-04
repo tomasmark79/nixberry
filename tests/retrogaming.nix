@@ -116,6 +116,15 @@ pkgs.runCommand "retrogaming-launch-targets"
         cfg.environment.etc."xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt".source
       } > "$TMPDIR/managed.metadata.pegasus.txt"
     ln -s "$TMPDIR/managed.metadata.pegasus.txt" "$XDG_CONFIG_HOME/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt"
+    sed "s|/var/lib/retrogaming|$TMPDIR|g" \
+      ${
+        cfg.environment.etc."xdg/pegasus-frontend/metafiles/freedoom.metadata.pegasus.txt".source
+      } > "$TMPDIR/freedoom.metadata.pegasus.txt"
+    ln -s "$TMPDIR/freedoom.metadata.pegasus.txt" "$XDG_CONFIG_HOME/pegasus-frontend/metafiles/freedoom.metadata.pegasus.txt"
+    mkdir -p "$XDG_CONFIG_HOME/pegasus-frontend/themes/verification"
+    cp ${./retrogaming-theme.qml} "$XDG_CONFIG_HOME/pegasus-frontend/themes/verification/theme.qml"
+    printf 'name: NixBerry Verification\nauthor: NixBerry\n' > "$XDG_CONFIG_HOME/pegasus-frontend/themes/verification/theme.cfg"
+    printf 'general.theme: %s\n' "$XDG_CONFIG_HOME/pegasus-frontend/themes/verification" > "$XDG_CONFIG_HOME/pegasus-frontend/settings.txt"
     Xvfb "$DISPLAY" -screen 0 1280x720x24 -nolisten tcp -ac > xvfb.log 2>&1 &
     displayPid=$!
     playerPid=
@@ -129,7 +138,7 @@ pkgs.runCommand "retrogaming-launch-targets"
     playerPid=$!
     discovered=false
     for attempt in $(seq 1 100); do
-      if grep -Fq '3 games found' pegasus.log; then discovered=true; break; fi
+      if grep -Fq 'NIXBERRY_CATALOGUE_VALID' pegasus.log; then discovered=true; break; fi
       kill -0 "$playerPid" || break
       sleep 0.1
     done
