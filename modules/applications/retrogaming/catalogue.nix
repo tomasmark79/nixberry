@@ -32,6 +32,7 @@ with pkgs.libretro;
   (core "arcade" "Arcade (FinalBurn Neo)" "zip, 7z" fbneo)
   (core "neogeo" "Neo Geo" "zip, 7z" fbneo)
   (core "dos" "DOS" "zip, dosz, conf" dosbox-pure)
+  (core "doom" "Doom and Freedoom" "wad" prboom)
   (core "scummvm" "ScummVM" "scummvm" scummvm)
   (core "msx" "MSX" "rom, mx1, mx2, dsk, m3u" bluemsx)
   {

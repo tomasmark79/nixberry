@@ -27,13 +27,22 @@ The same configuration can be selected with `new-hyperv-vm`, `new-proxmox-vm`,
 `configuration` field. Use the normal `show`, `plan`, `diff`, `update` and `export`
 commands; there are no gaming-specific deployment commands.
 
+After switching a running headless host, start `graphical.target` to open the
+console immediately. Subsequent boots use the graphical target automatically:
+
+```sh
+systemctl start graphical.target
+```
+
 ## Add games
 
 The local session automatically signs in as `player`, an account without `wheel`
 membership, administrator SSH keys or an enabled password. Its home is
 `/var/lib/retrogaming`. Manage the machine using your existing administrator key.
-Game ROMs and BIOS files are supplied separately; the configuration installs
-emulators and creates their directories.
+Freedoom Phase 1 and Phase 2 are included as ready-to-play games in the
+`Doom and Freedoom` collection. Their BSD-licensed data and PrBoom support WAD
+come from pinned Nixpkgs sources. Other game ROMs and BIOS files are supplied
+separately; the configuration installs emulators and creates their directories.
 
 | Directory under `/var/lib/retrogaming/roms/` | System | Emulator |
 | --- | --- | --- |
@@ -47,6 +56,7 @@ emulators and creates their directories.
 | `dreamcast` | Dreamcast | Flycast |
 | `arcade`, `neogeo` | Arcade, Neo Geo | FinalBurn Neo |
 | `dos` | DOS | DOSBox Pure |
+| `doom` | Doom, including the two bundled Freedoom campaigns | PrBoom |
 | `scummvm` | ScummVM adventures | ScummVM |
 | `msx` | MSX | blueMSX |
 | `psp` | PlayStation Portable | PPSSPP SDL |
@@ -73,6 +83,10 @@ ROM sets, including dependencies; arbitrary MAME sets are not interchangeable.
 For ScummVM, place the game data in a subdirectory and add a `.scummvm` file
 containing its ScummVM game ID. DOSBox Pure accepts game archives and `.conf`
 files. The catalogue's `extensions` fields list the accepted formats per system.
+DOSBox Pure expects ZIP/DOSZ archives, not 7-Zip files. Extract a `.7z` archive
+into a temporary directory and create a ZIP with the same internal paths before
+copying it to `roms/dos/`; retain the original archive separately. Its initial
+program picker lets you select a game's executable or batch file.
 
 ## BIOS, saves and settings
 
@@ -155,8 +169,9 @@ Run the launch-target check with:
 nix build 'path:.#checks.x86_64-linux.retrogaming' --no-link
 ```
 
-It checks the desktop account policy, installed launcher paths and Pegasus's
-discovery of a dummy game in an isolated virtual display. Evaluating a
+It checks the desktop account policy, installed launcher paths, writable settings
+creation and Pegasus's discovery of the bundled games and a dummy game in an
+isolated virtual display. Evaluating a
 system confirms configuration consistency; building confirms artifacts can be
 realized. Neither proves a physical RPi boot, accelerated rendering, HDMI audio,
 controller operation or a game's performance. Test these after deployment,

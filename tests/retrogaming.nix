@@ -17,6 +17,7 @@ let
     ];
   };
   cfg = evaluated.config;
+  seed = cfg.environment.etc."retrogaming/retroarch-defaults.cfg".source;
   catalogue = import ../modules/applications/retrogaming/catalogue.nix { pkgs = evaluated.pkgs; };
 in
 assert lib.assertMsg (
@@ -45,15 +46,48 @@ assert lib.assertMsg (builtins.any
 assert lib.assertMsg (lib.hasInfix ''input_menu_toggle_gamepad_combo = "2"''
   cfg.environment.etc."retrogaming/retroarch-defaults.cfg".text
 ) "Both stick buttons must open the emulator menu.";
+assert lib.assertMsg (builtins.any (rule: lib.hasSuffix " ${seed}" rule)
+  cfg.systemd.tmpfiles.rules
+) "The writable settings seed must copy the regular store file, not an /etc symlink.";
+assert lib.assertMsg (builtins.any (
+  entry: entry.id == "doom"
+) catalogue) "The installed starter games must have an emulator collection.";
 pkgs.runCommand "retrogaming-launch-targets"
   {
-    nativeBuildInputs = [ pkgs.xorg-server ];
+    nativeBuildInputs = [
+      pkgs.xorg-server
+      pkgs.systemd
+    ];
   }
   ''
     ${lib.concatMapStringsSep "\n" (entry: ''
       test -x ${lib.getExe entry.package}
     '') catalogue}
     test -s ${cfg.environment.etc."xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt".source}
+    test -s ${pkgs.libretro.prboom.src}/prboom.wad
+    test -s ${pkgs.freedoom}/share/games/doom/freedoom1.wad
+    test -s ${pkgs.freedoom}/share/games/doom/freedoom2.wad
+
+    # NixOS /etc entries are symlinks. A C rule must seed a regular, writable
+    # preferences file rather than copying the /etc symlink into the home.
+    seedRoot="$TMPDIR/seed-root"
+    mkdir -p "$seedRoot/etc/retrogaming" "$seedRoot${builtins.dirOf (toString seed)}" \
+      "$seedRoot/var/lib/retrogaming/.config/retroarch"
+    cp ${seed} "$seedRoot${seed}"
+    ln -s ${seed} "$seedRoot/etc/retrogaming/retroarch-defaults.cfg"
+    systemd-tmpfiles --root="$seedRoot" --create ${
+      pkgs.writeText "retrogaming-seed-test.conf" (
+        lib.concatStringsSep "\n" (
+          map (rule: lib.replaceStrings [ " player users " ] [ " - - " ] rule) (
+            builtins.filter (
+              rule: lib.hasPrefix "C /var/lib/retrogaming/.config/retroarch/retroarch.cfg " rule
+            ) cfg.systemd.tmpfiles.rules
+          )
+        )
+      )
+    }
+    test ! -L "$seedRoot/var/lib/retrogaming/.config/retroarch/retroarch.cfg"
+    printf '\n# Persistent user preference\n' >> "$seedRoot/var/lib/retrogaming/.config/retroarch/retroarch.cfg"
 
     # Exercise pinned Pegasus's actual discovery path, without a game collection
     # or a physical display. The dummy file tests indexing, not emulation.
@@ -69,6 +103,8 @@ pkgs.runCommand "retrogaming-launch-targets"
     chmod 700 "$XDG_RUNTIME_DIR"
     touch "$TMPDIR/roms/nes/Discovery Test.nes"
     ${lib.concatMapStringsSep "\n" (entry: ''mkdir -p "$TMPDIR/roms/${entry.id}"'') catalogue}
+    ln -s ${pkgs.freedoom}/share/games/doom/freedoom1.wad "$TMPDIR/roms/doom/freedoom1.wad"
+    ln -s ${pkgs.freedoom}/share/games/doom/freedoom2.wad "$TMPDIR/roms/doom/freedoom2.wad"
     sed "s|/var/lib/retrogaming|$TMPDIR|g" \
       ${
         cfg.environment.etc."xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt".source
@@ -87,7 +123,7 @@ pkgs.runCommand "retrogaming-launch-targets"
     playerPid=$!
     discovered=false
     for attempt in $(seq 1 100); do
-      if grep -Fq '1 games found' pegasus.log; then discovered=true; break; fi
+      if grep -Fq '3 games found' pegasus.log; then discovered=true; break; fi
       kill -0 "$playerPid" || break
       sleep 0.1
     done

@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   home = "/var/lib/retrogaming";
   catalogue = import ./catalogue.nix { inherit pkgs; };
@@ -85,6 +90,12 @@ in
         directories: ${home}/roms/${entry.id}
         extensions: ${entry.extensions}
         launch: ${lib.getExe entry.package} ${entry.arguments} "{file.path}"
+        ${lib.optionalString (entry.id == "doom") ''
+          game: Freedoom - Phase 1
+          file: ${home}/roms/doom/freedoom1.wad
+          game: Freedoom - Phase 2
+          file: ${home}/roms/doom/freedoom2.wad
+        ''}
       '') catalogue;
     # Reapplied at launch so package upgrades cannot leave stale store paths.
     "retrogaming/paths.cfg".text = ''
@@ -115,6 +126,11 @@ in
     map (directory: "d ${home}/${directory} 0750 player users - -") directories
     ++ [
       "L+ ${home}/.config/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt - - - - /etc/xdg/pegasus-frontend/metafiles/nixberry.metadata.pegasus.txt"
-      "C ${home}/.config/retroarch/retroarch.cfg 0640 player users - /etc/retrogaming/retroarch-defaults.cfg"
+      "L+ ${home}/roms/doom/freedoom1.wad - - - - ${pkgs.freedoom}/share/games/doom/freedoom1.wad"
+      "L+ ${home}/roms/doom/freedoom2.wad - - - - ${pkgs.freedoom}/share/games/doom/freedoom2.wad"
+      "L+ ${home}/bios/prboom.wad - - - - ${pkgs.libretro.prboom.src}/prboom.wad"
+      "C ${home}/.config/retroarch/retroarch.cfg 0640 player users - ${
+        config.environment.etc."retrogaming/retroarch-defaults.cfg".source
+      }"
     ];
 }
