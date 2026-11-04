@@ -47,6 +47,8 @@ in
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    # Older Xbox BLE firmware needs identity distribution to complete bonding.
+    settings.General.Privacy = lib.mkDefault "device";
   };
   services.udev.packages = [ pkgs.game-devices-udev-rules ];
   security.rtkit.enable = true;

@@ -148,7 +148,17 @@ scan off
 quit
 ```
 
-Bluetooth is enabled at boot. Xbox 360 wireless controllers and Microsoft's USB
+Bluetooth is enabled at boot. The gaming configuration defaults to
+`hardware.bluetooth.settings.General.Privacy = "device"` so older Xbox BLE
+firmware can complete bonding. Without identity distribution, Bluetooth may
+report a connection while the controller keeps blinking and sends no input.
+Remove that failed pairing and pair again after applying the configuration.
+See the [xpadneo troubleshooting guide](https://github.com/atar-axis/xpadneo/blob/master/docs/TROUBLESHOOTING.md#controller-keeps-blinking-after-pairing).
+This Bluetooth default applies to RPi and all five VM backends when an adapter
+is available. If another Bluetooth device cannot pair with privacy enabled,
+override this setting to `"off"` while pairing that device.
+
+Xbox 360 wireless controllers and Microsoft's USB
 wireless adapter are different transports; their extra receiver drivers are not
 configured here. Pairing, rumble and button mapping depend on the exact model
 and firmware and need a physical test.
