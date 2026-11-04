@@ -131,14 +131,28 @@ For example, place `webconf/` beside the recipe and link it as
 directory; nested symlinks in linked configurations are rejected.
 File symlinks are not configuration entries.
 
-External modules can import the shared base without a checkout-relative path:
+External modules can import the shared base and optional shell tools without a
+checkout-relative path:
 
 ```nix
-{ nixberryModules, ... }:
+{ nixberryModules, pkgs, ... }:
 {
-  imports = [ nixberryModules.common ];
+  imports = [
+    nixberryModules.common
+    nixberryModules.emcx # Optional file manager and Bash wrapper.
+    nixberryModules.hstr # Optional Ctrl+R history search.
+  ];
+  environment.systemPackages = with pkgs; [ htop tmux ];
 }
 ```
+
+The common base adds only Git to the standard NixOS tools. Each configuration
+owns its additional host packages through `environment.systemPackages`.
+For a larger configuration, put this list in its own `packages.nix` and import
+it from `default.nix`. Container packages remain in the container's setup.
+The shipped configurations explicitly select EMCX and HSTR; remove those imports
+if you want a smaller system. Their modules and pinned packages remain reusable
+without making them mandatory for every server.
 
 Use the project launcher for linked configurations. It captures the linked
 directory into a temporary recipe before evaluating the CLI. Updates, direct

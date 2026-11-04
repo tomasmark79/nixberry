@@ -17,7 +17,11 @@ let
       specialArgs.unstable = unstable.legacyPackages.x86_64-linux;
       specialArgs.emcx = emcx;
       specialArgs.nixoncpp = nixoncpp;
-      specialArgs.nixberryModules.common = ../../modules/common.nix;
+      specialArgs.nixberryModules = {
+        common = ../../modules/common.nix;
+        emcx = ../../modules/applications/emcx;
+        hstr = ../../modules/applications/hstr;
+      };
       modules = [
         disko.nixosModules.disko
         ../../platforms/vm/disk-config.nix
