@@ -12,14 +12,13 @@ import time
 import uuid
 
 from messages import _, ArgumentParser, error, forward_stderr
+import unit_names
 
 OWNER_UID = 0
 NAME = re.compile(r'[a-z][a-z0-9-]{0,63}')
 ID = re.compile(r'[0-9a-f]{32}')
 UUID = re.compile(r'[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}')
-PROTECTED = {'sshd.service', 'ssh.service', 'systemd-networkd.service',
-             'systemd-resolved.service', 'NetworkManager.service', 'dnsmasq.service',
-             'adguardhome.service', 'systemd-logind.service', 'systemd-journald.service'}
+PROTECTED = {name + '.service' for name in unit_names.CAPTURE}
 
 
 def absolute(value, *, root=False):
@@ -32,9 +31,7 @@ def absolute(value, *, root=False):
 
 
 def unit_name(value):
-    if (not isinstance(value, str) or not re.fullmatch(r'[A-Za-z0-9_.@:-]+\.(service|socket|timer)', value)
-            or value.rsplit('.', 1)[0] in {unit.rsplit('.', 1)[0] for unit in PROTECTED}
-            or value.startswith(('wireguard-', 'wg-quick@', 'nixberry-'))):
+    if not unit_names.valid(value):
         raise ValueError(_("Capture writers and activation units must be services, sockets or timers outside networking and management."))
     return value
 
@@ -74,16 +71,16 @@ def policy(value):
     return value
 
 
-def run(command, *, timeout=120):
+def run(command, *, timeout=120, failure_message=None):
     try:
         result = subprocess.run(command, capture_output=True, text=True, timeout=timeout,
                                 env={**os.environ, 'LC_ALL': 'C'})
     except subprocess.TimeoutExpired as failure:
         forward_stderr(failure.stderr)
-        raise TimeoutError(_("Snapshot command exceeded its time limit.")) from None
+        raise TimeoutError(failure_message or _("Snapshot command exceeded its time limit.")) from None
     forward_stderr(result.stderr)
     if result.returncode:
-        raise RuntimeError(_("Snapshot command failed; inspect the external tool diagnostics."))
+        raise RuntimeError(failure_message or _("Snapshot command failed; inspect the external tool diagnostics."))
     return result.stdout
 
 

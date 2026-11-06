@@ -7,6 +7,9 @@ let
       root = ./.;
       fileset = pkgs.lib.fileset.unions [
         ./snapshots.py
+        ./unit_names.py
+        ./protected-units.json
+        ./restore_target.py
         ./native_restic.py
         ./recovery_recipe.py
         ./update_guard.py
@@ -34,6 +37,7 @@ in
 {
   inherit source;
   capture = entry "nixberry-capture" "snapshots.py" [ ];
+  restore = entry "nixberry-restore-target" "restore_target.py" [ ];
   update = entry "nixberry-update-guard" "update_guard.py" [ pkgs.nix ];
   restic = entry "nixberry-restic" "native_restic.py" [
     pkgs.restic

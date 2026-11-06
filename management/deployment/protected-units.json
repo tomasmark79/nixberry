@@ -1,0 +1,5 @@
+{
+  "management": ["sshd", "ssh", "systemd-networkd", "systemd-resolved", "NetworkManager", "systemd-logind", "systemd-journald"],
+  "captureOnly": ["dnsmasq", "adguardhome"],
+  "prefixes": ["wireguard-", "wg-quick@", "nixberry-"]
+}

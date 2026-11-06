@@ -324,6 +324,65 @@ set. Editing these fields does not install jobs or remove backups. The selecting
 configuration must also enable its guest-side exporter with the matching public
 recipient; a controller declaration does not deploy guest software.
 
+## Prepared restore destinations
+
+The destination configuration can hold its writers before first boot:
+
+```nix
+nixberry.backup = {
+  enable = true;
+  restore.prepare = true;
+  applications.web = {
+    paths = [ "/var/lib/web" ];
+    stopUnits = [ "web.service" "web.socket" ];
+  };
+  applications.live-files = {
+    paths = [ "/var/lib/live-files" ];
+    stopUnits = [ ];
+    restoreUnits = [ "file-consumer.service" ];
+  };
+};
+```
+
+Keep the application definitions in configuration-owned shared modules. A
+destination configuration imports those modules and `modules/common.nix`; it
+does not import another named configuration. Select it through the ordinary
+stored `configuration` field. The same mode applies to all five VM backends,
+image/ISO installation, offline artifacts and RPi target systems.
+
+`restoreUnits` defaults to a nonempty `stopUnits` list. Applications captured
+without writer shutdown must declare `restoreUnits` explicitly; `[]` declares
+that there are no managed destination writers. Include activating sockets and
+timers. Reserved SSH, networking and management unit names and prefixes are
+rejected. DNS application services can be held on a destination even when they must remain live during
+source capture. Source-owned native backup services/timers are held as well.
+The management network and storage access must work independently of held
+application services.
+
+Preparation adds systemd drop-ins, preserving original service definitions,
+aliases, template instances and existing conditions. Completion paths include
+a hash of the destination policy and its machine ID. State defaults to the private
+root-owned `/var/lib/nixberry-restore`, outside application data. A changed policy
+or a new machine identity does not inherit another completion namespace.
+
+On a booted, prepared destination:
+
+```sh
+nixberry ssh vm-demo-restore -- nixberry-restore-target status --json
+```
+
+The installed helper requires root and reports readiness without changing units,
+data or completion files. It checks architecture, an optional expected `--system`
+generation, loaded guard contents and effective conditions, daemon-reload state,
+writer inactivity and empty/absent application paths. Existing files, populated directories or active
+writers are not ready; symbolic-link paths and invalid completion records are
+refused. Its policy contains destination paths and writers, without restoring
+system accounts, machine identity or SSH keys.
+
+This interface prepares and inspects a destination. It does not publish native
+application data, create completion records, start services or reboot. The
+global `restore` command still uses the legacy provider interface below.
+
 ## Independent native storage access
 
 Keep a private access context, repository password and authorized SSH credentials

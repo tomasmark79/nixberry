@@ -116,7 +116,7 @@ msgstr ""
 msgid "--snapshot only applies to native backup verification."
 msgstr ""
 
-#: deployment/snapshots.py:607
+#: deployment/snapshots.py:604
 msgid "--snapshot only applies to snapshot-remove in the capture tool."
 msgstr ""
 
@@ -132,7 +132,7 @@ msgstr ""
 msgid "--system only applies to recovery archive staging."
 msgstr ""
 
-#: deployment/snapshots.py:609
+#: deployment/snapshots.py:606
 msgid "--system only applies to snapshot in the capture tool."
 msgstr ""
 
@@ -156,7 +156,7 @@ msgstr ""
 msgid "A backing disk cycle was detected."
 msgstr ""
 
-#: deployment/snapshots.py:279
+#: deployment/snapshots.py:276
 msgid "A capture writer is missing or changing state; no consistent capture is available."
 msgstr ""
 
@@ -190,6 +190,10 @@ msgstr ""
 
 #: deployment/check_images.py:56
 msgid "A partition extends beyond the disk."
+msgstr ""
+
+#: deployment/restore_target.py:81
+msgid "A restore writer is unavailable, changing state or awaiting daemon reload."
 msgstr ""
 
 #: deployment/host_backends/common.py:107 deployment/vm_network.py:39
@@ -293,7 +297,7 @@ msgstr ""
 msgid "Ambiguous option {option}. Choices: {choices}"
 msgstr ""
 
-#: deployment/snapshots.py:103
+#: deployment/snapshots.py:100
 msgid "An application path has no declared snapshot root."
 msgstr ""
 
@@ -333,15 +337,15 @@ msgstr ""
 msgid "Another process is already running this campaign."
 msgstr ""
 
-#: deployment/snapshots.py:265
+#: deployment/snapshots.py:262
 msgid "Another snapshot operation holds the capture lock."
 msgstr ""
 
-#: deployment/snapshots.py:110
+#: deployment/snapshots.py:107
 msgid "Application data crosses an undeclared mount or nested subvolume."
 msgstr ""
 
-#: deployment/snapshots.py:186 deployment/snapshots.py:334
+#: deployment/snapshots.py:183 deployment/snapshots.py:331
 msgid "Application paths must not traverse symbolic-link directories."
 msgstr ""
 
@@ -353,7 +357,7 @@ msgstr ""
 msgid "Apply native application backup"
 msgstr ""
 
-#: deployment/snapshots.py:599
+#: deployment/snapshots.py:596
 msgid "Apply snapshot capture or writer recovery"
 msgstr ""
 
@@ -509,7 +513,7 @@ msgstr ""
 msgid "Cannot inspect all mount namespaces safely."
 msgstr ""
 
-#: deployment/snapshots.py:176
+#: deployment/snapshots.py:173
 msgid "Cannot inspect nested Btrfs subvolumes safely."
 msgstr ""
 
@@ -543,7 +547,7 @@ msgstr ""
 msgid "Cannot verify disk image {path}. Check read access and qemu-img diagnostics; nothing was removed."
 msgstr ""
 
-#: deployment/snapshots.py:136 deployment/snapshots.py:159
+#: deployment/snapshots.py:133 deployment/snapshots.py:156
 msgid "Cannot verify the source subvolume identity."
 msgstr ""
 
@@ -556,47 +560,47 @@ msgstr ""
 msgid "Cannot write to bundle location {path}. Relative paths are resolved from the working directory. Choose a writable directory, for example --output ~/{target}-offline."
 msgstr ""
 
-#: deployment/snapshots.py:592
+#: deployment/snapshots.py:589
 msgid "Capture configured application data in read-only Btrfs snapshots."
 msgstr ""
 
-#: deployment/snapshots.py:30
+#: deployment/snapshots.py:29
 msgid "Capture paths must be normalized absolute paths without control characters."
 msgstr ""
 
-#: deployment/snapshots.py:296
+#: deployment/snapshots.py:293
 msgid "Capture recovery names writers outside the current configuration."
 msgstr ""
 
-#: deployment/snapshots.py:292
+#: deployment/snapshots.py:289
 msgid "Capture recovery state does not match this machine identity."
 msgstr ""
 
-#: deployment/snapshots.py:73
+#: deployment/snapshots.py:70
 msgid "Capture state and snapshot storage must stay outside application data paths."
 msgstr ""
 
-#: deployment/snapshots.py:206
+#: deployment/snapshots.py:203
 msgid "Capture state directories must not contain symbolic links."
 msgstr ""
 
-#: deployment/snapshots.py:214
+#: deployment/snapshots.py:211
 msgid "Capture state directories require trusted ownership and private write access."
 msgstr ""
 
-#: deployment/snapshots.py:38
+#: deployment/snapshots.py:35
 msgid "Capture writers and activation units must be services, sockets or timers outside networking and management."
 msgstr ""
 
-#: deployment/snapshots.py:306
+#: deployment/snapshots.py:303
 msgid "Capture writers did not resume; retain the recovery record."
 msgstr ""
 
-#: deployment/snapshots.py:364 deployment/snapshots.py:434
+#: deployment/snapshots.py:361 deployment/snapshots.py:431
 msgid "Capture writers did not stop; refusing to publish a snapshot."
 msgstr ""
 
-#: deployment/snapshots.py:451
+#: deployment/snapshots.py:448
 msgid "Captured snapshot identity does not match its declared source."
 msgstr ""
 
@@ -654,7 +658,7 @@ msgstr ""
 msgid "Closure size"
 msgstr ""
 
-#: deployment/snapshots.py:343
+#: deployment/snapshots.py:340
 msgid "Cold capture requires ext4 or Btrfs application data."
 msgstr ""
 
@@ -704,8 +708,12 @@ msgstr ""
 msgid "Configuration-owned Restic policy file"
 msgstr ""
 
-#: deployment/snapshots.py:594
+#: deployment/snapshots.py:591
 msgid "Configuration-owned capture policy file"
+msgstr ""
+
+#: deployment/restore_target.py:140
+msgid "Configuration-owned destination restore policy file"
 msgstr ""
 
 #: deployment/cli.py:484 deployment/updater.py:122
@@ -827,7 +835,7 @@ msgstr ""
 msgid "Declaration plan: {path}"
 msgstr ""
 
-#: deployment/snapshots.py:339
+#: deployment/snapshots.py:336
 msgid "Declare mounted application data as an explicit backup path."
 msgstr ""
 
@@ -858,6 +866,14 @@ msgstr ""
 #: deployment/cli.py:487 deployment/cli.py:541
 #, python-brace-format
 msgid "Deployment method: {method}"
+msgstr ""
+
+#: deployment/restore_target.py:145
+msgid "Destination restore inspection requires root."
+msgstr ""
+
+#: deployment/restore_target.py:75
+msgid "Destination writer inspection failed or timed out; inspect the external tool diagnostics."
 msgstr ""
 
 #: deployment/cli.py:307
@@ -993,7 +1009,7 @@ msgstr ""
 msgid "Downloading the official Proxmox installation ISO…"
 msgstr ""
 
-#: deployment/snapshots.py:57
+#: deployment/snapshots.py:54
 msgid "Each captured application requires data paths and explicit writer units."
 msgstr ""
 
@@ -1005,7 +1021,7 @@ msgstr ""
 msgid "Each network adapter requires name, mac and the backend attachment fields."
 msgstr ""
 
-#: deployment/snapshots.py:64
+#: deployment/snapshots.py:61
 msgid "Each snapshot root requires a source subvolume and a snapshot directory."
 msgstr ""
 
@@ -1088,11 +1104,11 @@ msgstr ""
 msgid "Expected running NixOS generation for recovery archive staging"
 msgstr ""
 
-#: deployment/snapshots.py:597 deployment/update_guard.py:67
+#: deployment/restore_target.py:141 deployment/snapshots.py:594 deployment/update_guard.py:67
 msgid "Expected running NixOS system generation"
 msgstr ""
 
-#: deployment/snapshots.py:596
+#: deployment/snapshots.py:593
 msgid "Explicit local Btrfs snapshot ID"
 msgstr ""
 
@@ -1228,7 +1244,7 @@ msgstr ""
 msgid "Include erasing unmounted partitions in the plan; only executed with --apply"
 msgstr ""
 
-#: deployment/snapshots.py:188 deployment/snapshots.py:336
+#: deployment/snapshots.py:185 deployment/snapshots.py:333
 msgid "Include the resolved target of each application symbolic link explicitly."
 msgstr ""
 
@@ -1257,11 +1273,15 @@ msgstr ""
 msgid "Independent inventory and verification are read-only and do not accept --apply."
 msgstr ""
 
+#: deployment/restore_target.py:138
+msgid "Inspect a prepared restore destination without changing services or data."
+msgstr ""
+
 #: deployment/native_restic.py:582
 msgid "Inspect backup readiness without stopping writers"
 msgstr ""
 
-#: deployment/snapshots.py:600
+#: deployment/snapshots.py:597
 msgid "Inspect capture readiness without changing files or services"
 msgstr ""
 
@@ -1351,7 +1371,7 @@ msgstr ""
 msgid "Installer target system does not match."
 msgstr ""
 
-#: deployment/snapshots.py:172
+#: deployment/snapshots.py:169
 msgid "Insufficient free space for snapshot capture."
 msgstr ""
 
@@ -1364,7 +1384,7 @@ msgstr ""
 msgid "Interface {name}: MAC {mac}; mode {mode}; address {address}; gateway {gateway}"
 msgstr ""
 
-#: deployment/native_restic.py:274 deployment/native_restic.py:425 deployment/snapshots.py:353 deployment/snapshots.py:387 deployment/snapshots.py:397 deployment/snapshots.py:530
+#: deployment/native_restic.py:274 deployment/native_restic.py:425 deployment/snapshots.py:350 deployment/snapshots.py:384 deployment/snapshots.py:394 deployment/snapshots.py:527
 msgid "Interrupted capture needs writer recovery before another snapshot."
 msgstr ""
 
@@ -1447,6 +1467,10 @@ msgstr ""
 msgid "Invalid closure metadata received for comparison."
 msgstr ""
 
+#: deployment/restore_target.py:149 deployment/restore_target.py:27
+msgid "Invalid destination restore policy."
+msgstr ""
+
 #: deployment/check_images.py:27
 msgid "Invalid format, capacity or unexpected backing file."
 msgstr ""
@@ -1503,11 +1527,11 @@ msgstr ""
 msgid "Invalid selected recovery configuration."
 msgstr ""
 
-#: deployment/snapshots.py:46 deployment/snapshots.py:52 deployment/update_guard.py:31
+#: deployment/snapshots.py:43 deployment/snapshots.py:49 deployment/update_guard.py:31
 msgid "Invalid snapshot capture policy."
 msgstr ""
 
-#: deployment/snapshots.py:485 deployment/snapshots.py:495 deployment/snapshots.py:501 deployment/snapshots.py:505 deployment/snapshots.py:508 deployment/snapshots.py:514 deployment/snapshots.py:517 deployment/snapshots.py:528
+#: deployment/snapshots.py:482 deployment/snapshots.py:492 deployment/snapshots.py:498 deployment/snapshots.py:502 deployment/snapshots.py:505 deployment/snapshots.py:511 deployment/snapshots.py:514 deployment/snapshots.py:525
 msgid "Invalid snapshot inventory record."
 msgstr ""
 
@@ -2008,11 +2032,15 @@ msgstr ""
 msgid "Primary interface: {interface}"
 msgstr ""
 
+#: deployment/restore_target.py:142
+msgid "Print destination readiness as technical JSON"
+msgstr ""
+
 #: deployment/native_restic.py:579
 msgid "Print technical backup metadata as JSON"
 msgstr ""
 
-#: deployment/snapshots.py:595
+#: deployment/snapshots.py:592
 msgid "Print technical capture metadata as JSON"
 msgstr ""
 
@@ -2355,6 +2383,26 @@ msgstr ""
 msgid "Restic temporary data must use a tmpfs runtime directory."
 msgstr ""
 
+#: deployment/restore_target.py:36
+msgid "Restore applications require paths and explicit non-management writer units."
+msgstr ""
+
+#: deployment/restore_target.py:70
+msgid "Restore completion does not match this destination and policy."
+msgstr ""
+
+#: deployment/restore_target.py:113
+msgid "Restore paths must not contain symbolic links."
+msgstr ""
+
+#: deployment/restore_target.py:40
+msgid "Restore state must stay outside application data paths."
+msgstr ""
+
+#: deployment/restore_target.py:30
+msgid "Restore state requires a normalized path without spaces or systemd specifiers."
+msgstr ""
+
 #: deployment/cli.py:307
 msgid "Result"
 msgstr ""
@@ -2513,7 +2561,7 @@ msgstr ""
 msgid "Select a whole SSD using its local /dev/disk/by-id/ path."
 msgstr ""
 
-#: deployment/snapshots.py:522
+#: deployment/snapshots.py:519
 msgid "Select an explicit snapshot ID from the local snapshot inventory."
 msgstr ""
 
@@ -2584,59 +2632,59 @@ msgstr ""
 msgid "Snapshot"
 msgstr ""
 
-#: deployment/snapshots.py:418
+#: deployment/snapshots.py:415
 msgid "Snapshot capture exceeded its configured time limit."
 msgstr ""
 
-#: deployment/snapshots.py:119
+#: deployment/snapshots.py:116
 msgid "Snapshot capture requires Btrfs at every declared source and destination."
 msgstr ""
 
-#: deployment/snapshots.py:612
+#: deployment/snapshots.py:609
 msgid "Snapshot capture was interrupted; checking writer recovery."
 msgstr ""
 
-#: deployment/snapshots.py:83
+#: deployment/snapshots.py:80
 msgid "Snapshot command exceeded its time limit."
 msgstr ""
 
-#: deployment/snapshots.py:86
+#: deployment/snapshots.py:83
 msgid "Snapshot command failed; inspect the external tool diagnostics."
 msgstr ""
 
-#: deployment/snapshots.py:605
+#: deployment/snapshots.py:602
 msgid "Snapshot inventory is read-only."
 msgstr ""
 
-#: deployment/snapshots.py:603
+#: deployment/snapshots.py:600
 msgid "Snapshot operations require root on the declared source."
 msgstr ""
 
-#: deployment/snapshots.py:536
+#: deployment/snapshots.py:533
 msgid "Snapshot record does not match the configured source and storage paths."
 msgstr ""
 
-#: deployment/snapshots.py:548 deployment/snapshots.py:555
+#: deployment/snapshots.py:545 deployment/snapshots.py:552
 msgid "Snapshot removal identity check failed; retain uncertain remnants."
 msgstr ""
 
-#: deployment/snapshots.py:69
+#: deployment/snapshots.py:66
 msgid "Snapshot roots must name distinct source subvolumes."
 msgstr ""
 
-#: deployment/snapshots.py:367 deployment/snapshots.py:371 deployment/snapshots.py:443
+#: deployment/snapshots.py:364 deployment/snapshots.py:368 deployment/snapshots.py:440
 msgid "Snapshot source identity changed after writer shutdown."
 msgstr ""
 
-#: deployment/snapshots.py:153
+#: deployment/snapshots.py:150
 msgid "Snapshot source roots must not contain symbolic links."
 msgstr ""
 
-#: deployment/snapshots.py:169
+#: deployment/snapshots.py:166
 msgid "Snapshot storage must be on the same Btrfs filesystem outside the captured subvolume."
 msgstr ""
 
-#: deployment/snapshots.py:165
+#: deployment/snapshots.py:162
 msgid "Snapshot storage must not contain symbolic links."
 msgstr ""
 
@@ -2678,7 +2726,7 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: deployment/snapshots.py:216
+#: deployment/snapshots.py:213
 msgid "State directories require private permissions and the expected owner."
 msgstr ""
 
@@ -3285,11 +3333,11 @@ msgstr ""
 msgid "The campaign does not support cleanup for this backend."
 msgstr ""
 
-#: deployment/snapshots.py:93
+#: deployment/snapshots.py:90
 msgid "The capture source has no valid machine identity."
 msgstr ""
 
-#: deployment/snapshots.py:448
+#: deployment/snapshots.py:445
 msgid "The captured subvolume is not read-only."
 msgstr ""
 
@@ -3370,6 +3418,10 @@ msgstr ""
 msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
 msgstr ""
 
+#: deployment/restore_target.py:127
+msgid "The destination generation or architecture differs from the expected restore target."
+msgstr ""
+
 #: deployment/runtime.py:194
 msgid "The direct SSH target does not match the declared VM architecture and hostname."
 msgstr ""
@@ -3440,6 +3492,10 @@ msgstr ""
 
 #: deployment/host_backends/proxmox.py:214
 msgid "The disk record must not be a link."
+msgstr ""
+
+#: deployment/restore_target.py:106
+msgid "The effective writer conditions do not contain the required restore guard."
 msgstr ""
 
 #: deployment/security.py:344
@@ -3683,6 +3739,10 @@ msgstr ""
 msgid "The libvirt VM is missing the declared owner marker."
 msgstr ""
 
+#: deployment/restore_target.py:94
+msgid "The loaded writer lacks the expected destination restore guard."
+msgstr ""
+
 #: rpi/disk_install.py:217
 msgid "The local SSD target manifest is missing."
 msgstr ""
@@ -3893,7 +3953,7 @@ msgstr ""
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
-#: deployment/snapshots.py:391
+#: deployment/snapshots.py:388
 msgid "The running system changed before snapshot capture."
 msgstr ""
 
@@ -4279,7 +4339,7 @@ msgstr ""
 msgid "Unexpected diagnostic response."
 msgstr ""
 
-#: deployment/snapshots.py:475
+#: deployment/snapshots.py:472
 msgid "Unexpected file in snapshot inventory."
 msgstr ""
 
@@ -4349,7 +4409,7 @@ msgstr ""
 msgid "Unrecognized arguments: {arguments}"
 msgstr ""
 
-#: deployment/snapshots.py:250 deployment/snapshots.py:261
+#: deployment/snapshots.py:247 deployment/snapshots.py:258
 msgid "Unsafe capture state file."
 msgstr ""
 

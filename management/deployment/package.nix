@@ -14,6 +14,8 @@ let
         ./native_access.py
         ./native_restic.py
         ./snapshots.py
+        ./unit_names.py
+        ./protected-units.json
         ./recovery_recipe.py
         ./backups.py
         ./backup_watch.py

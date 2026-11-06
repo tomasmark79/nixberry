@@ -61,6 +61,11 @@ context these commands use an enabled legacy provider. The other legacy commands
 `restore`, `backup-prune`, `backup-schedule`, `backup-check` and `backup-monitor`
 require a target provider policy. An enabled legacy provider retains its
 `backup-stage` behavior. Native guest inventory and verification remain available.
+Prepared destinations can enable `nixberry.backup.restore.prepare` in their
+selected configuration. The installed `nixberry-restore-target status --json`
+inspects held writers and empty paths without changing data or services; it does
+not implement native data publication. See the destination preparation section
+in the [backup guide](backups.md#prepared-restore-destinations).
 See [backup commands and write boundaries](backups.md).
 
 `backup-schedule TARGET --output NEW_DIRECTORY --dry-run` previews systemd user

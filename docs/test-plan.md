@@ -128,6 +128,17 @@ verified activation from the same frozen recipe, partial-failure diagnostics
 and guarded update dispatch across all five VM backends and RPi. Transport
 boundaries are mocked; this is not controller-to-guest deployment proof.
 
+`test_restore_policy.py` evaluates destination preparation on all six platforms,
+checks unchanged capture application keys, rejects missing writer coverage and
+management holds, and compares Nix/Python policy hashes including Unicode paths.
+`test_restore_target.py` injects active writers, populated paths, symlinks,
+missing/edited guards, daemon-reload and completion-identity failures.
+`nix build --no-link path:.#checks.x86_64-linux.restore-preparation` boots and
+reboots a disposable prepared destination. Check ordinary/template services,
+socket/timer activation and native backup jobs stay held; synthetic completion
+opens only the restore gate and preserves existing unit conditions. This is not
+application-data recovery or proof of a physical boot.
+
 `test_native_controller.py` checks no-contact plans, identity/generation and
 installed-policy refusal before capture, explicit write dispatch and preservation
 of diagnostic streams. It rejects impure file reads and missing lock entries.

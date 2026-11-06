@@ -10,8 +10,8 @@ let
   inherit (lib) mkOption types;
   capturePolicy = {
     version = 1;
+    applications = lib.mapAttrs (_: app: { inherit (app) paths stopUnits; }) cfg.applications;
     inherit (cfg)
-      applications
       roots
       stateDirectory
       minFreeBytes
@@ -21,7 +21,10 @@ let
   tool = (import ../../../management/deployment/capture-package.nix { inherit pkgs; }).capture;
 in
 {
-  imports = [ ./restic.nix ];
+  imports = [
+    ./restic.nix
+    ./restore.nix
+  ];
   options.nixberry.backup = {
     enable = lib.mkEnableOption "configuration-owned application capture and backups";
     captureMethod = mkOption {
@@ -36,19 +39,26 @@ in
       default = { };
       description = "Explicit application data and services which write it.";
       type = types.attrsOf (
-        types.submodule {
-          options = {
-            paths = mkOption {
-              type = types.listOf types.str;
-              description = "Absolute data paths; include symbolic-link targets explicitly.";
+        types.submodule (
+          { config, ... }: {
+            options = {
+              paths = mkOption {
+                type = types.listOf types.str;
+                description = "Absolute data paths; include symbolic-link targets explicitly.";
+              };
+              stopUnits = mkOption {
+                type = types.listOf types.str;
+                default = [ ];
+                description = "Writer services and their activating sockets/timers; an empty list explicitly permits live reads.";
+              };
+              restoreUnits = mkOption {
+                type = types.nullOr (types.listOf types.str);
+                default = if config.stopUnits == [ ] then null else config.stopUnits;
+                description = "All destination writers and activators to hold during restore; explicitly use [] for unmanaged static data.";
+              };
             };
-            stopUnits = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              description = "Writer services and their activating sockets/timers; an empty list explicitly permits live reads.";
-            };
-          };
-        }
+          }
+        )
       );
     };
     roots = mkOption {

@@ -3685,3 +3685,48 @@ msgstr "Nativní čtení úložiště přijímá --backup-access PRIVATE_CONTEXT
 
 msgid "Target name, preserved source name for --backup-access, or a new name for new-*"
 msgstr "Název cíle, uchovaný název zdroje pro --backup-access nebo nový název pro new-*"
+
+msgid "A restore writer is unavailable, changing state or awaiting daemon reload."
+msgstr "Zapisující jednotka obnovy není dostupná, mění stav nebo čeká na daemon-reload."
+
+msgid "Configuration-owned destination restore policy file"
+msgstr "Soubor konfigurace obnovy cíle definovaný konfigurací systému"
+
+msgid "Destination restore inspection requires root."
+msgstr "Kontrola cíle obnovy vyžaduje uživatele root."
+
+msgid "Inspect a prepared restore destination without changing services or data."
+msgstr "Zkontrolujte připravený cíl obnovy beze změn služeb a dat."
+
+msgid "Invalid destination restore policy."
+msgstr "Neplatná konfigurace obnovy cíle."
+
+msgid "Print destination readiness as technical JSON"
+msgstr "Vypsat připravenost cíle jako technický JSON"
+
+msgid "Restore applications require paths and explicit non-management writer units."
+msgstr "Aplikace pro obnovu vyžadují cesty a výslovné zapisující jednotky mimo správu systému."
+
+msgid "Restore completion does not match this destination and policy."
+msgstr "Záznam dokončení obnovy neodpovídá tomuto cíli a konfiguraci."
+
+msgid "Restore paths must not contain symbolic links."
+msgstr "Cesty obnovy nesmějí obsahovat symbolické odkazy."
+
+msgid "Restore state must stay outside application data paths."
+msgstr "Stav obnovy musí zůstat mimo cesty dat aplikací."
+
+msgid "Restore state requires a normalized path without spaces or systemd specifiers."
+msgstr "Stav obnovy vyžaduje normalizovanou cestu bez mezer a specifikátorů systemd."
+
+msgid "The destination generation or architecture differs from the expected restore target."
+msgstr "Generace nebo architektura cíle se liší od očekávaného cíle obnovy."
+
+msgid "The loaded writer lacks the expected destination restore guard."
+msgstr "Načtená zapisující jednotka nemá očekávanou ochranu cíle obnovy."
+
+msgid "The effective writer conditions do not contain the required restore guard."
+msgstr "Účinné podmínky zapisující jednotky neobsahují požadovanou ochranu obnovy."
+
+msgid "Destination writer inspection failed or timed out; inspect the external tool diagnostics."
+msgstr "Kontrola zapisující jednotky cíle selhala nebo vypršela; zkontrolujte diagnostiku externího nástroje."
