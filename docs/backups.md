@@ -87,6 +87,120 @@ Snapshot data stays on the source disk, so remote backup is still required for
 disk failure. Ext4 remains supported by the disk layout; this local Btrfs
 snapshot tool rejects it rather than making a weaker live copy.
 
+## Configuration-owned Restic uploads
+
+The same application catalogue can drive direct encrypted uploads. Enable Restic
+in the selecting configuration, for example:
+
+```nix
+nixberry.backup.restic = {
+  enable = true;
+  repository = "sftp:backupagent@nas.example:/NetBackup/vm-demo-server";
+  passwordFile = "/var/lib/nixberry-backup/password";
+  repositoryIdFile = "/var/lib/nixberry-backup/repository-id";
+  recoveryFile = "/var/lib/nixberry-backup/recovery.tar";
+  ssh = {
+    port = 7922;
+    identityFile = "/var/lib/nixberry-backup/ssh-key";
+    knownHostsFile = "/var/lib/nixberry-backup/known_hosts";
+  };
+  schedule = "*-*-* 03:30:00";
+};
+```
+
+The configuration owns storage and scheduling. No target-level provider or
+duplicate application catalogue is needed by these guest tools. `schedule`
+defaults to `null`, leaving capture manual. The source timer defaults to
+`persistent = false`, so missed backups do not cause an unexpected later outage.
+Keep one capture scheduler; do not also schedule the controller provider below
+for the same data.
+
+Provision a dedicated storage account/key and verified storage host key before
+using SFTP. For a nonstandard port the known-host entry uses
+`[nas.example]:7922`. Credential and configuration archive files must be regular,
+root-owned runtime files outside the Nix store, under directories with trusted
+ownership and no untrusted write access. Passwords, SSH private keys and the
+recovery archive require private permissions such as `0600`. The host-key and
+repository identity files may be publicly readable but not writable by others.
+The recovery archive contains the materialized recipe, local declarations and
+selected configuration, prepared separately; capture reads it without evaluating
+or activating its contents. Preserve the repository password and authorized
+storage access separately from the source and its encrypted backup.
+`backup-stage` binds the archive hash to the explicit expected running NixOS
+generation and current backup policy in a private `.json` sidecar. After
+provisioning or refreshing the archive, stage that binding. A missing or stale
+binding prevents capture before any writer shutdown; refresh it after an update
+or policy change. Staging neither initializes storage nor captures application
+data, and it does not activate recovered configuration.
+
+On the installed source, as root:
+
+```sh
+nixberry-restic backup-init --json
+nixberry-restic backup-init --apply --json
+nixberry-restic backup-stage --system EXPECTED_SYSTEM_PATH --json
+nixberry-restic backup-stage --system EXPECTED_SYSTEM_PATH --apply --json
+nixberry-restic backup --json
+nixberry-restic backup --apply --json
+nixberry-restic backups --json
+nixberry-restic verify-backup --snapshot SNAPSHOT_ID --json
+```
+
+Initialization is explicit and separate from capture. It requires a new identity
+pin file, initializes a new repository and writes its returned ID privately.
+It refuses an existing pin and does not adopt an existing repository. Ordinary
+capture never initializes storage. Both SFTP host trust/authentication and the
+pinned repository ID are checked before writer shutdown. No SSH password prompt,
+agent fallback or automatic host-key acceptance is used. Absolute local
+repositories are also supported for isolated testing; other Restic storage
+backends are not accepted by this interface.
+Replace the staging example with the complete store path of the system expected
+from the recipe that produced the archive. The tool compares it with the actual
+`/run/current-system`; supplying an unrelated generation fails without publishing
+the sidecar.
+
+`captureMethod` defaults to `snapshot` for a Btrfs root and `cold` for ext4.
+Snapshot mode captures read-only subvolumes and resumes writers before upload.
+The capture lock prevents explicit removal during upload. Cold mode reads the
+configured paths directly with their writers stopped until upload and consistency
+checks finish, then restores the original active set. Ext4 needs no conversion
+and neither mode creates a local application data staging copy.
+
+Restic encrypts before storage transfer. Cache is disabled and temporary pack
+files use a private tmpfs runtime directory. The source service limits that
+filesystem to 512 MiB and its memory cgroup to 1 GiB with disk swap disabled.
+`timeoutSeconds` defaults to 3600 and bounds all Restic commands in one operation;
+writer recovery has its own timeout. Abrupt failures retain the same durable
+writer recovery record as local captures, and the source service also invokes
+recovery after stopping. The job is not restarted by a configuration switch.
+
+A completed backup has an encrypted payload snapshot and a small encrypted
+completion receipt. The payload includes application data, the logical source
+path mapping and recovery archive. The receipt is published only after upload,
+manifest/configuration readback and writer recovery succeed. Incomplete payloads
+remain in the repository without being listed as completed backups; no automatic
+pruning is performed. Successful snapshot-mode capture/upload then removes its
+temporary local snapshot. A failed upload retains it for inspection.
+
+The public `snapshotId` is the full 64-character Restic completion receipt ID;
+it differs from the 32-character local Btrfs capture ID. `recorded-captured`
+means the producer completed and the small recovery bindings were read back.
+`verify-backup` streams the entire referenced payload through Restic to
+`/dev/null` and checks the recovery archive hash before reporting
+`recorded-verified`. It does not create a restored application tree.
+Verification can run on another Linux recovery host with the original policy,
+repository pin/password and separately authorized SFTP access; the source need
+not be running, and its data/recovery archive need not exist locally. Supply a
+private tmpfs runtime directory on that host. Restic uses a decryption-capable
+repository key on the source; use separate repositories and storage permissions
+for sources that must not share decryption access.
+
+These guest tools use the same implementation on all five VM backends and RPi.
+Image/ISO choice and the host hypervisor OS do not change their post-boot
+interface. Capture requires a running, unlocked source; verification reads the
+repository independently. Hypervisor boot, ARM hardware and application recovery
+need their own validation.
+
 ## Controller providers
 
 ```nix

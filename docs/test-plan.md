@@ -118,6 +118,18 @@ writers, a stable read-only view while the source changes, refusal of unlisted
 nested subvolumes, interrupted-writer recovery and mounted-reference protection
 during removal. This does not prove ARM boot or deployment on any real backend.
 
+`test_native_restic.py` checks cold-capture recovery, unsuccessful publication,
+repository/credential policy, capture leases and configuration-owned metadata for
+all six platforms and both filesystem choices, including legacy Hyper-V owner
+identities. `nix build --no-link path:.#checks.x86_64-linux.native-restic` runs
+actual Btrfs and ext4 source guests against a separate SFTP storage guest. It
+exercises explicit repository initialization, read-only planning, direct and
+systemd-owned captures, actual source-timer firing, strict host-key rejection
+before shutdown and complete
+payload authentication from the storage guest after each source is shut down.
+It proves neither application publication into a replacement machine nor a
+physical RPi install/boot. Real NAS accounts and host keys remain operator data.
+
 Use English defaults for the regression suite; individual translation tests
 select Czech explicitly. Tests use temporary declarations and mocked transports.
 Some invoke Nix with small fixture artifacts or test real Python-to-Python

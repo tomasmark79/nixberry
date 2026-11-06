@@ -3328,3 +3328,144 @@ msgstr "Příkaz snapshotu překročil svůj časový limit."
 
 msgid "Capture writers and activation units must be services, sockets or timers outside networking and management."
 msgstr "Zapisující a aktivační jednotky musejí být služby, sockety nebo časovače mimo síť a správu stroje."
+
+msgid "--apply only applies to native backup capture or repository initialization."
+msgstr "--apply platí pouze pro zachycení nativní zálohy nebo inicializaci repozitáře."
+
+msgid "--dry-run only applies to native backup capture or repository initialization."
+msgstr "--dry-run platí pouze pro zachycení nativní zálohy nebo inicializaci repozitáře."
+
+msgid "--snapshot only applies to native backup verification."
+msgstr "--snapshot platí pouze pro ověření nativní zálohy."
+
+msgid "Apply native application backup"
+msgstr "Provést nativní zálohu aplikací"
+
+msgid "Back up configuration-owned application data directly into an encrypted Restic repository."
+msgstr "Zálohování dat aplikací spravovaných konfigurací přímo do šifrovaného repozitáře Restic."
+
+msgid "Backup storage, runtime files and credentials must stay outside application data paths."
+msgstr "Úložiště záloh, provozní soubory a přihlašovací údaje musejí zůstat mimo datové cesty aplikací."
+
+msgid "Cold capture requires ext4 or Btrfs application data."
+msgstr "Zachycení při odstavených službách vyžaduje data aplikací na ext4 nebo Btrfs."
+
+msgid "Configuration-owned Restic policy file"
+msgstr "Soubor pravidel Resticu spravovaný konfigurací"
+
+msgid "Declare mounted application data as an explicit backup path."
+msgstr "Deklarujte připojená data aplikací jako výslovnou zálohovanou cestu."
+
+msgid "Full native Restic completion snapshot ID"
+msgstr "Úplné ID snapshotu dokončení nativní zálohy Restic"
+
+msgid "Inspect backup readiness without stopping writers"
+msgstr "Zkontrolovat připravenost zálohování bez odstavení zapisujících služeb"
+
+msgid "Invalid native Restic backup inventory."
+msgstr "Neplatný inventář nativních záloh Restic."
+
+msgid "Invalid native Restic backup policy."
+msgstr "Neplatná pravidla nativního zálohování Restic."
+
+msgid "Invalid native Restic completion receipt."
+msgstr "Neplatný záznam dokončení nativní zálohy Restic."
+
+msgid "Local Restic repositories do not accept SFTP settings."
+msgstr "Místní repozitáře Restic nepřijímají nastavení SFTP."
+
+msgid "Native backup operations require root and protected runtime credentials."
+msgstr "Operace nativního zálohování vyžadují uživatele root a chráněné provozní přihlašovací údaje."
+
+msgid "Native backup was interrupted; checking writer recovery."
+msgstr "Nativní zálohování bylo přerušeno; kontroluje se obnovení zapisujících služeb."
+
+msgid "Print technical backup metadata as JSON"
+msgstr "Vypsat technická metadata zálohy jako JSON"
+
+msgid "Repository initialization requires a new repository identity file."
+msgstr "Inicializace repozitáře vyžaduje nový soubor identity repozitáře."
+
+msgid "Restic command failed; inspect retained repository state before retrying."
+msgstr "Příkaz Resticu selhal; před opakováním zkontrolujte zachovaný stav repozitáře."
+
+msgid "Restic did not return one complete snapshot identity."
+msgstr "Restic nevrátil jednu úplnou identitu snapshotu."
+
+msgid "Restic exceeded its configured time limit."
+msgstr "Restic překročil svůj nastavený časový limit."
+
+msgid "Restic requires an absolute local repository or an explicitly pinned SFTP repository."
+msgstr "Restic vyžaduje absolutní cestu místního repozitáře nebo repozitář SFTP s výslovně připnutou důvěrou."
+
+msgid "Restic runtime files require trusted ownership, safe permissions and bounded size."
+msgstr "Provozní soubory Resticu vyžadují důvěryhodného vlastníka, bezpečná oprávnění a omezenou velikost."
+
+msgid "Restic runtime paths must stay outside the Nix store and device filesystems."
+msgstr "Provozní cesty Resticu musejí zůstat mimo Nix store a souborové systémy zařízení."
+
+msgid "Restic temporary data must use a tmpfs runtime directory."
+msgstr "Dočasná data Resticu musejí používat provozní adresář na tmpfs."
+
+msgid "SFTP backups require an explicit SSH key, host-key file and port."
+msgstr "Zálohování přes SFTP vyžaduje výslovný SSH klíč, soubor klíčů serveru a port."
+
+msgid "Select a full Restic snapshot ID from the native backup inventory."
+msgstr "Vyberte úplné ID snapshotu Restic z inventáře nativních záloh."
+
+msgid "Storage SFTP readiness check exceeded its time limit."
+msgstr "Kontrola připravenosti úložiště SFTP překročila svůj časový limit."
+
+msgid "Storage SFTP trust or authentication failed before writer shutdown."
+msgstr "Ověření důvěry nebo přihlášení k úložišti SFTP selhalo před odstavením zapisujících služeb."
+
+msgid "The Restic repository identity does not match its configured pin."
+msgstr "Identita repozitáře Restic neodpovídá nakonfigurovanému připnutí."
+
+msgid "The encrypted capture manifest does not match its completion receipt."
+msgstr "Šifrovaný manifest zachycení neodpovídá svému záznamu dokončení."
+
+msgid "The pinned Restic repository identity is invalid."
+msgstr "Připnutá identita repozitáře Restic je neplatná."
+
+msgid "The selected Restic snapshot is not a completion receipt for this source."
+msgstr "Vybraný snapshot Resticu není záznamem dokončení pro tento zdroj."
+
+msgid "The uploaded backup manifest does not match the capture."
+msgstr "Odeslaný manifest zálohy neodpovídá zachycení."
+
+msgid "The uploaded recovery configuration does not match the capture."
+msgstr "Odeslaná konfigurace pro obnovu neodpovídá zachycení."
+
+msgid "Conflicting logical application paths in the captured backup."
+msgstr "Konfliktní logické cesty aplikací v zachycené záloze."
+
+msgid "--apply only applies to native backup capture, staging or repository initialization."
+msgstr "--apply platí pouze pro zachycení nativní zálohy, přípravu konfigurace pro obnovu nebo inicializaci repozitáře."
+
+msgid "--dry-run only applies to native backup capture, staging or repository initialization."
+msgstr "--dry-run platí pouze pro zachycení nativní zálohy, přípravu konfigurace pro obnovu nebo inicializaci repozitáře."
+
+msgid "--system only applies to recovery archive staging."
+msgstr "--system platí pouze pro přípravu archivu obnovy."
+
+msgid "Expected running NixOS generation for recovery archive staging"
+msgstr "Očekávaná běžící generace NixOS pro přípravu archivu obnovy"
+
+msgid "Recovery configuration changed while staging; no binding was published."
+msgstr "Konfigurace pro obnovu se během přípravy změnila; vazba nebyla zveřejněna."
+
+msgid "Recovery configuration requires a valid running NixOS system generation."
+msgstr "Konfigurace pro obnovu vyžaduje platnou běžící generaci systému NixOS."
+
+msgid "Recovery staging requires the explicit expected NixOS system path."
+msgstr "Příprava obnovy vyžaduje výslovnou očekávanou cestu systému NixOS."
+
+msgid "The running system does not match the recovery configuration being staged."
+msgstr "Běžící systém neodpovídá připravované konfiguraci pro obnovu."
+
+msgid "The staged recovery configuration is stale or does not match this backup policy."
+msgstr "Připravená konfigurace pro obnovu je zastaralá nebo neodpovídá těmto pravidlům zálohování."
+
+msgid "Recovery configuration is missing; provision the recipe archive and run backup-stage."
+msgstr "Konfigurace pro obnovu chybí; připravte archiv receptu a spusťte backup-stage."

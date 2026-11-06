@@ -114,6 +114,10 @@ let
   vmSystems = builtins.mapAttrs (
     _: target:
     profiles.${target.backend}.system.extendModules {
+      specialArgs.nixberryTargetIdentity = "${target.backend}:${
+        target.spec.uuid or target.spec.ownerId
+          or (throw "Native VM backups require a declared UUID or ownerId.")
+      }";
       modules = [
         configurations.modules.${target.configuration}
         ({ config, lib, ... }: {

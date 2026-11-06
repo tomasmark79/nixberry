@@ -138,6 +138,7 @@
       };
       checks.x86_64-linux.retrogaming = import ./tests/retrogaming.nix { pkgs = vmPkgs; };
       checks.x86_64-linux.snapshots = import ./tests/snapshots.nix { pkgs = vmPkgs; };
+      checks.x86_64-linux.native-restic = import ./tests/native-restic.nix { pkgs = vmPkgs; };
       checks.x86_64-linux.dosbox-pure = import ./tests/dosbox-pure.nix { pkgs = vmPkgs; };
       checks.aarch64-linux.dosbox-pure = import ./tests/dosbox-pure.nix {
         pkgs = nixos-raspberrypi.inputs.nixpkgs.legacyPackages.aarch64-linux;

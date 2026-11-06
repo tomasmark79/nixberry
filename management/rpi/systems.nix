@@ -19,6 +19,7 @@ let
         specialArgs.unstable = unstable.legacyPackages.aarch64-linux;
         specialArgs.emcx = emcx;
         specialArgs.nixoncpp = nixoncpp;
+        specialArgs.nixberryTargetIdentity = "rpi:${target.hardwareSerial}";
         specialArgs.nixberryModules = {
           common = ../../modules/common.nix;
           emcx = ../../modules/applications/emcx;

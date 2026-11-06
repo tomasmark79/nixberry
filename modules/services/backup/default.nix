@@ -18,31 +18,10 @@ let
       ;
     timeoutSeconds = cfg.captureTimeoutSeconds;
   };
-  source = import ../../../management/with-locales.nix {
-    inherit pkgs;
-    source = lib.fileset.toSource {
-      root = ../../../management/deployment;
-      fileset = lib.fileset.unions [
-        ../../../management/deployment/snapshots.py
-        ../../../management/deployment/messages.py
-      ];
-    };
-  };
-  tool = pkgs.writeShellApplication {
-    name = "nixberry-capture";
-    runtimeInputs = [
-      pkgs.python3
-      pkgs.btrfs-progs
-      pkgs.util-linux
-      pkgs.systemd
-    ];
-    text = ''
-      export PYTHONPATH=${source}
-      exec python3 ${source}/snapshots.py "$@"
-    '';
-  };
+  tool = (import ../../../management/deployment/capture-package.nix { inherit pkgs; }).capture;
 in
 {
+  imports = [ ./restic.nix ];
   options.nixberry.backup = {
     enable = lib.mkEnableOption "configuration-owned application capture and backups";
     captureMethod = mkOption {

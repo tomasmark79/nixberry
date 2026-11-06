@@ -198,7 +198,7 @@ def inspect(settings, *, timeout=120):
     return topology
 
 
-def secure_directory(path, *, create=False):
+def secure_directory(path, *, create=False, private=True):
     path = Path(path)
     for component in reversed([path, *path.parents]):
         if component.is_symlink():
@@ -211,7 +211,7 @@ def secure_directory(path, *, create=False):
         if (not stat.S_ISDIR(entry.st_mode) or entry.st_uid not in (0, OWNER_UID)
                 or entry.st_mode & 0o022 and not (entry.st_uid == 0 and entry.st_mode & stat.S_ISVTX)):
             raise ValueError(_("Capture state directories require trusted ownership and private write access."))
-    if path.exists() and (path.stat().st_uid != OWNER_UID or path.stat().st_mode & 0o077):
+    if private and path.exists() and (path.stat().st_uid != OWNER_UID or path.stat().st_mode & 0o077):
         raise ValueError(_("Capture state directories must be private and owned by root."))
     return path
 
@@ -319,6 +319,55 @@ def resume(settings, *, apply=False):
     return {'applied': False, 'resumedUnits': value['activeUnits'] if value else []}
 
 
+def cold_identity(settings):
+    paths = sorted({path for app in settings['applications'].values() for path in app['paths']})
+    result = []
+    for path in paths:
+        source = Path(path)
+        resolved = source.resolve(strict=True)
+        if source.parent.resolve(strict=True) != source.parent:
+            raise ValueError(_("Application paths must not traverse symbolic-link directories."))
+        if source.is_symlink() and not any(resolved.is_relative_to(other) for other in paths if other != path):
+            raise ValueError(_("Include the resolved target of each application symbolic link explicitly."))
+        for mount in mountpoints():
+            if Path(mount).is_relative_to(source) and mount not in paths:
+                raise ValueError(_("Declare mounted application data as an explicit backup path."))
+        entry = source.lstat()
+        fs = json.loads(run(['findmnt', '--json', '--target', path, '--output', 'TARGET,SOURCE,FSTYPE,UUID,FSROOT']))['filesystems']
+        if len(fs) != 1 or fs[0].get('fstype') not in ('ext4', 'btrfs'):
+            raise ValueError(_("Cold capture requires ext4 or Btrfs application data."))
+        result.append({'path': path, 'device': entry.st_dev, 'inode': entry.st_ino,
+                       'type': stat.S_IFMT(entry.st_mode), 'filesystem': fs[0]})
+    return result
+
+
+@contextlib.contextmanager
+def cold(settings, state):
+    """Caller holds the capture lock until upload and writer recovery finish."""
+    if pending(settings, state):
+        raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
+    before = cold_identity(settings)
+    configured = writers(settings)
+    active = [unit for unit in configured if service_state(unit) == 'active']
+    write_record(state / 'pending.json', {'version': 1, 'machineId': machine_id(),
+                 'snapshotId': uuid.uuid4().hex, 'activeUnits': active})
+    try:
+        if configured:
+            run(['systemctl', 'stop', *configured], timeout=settings['timeoutSeconds'])
+        def stopped():
+            if any(service_state(unit) not in ('inactive', 'failed') for unit in configured):
+                raise RuntimeError(_("Capture writers did not stop; refusing to publish a snapshot."))
+        stopped()
+        if cold_identity(settings) != before:
+            raise RuntimeError(_("Snapshot source identity changed after writer shutdown."))
+        yield
+        stopped()
+        if cold_identity(settings) != before:
+            raise RuntimeError(_("Snapshot source identity changed after writer shutdown."))
+    finally:
+        resume_locked(settings, state)
+
+
 def capture(settings, *, apply=False):
     settings = policy(settings)
     topology = inspect(settings)
@@ -328,74 +377,78 @@ def capture(settings, *, apply=False):
             raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
         return {'applied': False, **topology, 'writers': writers(settings)}
     with lock(settings) as state:
-        if pending(settings, state):
-            raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
-        records = secure_directory(state / 'records', create=True)
-        identifier = uuid.uuid4().hex
-        record = {'version': 1, 'snapshotId': identifier, 'machineId': machine_id(),
-                  'createdAt': int(time.time()), 'state': 'capturing', **topology}
-        destinations = {}
-        containers = set()
-        for name, root in topology['roots'].items():
-            base = secure_directory(root['snapshotDirectory'], create=True)
-            directory = base / identifier
-            if directory not in containers:
-                directory.mkdir(mode=0o700)
-                containers.add(directory)
-            destinations[name] = str(directory / name)
-            root['snapshot'] = destinations[name]
-        write_record(records / (identifier + '.json'), record)
-        deadline = time.monotonic() + settings['timeoutSeconds']
+        return capture_locked(settings, state, topology)
 
-        def remaining():
-            seconds = deadline - time.monotonic()
-            if seconds <= 0:
-                raise TimeoutError(_("Snapshot capture exceeded its configured time limit."))
-            return seconds
 
-        active = [unit for unit in writers(settings) if service_state(unit, timeout=remaining()) == 'active']
-        write_record(state / 'pending.json', {'version': 1, 'machineId': record['machineId'],
-                     'snapshotId': identifier, 'activeUnits': active})
+def capture_locked(settings, state, topology):
+    if pending(settings, state):
+        raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
+    records = secure_directory(state / 'records', create=True)
+    identifier = uuid.uuid4().hex
+    record = {'version': 1, 'snapshotId': identifier, 'machineId': machine_id(),
+              'createdAt': int(time.time()), 'state': 'capturing', **topology}
+    destinations = {}
+    containers = set()
+    for name, root in topology['roots'].items():
+        base = secure_directory(root['snapshotDirectory'], create=True)
+        directory = base / identifier
+        if directory not in containers:
+            directory.mkdir(mode=0o700)
+            containers.add(directory)
+        destinations[name] = str(directory / name)
+        root['snapshot'] = destinations[name]
+    write_record(records / (identifier + '.json'), record)
+    deadline = time.monotonic() + settings['timeoutSeconds']
+
+    def remaining():
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise TimeoutError(_("Snapshot capture exceeded its configured time limit."))
+        return seconds
+
+    active = [unit for unit in writers(settings) if service_state(unit, timeout=remaining()) == 'active']
+    write_record(state / 'pending.json', {'version': 1, 'machineId': record['machineId'],
+                 'snapshotId': identifier, 'activeUnits': active})
+    try:
         try:
-            try:
-                configured = writers(settings)
-                if configured:
-                    # Stop even initially inactive units to cancel intervening
-                    # activation jobs; resume still uses only the original set.
-                    run(['systemctl', 'stop', *configured], timeout=remaining())
+            configured = writers(settings)
+            if configured:
+                # Stop even initially inactive units to cancel intervening
+                # activation jobs; resume still uses only the original set.
+                run(['systemctl', 'stop', *configured], timeout=remaining())
 
-                def require_stopped():
-                    if any(service_state(unit, timeout=remaining()) not in ('inactive', 'failed') for unit in configured):
-                        raise RuntimeError(_("Capture writers did not stop; refusing to publish a snapshot."))
+            def require_stopped():
+                if any(service_state(unit, timeout=remaining()) not in ('inactive', 'failed') for unit in configured):
+                    raise RuntimeError(_("Capture writers did not stop; refusing to publish a snapshot."))
 
+            require_stopped()
+            current = inspect(settings, timeout=remaining)
+            # Snapshot destinations are operation metadata, not source identity.
+            original = {'paths': topology['paths'], 'roots': {
+                name: {key: value for key, value in root.items() if key != 'snapshot'}
+                for name, root in topology['roots'].items()}}
+            if current != original:
+                raise RuntimeError(_("Snapshot source identity changed after writer shutdown."))
+            for name, root in topology['roots'].items():
                 require_stopped()
-                current = inspect(settings, timeout=remaining)
-                # Snapshot destinations are operation metadata, not source identity.
-                original = {'paths': topology['paths'], 'roots': {
-                    name: {key: value for key, value in root.items() if key != 'snapshot'}
-                    for name, root in topology['roots'].items()}}
-                if current != original:
-                    raise RuntimeError(_("Snapshot source identity changed after writer shutdown."))
-                for name, root in topology['roots'].items():
-                    require_stopped()
-                    run(['btrfs', 'subvolume', 'snapshot', '-r', root['path'], destinations[name]], timeout=remaining())
-                    if run(['btrfs', 'property', 'get', '-ts', destinations[name], 'ro'], timeout=remaining()).strip() != 'ro=true':
-                        raise RuntimeError(_("The captured subvolume is not read-only."))
-                    identity = subvolume(destinations[name], timeout=remaining())
-                    if identity['parent'] != root['subvolumeUuid']:
-                        raise RuntimeError(_("Captured snapshot identity does not match its declared source."))
-                    root['snapshotUuid'] = identity['uuid']
-                    write_record(records / (identifier + '.json'), record)
-                require_stopped()
-            finally:
-                resume_locked(settings, state)
-        except BaseException:
-            record['state'] = 'failed'
-            write_record(records / (identifier + '.json'), record)
-            raise
-        record['state'] = 'ready'
+                run(['btrfs', 'subvolume', 'snapshot', '-r', root['path'], destinations[name]], timeout=remaining())
+                if run(['btrfs', 'property', 'get', '-ts', destinations[name], 'ro'], timeout=remaining()).strip() != 'ro=true':
+                    raise RuntimeError(_("The captured subvolume is not read-only."))
+                identity = subvolume(destinations[name], timeout=remaining())
+                if identity['parent'] != root['subvolumeUuid']:
+                    raise RuntimeError(_("Captured snapshot identity does not match its declared source."))
+                root['snapshotUuid'] = identity['uuid']
+                write_record(records / (identifier + '.json'), record)
+            require_stopped()
+        finally:
+            resume_locked(settings, state)
+    except BaseException:
+        record['state'] = 'failed'
         write_record(records / (identifier + '.json'), record)
-        return {'applied': True, **record}
+        raise
+    record['state'] = 'ready'
+    write_record(records / (identifier + '.json'), record)
+    return {'applied': True, **record}
 
 
 def inventory(settings):
@@ -415,11 +468,14 @@ def inventory(settings):
     return {'snapshots': result}
 
 
-def validate_record(value, identifier):
+def validate_record(value, identifier, *, expected_machine_id=None):
+    if not isinstance(identifier, str) or not ID.fullmatch(identifier):
+        raise ValueError(_("Invalid snapshot inventory record."))
     fields = {'version', 'snapshotId', 'machineId', 'createdAt', 'state', 'roots', 'paths'}
     if (not isinstance(value, dict) or set(value) != fields
             or type(value.get('version')) is not int or value['version'] != 1
-            or value.get('snapshotId') != identifier or value.get('machineId') != machine_id()
+            or value.get('snapshotId') != identifier
+            or value.get('machineId') != (machine_id() if expected_machine_id is None else expected_machine_id)
             or type(value.get('createdAt')) is not int or value['createdAt'] < 0
             or value.get('state') not in ('capturing', 'failed', 'ready', 'deleting', 'deleted')
             or not isinstance(value.get('roots'), dict) or not value['roots']
@@ -499,21 +555,25 @@ def remove(settings, identifier, *, apply=False):
         value = removal_record(settings, identifier)
         return {'applied': False, 'snapshotId': identifier, 'roots': value['roots']}
     with lock(settings) as state:
-        value = removal_record(settings, identifier)
-        value['state'] = 'deleting'
-        write_record(state / 'records' / (identifier + '.json'), value)
-        for root in value['roots'].values():
-            path = Path(root['snapshot'])
-            if path.exists() or path.is_symlink():
-                verify_removal(root)
-                run(['btrfs', 'subvolume', 'delete', '--commit-after', str(path)])
-        # rmdir never removes unexpected files or other captures.
-        for container in {Path(root['snapshot']).parent for root in value['roots'].values()}:
-            if container.exists():
-                container.rmdir()
-        value['state'] = 'deleted'
-        write_record(state / 'records' / (identifier + '.json'), value)
-        return {'applied': True, 'snapshotId': identifier, 'state': 'deleted'}
+        return remove_locked(settings, state, identifier)
+
+
+def remove_locked(settings, state, identifier):
+    value = removal_record(settings, identifier)
+    value['state'] = 'deleting'
+    write_record(state / 'records' / (identifier + '.json'), value)
+    for root in value['roots'].values():
+        path = Path(root['snapshot'])
+        if path.exists() or path.is_symlink():
+            verify_removal(root)
+            run(['btrfs', 'subvolume', 'delete', '--commit-after', str(path)])
+    # rmdir never removes unexpected files or other captures.
+    for container in {Path(root['snapshot']).parent for root in value['roots'].values()}:
+        if container.exists():
+            container.rmdir()
+    value['state'] = 'deleted'
+    write_record(state / 'records' / (identifier + '.json'), value)
+    return {'applied': True, 'snapshotId': identifier, 'state': 'deleted'}
 
 
 def main(argv=None):
