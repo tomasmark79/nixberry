@@ -91,6 +91,7 @@ pkgs.testers.runNixOSTest {
     storage.succeed("mkdir -m 700 -p /root/.ssh /backup")
     storage.succeed("install -d -m 700 -o recovery -g users /run/recovery-operator; runuser -u recovery -- ssh-keygen -q -t ed25519 -N \"\" -f /home/recovery/ssh-key")
     recovery_key = storage.succeed("cat /home/recovery/ssh-key.pub").strip()
+    storage.succeed("install -m 600 /home/recovery/ssh-key /run/restore-readonly-key")
     storage.succeed("printf '%s\\n' 'restrict,command=\"internal-sftp -R\" " + recovery_key + "' >> /root/.ssh/authorized_keys; chmod 600 /root/.ssh/authorized_keys")
     host_key = storage.succeed("cat /etc/ssh/ssh_host_ed25519_key.pub").strip()
     for node in [btrfs, cold, storage]:
@@ -107,6 +108,8 @@ pkgs.testers.runNixOSTest {
     cold.succeed("mkdir -p /var/lib/web")
     for node, data in [(btrfs, "/data/live/web"), (cold, "/var/lib/web")]:
         node.succeed("printf only-encrypted-application-data > " + data + "/example; chmod 600 " + data + "/example")
+        metadata_fixture = "import os,struct,pathlib; p=pathlib.Path(" + repr(data) + "); os.link(p/'example',p/'hardlink'); (p/'symlink').symlink_to('example'); os.setxattr(p/'example','user.nixberry-test',b'preserved'); acl=struct.pack('<I',2)+bytes().join(struct.pack('<HHI',t,m,i) for t,m,i in [(1,6,2**32-1),(2,4,12345),(4,0,2**32-1),(16,4,2**32-1),(32,0,2**32-1)]); os.setxattr(p/'example','system.posix_acl_access',acl); f=(p/'sparse').open('wb'); f.seek(8*1024*1024); f.write(b'end'); f.close()"
+        node.succeed("${pkgs.python3}/bin/python3 -c " + shlex.quote(metadata_fixture))
         # Receive a sealed recipe fixture through the installed binary stdin protocol.
         fixture = "import hashlib,json,pathlib,recovery_recipe; p=pathlib.Path('/tmp/recovery-fixture'); p.mkdir(); [(p/n).write_text('{}' if n == 'flake.lock' else 'test-only') for n in ('flake.nix','flake.lock','admin.pub')]; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); m={'format':recovery_recipe.FORMAT,'sourceId':v['sourceId'],'target':'vm-demo-guest','systemPath':str(pathlib.Path('/run/current-system').resolve()),'policySha256':hashlib.sha256(recovery_recipe.encode(v).encode()).hexdigest()}; recovery_recipe.pack(p,m,'/tmp/received-recovery.tar')"
         node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(fixture))
@@ -166,6 +169,24 @@ pkgs.testers.runNixOSTest {
         assert {"name": "root", "gid": 0} in metadata["identity"]["groups"]
         assert all(set(row) == {"name", "uid", "gid"} for row in metadata["identity"]["users"])
 
+        # Restore through native Restic into private staging after source loss.
+        stage_probe = "import json,pathlib,backup_identity,native_restic,restore_payload; v=json.load(open('/run/recovery-policy.json')); v['ssh']['identityFile']='/run/restore-readonly-key'; r=native_restic.Restic(v,read_only=True); out=restore_payload.stage(r," + repr(report["snapshotId"]) + ",'/var/lib/restored-" + node.name + "',backup_identity.collect()); print(json.dumps(out))"
+        staged = json.loads(storage.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(stage_probe)))
+        assert staged["state"] == "staged-verified"
+        # A name collision used only by the ACL must reject the private stage.
+        storage.succeed("${pkgs.shadow}/bin/useradd --uid 12345 --gid users --no-create-home restore-collision")
+        collision = stage_probe.replace("/var/lib/restored-" + node.name, "/var/lib/conflict-" + node.name)
+        storage.fail("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(collision))
+        storage.succeed("test -e /var/lib/conflict-" + node.name + "/INCOMPLETE; test ! -e /var/lib/conflict-" + node.name + "/stage.json")
+        storage.succeed("${pkgs.shadow}/bin/userdel restore-collision")
+        restored = next(row["staged"] for row in staged["paths"] if row["source"] == data)
+        inspect = "import os,pathlib,struct; p=pathlib.Path(" + repr(restored) + "); assert (p/'example').read_text()=='only-encrypted-application-data'; assert (p/'example').stat().st_ino==(p/'hardlink').stat().st_ino; assert os.readlink(p/'symlink')=='example'; assert os.getxattr(p/'example','user.nixberry-test')==b'preserved'; acl=os.getxattr(p/'example','system.posix_acl_access'); assert struct.pack('<HHI',2,4,12345) in acl; assert (p/'sparse').stat().st_size==8*1024*1024+3; assert (p/'sparse').stat().st_blocks*512 < (p/'sparse').stat().st_size//2; assert (p/'example').stat().st_uid==0"
+        storage.succeed("${pkgs.python3}/bin/python3 -c " + shlex.quote(inspect))
+        if node == btrfs:
+            assert not storage.succeed("find " + shlex.quote(restored) + " -name hidden -print").strip()
+            restored_child = next(row["staged"] for row in staged["paths"] if row["source"] == nested)
+            storage.succeed("grep -Fx live-child " + shlex.quote(restored_child + "/current"))
+        storage.succeed("test ! -e /var/lib/restored-" + node.name + "/INCOMPLETE; test ! -e /var/lib/nixberry-restore")
         # A non-root operator has independent credentials, no declaration and no
         # source capture catalogue. The source is already powered off here.
         access = {"version": 1, "target": "vm-demo-guest", "sourceId": json.loads(policy)["sourceId"],

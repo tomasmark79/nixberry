@@ -167,6 +167,15 @@ The Btrfs case includes a child subvolume bind-mounted over nonempty parent
 data. Inspect the encrypted payload to confirm that the hidden parent subtree
 is absent while the child and unrelated sibling remain present, including paths
 containing glob characters, backslashes and spaces.
+The internal payload restoration engine also restores selected application paths
+into a new private staging directory on storage after source shutdown. Check
+hardlinks, sparse files, symlinks, user xattrs, numeric ownership and POSIX ACL
+entries, while hidden parent data remains excluded. A successful private stage
+is not publication into live application paths or a restore completion marker.
+`test_restore_payload.py` checks architecture and account conflicts, ACL/capability
+owners, private incomplete staging on failures and the fixed Restic read-only
+restore arguments. These checks do not prove prepared-target data publication
+or application behavior after restoration.
 The storage guest also runs the packaged controller as a non-root recovery user,
 with its own SSH key and no source declaration, to list, verify and recover sealed
 source code. Test read-only SFTP credentials with repository locking disabled.

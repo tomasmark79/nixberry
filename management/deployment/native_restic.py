@@ -131,6 +131,22 @@ class Restic:
     def run(self, arguments, *, input=None, binary=False, discard=False, max_output=None):
         if self.read_only and (not arguments or arguments[0] not in ('snapshots', 'dump') and arguments != ['cat', 'config']):
             raise ValueError(_("Independent backup access permits only repository identity, inventory and payload reads."))
+        return self._execute(arguments, input=input, binary=binary, discard=discard, max_output=max_output)
+
+    def restore(self, identifier, destination, paths):
+        if not self.read_only or not paths or not isinstance(identifier, str) or not ID.fullmatch(identifier):
+            raise ValueError(_("Payload restoration requires a read-only reader and a full snapshot ID."))
+        arguments = ['restore', identifier, '--target', str(destination), '--verify', '--sparse']
+        for path in sorted({item['payload'] for item in paths}):
+            snapshots.absolute(path)
+            arguments += ['--include', literal_pattern(path)]
+        for hidden in hidden_payload_paths(paths):
+            # Restore forbids combining include and exclude flags. Ordered
+            # negative include patterns subtract hidden parent underlays.
+            arguments += ['--include', '!' + literal_pattern(hidden)]
+        return self._execute(arguments, discard=True)
+
+    def _execute(self, arguments, *, input=None, binary=False, discard=False, max_output=None):
         remaining = self.deadline - time.monotonic()
         if remaining <= 0:
             raise TimeoutError(_("Restic exceeded its configured time limit."))

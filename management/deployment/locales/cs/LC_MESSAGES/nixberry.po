@@ -3733,3 +3733,33 @@ msgstr "Kontrola zapisující jednotky cíle selhala nebo vypršela; zkontrolujt
 
 msgid "Invalid source architecture or account ownership evidence."
 msgstr "Neplatné údaje o architektuře zdroje nebo vlastnictví účtů."
+
+msgid "Source and destination architectures must match for application restoration."
+msgstr "Pro obnovu aplikací se musí architektury zdroje a cíle shodovat."
+
+msgid "Invalid numeric ownership in restored application data."
+msgstr "Neplatné číselné vlastnictví v obnovených datech aplikací."
+
+msgid "A restored numeric owner differs between source and destination accounts."
+msgstr "Obnovený číselný vlastník se liší mezi účty zdroje a cíle."
+
+msgid "Invalid POSIX ACL in restored application data."
+msgstr "Neplatné POSIX ACL v obnovených datech aplikací."
+
+msgid "Invalid file capabilities in restored application data."
+msgstr "Neplatné schopnosti souboru v obnovených datech aplikací."
+
+msgid "Application restoration requires source architecture and ownership evidence."
+msgstr "Obnova aplikací vyžaduje údaje o architektuře a vlastnictví zdroje."
+
+msgid "Payload restoration requires a new private staging directory."
+msgstr "Obnova dat vyžaduje nový soukromý pracovní adresář."
+
+msgid "Restored application roots must not traverse symbolic links."
+msgstr "Kořenové adresáře obnovených aplikací nesmí procházet symbolickými odkazy."
+
+msgid "Payload restoration requires a read-only reader and a full snapshot ID."
+msgstr "Obnova dat vyžaduje přístup pouze pro čtení a úplné ID snímku."
+
+msgid "Application payload restoration requires root to preserve ownership and metadata."
+msgstr "Obnova dat aplikací vyžaduje uživatele root pro zachování vlastnictví a metadat."

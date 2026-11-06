@@ -10,6 +10,7 @@ let
         ./unit_names.py
         ./protected-units.json
         ./restore_target.py
+        ./restore_payload.py
         ./backup_identity.py
         ./native_restic.py
         ./recovery_recipe.py
