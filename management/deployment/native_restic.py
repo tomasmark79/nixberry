@@ -1,4 +1,5 @@
 """Back up configuration-owned application data directly into an encrypted Restic repository."""
+import backup_identity
 import hashlib
 import contextlib
 from datetime import datetime
@@ -21,7 +22,8 @@ import snapshots
 import recovery_recipe
 
 ID = re.compile(r'[0-9a-f]{64}')
-FORMAT = 'nixberry-restic-v1'
+FORMAT = 'nixberry-restic-v2'
+FORMATS = ('nixberry-restic-v1', FORMAT)
 RECEIPT = 'nixberry-receipt-v1'
 SYSTEM = re.compile(r'/nix/store/[a-z0-9]{32}-nixos-system-[A-Za-z0-9+._-]+')
 
@@ -363,7 +365,7 @@ def literal_pattern(path):
     return ''.join('\\' + char if char in '*?[]\\' else char for char in path)
 
 
-def payload(settings, restic, directory, attempt, capture):
+def payload(settings, restic, directory, attempt, capture, *, identity):
     paths = []
     if capture is None:
         for app in settings['capture']['applications'].values():
@@ -381,7 +383,7 @@ def payload(settings, restic, directory, attempt, capture):
     recovery_metadata = recovery(settings)
     manifest = {'format': FORMAT, 'sourceId': settings['sourceId'], 'machineId': snapshots.machine_id(),
                 'attemptId': attempt, 'createdAt': int(time.time()), 'captureMethod': settings['captureMethod'],
-                'paths': paths, 'capture': None if capture is None else {k: v for k, v in capture.items() if k != 'applied'},
+                'identity': identity, 'paths': paths, 'capture': None if capture is None else {k: v for k, v in capture.items() if k != 'applied'},
                 'recovery': {'path': settings['recoveryFile'], 'sha256': recovery_metadata['archiveSha256'],
                              'systemPath': recovery_metadata['systemPath'], 'policySha256': recovery_metadata['policySha256']}}
     contents = encode(manifest)
@@ -415,6 +417,7 @@ def backup(value, *, apply=False):
     if not apply:
         return {'applied': False, 'captureMethod': settings['captureMethod'], 'sourceId': settings['sourceId'],
                 'repository': settings['repository'], 'topology': topology}
+    identity = backup_identity.collect()
     runtime = snapshots.secure_directory(settings['runtimeDirectory'], create=True)
     require_tmpfs(runtime)
     with snapshots.lock(capture_policy) as state, tempfile.TemporaryDirectory(dir=runtime) as temporary:
@@ -428,10 +431,10 @@ def backup(value, *, apply=False):
         capture = None
         if settings['captureMethod'] == 'snapshot':
             capture = snapshots.capture_locked(capture_policy, state, topology)
-            receipt = payload(settings, restic, directory, attempt, capture)
+            receipt = payload(settings, restic, directory, attempt, capture, identity=identity)
         else:
             with snapshots.cold(capture_policy, state):
-                receipt = payload(settings, restic, directory, attempt, None)
+                receipt = payload(settings, restic, directory, attempt, None, identity=identity)
         recovery(settings)
         identifier = completed(restic.run(['backup', '--stdin', '--stdin-filename', 'nixberry-receipt.json',
             '--tag', RECEIPT, '--tag', 'source:' + settings['sourceId'], '--tag', 'attempt:' + attempt], input=encode(receipt)))
@@ -476,7 +479,10 @@ def tagged(row, source):
 
 def validate_manifest(record, manifest):
     fields = {'format', 'sourceId', 'machineId', 'attemptId', 'createdAt', 'captureMethod', 'paths', 'capture', 'recovery'}
-    if (not isinstance(manifest, dict) or set(manifest) != fields or manifest['format'] != FORMAT
+    if isinstance(manifest, dict) and manifest.get('format') == FORMAT:
+        fields.add('identity')
+    if (not isinstance(manifest, dict) or set(manifest) != fields
+            or manifest['format'] not in FORMATS or manifest['format'] != record['format']
             or manifest['sourceId'] != record['sourceId'] or manifest['attemptId'] != record['attemptId']
             or type(manifest['createdAt']) is not int or manifest['createdAt'] != record['createdAt']
             or not isinstance(manifest['machineId'], str)
@@ -485,6 +491,8 @@ def validate_manifest(record, manifest):
             or not isinstance(manifest['recovery'], dict) or set(manifest['recovery']) != {'path', 'sha256', 'systemPath', 'policySha256'}
             or not isinstance(manifest['recovery']['sha256'], str) or not ID.fullmatch(manifest['recovery']['sha256'])):
         raise ValueError(_("The encrypted capture manifest does not match its completion receipt."))
+    if manifest['format'] == FORMAT:
+        backup_identity.validate(manifest['identity'])
     snapshots.absolute(manifest['recovery']['path'])
     if (not isinstance(manifest['recovery']['systemPath'], str) or not SYSTEM.fullmatch(manifest['recovery']['systemPath'])
             or not isinstance(manifest['recovery']['policySha256'], str) or not ID.fullmatch(manifest['recovery']['policySha256'])):
@@ -527,7 +535,7 @@ def receipt_reader(restic, identifier):
         raise ValueError(_("The selected Restic snapshot is not a completion receipt for this source."))
     record = json.loads(restic.run(['dump', identifier, '/nixberry-receipt.json']))
     required = {'format', 'sourceId', 'attemptId', 'createdAt', 'payloadId', 'manifestPath', 'manifestSha256'}
-    if (not isinstance(record, dict) or set(record) != required or record['format'] != FORMAT
+    if (not isinstance(record, dict) or set(record) != required or record['format'] not in FORMATS
             or record['sourceId'] != settings['sourceId'] or not isinstance(record['payloadId'], str)
             or not ID.fullmatch(record['payloadId']) or not isinstance(record['manifestSha256'], str)
             or not ID.fullmatch(record['manifestSha256']) or type(record['createdAt']) is not int

@@ -112,7 +112,8 @@ class NativeResticTests(unittest.TestCase):
             self.assertTrue(execute.call_args.kwargs['start_new_session'])
 
     def test_plan_does_not_create_state_or_stop_writers(self):
-        result = native_restic.backup(self.policy)
+        with patch('backup_identity.collect', side_effect=AssertionError('dry-run account lookup')):
+            result = native_restic.backup(self.policy)
         self.assertFalse(result['applied'])
         self.assertFalse((self.root / 'state').exists())
         self.assertFalse((self.root / 'runtime').exists())
@@ -160,11 +161,11 @@ class NativeResticTests(unittest.TestCase):
             'subvolumeUuid': '11111111-1111-1111-1111-111111111111'}},
             'paths': [{'source': str(self.data), 'root': 'system', 'relative': str(self.data.relative_to('/'))}]}
         original_payload = native_restic.payload
-        def payload(*args):
+        def payload(*args, **kwargs):
             capture = args[-1]
             with self.assertRaisesRegex(RuntimeError, 'lock'):
                 snapshots.remove(self.capture, capture['snapshotId'], apply=True)
-            return original_payload(*args)
+            return original_payload(*args, **kwargs)
         with patch('snapshots.inspect', side_effect=lambda *args, **kwargs: copy.deepcopy(topology)), \
                 patch('snapshots.filesystem', return_value={'uuid': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
                                                            'filesystemPath': '/snapshot'}), \
@@ -176,6 +177,64 @@ class NativeResticTests(unittest.TestCase):
         self.assertEqual(snapshots.inventory(self.capture)['snapshots'], [])
         with patch('snapshots.machine_id', return_value='2' * 32):
             native_restic.validate_manifest(json.loads(self.saved['receipt']), json.loads(self.saved['manifest']))
+
+    def test_account_lookup_failure_aborts_before_writer_shutdown(self):
+        with patch('backup_identity.collect', side_effect=ValueError('account lookup failed')):
+            with self.assertRaisesRegex(ValueError, 'account lookup'):
+                native_restic.backup(self.policy, apply=True)
+        self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
+        self.assertFalse(self.saved)
+
+    def test_account_evidence_is_encrypted_and_bound_to_the_manifest_version(self):
+        evidence = {'architecture': 'aarch64-linux',
+                    'users': [{'name': 'player', 'uid': 1000, 'gid': 100}],
+                    'groups': [{'name': 'games', 'gid': 100}]}
+        def collect():
+            self.assertEqual(self.host.units['web.service'], 'active')
+            return evidence
+        with patch('backup_identity.collect', side_effect=collect):
+            result = native_restic.backup(self.policy, apply=True)
+        record = json.loads(self.saved['receipt'])
+        manifest = json.loads(self.saved['manifest'])
+        self.assertIn('identity', manifest)
+        self.assertEqual(manifest['identity'], evidence)
+        self.assertNotIn('identity', record)
+        self.assertNotIn('identity', result)
+        native_restic.validate_manifest(record, manifest)
+        # Old captures remain readable, but cannot acquire invented identity evidence.
+        legacy = {key: value for key, value in manifest.items() if key != 'identity'}
+        legacy['format'] = 'nixberry-restic-v1'
+        native_restic.validate_manifest({**record, 'format': 'nixberry-restic-v1'}, legacy)
+        for changed in (legacy, {**manifest, 'identity': {**evidence, 'architecture': 'unknown'}},
+                        {**manifest, 'format': 'nixberry-restic-v1'}):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                native_restic.validate_manifest(record, changed)
+
+    def test_receipt_reader_accepts_both_versions_and_checks_their_authenticated_evidence(self):
+        native_restic.backup(self.policy, apply=True)
+        original_record = json.loads(self.saved['receipt'])
+        original_manifest = json.loads(self.saved['manifest'])
+        for version in ('nixberry-restic-v1', 'nixberry-restic-v2'):
+            manifest = {**original_manifest, 'format': version}
+            if version == 'nixberry-restic-v1':
+                del manifest['identity']
+            contents = json.dumps(manifest)
+            record = {**original_record, 'format': version,
+                      'manifestSha256': hashlib.sha256(contents.encode()).hexdigest()}
+            def run(instance, arguments, **kwargs):
+                if arguments == ['cat', 'config']:
+                    return json.dumps({'id': 'a' * 64})
+                if arguments == ['snapshots', self.receipt_id]:
+                    return json.dumps([{'id': self.receipt_id,
+                                        'tags': ['nixberry-receipt-v1', 'source:vm-demo-server']}])
+                if arguments == ['dump', self.receipt_id, '/nixberry-receipt.json']:
+                    return json.dumps(record)
+                if arguments == ['dump', self.data_id, record['manifestPath']]:
+                    return contents
+                raise AssertionError(arguments)
+            with self.subTest(version=version), patch.object(native_restic.Restic, 'run', run):
+                _, _, loaded = native_restic.receipt(self.policy, self.receipt_id)
+                self.assertEqual(loaded, manifest)
 
     def test_authenticated_manifest_rejects_changed_logical_paths_and_recovery_binding(self):
         native_restic.backup(self.policy, apply=True)

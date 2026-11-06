@@ -12,6 +12,7 @@ let
         ./cli_args.py
         ./native_controller.py
         ./native_access.py
+        ./backup_identity.py
         ./native_restic.py
         ./snapshots.py
         ./unit_names.py

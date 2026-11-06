@@ -3730,3 +3730,6 @@ msgstr "Účinné podmínky zapisující jednotky neobsahují požadovanou ochra
 
 msgid "Destination writer inspection failed or timed out; inspect the external tool diagnostics."
 msgstr "Kontrola zapisující jednotky cíle selhala nebo vypršela; zkontrolujte diagnostiku externího nástroje."
+
+msgid "Invalid source architecture or account ownership evidence."
+msgstr "Neplatné údaje o architektuře zdroje nebo vlastnictví účtů."

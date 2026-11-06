@@ -158,6 +158,11 @@ staging and bad-hash refusal, read-only planning, direct and
 systemd-owned captures, actual source-timer firing, strict host-key rejection
 before shutdown and complete
 payload authentication from the storage guest after each source is shut down.
+Inspect the authenticated manifest there for the source architecture and numeric
+account evidence, with no password, login or membership fields.
+`test_backup_identity.py` checks evidence bounds and malformed account values;
+`test_native_restic.py` checks pre-shutdown lookup failure and compatibility with
+both manifest versions, including downgrade refusal.
 The Btrfs case includes a child subvolume bind-mounted over nonempty parent
 data. Inspect the encrypted payload to confirm that the hidden parent subtree
 is absent while the child and unrelated sibling remain present, including paths

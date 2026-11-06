@@ -262,7 +262,14 @@ recovery after stopping. The job is not restarted by a configuration switch.
 
 A completed backup has an encrypted payload snapshot and a small encrypted
 completion receipt. The payload includes application data, the logical source
-path mapping and recovery archive. The receipt is published only after upload,
+path mapping and recovery archive. New captures also include the source system
+architecture and account names with numeric UID/GID values inside the encrypted
+manifest. This evidence excludes passwords, login settings and group membership;
+it is not an account database to install on the destination. Numeric file owners
+without named source accounts remain possible, for example with containers.
+Account lookups run before writer shutdown. Version 1 captures remain readable
+for inventory, verification and recovery of the configuration, but lack this
+architecture and ownership evidence. The receipt is published only after upload,
 manifest/configuration readback and writer recovery succeed. Incomplete payloads
 remain in the repository without being listed as completed backups; no automatic
 pruning is performed. Successful snapshot-mode capture/upload then removes its

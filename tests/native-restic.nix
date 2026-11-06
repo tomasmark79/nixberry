@@ -158,6 +158,14 @@ pkgs.testers.runNixOSTest {
         node.shutdown()
         verified = json.loads(storage.succeed("nixberry-restic --config /run/recovery-policy.json verify-backup --snapshot " + report["snapshotId"] + " --json"))
         assert verified["state"] == "recorded-verified"
+        identity_probe = "import json,native_restic; v=json.load(open('/run/recovery-policy.json')); _,_,m=native_restic.receipt(v," + repr(report["snapshotId"]) + "); print(json.dumps({'format':m['format'],'identity':m['identity']}))"
+        metadata = json.loads(storage.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(identity_probe)))
+        assert metadata["format"] == "nixberry-restic-v2"
+        assert metadata["identity"]["architecture"] == "x86_64-linux"
+        assert {"name": "root", "uid": 0, "gid": 0} in metadata["identity"]["users"]
+        assert {"name": "root", "gid": 0} in metadata["identity"]["groups"]
+        assert all(set(row) == {"name", "uid", "gid"} for row in metadata["identity"]["users"])
+
         # A non-root operator has independent credentials, no declaration and no
         # source capture catalogue. The source is already powered off here.
         access = {"version": 1, "target": "vm-demo-guest", "sourceId": json.loads(policy)["sourceId"],
