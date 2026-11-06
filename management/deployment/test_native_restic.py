@@ -271,3 +271,10 @@ class NativePolicySystemTests(unittest.TestCase):
                 self.assertEqual(value['capture']['applications']['web'], {'paths': ['/var/lib/web'], 'stopUnits': []}, name)
                 self.assertEqual(value['repository'], 'sftp:backup@storage.example:/backup', name)
                 self.assertEqual(value['ssh']['port'], 7922, name)
+            from native_controller import projection
+            for name in ('vm-demo-libvirt-btrfs', 'rpi-demo-ext4'):
+                selected = projection(str(root), name)
+                self.assertTrue(selected['enabled'])
+                self.assertEqual(selected['restic'], values[name])
+                self.assertEqual(selected['capture'], values[name]['capture'])
+                self.assertRegex(selected['systemPath'], r'^/nix/store/[a-z0-9]{32}-nixos-system-')

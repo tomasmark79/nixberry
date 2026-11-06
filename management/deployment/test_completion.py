@@ -22,6 +22,7 @@ class CompletionTests(unittest.TestCase):
             'identityFile="/private/key"; recipient="age1' + 'a'*58 + '"; restoreBackends=["libvirt"]; }; }')
         self.assertEqual(self.complete('restore', 'kozlonix', '--from', 'koz'), ['kozlonix'])
         self.assertEqual(self.complete('verify-backup', 'kozlonix', '--snapshot', 'b'), [identity])
+        self.assertEqual(self.complete('snapshot-remove', 'kozlonix', '--snapshot', 'b'), [])
         self.assertEqual(self.complete('restore', 'other', '--from', 'kozlonix', '--snapshot', 'b'), [identity])
         self.assertIn('--apply', self.complete('backup', 'kozlonix', '--'))
         self.assertNotIn('--apply', self.complete('backups', 'kozlonix', '--'))
@@ -80,6 +81,15 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
         self.assertEqual(result.stderr, "")
         return result.stdout.splitlines()
 
+    def test_native_snapshot_commands_complete_without_remote_inventory_or_legacy_ids(self):
+        for action in ('snapshot', 'snapshots', 'snapshot-remove', 'snapshot-resume', 'backup'):
+            self.assertEqual(self.complete(action, 'koz'), ['kozlonix'])
+        self.assertIn('--apply', self.complete('snapshot', 'kozlonix', '--'))
+        self.assertNotIn('--apply', self.complete('snapshots', 'kozlonix', '--'))
+        self.assertIn('--snapshot', self.complete('snapshot-remove', 'kozlonix', '--'))
+        self.assertEqual(self.complete('snapshot-remove', 'kozlonix', '--snapshot', ''), [])
+        self.assertIn('--ssh', self.complete('snapshot', 'kozlonix', '--'))
+
     def test_commands_match_cli(self):
         self.assertEqual(self.complete(""), list(COMMANDS))
         self.assertEqual(self.complete("ver"), ["verify", "verify-backup"])
@@ -101,7 +111,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
                     with self.subTest(backend=backend, method=method, access=bool(access)):
                         for action in ('create', 'install', 'provision', 'reset', 'probe', 'plan', 'reproduce', 'cleanup'):
                             self.assertEqual(self.complete(action, 'dem'), [])
-                        for action in ('ssh', 'verify', 'update', 'diff', 'diffg'):
+                        for action in ('ssh', 'verify', 'update', 'diff', 'diffg', 'snapshot', 'snapshots', 'snapshot-remove', 'snapshot-resume', 'backup'):
                             self.assertEqual(self.complete(action, 'dem'), ['demo'] if access else [])
                             self.assertEqual(self.complete(action, '--ssh', 'root@10.0.1.19', 'dem'), ['demo'])
                         self.assertEqual(self.complete('show', 'dem'), ['demo'])
@@ -113,7 +123,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
             for method in ('image', 'iso'):
                 (self.root / 'machines/vm/demo.nix').write_text('{ host = "local"; deploymentMethod = "' + method + '"; spec.name = "demo"; }')
                 with self.subTest(backend=backend, method=method):
-                    for action in ('probe', 'create', 'install', 'provision', 'reset', 'plan', 'reproduce', 'cleanup', 'verify', 'update'):
+                    for action in ('probe', 'create', 'install', 'provision', 'reset', 'plan', 'reproduce', 'cleanup', 'verify', 'update', 'snapshot', 'snapshots', 'snapshot-remove', 'snapshot-resume', 'backup'):
                         self.assertEqual(self.complete(action, 'dem'), ['demo'])
 
     def test_no_nix_or_invalid_declaration_does_not_guess_capabilities(self):

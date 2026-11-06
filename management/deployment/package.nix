@@ -10,6 +10,7 @@ let
       fileset = pkgs.lib.fileset.unions [
         ./cli.py
         ./cli_args.py
+        ./native_controller.py
         ./backups.py
         ./backup_watch.py
         ./dispatch.py

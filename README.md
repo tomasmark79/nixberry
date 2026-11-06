@@ -369,7 +369,7 @@ NixBerry works independently of Nixon.
 | Guide | Contents |
 | --- | --- |
 | [CLI](docs/cli.md) | Commands, options and write modes. |
-| [Encrypted backups](docs/backups.md) | Target policy, provider interface, recovery and reviewable schedules. |
+| [Encrypted backups](docs/backups.md) | Configuration-owned snapshots/Restic, provider interface and recovery. |
 | [VM platforms](docs/vm.md) | Hosts, direct SSH, guest agents and reset. |
 | [Offline handoff](docs/offline.md) | Disk import, ISO installation and Proxmox handoff. |
 | [RPi recovery](docs/rpi-recovery.md) | SD preparation and SSD recovery. |

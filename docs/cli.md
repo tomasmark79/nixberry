@@ -33,11 +33,24 @@ Preparation accepts `--json`; unlocking is interactive. Neither command accepts
 
 ## Inventory and management
 
-Encrypted application backups use `backup`, `backups`, `verify-backup`, `restore`,
-`recover-source`, `backup-prune`, `backup-schedule`, `backup-check` and
-`backup-monitor` and `backup-stage`. They require an explicit
-target backup policy and a configuration-owned provider. See the complete
-[backup commands and write boundaries](backups.md).
+`snapshot TARGET`, `snapshots TARGET`, `snapshot-remove TARGET --snapshot ID`
+and `snapshot-resume TARGET` use the selected configuration's application
+catalogue. Creation, removal and writer recovery require `--apply`; otherwise
+they show a plan without contacting the source. Inventory reads a verified
+running source unless `--dry-run` is selected. These commands require a Linux
+controller and a running installed system with the expected generation and
+policy. Local snapshot IDs have 32 hexadecimal characters.
+
+`backup TARGET --apply` dispatches to an enabled target-level legacy provider,
+or otherwise to `nixberry.backup.restic` in the selected NixOS configuration.
+Native capture requires separately provisioned source credentials and a staged
+recovery archive. `--ssh` can supply access to an offline VM for native capture.
+
+The legacy controller commands `backups`, `verify-backup`, `restore`,
+`recover-source`, `backup-prune`, `backup-schedule`, `backup-check`,
+`backup-monitor` and `backup-stage` require an explicit target provider policy.
+Native Restic inventory and independent verification use the guest helper.
+See [backup commands and write boundaries](backups.md).
 
 `backup-schedule TARGET --output NEW_DIRECTORY --dry-run` previews systemd user
 units for the controller running NixBerry. It requires `backup.enable = true`

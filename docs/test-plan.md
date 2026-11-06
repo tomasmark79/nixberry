@@ -118,6 +118,13 @@ writers, a stable read-only view while the source changes, refusal of unlisted
 nested subvolumes, interrupted-writer recovery and mounted-reference protection
 during removal. This does not prove ARM boot or deployment on any real backend.
 
+`test_native_controller.py` checks no-contact plans, identity/generation and
+installed-policy refusal before capture, explicit write dispatch and preservation
+of diagnostic streams. CLI/completion contract tests cover all VM backends,
+image/ISO, declared access and one-time SSH overrides without evaluating systems
+for inventory. Native configuration projections include VM and RPi system paths;
+these checks do not prove a physical installation or every hypervisor transport.
+
 `test_native_restic.py` checks cold-capture recovery, unsuccessful publication,
 repository/credential policy, capture leases and configuration-owned metadata for
 all six platforms and both filesystem choices, including legacy Hyper-V owner

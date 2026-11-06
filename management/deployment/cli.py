@@ -21,6 +21,7 @@ from recipe_source import materialized_recipe
 from discovery import collect_status
 from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, error as report_error
+from native_controller import ACTIONS as SNAPSHOT_ACTIONS, run as run_native
 from backups import ACTIONS as BACKUP_ACTIONS, available as backup_operations, run as run_backup, policy as backup_policy
 
 
@@ -107,7 +108,9 @@ def operations(target):
     if security_policy(target)["mode"] != "none":
         result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
-        result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg"]
+        result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg", *SNAPSHOT_ACTIONS]
+        if "backup" not in result:
+            result += ["backup"]
     if caps["hypervisor"] or target["backend"] == "rpi":
         result += ["cleanup", *target.get("commands", {})]
         if "provision" in target.get("commands", {}) or target["backend"] == "rpi":
@@ -159,8 +162,8 @@ def main(argv=None):
         argv, remote_command = argv[:delimiter], argv[delimiter + 1:]
     parser = create_parser()
     args = parser.parse_args(argv)
-    if args.snapshot and args.action not in ("verify-backup", "restore", "recover-source"):
-        parser.error(_("--snapshot only applies to verify-backup, restore and recover-source."))
+    if args.snapshot and args.action not in ("verify-backup", "restore", "recover-source", "snapshot-remove"):
+        parser.error(_("--snapshot only applies to verify-backup, restore, recover-source and snapshot-remove."))
     if args.backup_source and args.action != "restore":
         parser.error(_("--from only applies to restore TARGET --from SOURCE."))
     if args.security is not None and not args.action.startswith("new-"):
@@ -191,11 +194,13 @@ def main(argv=None):
         parser.error(_("--ssh applies to server management and cannot be combined with --host or new-*."))
     override = args.ssh or (args.host if not args.action.startswith("new-") else None)
     if override:
-        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg"):
-            parser.error(_("Direct SSH supports update, ssh, verify, status, doctor, diff and diffg."))
+        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup"):
+            parser.error(_("Direct SSH supports system management, local snapshots and native backup capture."))
         if (args.target not in registry or registry[args.target]["backend"] not in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware")
                 or not registry[args.target].get("offline")):
             parser.error(_("Direct SSH requires an offline VM declaration without hypervisor management."))
+        if args.action == "backup" and backup_policy(registry[args.target])['enable']:
+            parser.error(_("Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."))
         try:
             direct = guest_connection(override)
         except ValueError as error:
@@ -263,11 +268,11 @@ def main(argv=None):
             args.action in ("plan", "reproduce") and args.target in registry
             and registry[args.target]["backend"] == "rpi"):
         parser.error(_("--address and --erase-existing only apply to plan/reproduce for RPi targets."))
-    if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup", "prepare-image", *BACKUP_ACTIONS):
+    if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup", "prepare-image", *BACKUP_ACTIONS, *SNAPSHOT_ACTIONS):
         parser.error(_("--json is available for list, show, status, verify, export, doctor and cleanup."))
     if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup", "prepare-image", "unlock") and args.apply:
         parser.error(_("This operation does not accept --apply."))
-    if args.action in ("backups", "verify-backup", "backup-schedule", "backup-monitor") and args.apply:
+    if args.action in ("backups", "verify-backup", "backup-schedule", "backup-monitor", "snapshots") and args.apply:
         parser.error(_("This operation does not accept --apply."))
     if args.action in ("doctor", "cleanup"):
         if args.target and args.target not in registry:
@@ -325,6 +330,11 @@ def main(argv=None):
             parser.error(_("Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Available targets: {targets}.").format(targets=", ".join(sorted(registry))))
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
+    if args.action in SNAPSHOT_ACTIONS or (args.action == "backup" and not backup_policy(target)['enable']):
+        result = run_native(os.environ.get("NIXBERRY_RECIPE", ""), target, args.action, args.target,
+                            snapshot=args.snapshot, apply=args.apply, dry_run=args.dry_run)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
     if args.action in BACKUP_ACTIONS:
         if args.action == "recover-source" and not args.output:
             parser.error(_("recover-source requires --output NEW_DIRECTORY."))

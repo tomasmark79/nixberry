@@ -2,7 +2,7 @@
 
 [Main guide](../README.md) · [CLI](cli.md) · [Platform contract](platform-consistency.md)
 
-Controller provider policy belongs to a target declaration in `machines/vm/` or
+Legacy controller provider policy belongs to a target declaration in `machines/vm/` or
 `machines/rpi/`. A configuration supplies a local provider for its
 application format, consistency requirements and restore checks. NixBerry
 dispatches through that provider using one controller interface for every backend.
@@ -46,13 +46,53 @@ nixberry-capture resume --json
 nixberry-capture resume --apply --json
 ```
 
-These are guest-side commands. Local snapshots do not upload data, replace the
-controller provider commands below or enable a backup schedule. Planning can
+These guest-side commands capture local filesystem state; they do not upload
+data or enable a backup schedule. Planning can
 inspect filesystem metadata but changes no files or services. Inventory is
 recorded capture metadata, not a fresh integrity check.
 The guest tool is shared by all five VM backends and RPi, independently of
 image or ISO installation. It requires a running, unlocked source; exported
 offline media cannot capture a stopped source's application data.
+
+The shared controller also exposes local capture and native backup creation:
+
+```sh
+nixberry snapshot vm-demo-server --json
+nixberry snapshot vm-demo-server --apply --json
+nixberry snapshots vm-demo-server --json
+nixberry snapshot-remove vm-demo-server --snapshot LOCAL_CAPTURE_ID --apply --json
+nixberry snapshot-resume vm-demo-server --apply --json
+nixberry backup vm-demo-server --apply --json
+```
+
+These commands require a Linux controller and verified access to a running,
+unlocked installed source. All five VM backends and RPi use the same dispatch;
+VMs prepared offline need declared `access` or a one-time `--ssh root@HOST:PORT`.
+The selected configuration owns `nixberry.backup`, including paths and writer
+units; do not duplicate that catalogue in the target declaration.
+
+Creation, removal and recovery only plan without `--apply`; `--dry-run` also
+plans local inventory. Plans evaluate and freeze the selected recipe but do not
+build systems or contact the source. `snapshots` normally reads the source and
+accepts no `--apply`. Executed operations verify existing platform identity,
+installation, the exact running system generation and installed policy before
+calling the installed guest tool. A different generation or policy fails before
+writer shutdown. Local capture IDs contain 32 hexadecimal characters and belong
+to that source; they are distinct from Restic completion IDs.
+
+`list`, `show`, completion and exported operation lists advertise candidate source
+operations based on system access without evaluating NixOS. Each native action
+checks enablement in the selected configuration when invoked. Completion never
+queries remote snapshot inventories or offers legacy backup IDs for local
+snapshot removal. Offline bundles carry the configuration and shared tools;
+they do not capture application data from stopped systems.
+
+A target with an explicit enabled legacy backup provider retains that provider
+for `backup`; otherwise `backup` uses `nixberry.backup.restic`. Native storage
+credentials, repository initialization and recovery-archive staging must already
+be provisioned through the guest tools described below. The other controller
+backup commands in the legacy provider section still require that provider;
+use `nixberry-restic` for native inventory and source-independent verification.
 
 Capture verifies Btrfs source identity, free space, storage placement, mount
 coverage and nested subvolumes before stopping writers. Only services active

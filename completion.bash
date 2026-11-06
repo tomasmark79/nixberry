@@ -18,6 +18,7 @@ _nixberry_complete() {
         list show status ssh probe plan create install provision reset
         new-libvirt-vm new-hyperv-vm new-proxmox-vm new-virtualbox-vm new-vmware-vm
         reproduce verify update diff diffg export doctor cleanup prepare-image unlock
+        snapshot snapshots snapshot-remove snapshot-resume
         backup backups verify-backup restore recover-source backup-prune backup-schedule
         backup-check backup-monitor
         backup-stage
@@ -86,7 +87,7 @@ _nixberry_complete() {
             done < <(NIXBERRY_COMPLETION_ACTION=backups NIXBERRY_COMPLETION_DIRECT=0 \
                 nix eval --offline --impure --raw --option allow-import-from-derivation false \
                 --file "$recipe/management/deployment/completion-targets.nix" 2>/dev/null)
-        elif [[ $word == --snapshot ]]; then
+        elif [[ $word == --snapshot && $action != snapshot-remove ]]; then
             while IFS= read -r name || [[ -n $name ]]; do
                 [[ -n $name && $name == "$current"* ]] && COMPREPLY+=("$name")
             done < <(NIXBERRY_COMPLETION_SOURCE="${backup_source:-$target}" \
@@ -116,18 +117,19 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            list|show|status|verify|export|doctor|cleanup|prepare-image|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor|backup-stage) options+=(--json) ;;
+            list|show|status|verify|export|doctor|cleanup|prepare-image|snapshot|snapshots|snapshot-remove|snapshot-resume|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor|backup-stage) options+=(--json) ;;
         esac
         case $action in
-            update|create|install|provision|reset|reproduce|backup|restore|recover-source|backup-prune|backup-check|backup-stage) options+=(--apply --dry-run) ;;
-            new-*|plan|diff|diffg|export|prepare-image|unlock|backups|verify-backup|backup-schedule|backup-monitor) options+=(--dry-run) ;;
+            update|create|install|provision|reset|reproduce|snapshot|snapshot-remove|snapshot-resume|backup|restore|recover-source|backup-prune|backup-check|backup-stage) options+=(--apply --dry-run) ;;
+            new-*|plan|diff|diffg|export|prepare-image|unlock|snapshots|backups|verify-backup|backup-schedule|backup-monitor) options+=(--dry-run) ;;
         esac
         case $action in
             new-*|show|plan|create|install|provision|reproduce|export) options+=(--method) ;;
         esac
         case $action in
             new-*) options+=(--host --offline --configuration --security --filesystem) ;;
-            update|ssh|verify|status|doctor|diff|diffg) options+=(--host --ssh) ;;
+            snapshot-remove) options+=(--host --ssh --snapshot) ;;
+            update|ssh|verify|status|doctor|diff|diffg|snapshot|snapshots|snapshot-resume|backup) options+=(--host --ssh) ;;
             export) options+=(--output) ;;
             recover-source) options+=(--output --snapshot) ;;
             backup-schedule) options+=(--output) ;;

@@ -31,6 +31,10 @@ COMMANDS = (
     "cleanup",
     "prepare-image",
     "unlock",
+    "snapshot",
+    "snapshots",
+    "snapshot-remove",
+    "snapshot-resume",
     "backup",
     "backups",
     "verify-backup",
@@ -115,6 +119,15 @@ Complete command and option reference: docs/cli.md.
 """
 
 BACKUP_HELP = """
+Configuration-owned local snapshots:
+  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.
+  snapshots TARGET       Read recorded local captures on the verified running source.
+  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.
+  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.
+  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.
+  Source capture requires the running generation and policy to match the selected recipe.
+  Linux controllers only; list/show/completion do not evaluate NixOS systems.
+
 Encrypted backup commands:
   backup TARGET          Review coordinated capture; --apply creates an encrypted backup.
   backups TARGET         List recorded snapshots without contacting the source.
@@ -135,7 +148,8 @@ Controller-side scheduling:
   If the server already runs scheduled backups (for example Restic), manage that
   schedule in its NixOS configuration; keep one capture scheduler.
 
-Backup policy lives in the target declaration. Keys remain runtime files outside Git and the Nix store.
+Legacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.
+Keys remain runtime files outside Git and the Nix store.
 Restore does not create a VM, activate configuration or reboot. See docs/backups.md.
 """
 
@@ -271,7 +285,7 @@ def create_parser():
         ),
     )
     parser.add_argument(
-        "--snapshot", help=_("Explicit encrypted snapshot ID from backups TARGET")
+        "--snapshot", help=_("Encrypted backup ID, or local capture ID for snapshot-remove")
     )
     parser.add_argument(
         "--from",

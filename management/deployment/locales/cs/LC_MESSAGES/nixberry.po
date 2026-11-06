@@ -3469,3 +3469,54 @@ msgstr "Připravená konfigurace pro obnovu je zastaralá nebo neodpovídá těm
 
 msgid "Recovery configuration is missing; provision the recipe archive and run backup-stage."
 msgstr "Konfigurace pro obnovu chybí; připravte archiv receptu a spusťte backup-stage."
+
+msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review source-owned backup provisioning; --apply refreshes runtime access and recovery code.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nLegacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
+msgstr "\nMístní snapshoty spravované konfigurací:\n  snapshot TARGET        Plán místního zachycení; --apply krátce zastaví deklarované zapisující služby a zachytí kořeny Btrfs.\n  snapshots TARGET       Na ověřeném běžícím zdroji přečte evidované místní snapshoty.\n  snapshot-remove TARGET Smaže --snapshot ID pouze s --apply; jinak ukáže plán.\n  snapshot-resume TARGET Pouze s --apply zopakuje obnovení zapisujících služeb po přerušení.\n  Nativní záloha používá zvolenou konfiguraci NixOS, pokud není deklarován původní poskytovatel.\n  Zachycení vyžaduje shodu běžící generace a pravidel se zvoleným receptem.\n  Pouze řídicí stanice Linux; list/show/doplňování nevyhodnocují systémy NixOS.\n\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek na řídicím počítači s --output DIR; nezapíná je.\n  backup-check TARGET    Kontrola stáří záloh a historie běhů; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled přípravy záloh na zdroji; --apply obnoví provozní přístup a kód pro obnovu.\n\nPlánování na řídicím počítači:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Vyžaduje backup.enable = true a backup.schedule v deklaraci cíle.\n  Bez --dry-run zapíše soubory uživatelské služby a časovače na tento počítač, ne na TARGET.\n  Jednotky neinstaluje ani nezapíná a nemění časovač spravovaný serverem.\n  Pokud server už zálohuje pravidelně (například přes Restic), uprav časování\n  v jeho konfiguraci NixOS; ponech pouze jeden plánovač pořizování záloh.\n\nPravidla původního poskytovatele jsou v deklaraci cíle; nativní pravidla patří do jeho konfigurace NixOS.\nKlíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
+
+msgid "--snapshot only applies to verify-backup, restore, recover-source and snapshot-remove."
+msgstr "--snapshot platí pouze pro verify-backup, restore, recover-source a snapshot-remove."
+
+msgid "Direct SSH supports system management, local snapshots and native backup capture."
+msgstr "Přímé SSH podporuje správu systému, místní snapshoty a pořizování nativních záloh."
+
+msgid "Enable nixberry.backup in the selected NixOS configuration first."
+msgstr "Nejprve zapněte nixberry.backup ve zvolené konfiguraci NixOS."
+
+msgid "Enable nixberry.backup.restic in the selected NixOS configuration first."
+msgstr "Nejprve zapněte nixberry.backup.restic ve zvolené konfiguraci NixOS."
+
+msgid "Encrypted backup ID, or local capture ID for snapshot-remove"
+msgstr "ID šifrované zálohy nebo místního snapshotu pro snapshot-remove"
+
+msgid "Native capture controller operations currently require Linux."
+msgstr "Ovládání nativních snapshotů a záloh z řídicí stanice nyní vyžaduje Linux."
+
+msgid "Native capture requires a declared target with verified live system access."
+msgstr "Nativní zachycení vyžaduje deklarovaný cíl s ověřeným přístupem k běžícímu systému."
+
+msgid "The installed capture policy differs from the selected configuration."
+msgstr "Nainstalovaná pravidla zachycení se liší od zvolené konfigurace."
+
+msgid "The running system differs from this recipe; update it before native capture."
+msgstr "Běžící systém se liší od tohoto receptu; před nativním zachycením jej aktualizujte."
+
+msgid "The source did not confirm the requested native capture operation."
+msgstr "Zdroj nepotvrdil požadovanou operaci nativního zachycení."
+
+msgid "The source operation failed; inspect its diagnostics and retained capture state."
+msgstr "Operace na zdroji selhala; zkontrolujte její diagnostiku a zachovaný stav zachycení."
+
+msgid "The source operation timed out; inspect writer recovery before retrying."
+msgstr "Operace na zdroji překročila časový limit; před opakováním zkontrolujte obnovení zapisujících služeb."
+
+msgid "Unsupported native source backup operation."
+msgstr "Nepodporovaná operace nativního zálohování na zdroji."
+
+msgid "snapshot-remove requires a full local capture ID from snapshots TARGET."
+msgstr "snapshot-remove vyžaduje úplné ID místního snapshotu ze snapshots TARGET."
+
+msgid "Could not evaluate the selected native backup configuration."
+msgstr "Zvolenou konfiguraci nativních záloh se nepodařilo vyhodnotit."
+
+msgid "Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."
+msgstr "Jednorázové přímé SSH pro zálohu vyžaduje nativní zachycení spravované konfigurací; původním poskytovatelům zůstává deklarovaný přístup."
