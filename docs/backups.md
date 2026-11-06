@@ -112,6 +112,12 @@ Mounts inside application data need an explicitly captured root. Symbolic-link
 directories are rejected; final symbolic-link targets must be included as
 explicit application data paths. Capture state and snapshot storage must stay
 outside those data paths. An empty `stopUnits` explicitly permits live reads.
+
+For native uploads, a separately captured child root supplies that logical
+subtree. Its hidden view in ancestor snapshots is excluded, including stale
+files underneath bind mounts. Exclusion paths match names literally, including
+glob characters and backslashes. Nested paths captured from the same root and
+cold captures retain their data without these exclusions.
 The catalogue does not discover unlisted applications or unknown writers.
 Include any sockets or timers which could restart a writer during capture in
 `stopUnits` as well. All configured units are stopped to cancel intervening

@@ -17,6 +17,24 @@ from scaffold import new_vm
 from test_support import copy_test_recipe
 
 
+class PayloadMappingTests(unittest.TestCase):
+    def test_separately_captured_children_hide_only_the_parent_underlay(self):
+        paths = [{'source': '/live/app', 'payload': '/snapshots/parent/app'},
+                 {'source': '/live/app/database', 'payload': '/snapshots/database'},
+                 {'source': '/live/app/database/log', 'payload': '/snapshots/log'},
+                 {'source': '/live/app/cache', 'payload': '/snapshots/parent/app/cache'},
+                 {'source': '/live/application', 'payload': '/snapshots/parent/application'}]
+        self.assertEqual(native_restic.hidden_payload_paths(paths),
+                         ['/snapshots/database/log', '/snapshots/parent/app/database',
+                          '/snapshots/parent/app/database/log'])
+
+    def test_cold_and_same_root_child_paths_do_not_exclude_live_data(self):
+        cold = [{'source': source, 'payload': source} for source in ('/app', '/app/data', '/app/data/nested')]
+        same_root = [{'source': source, 'payload': '/snapshot' + source} for source in ('/app', '/app/data')]
+        self.assertEqual(native_restic.hidden_payload_paths(cold), [])
+        self.assertEqual(native_restic.hidden_payload_paths(same_root), [])
+
+
 class NativeResticTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()

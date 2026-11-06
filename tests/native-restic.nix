@@ -2,7 +2,8 @@
 { pkgs }:
 let
   tools = import ../management/deployment/capture-package.nix { inherit pkgs; };
-  source = snapshot: { config, ... }: {
+  nestedPath = "/data/live/web/database[1]?*\\raw name";
+  source = snapshot: { config, lib, ... }: {
     imports = [ ../modules/services/backup ];
     virtualisation.memorySize = 2048;
     virtualisation.emptyDiskImages = if snapshot then [ 1024 ] else [ ];
@@ -29,6 +30,10 @@ let
       applications.web = {
         paths = [ (if snapshot then "/data/live/web" else "/var/lib/web") ];
         stopUnits = [ "writer.service" ];
+      };
+      roots.database = lib.mkIf snapshot {
+        path = nestedPath;
+        snapshotDirectory = "/data/snapshots";
       };
       restic = {
         enable = true;
@@ -93,6 +98,12 @@ pkgs.testers.runNixOSTest {
         storage.succeed("printf '%s\\n' '" + public_key + "' >> /root/.ssh/authorized_keys; chmod 600 /root/.ssh/authorized_keys")
         node.succeed("printf '%s\\n' 'storage " + host_key + "' > /var/lib/nixberry-backup/known_hosts")
     btrfs.succeed("mkfs.btrfs -f /dev/vdb; mkdir /data; mount /dev/vdb /data; btrfs subvolume create /data/live; mkdir /data/live/web")
+    nested = ${builtins.toJSON nestedPath}
+    sibling = "/data/live/web/database1Q-otherraw name"
+    # The bind mount hides real parent data. A root snapshot alone exposes it.
+    btrfs.succeed("mkdir " + shlex.quote(nested) + "; printf stale-underlay > " + shlex.quote(nested + "/hidden"))
+    btrfs.succeed("btrfs subvolume create /data/database; printf live-child > /data/database/current; mount --bind /data/database " + shlex.quote(nested))
+    btrfs.succeed("printf keep-sibling > " + shlex.quote(sibling))
     cold.succeed("mkdir -p /var/lib/web")
     for node, data in [(btrfs, "/data/live/web"), (cold, "/var/lib/web")]:
         node.succeed("printf only-encrypted-application-data > " + data + "/example; chmod 600 " + data + "/example")
@@ -116,6 +127,13 @@ pkgs.testers.runNixOSTest {
         node.succeed("systemctl is-active writer.service; test ! -e /var/lib/nixberry-capture/pending.json")
         listed = json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"]
         assert [row["snapshotId"] for row in listed] == [report["snapshotId"]]
+        if node == btrfs:
+            probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r,p,m=native_restic.receipt(v," + repr(report["snapshotId"]) + "); paths={x['source']:x['payload'] for x in m['paths']}; rows=[json.loads(x) for x in r.run(['ls',p['payloadId'],'--json']).splitlines()]; print(json.dumps({'paths':[x['path'] for x in rows if x.get('struct_type')=='node'], 'parent':paths['/data/live/web'], 'child':r.run(['dump',p['payloadId'],paths[" + repr(nested) + "]+'/current']), 'sibling':r.run(['dump',p['payloadId'],paths['/data/live/web']+'/database1Q-otherraw name'])}))"
+            tree = json.loads(node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(probe)))
+            assert tree["child"] == "live-child"
+            assert tree["sibling"] == "keep-sibling"
+            hidden = tree["parent"] + nested.removeprefix("/data/live/web")
+            assert not any(path == hidden or path.startswith(hidden + "/") for path in tree["paths"]), "Hidden parent underlay leaked into encrypted payload"
         # Exercise the actual source service, including its bounded private tmpfs.
         node.succeed("systemctl start nixberry-backup.service")
         node.succeed("systemctl is-active writer.service; test ! -e /var/lib/nixberry-capture/pending.json")

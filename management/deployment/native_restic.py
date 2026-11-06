@@ -343,6 +343,26 @@ def initialize(value, *, apply=False):
     return {'applied': True, 'repositoryId': identity}
 
 
+def hidden_payload_paths(paths):
+    """A separate child capture replaces its hidden view in ancestor snapshots."""
+    hidden = set()
+    for parent in paths:
+        source = Path(parent['source'])
+        for child in paths:
+            nested = Path(child['source'])
+            if nested != source and nested.is_relative_to(source):
+                underlay = Path(parent['payload']) / nested.relative_to(source)
+                if underlay != Path(child['payload']):
+                    hidden.add(str(underlay))
+    return sorted(hidden)
+
+
+def literal_pattern(path):
+    # Restic patterns use Go filepath.Match syntax, not shell quoting. Keep
+    # absolute anchoring while escaping every glob metacharacter literally.
+    return ''.join('\\' + char if char in '*?[]\\' else char for char in path)
+
+
 def payload(settings, restic, directory, attempt, capture):
     paths = []
     if capture is None:
@@ -369,7 +389,10 @@ def payload(settings, restic, directory, attempt, capture):
     filename.write_text(contents)
     filename.chmod(0o600)
     arguments = ['backup', '--tag', 'nixberry-payload-v1', '--tag', 'source:' + settings['sourceId'],
-                 '--tag', 'attempt:' + attempt, '--', str(filename), settings['recoveryFile']]
+                 '--tag', 'attempt:' + attempt]
+    for hidden in hidden_payload_paths(paths):
+        arguments += ['--exclude', literal_pattern(hidden)]
+    arguments += ['--', str(filename), settings['recoveryFile']]
     arguments += sorted({item['payload'] for item in paths})
     identifier = completed(restic.run(arguments))
     if restic.run(['dump', identifier, str(filename)]) != contents:

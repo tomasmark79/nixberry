@@ -147,6 +147,10 @@ staging and bad-hash refusal, read-only planning, direct and
 systemd-owned captures, actual source-timer firing, strict host-key rejection
 before shutdown and complete
 payload authentication from the storage guest after each source is shut down.
+The Btrfs case includes a child subvolume bind-mounted over nonempty parent
+data. Inspect the encrypted payload to confirm that the hidden parent subtree
+is absent while the child and unrelated sibling remain present, including paths
+containing glob characters, backslashes and spaces.
 The storage guest also runs the packaged controller as a non-root recovery user,
 with its own SSH key and no source declaration, to list, verify and recover sealed
 source code. Test read-only SFTP credentials with repository locking disabled.

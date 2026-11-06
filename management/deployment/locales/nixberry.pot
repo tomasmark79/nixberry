@@ -40,7 +40,7 @@ msgstr ""
 msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
 msgstr ""
 
-#: deployment/native_restic.py:564
+#: deployment/native_restic.py:587
 msgid "--apply only applies to native backup capture, staging or repository initialization."
 msgstr ""
 
@@ -56,7 +56,7 @@ msgstr ""
 msgid "--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."
 msgstr ""
 
-#: deployment/native_restic.py:568
+#: deployment/native_restic.py:591
 msgid "--dry-run only applies to native backup capture, staging or repository initialization."
 msgstr ""
 
@@ -104,7 +104,7 @@ msgstr ""
 msgid "--output applies to export, prepare-image, recover-source, backup-schedule and backup-monitor."
 msgstr ""
 
-#: deployment/native_restic.py:572
+#: deployment/native_restic.py:595
 msgid "--receive-sha256 only applies to recovery archive staging."
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 msgid "--security only applies to new-*-vm; edit security in existing declarations."
 msgstr ""
 
-#: deployment/native_restic.py:566
+#: deployment/native_restic.py:589
 msgid "--snapshot only applies to native backup verification."
 msgstr ""
 
@@ -128,7 +128,7 @@ msgstr ""
 msgid "--ssh applies to server management and cannot be combined with --host or new-*."
 msgstr ""
 
-#: deployment/native_restic.py:570
+#: deployment/native_restic.py:593
 msgid "--system only applies to recovery archive staging."
 msgstr ""
 
@@ -349,7 +349,7 @@ msgstr ""
 msgid "Apply changes for update and deployment/recovery operations"
 msgstr ""
 
-#: deployment/native_restic.py:558
+#: deployment/native_restic.py:581
 msgid "Apply native application backup"
 msgstr ""
 
@@ -383,7 +383,7 @@ msgstr ""
 msgid "Available memory: {available:.1f} %"
 msgstr ""
 
-#: deployment/native_restic.py:550
+#: deployment/native_restic.py:573
 msgid "Back up configuration-owned application data directly into an encrypted Restic repository."
 msgstr ""
 
@@ -700,7 +700,7 @@ msgstr ""
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
-#: deployment/native_restic.py:552
+#: deployment/native_restic.py:575
 msgid "Configuration-owned Restic policy file"
 msgstr ""
 
@@ -721,7 +721,7 @@ msgstr ""
 msgid "Conflicting file and directory paths in recovery recipe archive."
 msgstr ""
 
-#: deployment/native_restic.py:358 deployment/native_restic.py:476
+#: deployment/native_restic.py:378 deployment/native_restic.py:499
 msgid "Conflicting logical application paths in the captured backup."
 msgstr ""
 
@@ -1084,7 +1084,7 @@ msgstr ""
 msgid "Expected exactly one ESP and one Linux partition."
 msgstr ""
 
-#: deployment/native_restic.py:554
+#: deployment/native_restic.py:577
 msgid "Expected running NixOS generation for recovery archive staging"
 msgstr ""
 
@@ -1105,7 +1105,7 @@ msgstr ""
 msgid "Extract a translation template from Python, Bash and PowerShell without extra dependencies."
 msgstr ""
 
-#: deployment/native_restic.py:553
+#: deployment/native_restic.py:576
 msgid "Full native Restic completion snapshot ID"
 msgstr ""
 
@@ -1257,7 +1257,7 @@ msgstr ""
 msgid "Independent inventory and verification are read-only and do not accept --apply."
 msgstr ""
 
-#: deployment/native_restic.py:559
+#: deployment/native_restic.py:582
 msgid "Inspect backup readiness without stopping writers"
 msgstr ""
 
@@ -1364,7 +1364,7 @@ msgstr ""
 msgid "Interface {name}: MAC {mac}; mode {mode}; address {address}; gateway {gateway}"
 msgstr ""
 
-#: deployment/native_restic.py:274 deployment/native_restic.py:402 deployment/snapshots.py:353 deployment/snapshots.py:387 deployment/snapshots.py:397 deployment/snapshots.py:530
+#: deployment/native_restic.py:274 deployment/native_restic.py:425 deployment/snapshots.py:353 deployment/snapshots.py:387 deployment/snapshots.py:397 deployment/snapshots.py:530
 msgid "Interrupted capture needs writer recovery before another snapshot."
 msgstr ""
 
@@ -1467,7 +1467,7 @@ msgstr ""
 msgid "Invalid ip route response."
 msgstr ""
 
-#: deployment/native_restic.py:432 deployment/native_restic.py:437 deployment/native_restic.py:441 deployment/native_restic.py:443
+#: deployment/native_restic.py:455 deployment/native_restic.py:460 deployment/native_restic.py:464 deployment/native_restic.py:466
 msgid "Invalid native Restic backup inventory."
 msgstr ""
 
@@ -1475,7 +1475,7 @@ msgstr ""
 msgid "Invalid native Restic backup policy."
 msgstr ""
 
-#: deployment/native_restic.py:513
+#: deployment/native_restic.py:536
 msgid "Invalid native Restic completion receipt."
 msgstr ""
 
@@ -1698,11 +1698,11 @@ msgstr ""
 msgid "Native backup access currently requires Linux."
 msgstr ""
 
-#: deployment/native_restic.py:562
+#: deployment/native_restic.py:585
 msgid "Native backup operations require root and protected runtime credentials."
 msgstr ""
 
-#: deployment/native_restic.py:574
+#: deployment/native_restic.py:597
 msgid "Native backup was interrupted; checking writer recovery."
 msgstr ""
 
@@ -2008,7 +2008,7 @@ msgstr ""
 msgid "Primary interface: {interface}"
 msgstr ""
 
-#: deployment/native_restic.py:556
+#: deployment/native_restic.py:579
 msgid "Print technical backup metadata as JSON"
 msgstr ""
 
@@ -2128,7 +2128,7 @@ msgstr ""
 msgid "Reading the image during transfer failed: {value1}"
 msgstr ""
 
-#: deployment/native_restic.py:555
+#: deployment/native_restic.py:578
 msgid "Receive a sealed recipe archive from standard input with this SHA256 identity"
 msgstr ""
 
@@ -2189,7 +2189,7 @@ msgstr ""
 msgid "Recovery staging requires the explicit expected NixOS system path."
 msgstr ""
 
-#: deployment/native_restic.py:257 deployment/native_restic.py:263 deployment/native_restic.py:582
+#: deployment/native_restic.py:257 deployment/native_restic.py:263 deployment/native_restic.py:605
 msgid "Recovery transfer requires a full SHA256 archive identity."
 msgstr ""
 
@@ -2496,7 +2496,7 @@ msgstr ""
 msgid "Select a full Restic receipt ID for verification or source recovery."
 msgstr ""
 
-#: deployment/native_restic.py:499
+#: deployment/native_restic.py:522
 msgid "Select a full Restic snapshot ID from the native backup inventory."
 msgstr ""
 
@@ -3446,7 +3446,7 @@ msgstr ""
 msgid "The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."
 msgstr ""
 
-#: deployment/native_restic.py:464 deployment/native_restic.py:468 deployment/native_restic.py:472 deployment/native_restic.py:480 deployment/native_restic.py:484 deployment/native_restic.py:489 deployment/native_restic.py:517
+#: deployment/native_restic.py:487 deployment/native_restic.py:491 deployment/native_restic.py:495 deployment/native_restic.py:503 deployment/native_restic.py:507 deployment/native_restic.py:512 deployment/native_restic.py:540
 msgid "The encrypted capture manifest does not match its completion receipt."
 msgstr ""
 
@@ -3922,11 +3922,11 @@ msgstr ""
 msgid "The script contains a reserved input terminator."
 msgstr ""
 
-#: deployment/native_restic.py:545
+#: deployment/native_restic.py:568
 msgid "The sealed recovery recipe does not match this source and capture."
 msgstr ""
 
-#: deployment/native_restic.py:504
+#: deployment/native_restic.py:527
 msgid "The selected Restic snapshot is not a completion receipt for this source."
 msgstr ""
 
@@ -4170,11 +4170,11 @@ msgstr ""
 msgid "The upload already exists."
 msgstr ""
 
-#: deployment/native_restic.py:376
+#: deployment/native_restic.py:399
 msgid "The uploaded backup manifest does not match the capture."
 msgstr ""
 
-#: deployment/native_restic.py:379 deployment/native_restic.py:539
+#: deployment/native_restic.py:402 deployment/native_restic.py:562
 msgid "The uploaded recovery configuration does not match the capture."
 msgstr ""
 
