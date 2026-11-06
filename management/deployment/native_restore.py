@@ -65,15 +65,17 @@ def run(recipe, target, name, source, access, snapshot, *, apply=False, dry_run=
         if preflight(target, live) != expected:
             raise RuntimeError(_("The running destination differs from this recipe; prepare it before restoration."))
         command = connection(target, live)
-        inspect = ("import json,pathlib; p=pathlib.Path; print(json.dumps({'systemPath':str(p('/run/current-system').resolve()),"
-                   "'machineId':p('/etc/machine-id').read_text().strip(),"
-                   "'restore':json.loads(p('/etc/nixberry/restore.json').read_text()),"
-                   "'capture':json.loads(p('/etc/nixberry/capture.json').read_text())}))")
         prefix = 'set -eu; export PATH=/run/current-system/sw/bin:/run/wrappers/bin; '
-        installed = remote(command, prefix + shlex.join(['python3', '-c', inspect]), 30)
-        if (not isinstance(installed, dict) or installed.get('systemPath') != expected
+        inspect = ("printf '{\"restore\":'; cat /etc/nixberry/restore.json; "
+                   "printf ',\"capture\":'; cat /etc/nixberry/capture.json; "
+                   "printf ',\"identity\":'; " + shlex.join([
+                       '/run/current-system/sw/bin/nixberry-restore-target', 'status', '--system', expected, '--json'])
+                   + "; printf '}\\n'")
+        installed = remote(command, prefix + inspect, 30)
+        identity = installed.get('identity') if isinstance(installed, dict) else None
+        if (not isinstance(installed, dict) or not isinstance(identity, dict) or identity.get('systemPath') != expected
                 or installed.get('restore') != selected['restore'] or installed.get('capture') != selected['capture']
-                or not isinstance(installed.get('machineId'), str) or not native_restic.snapshots.ID.fullmatch(installed['machineId'])):
+                or not isinstance(identity.get('machineId'), str) or not native_restic.snapshots.ID.fullmatch(identity['machineId'])):
             raise RuntimeError(_("The installed destination policies or identity differ from the selected restore configuration."))
         # Read secrets only after the target generation/policies/identity pass.
         contents = restore_access.pack(context)
@@ -81,7 +83,7 @@ def run(recipe, target, name, source, access, snapshot, *, apply=False, dry_run=
         language = language if language in ('en', 'cs') else 'en'
         arguments = ['/run/current-system/sw/bin/nixberry-restore-target', 'restore', '--access-stdin',
                      '--source', source, '--snapshot', snapshot, '--system', expected,
-                     '--machine-id', installed['machineId'], '--apply', '--json']
+                     '--machine-id', identity['machineId'], '--apply', '--json']
         arguments = ['systemd-run', '--unit=nixberry-restore', '--collect', '--wait', '--pipe',
                      '--property=Type=exec', '--property=KillMode=control-group', '--property=TimeoutStopSec=10',
                      '--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin', '--setenv=NIXBERRY_LANG=' + language,
@@ -89,7 +91,7 @@ def run(recipe, target, name, source, access, snapshot, *, apply=False, dry_run=
         report = remote(command, prefix + 'exec ' + shlex.join(arguments),
                         context['timeoutSeconds'] + 172800 + 600, contents=contents)
         if (not isinstance(report, dict) or report.get('applied') is not True or report.get('state') != 'recorded-restored'
-                or report.get('machineId') != installed['machineId'] or report.get('systemPath') != expected
+                or report.get('machineId') != identity['machineId'] or report.get('systemPath') != expected
                 or report.get('sourceId') != context['sourceId'] or report.get('snapshotId') != snapshot):
             raise RuntimeError(_("The destination did not confirm this exact native restoration."))
         return {'target': name, 'source': source, **report}

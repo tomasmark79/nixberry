@@ -97,7 +97,6 @@ let
       pkgs.gptfdisk
       pkgs.openssh
       pkgs.curl
-      pkgs.python3
     ];
   };
   declaration = name: {
@@ -168,6 +167,7 @@ pkgs.testers.runNixOSTest {
     for node in [source, destination, storage]:
         node.wait_for_unit("multi-user.target")
         node.succeed("install -d -m 700 /root/.ssh")
+    destination.succeed("! command -v python3")
     for node in [source, destination]:
         node.succeed("test -d /sys/firmware/efi; disk=/dev/$(lsblk -ndo PKNAME $(findmnt -n --nofsroot -o SOURCE /)); sgdisk --change-name=1:disk-system-boot --change-name=2:disk-system-root $disk; udevadm trigger --subsystem-match=block; udevadm settle")
     storage.succeed("ssh-keygen -q -t ed25519 -N \"\" -f /root/.ssh/id_ed25519; ssh-keygen -q -t ed25519 -N \"\" -f /root/readonly-key; mkdir /backup")

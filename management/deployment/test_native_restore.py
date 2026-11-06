@@ -4,6 +4,9 @@ import io
 import json
 import os
 from pathlib import Path
+import shlex
+import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -32,6 +35,8 @@ class NativeRestoreTests(unittest.TestCase):
         self.target = test_native_controller.NativeDispatchTests().target()
         self.system = '/nix/store/' + 'b' * 32 + '-nixos-system-target'
         self.selected = {'restore': {'test': 'restore'}, 'capture': {'test': 'capture'}, 'systemPath': self.system}
+        self.identity = {'systemPath': self.system, 'machineId': 'd' * 32,
+                         'ready': True, 'pending': False, 'completed': False}
         for item in (patch('native_restore.freeze_recipe', return_value='/frozen'),
                      patch('native_restore.projection', return_value=self.selected)):
             item.start()
@@ -60,7 +65,8 @@ class NativeRestoreTests(unittest.TestCase):
         replies = []
         def remote(command, script, timeout, **kwargs):
             if not kwargs:
-                return {**self.selected, 'machineId': 'd' * 32}
+                return {'restore': self.selected['restore'], 'capture': self.selected['capture'],
+                        'identity': self.identity}
             replies.append((script, kwargs['contents']))
             return {'applied': True, 'state': 'recorded-restored', 'machineId': 'd' * 32,
                     'systemPath': self.system, 'sourceId': 'lost-source', 'snapshotId': 'c' * 64}
@@ -80,11 +86,61 @@ class NativeRestoreTests(unittest.TestCase):
         with patch('native_restore.status', return_value={}), \
                 patch('native_restore.preflight', return_value=self.system), \
                 patch('native_restore.connection', return_value=['ssh', 'root@test-only']), \
-                patch('native_restore.remote', return_value={**self.selected, 'machineId': 'invalid'}), \
+                patch('native_restore.remote', return_value={'restore': self.selected['restore'],
+                    'capture': self.selected['capture'], 'identity': {**self.identity, 'machineId': 'invalid'}}), \
                 patch('restore_access.pack', side_effect=AssertionError('secrets before identity')):
             with self.assertRaises(RuntimeError):
                 native_restore.run('/recipe', self.target, 'rpi-demo', 'vm-demo-lost-source',
                                    self.access, 'c' * 64, apply=True)
+
+    def test_installed_policy_inspection_uses_the_packaged_helper_without_global_python(self):
+        binaries = self.root / 'guest-bin'
+        binaries.mkdir()
+        wrappers = self.root / 'guest-wrappers'
+        wrappers.mkdir()
+        policies = self.root / 'guest-policies'
+        policies.mkdir()
+        shell = shutil.which('bash')
+        self.assertIsNotNone(shell)
+        (binaries / 'cat').symlink_to(shutil.which('cat'))
+        self.assertIsNone(shutil.which('python3', path=str(binaries)))
+        self.selected['restore']['test'] = 'quoted "value"\n$(unexpected-command)'
+        self.selected['capture']['test'] = 'capture `unexpected-command`'
+        for name in ('restore', 'capture'):
+            (policies / (name + '.json')).write_text(json.dumps(self.selected[name], indent=2))
+        helper = binaries / 'nixberry-restore-target'
+        helper.write_text('#!' + shell + '\nset -eu\n'
+            + 'test "$#" = 4 && test "$1" = status && test "$2" = --system && test "$3" = '
+            + shlex.quote(self.system) + ' && test "$4" = --json\n'
+            + 'if command -v python3 >/dev/null 2>&1; then exit 91; fi\n'
+            + "printf '%s\\n' " + shlex.quote(json.dumps(self.identity)) + '\n')
+        helper.chmod(0o700)
+        execute = subprocess.run
+        pack = restore_access.pack
+        events = []
+        def command(arguments, **kwargs):
+            if kwargs['input'] is not None:
+                events.append('restore')
+                report = {'applied': True, 'state': 'recorded-restored', 'machineId': 'd' * 32,
+                          'systemPath': self.system, 'sourceId': 'lost-source', 'snapshotId': 'c' * 64}
+                return subprocess.CompletedProcess(arguments, 0, json.dumps(report).encode(), b'')
+            events.append('inspect')
+            script = arguments[-1].replace('/run/current-system/sw/bin', str(binaries)) \
+                .replace('/run/wrappers/bin', str(wrappers)).replace('/etc/nixberry', str(policies))
+            return execute([shell, '-c', script], capture_output=True, text=True,
+                           env={**os.environ, 'PATH': str(binaries)}, timeout=5)
+        def secrets(context):
+            events.append('secrets')
+            return pack(context)
+        with patch('native_restore.status', return_value={}), \
+                patch('native_restore.preflight', return_value=self.system), \
+                patch('native_restore.connection', return_value=['ssh', 'root@test-only']), \
+                patch('native_restore.subprocess.run', side_effect=command), \
+                patch('restore_access.pack', side_effect=secrets):
+            result = native_restore.run('/recipe', self.target, 'rpi-demo', 'vm-demo-lost-source',
+                                        self.access, 'c' * 64, apply=True)
+        self.assertEqual(result['state'], 'recorded-restored')
+        self.assertEqual(events, ['inspect', 'secrets', 'restore'])
 
     def test_received_credentials_are_private_bounded_and_removed_after_failure(self):
         original = restore_access.snapshots.secure_directory
