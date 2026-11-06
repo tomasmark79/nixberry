@@ -4,6 +4,7 @@
 from datetime import datetime, timezone
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -22,6 +23,7 @@ from discovery import collect_status
 from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, error as report_error
 from native_controller import ACTIONS as SNAPSHOT_ACTIONS, run as run_native
+from native_restore import run as run_native_restore
 from native_access import ACTIONS as ACCESS_ACTIONS, run as run_native_access
 from backups import ACTIONS as BACKUP_ACTIONS, available as backup_operations, run as run_backup, policy as backup_policy
 
@@ -111,7 +113,7 @@ def operations(target):
         result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
         result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg", *SNAPSHOT_ACTIONS]
-        for action in ("backup", "backup-stage"):
+        for action in ("backup", "backup-stage", "restore"):
             if action not in result:
                 result += [action]
     if caps["hypervisor"] or target["backend"] == "rpi":
@@ -188,7 +190,10 @@ def main(argv=None):
         parser.error(_("--method applies to new-*, show, plan, create, install, provision, reproduce and export."))
     if remote_command and args.action != "ssh":
         parser.error(_("A command after -- is only available for ssh TARGET -- COMMAND."))
-    if args.backup_access:
+    if args.backup_access and args.action == 'restore' and (not args.target or not args.backup_source
+            or args.target == args.backup_source or not re.fullmatch('[0-9a-f]{64}', args.snapshot or '')):
+        parser.error(_("Native restore requires a distinct source name and a full Restic receipt ID."))
+    if args.backup_access and args.action != "restore":
         if (args.action not in ACCESS_ACTIONS or not args.target or args.host or args.ssh or args.address
                 or args.local_disk or args.erase_existing or args.artifact_root):
             parser.error(_("--backup-access requires a named source and a storage read operation without server connection options."))
@@ -210,11 +215,13 @@ def main(argv=None):
         parser.error(_("--ssh applies to server management and cannot be combined with --host or new-*."))
     override = args.ssh or (args.host if not args.action.startswith("new-") else None)
     if override:
-        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup", "backup-stage"):
+        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup", "backup-stage", "restore"):
             parser.error(_("Direct SSH supports system management, local snapshots and native backup capture."))
         if (args.target not in registry or registry[args.target]["backend"] not in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware")
                 or not registry[args.target].get("offline")):
             parser.error(_("Direct SSH requires an offline VM declaration without hypervisor management."))
+        if args.action == 'restore' and not args.backup_access:
+            parser.error(_("Direct SSH restoration overrides require independent native storage access."))
         if args.action in ("backup", "backup-stage") and backup_policy(registry[args.target])['enable']:
             parser.error(_("Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."))
         try:
@@ -349,6 +356,13 @@ def main(argv=None):
     if args.action in SNAPSHOT_ACTIONS or (args.action in ("backup", "backup-stage") and not backup_policy(target)['enable']):
         result = run_native(os.environ.get("NIXBERRY_RECIPE", ""), target, args.action, args.target,
                             snapshot=args.snapshot, apply=args.apply, dry_run=args.dry_run)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
+    if args.action == 'restore' and args.backup_access:
+        if args.output or args.local_disk or args.erase_existing or args.artifact_root:
+            parser.error(_("Native restoration does not accept export or installation options."))
+        result = run_native_restore(os.environ.get('NIXBERRY_RECIPE', ''), target, args.target,
+            args.backup_source, args.backup_access, args.snapshot, apply=args.apply, dry_run=args.dry_run)
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
     if args.action in BACKUP_ACTIONS:

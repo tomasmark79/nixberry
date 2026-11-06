@@ -1,4 +1,4 @@
-"""Inspect a prepared restore destination without changing services or data."""
+"""Inspect or restore a prepared destination with configuration-owned writers."""
 import hashlib
 import json
 import os
@@ -8,6 +8,9 @@ import re
 import shlex
 import stat
 import subprocess
+import contextlib
+import signal
+import sys
 
 from messages import _, ArgumentParser, error
 from recovery_recipe import SYSTEM
@@ -119,27 +122,46 @@ def path_state(value):
     return {'path': value, 'exists': exists, 'empty': empty}
 
 
-def status(value, *, expected_system=None):
+def status(value, *, expected_system=None, inspect_paths=True):
     value = policy(value)
     system = snapshots.running_system()
     if (not SYSTEM.fullmatch(system) or expected_system is not None and expected_system != system
             or platform.machine() + '-linux' != value['architecture']):
         raise RuntimeError(_("The destination generation or architecture differs from the expected restore target."))
     done = completed(value)
+    pending_path = Path(value['stateDirectory']) / 'restore-pending.json'
+    interrupted = pending_path.exists() or pending_path.is_symlink()
     units = sorted(set(value['automaticUnits']) | {unit for app in value['applications'].values() for unit in app['units']})
     states = {unit: unit_state(value, unit) for unit in units}
-    paths = [path_state(path) for path in sorted({path for app in value['applications'].values() for path in app['paths']})]
+    paths = [path_state(path) for path in sorted({path for app in value['applications'].values() for path in app['paths']})] if inspect_paths else []
     return {'systemPath': system, 'machineId': snapshots.machine_id(), 'policySha256': policy_hash(value),
-            'architecture': value['architecture'], 'completed': done, 'units': states, 'paths': paths,
-            'ready': not done and all(state in ('inactive', 'failed') for state in states.values()) and all(path['empty'] for path in paths)}
+            'architecture': value['architecture'], 'completed': done, 'pending': interrupted, 'units': states, 'paths': paths,
+            'ready': not done and not interrupted and all(state in ('inactive', 'failed') for state in states.values()) and all(path['empty'] for path in paths)}
+
+
+def require_managed():
+    fields = dict(line.split('=', 1) for line in snapshots.run(['systemctl', 'show',
+        '--property=MainPID,KillMode,ActiveState', 'nixberry-restore.service']).splitlines() if '=' in line)
+    if (fields.get('MainPID') != str(os.getpid()) or fields.get('KillMode') != 'control-group'
+            or fields.get('ActiveState') not in ('activating', 'active')):
+        raise RuntimeError(_("Applied restoration requires the managed nixberry-restore system service."))
 
 
 def main(argv=None):
     parser = ArgumentParser(description=_(__doc__))
-    parser.add_argument('action', choices=['status'], nargs='?', default='status')
+    parser.add_argument('action', choices=['status', 'restore', 'abort'], nargs='?', default='status')
     parser.add_argument('--config', default='/etc/nixberry/restore.json', help=_("Configuration-owned destination restore policy file"))
     parser.add_argument('--system', help=_("Expected running NixOS system generation"))
     parser.add_argument('--json', action='store_true', help=_("Print destination readiness as technical JSON"))
+    parser.add_argument('--machine-id', help=_("Explicit verified destination machine ID"))
+    parser.add_argument('--source', help=_("Preserved native backup source name"))
+    parser.add_argument('--snapshot', help=_("Full native Restic completion snapshot ID"))
+    access = parser.add_mutually_exclusive_group()
+    access.add_argument('--backup-access', help=_("Private native restore storage access context on this destination"))
+    access.add_argument('--access-stdin', action='store_true', help=_("Receive bounded restore credentials through SSH standard input"))
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--apply', action='store_true', help=_("Restore application data and start configured destination writers"))
+    modes.add_argument('--dry-run', action='store_true', help=_("Inspect restoration without publishing application data"))
     args = parser.parse_args(argv)
     if os.geteuid() != 0:
         raise RuntimeError(_("Destination restore inspection requires root."))
@@ -147,7 +169,41 @@ def main(argv=None):
         contents = stream.read(1024 * 1024 + 1)
     if len(contents) > 1024 * 1024:
         raise ValueError(_("Invalid destination restore policy."))
-    print(json.dumps(status(json.loads(contents), expected_system=args.system), sort_keys=True))
+    value = json.loads(contents)
+    if args.action == 'status':
+        if args.apply or args.backup_access or args.access_stdin or args.source or args.snapshot or args.machine_id:
+            parser.error(_("Restore access and mutation options only apply to destination restore."))
+        result = status(value, expected_system=args.system)
+    else:
+        if args.apply and args.action == 'restore':
+            require_managed()
+        import native_access
+        import native_restic
+        import restore_access
+        import restore_apply
+        if args.action == 'restore' and (not all((args.system, args.machine_id, args.source, args.snapshot)) or not (args.backup_access or args.access_stdin)):
+            parser.error(_("Destination restore requires system, machine ID, source, snapshot and private storage access."))
+        def interrupted(signum, frame):
+            raise InterruptedError(_("Restoration was interrupted; retry the same request to recover its private transaction."))
+        for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+            signal.signal(signum, interrupted)
+        with Path('/etc/nixberry/capture.json').open('rb') as stream:
+            capture = json.loads(stream.read(1024 * 1024 + 1))
+        if args.action == 'abort':
+            if not args.system or not args.machine_id or args.source or args.snapshot or args.backup_access or args.access_stdin:
+                parser.error(_("Abort requires the explicit destination system and machine ID without storage access options."))
+            result = restore_apply.abort(value, capture, args.system, args.machine_id, apply=args.apply)
+            print(json.dumps(result, sort_keys=True))
+            return
+        with contextlib.ExitStack() as stack:
+            if args.access_stdin:
+                context = stack.enter_context(restore_access.receive(restore_access.read(sys.stdin.buffer), args.source))
+            else:
+                context = native_access.load(args.backup_access, args.source)
+                native_access.runtime(context)
+            reader = native_restic.Restic(context, owner_uid=0, repository_id=context['repositoryId'], read_only=True)
+            result = restore_apply.restore(value, capture, reader, args.snapshot, args.system, args.machine_id, apply=args.apply)
+    print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == '__main__':

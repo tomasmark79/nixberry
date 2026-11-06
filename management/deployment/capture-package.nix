@@ -11,6 +11,9 @@ let
         ./protected-units.json
         ./restore_target.py
         ./restore_payload.py
+        ./restore_apply.py
+        ./restore_access.py
+        ./native_access.py
         ./backup_identity.py
         ./native_restic.py
         ./recovery_recipe.py
@@ -39,7 +42,12 @@ in
 {
   inherit source;
   capture = entry "nixberry-capture" "snapshots.py" [ ];
-  restore = entry "nixberry-restore-target" "restore_target.py" [ ];
+  restore = entry "nixberry-restore-target" "restore_target.py" [
+    pkgs.restic
+    pkgs.openssh
+    pkgs.rsync
+    pkgs.coreutils
+  ];
   update = entry "nixberry-update-guard" "update_guard.py" [ pkgs.nix ];
   restic = entry "nixberry-restic" "native_restic.py" [
     pkgs.restic

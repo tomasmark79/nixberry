@@ -148,6 +148,19 @@ and RPi generation reproduction. CLI/completion contracts cover all VM backends,
 image/ISO and access variants without system evaluation for inventory. These
 checks do not prove a physical installation or every hypervisor transport.
 
+`test_restore_apply.py`, `test_native_restore.py` and `test_update_guard.py` check
+publication, explicit target binding, private credential cleanup, retry after
+copy/marker interruption, unknown-file refusal and activation exclusion. Run
+`nix build --no-link path:.#checks.x86_64-linux.native-restore` for the integrated
+scenario: UEFI guests, a selected source recipe that reproduces the actual source
+generation, global encrypted backup, source shutdown and declaration removal,
+prepared destination restoration through a read-only SFTP key, forced interruption
+and reboot, retry and actual HTTP application behavior backed by restored SQLite.
+Check that destination SSH keys and machine ID remain unchanged. Recover the
+sealed source recipe after source loss and evaluate its original system path.
+This proves the exercised x86_64 VM setup; it does not prove physical ARM boot,
+RPi deployment, every hypervisor transport or arbitrary application health.
+
 `test_native_restic.py` checks cold-capture recovery, unsuccessful publication,
 repository/credential policy, capture leases and configuration-owned metadata for
 all six platforms and both filesystem choices, including legacy Hyper-V owner

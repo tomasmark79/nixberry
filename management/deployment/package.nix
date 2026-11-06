@@ -12,6 +12,8 @@ let
         ./cli_args.py
         ./native_controller.py
         ./native_access.py
+        ./native_restore.py
+        ./restore_access.py
         ./backup_identity.py
         ./native_restic.py
         ./snapshots.py
@@ -165,7 +167,7 @@ in
     export PYTHONPATH=${source}
     exec python3 ${source}/cli.py "$@"
   '';
-  passthru = { inherit manifest; };
+  passthru = { inherit manifest source; };
 }).overrideAttrs
   (_: {
     pname = "nixberry";

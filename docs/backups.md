@@ -441,11 +441,88 @@ nixberry recover-source vm-demo-source --backup-access /private/access.json --sn
 
 `RECEIPT_ID` is a complete 64-character native Restic receipt ID from inventory.
 The context explicitly selects native storage reads, including when a legacy
-provider exists. No source connection, NixOS evaluation or source declaration is
+provider exists. Shared management file aliases are materialized as regular
+source files; external or directory aliases remain refused. The selected recipe
+must still reproduce the original source generation and policy exactly. No source connection, NixOS evaluation or source declaration is
 needed. Any available NixBerry checkout can supply the controller. These
 operations require Linux; all five VM backends and RPi use the same storage
 contract. Inventory operation lists are candidates and do not evaluate native
 enablement or inspect access contexts.
+
+### Restore applications into a prepared destination
+
+Native restoration uses a distinct installed destination with the same source
+architecture (`aarch64-linux` or `x86_64-linux`). Declare its own hostname, network
+and hardware or VM identity. Select the required service configuration and enable
+`nixberry.backup.restore.prepare = true` before installing or updating that target.
+Preparation holds the configuration's `restoreUnits`; it does not stop a running
+production installation for takeover. Keep account names and the numeric IDs used
+by application files, ACLs and capabilities compatible with the archived source.
+The tool preserves the destination's machine ID, SSH keys and account databases.
+
+```sh
+nixberry restore vm-demo-destination --from vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --json
+nixberry restore vm-demo-destination --from vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --apply --json
+```
+
+The access context still names `vm-demo-source`, including when that declaration
+and the original machine no longer exist. Explicit `--backup-access` selects this
+native path; ordinary legacy-provider restoration retains its existing contract.
+The default plan evaluates the destination recipe without contacting either
+machine or storage. Applying checks the installed generation, declared identity
+and exact policies before transferring bounded credentials through SSH stdin into
+private destination tmpfs. Storage host and repository pins and read-only SFTP
+access remain effective. A local repository path must also be available on the
+destination. Native controller restoration currently requires Linux and uses the
+same path for all five VM backends and Raspberry Pi; it does not install disks or
+convert filesystems.
+
+The applied operation runs in the managed `nixberry-restore` system unit. Its
+control group contains transfer children, so failure of the main process cannot
+leave a publisher running after its locks are released. Inspect
+`systemctl status nixberry-restore` and its journal when controller access is lost.
+
+A new transaction requires empty application paths; existing directory scaffolding
+must match the selected backup. The destination needs writable identified Btrfs or
+ext4 filesystems, including persistent private `restore.stateDirectory` outside
+application data. Allow temporary capacity there for the complete verified
+payload and temporary files used during cross-filesystem publication. The default
+is `/var/lib/nixberry-restore`; declare another suitable persistent volume when
+needed. The original source never receives this restoration staging copy.
+Same-filesystem hardlinks avoid a second full copy where possible. A source
+hardlink group spanning incompatible destination filesystems is refused.
+
+The private transaction records the exact source receipt, destination machine,
+generation, policy and filesystem layout. A retry with the same command resumes
+an interrupted transaction. Writers remain held; checksums, metadata and hardlink
+relationships are verified and synced before durable completion. Unexpected
+additional destination files are retained and prevent completion. No account,
+SSH, boot or other operating-system identity paths can be replaced. Native
+application restoration requires version 2 capture evidence; version 1 remains
+available for inventory, verification and configuration recovery.
+
+After data completion, the command starts only the declared application writer
+units. A failed service start can be retried with the same command without
+replacing subsequent application data. Provision the destination's own producer
+credentials before enabling its backup schedule; temporary restore credentials
+are not installed as future backup write access. Normal completion or errors
+remove transferred credentials; abrupt termination can leave private tmpfs state
+until reboot. Incomplete publication blocks configuration activation. Once the
+restored applications are verified, remove `restore.prepare` before ordinary
+changes to the restore application catalogue.
+
+If failure occurred before publication, inspect the transaction on the verified
+destination. The target helper can discard only an unpublished private stage,
+leaving application paths untouched, so account configuration can then be fixed:
+
+```sh
+nixberry-restore-target abort --system "$(readlink -f /run/current-system)" --machine-id "$(cat /etc/machine-id)"
+nixberry-restore-target abort --system "$(readlink -f /run/current-system)" --machine-id "$(cat /etc/machine-id)" --apply
+```
+
+Run these commands as root on the destination. Abort refuses transactions that
+have entered publication; retry their exact restore request instead. Do not
+manually delete transaction state or bypass the writer guards.
 
 Source recovery plans without storage access by default; `--apply` retrieves the
 authenticated recipe and writes a new private output directory. It checks the

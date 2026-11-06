@@ -3763,3 +3763,168 @@ msgstr "Obnova dat vyžaduje přístup pouze pro čtení a úplné ID snímku."
 
 msgid "Application payload restoration requires root to preserve ownership and metadata."
 msgstr "Obnova dat aplikací vyžaduje uživatele root pro zachování vlastnictví a metadat."
+
+msgid "A new restore requires empty destination application paths."
+msgstr "Nová obnova vyžaduje prázdné cílové cesty aplikací."
+
+msgid "Abort requires the explicit destination system and machine ID without storage access options."
+msgstr "Zrušení vyžaduje výslovný cílový systém a ID stroje bez voleb přístupu k úložišti."
+
+msgid "An incomplete application restoration prevents update activation."
+msgstr "Nedokončená obnova aplikací brání aktivaci aktualizace."
+
+msgid "Application restoration must not replace operating-system identity or restore state."
+msgstr "Obnova aplikací nesmí nahradit identitu operačního systému ani stav obnovy."
+
+msgid "Backup source name for restoration into a distinct target; native access also supports preserved sources"
+msgstr "Název zdroje zálohy pro obnovu do jiného cíle; nativní přístup podporuje i uchované zdroje"
+
+msgid "Cannot identify the destination filesystem layout."
+msgstr "Nelze určit rozložení cílových souborových systémů."
+
+msgid "Could not evaluate the prepared native restore target."
+msgstr "Nepodařilo se vyhodnotit připravený cíl nativní obnovy."
+
+msgid "Destination application paths must not traverse symbolic links."
+msgstr "Cílové cesty aplikací nesmí procházet symbolickými odkazy."
+
+msgid "Destination filesystems cannot preserve a source hardlink group."
+msgstr "Cílové souborové systémy nemohou zachovat skupinu pevných odkazů zdroje."
+
+msgid "Destination restoration failed; inspect its diagnostics and retained transaction."
+msgstr "Obnova cíle selhala; zkontrolujte její diagnostiku a zachovanou transakci."
+
+msgid "Destination restoration timed out; retry the same request to recover its transaction."
+msgstr "Vypršel čas obnovy cíle; zopakujte stejný požadavek pro pokračování transakce."
+
+msgid "Destination restore requires system, machine ID, source, snapshot and private storage access."
+msgstr "Obnova cíle vyžaduje systém, ID stroje, zdroj, snapshot a soukromý přístup k úložišti."
+
+msgid "Destination scaffolding is absent from the selected application backup."
+msgstr "Adresářová struktura cíle chybí ve vybrané záloze aplikací."
+
+msgid "Destination writers must remain held until application restoration completes."
+msgstr "Zapisující jednotky cíle musí zůstat blokované do dokončení obnovy aplikací."
+
+msgid "Direct SSH restoration overrides require independent native storage access."
+msgstr "Přepsání přístupu SSH při obnově vyžaduje nezávislý nativní přístup k úložišti."
+
+msgid "Enable nixberry.backup.restore.prepare in the destination configuration first."
+msgstr "Nejprve zapněte nixberry.backup.restore.prepare v cílové konfiguraci."
+
+msgid "Explicit verified destination machine ID"
+msgstr "Výslovné ověřené ID cílového stroje"
+
+msgid "Inspect or restore a prepared destination with configuration-owned writers."
+msgstr "Zkontroluje nebo obnoví připravený cíl obnovy se službami podle konfigurace."
+
+msgid "Inspect restoration without publishing application data"
+msgstr "Zkontrolovat obnovu bez zveřejnění dat aplikací"
+
+msgid "Installed capture and restore application catalogues differ."
+msgstr "Nainstalované katalogy aplikací pro zachycení a obnovu se liší."
+
+msgid "Invalid native restore access transfer."
+msgstr "Neplatný přenos přístupu pro nativní obnovu."
+
+msgid "Invalid private restore transaction directory."
+msgstr "Neplatný soukromý adresář transakce obnovy."
+
+msgid "Native restoration controller operations currently require Linux."
+msgstr "Operace řadiče nativní obnovy nyní vyžadují Linux."
+
+msgid "Native restoration does not accept export or installation options."
+msgstr "Nativní obnova nepřijímá volby exportu ani instalace."
+
+msgid "Native restoration requires a declared target with verified live system access."
+msgstr "Nativní obnova vyžaduje deklarovaný cíl s ověřeným přístupem k běžícímu systému."
+
+msgid "Native restore requires a distinct source name and a full Restic receipt ID."
+msgstr "Nativní obnova vyžaduje odlišný název zdroje a úplné ID potvrzení Resticu."
+
+msgid "Native storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration."
+msgstr "Nativní čtení úložiště a obnova přijímají --backup-access PRIVATE_CONTEXT_FILE i bez původní deklarace zdroje."
+
+msgid "No unpublished restore transaction exists to abort."
+msgstr "Neexistuje nezveřejněná transakce obnovy, kterou lze zrušit."
+
+msgid "Only an unpublished staging transaction can be aborted; partial application data is never deleted."
+msgstr "Lze zrušit pouze nezveřejněnou pracovní transakci; částečná data aplikací se nikdy nemažou."
+
+msgid "Preserved native backup source name"
+msgstr "Uchovaný název zdroje nativní zálohy"
+
+msgid "Private native restore storage access context on this destination"
+msgstr "Soukromý kontext přístupu k úložišti nativní obnovy na tomto cíli"
+
+msgid "Private native storage access context for inventory, verification, source recovery or destination restore"
+msgstr "Soukromý kontext přístupu k nativnímu úložišti pro výpis, ověření, získání zdroje nebo obnovu cíle"
+
+msgid "Receive bounded restore credentials through SSH standard input"
+msgstr "Přijmout omezený přenos přihlašovacích údajů obnovy přes standardní vstup SSH"
+
+msgid "Recover pending capture writers before restoring application data."
+msgstr "Před obnovou dat aplikací obnovte čekající zapisující jednotky zachycení."
+
+msgid "Restoration was interrupted; retry the same request to recover its private transaction."
+msgstr "Obnova byla přerušena; zopakujte stejný požadavek pro pokračování soukromé transakce."
+
+msgid "Restore access and mutation options only apply to destination restore."
+msgstr "Volby přístupu a změn obnovy se vztahují pouze na obnovu cíle."
+
+msgid "Restore access credentials and repository storage must stay outside application data."
+msgstr "Přihlašovací údaje obnovy a úložiště repozitáře musí zůstat mimo data aplikací."
+
+msgid "Restore access transfer exceeds its bounded credential size."
+msgstr "Přenos přístupu k obnově překračuje omezenou velikost přihlašovacích údajů."
+
+msgid "Restore access transfer timed out."
+msgstr "Vypršel čas přenosu přístupu k obnově."
+
+msgid "Restore application data and start configured destination writers"
+msgstr "Obnovit data aplikací a spustit nakonfigurované zapisující jednotky cíle"
+
+msgid "Restore destinations require identified writable Btrfs or ext4 filesystems."
+msgstr "Cíle obnovy vyžadují identifikované zapisovatelné souborové systémy Btrfs nebo ext4."
+
+msgid "Restored application data changed before restore completion."
+msgstr "Obnovená data aplikací se změnila před dokončením obnovy."
+
+msgid "Restored application data differs or contains unexpected files; no completion was written."
+msgstr "Obnovená data aplikací se liší nebo obsahují neočekávané soubory; dokončení nebylo zapsáno."
+
+msgid "The destination did not confirm this exact native restoration."
+msgstr "Cíl nepotvrdil tuto přesnou nativní obnovu."
+
+msgid "The destination filesystem layout changed during restoration."
+msgstr "Rozložení cílových souborových systémů se během obnovy změnilo."
+
+msgid "The destination machine or generation differs from the explicit restore target."
+msgstr "Cílový stroj nebo generace se liší od výslovného cíle obnovy."
+
+msgid "The installed destination policies or identity differ from the selected restore configuration."
+msgstr "Nainstalované cílové zásady nebo identita se liší od vybrané konfigurace obnovy."
+
+msgid "The pending restore belongs to a different source, destination or filesystem layout."
+msgstr "Čekající obnova patří jinému zdroji, cíli nebo rozložení souborových systémů."
+
+msgid "The private restore stage contains an invalid application mapping."
+msgstr "Soukromá pracovní kopie obnovy obsahuje neplatné mapování aplikací."
+
+msgid "The private verified application stage changed during restoration."
+msgstr "Soukromá ověřená pracovní kopie aplikací se během obnovy změnila."
+
+msgid "The running destination differs from this recipe; prepare it before restoration."
+msgstr "Běžící cíl se liší od tohoto předpisu; před obnovou jej připravte."
+
+msgid "The selected backup does not match the distinct destination application catalogue."
+msgstr "Vybraná záloha neodpovídá katalogu aplikací odlišného cíle."
+
+msgid "This destination already contains a different completed restoration."
+msgstr "Tento cíl již obsahuje jinou dokončenou obnovu."
+
+msgid "Unsupported special file in application restoration."
+msgstr "Nepodporovaný speciální soubor při obnově aplikací."
+
+msgid "Applied restoration requires the managed nixberry-restore system service."
+msgstr "Provedení obnovy vyžaduje spravovanou systémovou službu nixberry-restore."

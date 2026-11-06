@@ -29,8 +29,14 @@ def encode(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':')) + '\n'
 
 
-def copy_source(source, destination):
+def copy_source(source, destination, *, alias_root=None):
     if source.is_symlink():
+        # Repository management tools share regular Python files through local
+        # aliases. Seal their bytes, never links or anything outside this tree.
+        if alias_root is not None:
+            resolved = source.resolve(strict=True)
+            if resolved.is_file() and resolved.is_relative_to(alias_root) and 'secrets' not in resolved.relative_to(alias_root).parts:
+                return copy_source(resolved, destination)
         raise ValueError(_("Recovery recipe source must not contain symbolic links."))
     if source.name == 'secrets' or source.suffix in ('.key', '.secret'):
         raise ValueError(_("Keep private runtime credentials outside recovery recipe sources."))
@@ -40,7 +46,7 @@ def copy_source(source, destination):
         ignored = set(IGNORE(str(source), [entry.name for entry in entries]))
         for entry in entries:
             if entry.name not in ignored:
-                copy_source(entry, destination / entry.name)
+                copy_source(entry, destination / entry.name, alias_root=alias_root)
     elif source.is_file():
         destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         shutil.copyfile(source, destination)
@@ -63,7 +69,7 @@ def selected_recipe(frozen, name, target, hosts):
         for entry in PUBLIC:
             source = frozen / entry
             if source.exists() or source.is_symlink():
-                copy_source(source, root / entry)
+                copy_source(source, root / entry, alias_root=source if entry == 'management' else None)
         for kind in ('vm', 'rpi'):
             copy_source(frozen / 'machines' / kind / 'default.nix', root / 'machines' / kind / 'default.nix')
         copy_source(frozen / 'admin.pub', root / 'admin.pub')

@@ -187,7 +187,7 @@ def create_parser():
         epilog=_(HELP_COMMANDS)
         + _(BACKUP_HELP)
         + '\n'
-        + _("Native storage reads accept --backup-access PRIVATE_CONTEXT_FILE for backups, verify-backup and recover-source, even without a source declaration.")
+        + _("Native storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration.")
         + "\n"
         + _(
             "Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."
@@ -292,9 +292,9 @@ def create_parser():
     parser.add_argument(
         "--from",
         dest="backup_source",
-        help=_("Declared backup source for restoration into a distinct target"),
+        help=_("Backup source name for restoration into a distinct target; native access also supports preserved sources"),
     )
-    parser.add_argument('--backup-access', help=_("Private native storage access context for inventory, verification and source recovery"))
+    parser.add_argument('--backup-access', help=_("Private native storage access context for inventory, verification, source recovery or destination restore"))
     parser.add_argument(
         "--address", help=_("Early-boot unlock address or current RPi recovery address")
     )

@@ -143,3 +143,13 @@ class RestoreTargetTests(unittest.TestCase):
             self.assertEqual(restore_target.policy(self.settings), self.settings)
             with self.assertRaises(ValueError):
                 snapshots.unit_name(unit)
+
+
+class RestoreProcessTests(unittest.TestCase):
+    def test_applied_restore_requires_the_managed_service_main_process_and_group_cleanup(self):
+        good = 'MainPID=' + str(os.getpid()) + '\nKillMode=control-group\nActiveState=active\n'
+        with patch('snapshots.run', return_value=good):
+            restore_target.require_managed()
+        for bad in (good.replace('control-group', 'process'), good.replace(str(os.getpid()), '0')):
+            with self.subTest(bad=bad), patch('snapshots.run', return_value=bad), self.assertRaises(RuntimeError):
+                restore_target.require_managed()

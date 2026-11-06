@@ -31,6 +31,16 @@ class UpdateGuardTests(unittest.TestCase):
             item.start()
             self.addCleanup(item.stop)
 
+    def test_interrupted_restore_prevents_activation_even_after_its_process_exits(self):
+        state = self.root / 'restore-state'
+        state.mkdir(mode=0o700)
+        (state / 'restore-pending.json').write_text('{}')
+        with patch('update_guard.restorations', return_value=[{'stateDirectory': str(state)}]), \
+                patch('update_guard.subprocess.run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'restor'):
+                update_guard.activate(OLD, NEW, apply=True)
+        run.assert_not_called()
+
     def test_plan_creates_no_state_and_never_activates(self):
         with patch('update_guard.subprocess.run') as run:
             report = update_guard.activate(OLD, NEW)

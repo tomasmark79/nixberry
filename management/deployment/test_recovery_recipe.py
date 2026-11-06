@@ -77,6 +77,27 @@ class RecoveryRecipeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'portable'):
             self.archive()
 
+    def test_shared_management_file_aliases_are_materialized_and_sealed_as_regular_files(self):
+        original = self.root / 'management/original.py'
+        original.write_text('shared source')
+        (self.root / 'management/messages.py').symlink_to('original.py')
+        payload = self.archive()
+        self.module.validate(payload)
+        with tarfile.open(fileobj=io.BytesIO(payload), mode='r:') as archive:
+            alias = archive.getmember('recipe/management/messages.py')
+            self.assertTrue(alias.isfile())
+            self.assertEqual(archive.extractfile(alias).read(), b'shared source')
+
+    def test_management_aliases_cannot_escape_or_import_runtime_credentials(self):
+        (self.base / 'outside.py').write_text('outside secret')
+        alias = self.root / 'management/alias.py'
+        for target in (self.base / 'outside.py', self.root / 'management', self.root / 'password.key'):
+            with self.subTest(target=target):
+                alias.symlink_to(target)
+                with self.assertRaises(ValueError):
+                    self.archive()
+                alias.unlink()
+
     def test_selection_refuses_symbolic_links_inside_the_selected_configuration(self):
         (self.root / 'configurations/server/unrelated').symlink_to(self.base)
         with self.assertRaisesRegex(ValueError, 'symbolic'):

@@ -9,6 +9,7 @@ import sys
 from messages import _, ArgumentParser, error
 from recovery_recipe import SYSTEM
 import snapshots
+import restore_target
 
 
 def system_path(value):
@@ -39,23 +40,41 @@ def policies(system):
             if (value := load_policy(path)) is not None]
 
 
+def restorations(system):
+    values = []
+    for path in ('/etc/nixberry/restore.json', system + '/etc/nixberry/restore.json'):
+        candidate = Path(path)
+        if candidate.exists() or candidate.is_symlink():
+            with candidate.open('rb') as stream:
+                contents = stream.read(1024 * 1024 + 1)
+            if len(contents) > 1024 * 1024:
+                raise ValueError(_("Invalid destination restore policy."))
+            values.append(restore_target.policy(json.loads(contents)))
+    return values
+
+
 def activate(previous, system, *, apply=False):
     system_path(previous)
     system_path(system)
     if running_system() != previous:
         raise RuntimeError(_("The running system changed before update activation."))
     selected = policies(system)
+    restoring = restorations(system)
     result = {'previousSystem': previous, 'systemPath': system, 'applied': False}
     if not apply:
         return result
     with contextlib.ExitStack() as stack:
-        states = {policy['stateDirectory']: policy for policy in selected}
+        states = {policy['stateDirectory']: policy for policy in [*selected, *restoring]}
         locked = {directory: stack.enter_context(snapshots.lock(states[directory]))
                   for directory in sorted(states)}
+        for policy in restoring:
+            pending_restore = locked[policy['stateDirectory']] / 'restore-pending.json'
+            if pending_restore.exists() or pending_restore.is_symlink():
+                raise RuntimeError(_("An incomplete application restoration prevents update activation."))
         for policy in selected:
             if snapshots.pending(policy, locked[policy['stateDirectory']]):
                 raise RuntimeError(_("Interrupted capture needs writer recovery before update activation."))
-        if running_system() != previous or policies(system) != selected:
+        if running_system() != previous or policies(system) != selected or restorations(system) != restoring:
             raise RuntimeError(_("The system or capture policies changed before update activation."))
         subprocess.run(['nix-env', '-p', '/nix/var/nix/profiles/system', '--set', system], check=True, stdout=sys.stderr)
         subprocess.run([system + '/bin/switch-to-configuration', 'switch'], check=True, stdout=sys.stderr)

@@ -119,7 +119,7 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            backups|verify-backup|recover-source) options+=(--backup-access) ;;
+            backups|verify-backup|recover-source|restore) options+=(--backup-access) ;;
         esac
         case $action in
             list|show|status|verify|export|doctor|cleanup|prepare-image|snapshot|snapshots|snapshot-remove|snapshot-resume|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor|backup-stage) options+=(--json) ;;
