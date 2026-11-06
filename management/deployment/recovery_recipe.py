@@ -56,7 +56,7 @@ def copy_source(source, destination, *, alias_root=None):
 
 
 @contextmanager
-def selected_recipe(frozen, name, target, hosts):
+def selected_recipe(frozen, name, target, hosts, *, sources=()):
     if not isinstance(name, str) or not NAME.fullmatch(name):
         raise ValueError(_("Invalid recovery recipe target name."))
     configuration = target.get('configuration', 'default')
@@ -76,13 +76,18 @@ def selected_recipe(frozen, name, target, hosts):
         kind = 'rpi' if target['backend'] == 'rpi' else 'vm'
         relative = Path('machines') / kind / (name + '.nix')
         copy_source(frozen / relative, root / relative)
+        selected_sources = set(sources)
         for selected in (configuration,):
             candidates = [path for path in (frozen / 'configurations' / (selected + '.nix'),
                           frozen / 'configurations' / selected) if path.exists() or path.is_symlink()]
             if len(candidates) != 1:
                 raise ValueError(_("Recovery requires one regular source for each selected configuration."))
-            source = candidates[0]
-            copy_source(source, root / 'configurations' / source.name)
+            selected_sources.add(candidates[0].name)
+        for selected in sorted(selected_sources):
+            if (not isinstance(selected, str) or not selected or Path(selected).name != selected
+                    or selected in ('.', '..') or IGNORE(str(frozen / 'configurations'), [selected])):
+                raise ValueError(_("Recovery requires one regular source for each selected configuration."))
+            copy_source(frozen / 'configurations' / selected, root / 'configurations' / selected)
         host = target.get('host') if target['backend'] != 'rpi' and not target.get('offline') else None
         selected_hosts = {host: hosts[host]} if host is not None else {}
         # Encode JSON as one quoted Nix string; host values cannot interpolate Nix.

@@ -103,6 +103,45 @@ class RecoveryRecipeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'symbolic'):
             self.archive()
 
+    def test_imported_configuration_sources_keep_secret_and_symlink_guards(self):
+        imported = self.root / 'configurations/imported'
+        imported.mkdir()
+        for name in ('password.key', 'secrets', 'alias'):
+            with self.subTest(name=name):
+                private = imported / name
+                if name == 'alias':
+                    private.symlink_to(self.base)
+                else:
+                    private.write_text('private runtime data')
+                with self.assertRaises(ValueError):
+                    with self.module.selected_recipe(self.root, 'vm-demo-source', self.target, {}, sources=['imported']):
+                        self.fail('Unsafe imported source was accepted')
+                private.unlink()
+
+    def test_imported_source_selectors_cannot_copy_parents_or_ignored_metadata(self):
+        (self.root / 'configurations/.git').mkdir()
+        (self.root / 'configurations/.git/config').write_text('private repository metadata')
+        for name in ('', '.', '..', '../outside', '/outside', 'server/default.nix', '.git'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                with self.module.selected_recipe(self.root, 'vm-demo-source', self.target, {}, sources=[name]):
+                    self.fail('Unsafe source selector was accepted')
+
+    def test_guest_archive_validation_does_not_require_controller_recipe_modules(self):
+        import shutil
+        import subprocess
+        import sys
+        guest = self.base / 'guest'
+        guest.mkdir()
+        for name in ('recovery_recipe.py', 'messages.py'):
+            shutil.copyfile(Path(__file__).with_name(name), guest / name)
+        archive = guest / 'recovery.tar'
+        archive.write_bytes(self.archive())
+        result = subprocess.check_output([sys.executable, '-I', '-c',
+            'import json,pathlib,sys; sys.path.insert(0,sys.argv[1]); import recovery_recipe; '
+            'print(json.dumps(recovery_recipe.validate(pathlib.Path(sys.argv[2]).read_bytes())))',
+            str(guest), str(archive)], text=True)
+        self.assertEqual(json.loads(result)['target'], 'vm-demo-source')
+
     def test_tampered_source_file_cannot_pass_manifest_validation(self):
         payload = self.archive()
         output = io.BytesIO()
@@ -160,6 +199,61 @@ class RecoveryRecipeTests(unittest.TestCase):
 
 
 class RecoveryProjectionTests(unittest.TestCase):
+    def test_imported_linked_role_reproduces_after_source_checkout_is_removed(self):
+        import shutil
+        import subprocess
+        from native_controller import prepare_archive, projection
+        from recipe_source import materialized_recipe
+        from scaffold import new_vm
+        from test_support import copy_test_recipe
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / 'recipe'
+            external = base / 'external'
+            other = base / 'unselected'
+            copy_test_recipe(Path(__file__).resolve().parents[2], root)
+            for directory in ('roles/recovery', 'services/assets'):
+                (external / directory).mkdir(parents=True)
+            (external / 'default.nix').write_text('''{ nixberryModules, ... }: {
+              imports = [ nixberryModules.common ./services ];
+              nixberry.backup = { enable = true; restic = {
+                enable = true; repository = "/var/lib/test-repository";
+              }; };
+            }''')
+            (external / 'roles/recovery/default.nix').write_text('{ imports = [ ../../default.nix ]; }')
+            (external / 'settings.nix').write_text('{ path = "/var/lib/recovery-demo"; }')
+            (external / 'services/default.nix').write_text('''{ ... }: {
+              nixberry.backup.applications.web.paths = [ (import ../settings.nix).path ];
+              environment.etc."recovery-demo.txt".source = ./assets/example.txt;
+            }''')
+            (external / 'services/assets/example.txt').write_text('selected role asset\n')
+            other.mkdir()
+            (other / 'default.nix').write_text('throw "Unselected linked configuration must not be evaluated"')
+            (other / 'password.key').write_text('unrelated private runtime credential')
+            (root / 'configurations/workload').symlink_to(external, target_is_directory=True)
+            (root / 'configurations/unselected').symlink_to(other, target_is_directory=True)
+            (root / 'configurations/role.nix').write_text('{ imports = [ ./workload/roles/recovery ]; }')
+            (root / 'configurations/private.nix').write_text('throw "Unselected configuration must not be evaluated"')
+            new_vm(root, {}, {}, 'vm-demo-source', 'libvirt', offline=True, configuration='role', filesystem='btrfs')
+            new_vm(root, {}, {}, 'vm-demo-other', 'hyperv', offline=True)
+            with materialized_recipe(root) as materialized:
+                target = json.loads(subprocess.check_output(['nix', 'eval', '--json', '--no-update-lock-file',
+                    'path:' + materialized + '#nixberryDeployment.targets.vm-demo-source'], text=True))
+                original = projection(materialized, 'vm-demo-source')
+                payload, manifest = prepare_archive(materialized, 'vm-demo-source', target, original, base)
+            self.assertIn('configurations/workload/settings.nix', manifest['files'])
+            self.assertIn('configurations/workload/services/assets/example.txt', manifest['files'])
+            self.assertNotIn('configurations/unselected/default.nix', manifest['files'])
+            self.assertNotIn('configurations/private.nix', manifest['files'])
+            self.assertNotIn('machines/vm/vm-demo-other.nix', manifest['files'])
+            shutil.rmtree(root)
+            shutil.rmtree(external)
+            shutil.rmtree(other)
+            recovered = base / 'recovered'
+            import recovery_recipe
+            recovery_recipe.unpack(payload, recovered)
+            self.assertEqual(projection(str(recovered / 'recipe'), 'vm-demo-source'), original)
+
     def test_selected_recipe_reproduces_its_configuration_without_other_targets(self):
         import subprocess
         from native_controller import projection

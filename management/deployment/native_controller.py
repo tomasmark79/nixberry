@@ -40,6 +40,28 @@ def projection(recipe, name):
     return json.loads(result.stdout)
 
 
+def configuration_sources(frozen, name):
+    """Select configuration trees from the evaluated target's module graph."""
+    def evaluate(arguments):
+        result = subprocess.run(['nix', *arguments], stdin=subprocess.DEVNULL, text=True, capture_output=True)
+        forward_stderr(result.stderr)
+        if result.returncode:
+            raise RuntimeError(_("Could not evaluate the selected native backup configuration."))
+        return json.loads(result.stdout)
+
+    metadata = evaluate(['flake', 'metadata', '--json', '--no-update-lock-file', recipe_uri(frozen)])
+    directory = Path(metadata['path']) / 'configurations'
+    prefix = json.dumps(str(directory) + '/').replace('${', r'\${')
+    target = json.dumps(name).replace('${', r'\${')
+    expression = ('systems: let flatten = nodes: builtins.concatLists (map '
+        + '(node: [ node.file ] ++ flatten node.imports) nodes); prefix = ' + prefix + '; '
+        + 'in builtins.filter (file: builtins.substring 0 (builtins.stringLength prefix) file == prefix) '
+        + '(flatten (systems.' + target + '.graph or []))')
+    files = evaluate(['eval', '--json', '--no-update-lock-file', '--option', 'allow-import-from-derivation', 'false',
+                      recipe_uri(metadata['path']) + '#nixberrySystems', '--apply', expression])
+    return sorted({Path(file).relative_to(directory).parts[0] for file in files})
+
+
 def remote(command, script, timeout, *, input=None, health=False):
     try:
         result = subprocess.run([command[0], '-T', '-o', 'ForwardAgent=no', *command[1:], script],
@@ -67,7 +89,8 @@ def prepare_archive(frozen, name, target, settings, directory):
         selected = json.loads(subprocess.check_output(['nix', 'eval', '--json', '--no-write-lock-file',
             recipe_uri(frozen) + '#nixberryDeployment.hosts.' + json.dumps(target['host'])], text=True))
         hosts = {target['host']: selected}
-    with recovery_recipe.selected_recipe(frozen, name, target, hosts) as selected:
+    sources = configuration_sources(frozen, name)
+    with recovery_recipe.selected_recipe(frozen, name, target, hosts, sources=sources) as selected:
         if projection(selected, name) != settings:
             raise RuntimeError(_("The selected recovery recipe does not reproduce the expected source generation and policy."))
         destination = Path(directory) / 'recovery.tar'
