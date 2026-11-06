@@ -69,7 +69,7 @@ if [[ "$mode" == erase-existing ]]; then
 fi
 "$disko"
 if [[ "$security" == luks ]]; then
-  [[ "$(readlink -f "$(findmnt -n -o SOURCE /mnt)")" == "$(readlink -f /dev/mapper/nixberry-root)" ]] \
+  [[ "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /mnt)")" == "$(readlink -f /dev/mapper/nixberry-root)" ]] \
     || fail 'The mounted RPi root is not the expected encrypted mapping.'
   LC_ALL=C cryptsetup status nixberry-root | grep -Eq '^[[:space:]]*type:[[:space:]]*LUKS2$' \
     || fail 'The mounted RPi root is not LUKS2.'

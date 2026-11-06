@@ -33,15 +33,9 @@ in
         root = {
           size = "${toString cfg.rootGiB}G";
           label = cfg.rootLabel;
-          content = {
-            type = "filesystem";
-            format = "ext4";
-            extraArgs = [
-              "-L"
-              cfg.rootLabel
-            ];
-            mountpoint = "/";
-            mountOptions = [ "noatime" ];
+          content = import ../storage/root-content.nix {
+            filesystem = cfg.rootFilesystem;
+            label = cfg.rootLabel;
           };
         };
       };

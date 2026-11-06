@@ -47,6 +47,12 @@ let
           assertions = [
             {
               assertion =
+                config.nixberry.rpi.rootFilesystem == (target.rootFilesystem or "ext4")
+                && config.fileSystems."/".fsType == (target.rootFilesystem or "ext4");
+              message = "The selected configuration must preserve the root filesystem declared in the target.";
+            }
+            {
+              assertion =
                 config.nixberry.rpi.security == import ./security.nix {
                   security = target.security or { };
                 };
@@ -90,6 +96,7 @@ let
       target = name;
       configuration = configurations.select target;
       inherit (cfg)
+        rootFilesystem
         hostName
         hardwareSerial
         installerAddress

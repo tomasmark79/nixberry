@@ -104,6 +104,12 @@ python3 -m unittest discover -s management/proxmox/lab -p 'test_*.py'
 python3 management/deployment/check_inventory.py
 ```
 
+Filesystem selection checks in `management/deployment/test_storage.py` evaluate
+ext4 and Btrfs roots with and without LUKS for all five VM backends and RPi.
+They verify declaration scaffolding, separate snapshot/swap subvolumes and update
+format guards. Evaluation does not prove image installation, boot, active swap,
+snapshot capture or restoration; verify those separately in isolated systems.
+
 Use English defaults for the regression suite; individual translation tests
 select Czech explicitly. Tests use temporary declarations and mocked transports.
 Some invoke Nix with small fixture artifacts or test real Python-to-Python

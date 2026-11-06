@@ -49,7 +49,7 @@ class CompletionTests(unittest.TestCase):
         (self.root / 'management/rpi').mkdir(parents=True)
         for name in ('security.nix', 'normalize-target.nix', 'network.nix'):
             shutil.copyfile(self.recipe / 'management/rpi' / name, self.root / 'management/rpi' / name)
-        for name in ('default.nix', 'security.nix', 'vm-network.nix', 'configurations.nix', 'operations.nix', 'backup-policy.nix', 'completion-targets.nix', 'completion-snapshots.nix', 'shell-path.sh', 'messages.sh'):
+        for name in ('default.nix', 'root-filesystem.nix', 'security.nix', 'vm-network.nix', 'configurations.nix', 'operations.nix', 'backup-policy.nix', 'completion-targets.nix', 'completion-snapshots.nix', 'shell-path.sh', 'messages.sh'):
             shutil.copyfile(Path(__file__).with_name(name), self.root / 'management/deployment' / name)
         (self.root / 'configurations').mkdir()
         (self.root / 'flake.nix').write_text('{}')
@@ -134,6 +134,13 @@ printf '%s' '{ backend = "proxmox"; spec.name = "kozlonix"; }' > "$1/machines/vm
         self.assertEqual(self.complete("plan", "--method", "iso", "koz"), ["kozlonix"])
         self.assertIn("--method", self.complete("new-proxmox-vm", "nova", "--"))
         self.assertNotIn("--method", self.complete("plan", "nixberry", "--"))
+
+    def test_filesystem_values_and_new_vm_options(self):
+        for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+            action = "new-" + backend + "-vm"
+            self.assertEqual(self.complete(action, "vm-demo-new", "--filesystem", ""), ["ext4", "btrfs"])
+            self.assertIn("--filesystem", self.complete(action, "vm-demo-new", "--"))
+        self.assertNotIn("--filesystem", self.complete("update", "kozlonix", "--"))
 
     def test_configurations_complete_without_nix_and_preserve_target_parsing(self):
         (self.root / "configurations/web").mkdir(parents=True)

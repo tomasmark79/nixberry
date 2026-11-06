@@ -57,6 +57,7 @@ let
       inherit offline;
       allowReset = instance.allowReset or false;
       configuration = configurations.select instance;
+      rootFilesystem = import ./root-filesystem.nix (instance.rootFilesystem or "ext4");
       deploymentMethod = instance.deploymentMethod or "image";
       security = import ./security.nix { security = instance.security or { }; };
       backup = import ./backup-policy.nix (instance.backup or { });
@@ -70,54 +71,119 @@ let
       inherit (host) backend;
       profile = instance.profile or expectedProfile;
       guestHostName = instance.guestHostName or instance.spec.name;
-      spec = import ./vm-network.nix { backend = host.backend; spec =
-        (instance.deployment or { })
-        // host.connection
-        // instance.spec
-        // (
-          if host.backend == "libvirt" then
-            {
-              volume = instance.spec.volume or "${instance.spec.name}.qcow2";
-              allowReset = instance.allowReset or false;
-            }
-          else
-            { }
-        ); };
+      spec = import ./vm-network.nix {
+        backend = host.backend;
+        spec =
+          (instance.deployment or { })
+          // host.connection
+          // instance.spec
+          // (
+            if host.backend == "libvirt" then
+              {
+                volume = instance.spec.volume or "${instance.spec.name}.qcow2";
+                allowReset = instance.allowReset or false;
+              }
+            else
+              { }
+          );
+      };
     }
   ) vmInstances;
-  adapterMacs = builtins.concatLists (map (target: map (adapter:
-    builtins.replaceStrings [ ":" "-" "A" "B" "C" "D" "E" "F" ]
-      [ "" "" "a" "b" "c" "d" "e" "f" ] adapter.mac)
-    (target.spec.networkAdapters or (if target.spec ? mac then [ target.spec ] else [ ])))
-    (builtins.attrValues instances));
-  explicitAdapterMacs = builtins.concatLists (map (target: map (adapter:
-    builtins.replaceStrings [ ":" "-" "A" "B" "C" "D" "E" "F" ]
-      [ "" "" "a" "b" "c" "d" "e" "f" ] adapter.mac)
-    (target.spec.networkAdapters or [ ])) (builtins.attrValues instances));
-  rpiTargets = builtins.mapAttrs (name: target: {
-    host = target.hostName;
-    profile = name;
-    backend = "rpi";
-    configuration = configurations.select target;
-    backup = import ./backup-policy.nix (target.backup or { });
-    capabilities = {
-      build = true;
-      export = true;
-      system = true;
-      hypervisor = false;
-    };
-    spec = builtins.removeAttrs target [
-      "adminKeyFile"
-      "configuration"
-      "security"
-      "backup"
-    ];
-  } // (let security = import ../rpi/security.nix { security = target.security or { }; };
-    in if security.mode == "none" then { } else { inherit security; })) (import ../../machines/rpi);
+  adapterMacs = builtins.concatLists (
+    map (
+      target:
+      map (
+        adapter:
+        builtins.replaceStrings
+          [
+            ":"
+            "-"
+            "A"
+            "B"
+            "C"
+            "D"
+            "E"
+            "F"
+          ]
+          [
+            ""
+            ""
+            "a"
+            "b"
+            "c"
+            "d"
+            "e"
+            "f"
+          ]
+          adapter.mac
+      ) (target.spec.networkAdapters or (if target.spec ? mac then [ target.spec ] else [ ]))
+    ) (builtins.attrValues instances)
+  );
+  explicitAdapterMacs = builtins.concatLists (
+    map (
+      target:
+      map (
+        adapter:
+        builtins.replaceStrings
+          [
+            ":"
+            "-"
+            "A"
+            "B"
+            "C"
+            "D"
+            "E"
+            "F"
+          ]
+          [
+            ""
+            ""
+            "a"
+            "b"
+            "c"
+            "d"
+            "e"
+            "f"
+          ]
+          adapter.mac
+      ) (target.spec.networkAdapters or [ ])
+    ) (builtins.attrValues instances)
+  );
+  rpiTargets = builtins.mapAttrs (
+    name: target:
+    {
+      host = target.hostName;
+      profile = name;
+      backend = "rpi";
+      configuration = configurations.select target;
+      rootFilesystem = import ./root-filesystem.nix (target.rootFilesystem or "ext4");
+      backup = import ./backup-policy.nix (target.backup or { });
+      capabilities = {
+        build = true;
+        export = true;
+        system = true;
+        hypervisor = false;
+      };
+      spec = builtins.removeAttrs target [
+        "adminKeyFile"
+        "configuration"
+        "security"
+        "backup"
+      ];
+    }
+    // (
+      let
+        security = import ../rpi/security.nix { security = target.security or { }; };
+      in
+      if security.mode == "none" then { } else { inherit security; }
+    )
+  ) (import ../../machines/rpi);
 in
 assert builtins.intersectAttrs instances rpiTargets == { };
-assert builtins.all (value: builtins.length (builtins.filter (other: other == value) adapterMacs) == 1)
-  explicitAdapterMacs
+assert
+  builtins.all (
+    value: builtins.length (builtins.filter (other: other == value) adapterMacs) == 1
+  ) explicitAdapterMacs
   || throw "VM adapter MAC addresses must be unique across the local inventory.";
 {
   inherit hosts instances;

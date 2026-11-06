@@ -92,7 +92,9 @@ in
         message = "RPi early-boot SSH must use a different port from ordinary SSH.";
       }
       {
-        assertion = builtins.all (swap: swap.device == "/swapfile") config.swapDevices;
+        assertion = builtins.all (
+          swap: swap.device == (if cfg.rootFilesystem == "btrfs" then "/swap/swapfile" else "/swapfile")
+        ) config.swapDevices;
         message = "RPi encrypted systems permit only the swap file inside the protected root.";
       }
     ];
@@ -109,15 +111,9 @@ in
         "--type"
         "luks2"
       ];
-      content = {
-        type = "filesystem";
-        format = "ext4";
-        extraArgs = [
-          "-L"
-          cfg.rootLabel
-        ];
-        mountpoint = "/";
-        mountOptions = [ "noatime" ];
+      content = import ../storage/root-content.nix {
+        filesystem = cfg.rootFilesystem;
+        label = cfg.rootLabel;
       };
     };
     boot.initrd = {

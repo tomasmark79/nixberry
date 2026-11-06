@@ -15,6 +15,14 @@ let
 in
 {
   options.nixberry.rpi = {
+    rootFilesystem = mkOption {
+      type = types.enum [
+        "ext4"
+        "btrfs"
+      ];
+      default = "ext4";
+      description = "Declared root filesystem; changing it requires a separately authorized installation.";
+    };
     network = mkOption {
       type = types.nullOr types.attrs;
       default = null;
@@ -88,7 +96,7 @@ in
     rootLabel = mkOption {
       type = types.strMatching "[A-Za-z0-9-]{1,16}";
       default = "${cfg.hostName}-root";
-      description = "System partition and ext4 label.";
+      description = "System partition and filesystem label.";
     };
     adminKeyFile = mkOption {
       type = types.path;

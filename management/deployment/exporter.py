@@ -106,6 +106,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         manifest = {"target": target_name, "backend": backend, "profile": target["profile"], "deploymentMethod": selected,
                     "backup": backup_policy(target),
                     "configuration": target.get("configuration", "default"),
+                    "rootFilesystem": target.get("rootFilesystem", "ext4"),
                     "allowReset": target.get("allowReset", False),
                     "artifact": filename, "format": extension, "spec": target["spec"],
                     "guestHostName": target.get("guestHostName", target["spec"].get("name")),

@@ -32,7 +32,9 @@ def configuration_name(recipe, name):
     return name
 
 
-def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, offline=False, method=None, configuration="default", security_mode="none"):
+def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, offline=False, method=None, configuration="default", security_mode="none", filesystem="ext4"):
+    if filesystem not in ("ext4", "btrfs"):
+        raise RuntimeError(_("Root filesystem must be ext4 or btrfs."))
     if offline and host is not None:
         raise RuntimeError(_("Offline preparation cannot be combined with --host."))
     configuration = configuration_name(recipe, configuration)
@@ -93,6 +95,7 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
                '  };\n')
     text = ("# Another instance of the shared server recipe; the host is selected separately.\n{\n"
             + placement + f"  configuration = {quote(configuration)};\n" + network + f"  deploymentMethod = {quote(method or 'image')};\n"
+            + f"  rootFilesystem = {quote(filesystem)};\n"
             + f"  profile = {quote('nixberry-vm' if backend == 'libvirt' else 'nixberry-' + backend)};\n"
             + "  # Instance removal is disabled by default.\n  allowReset = false;\n"
             + "  # Optional controller backup policy is described in docs/backups.md.\n"
@@ -125,7 +128,7 @@ def new_vm(recipe, hosts, registry, name, backend, host=None, *, write=True, off
     return path, text
 
 
-def new_libvirt(recipe, hosts, registry, name, host=None, *, write=True, method=None, configuration="default", security_mode="none"):
+def new_libvirt(recipe, hosts, registry, name, host=None, *, write=True, method=None, configuration="default", security_mode="none", filesystem="ext4"):
     """Preserve the entry point for older callers; use the shared declaration generator."""
     return new_vm(recipe, hosts, registry, name, "libvirt", host, write=write,
-                  method=method, configuration=configuration, security_mode=security_mode)
+                  method=method, configuration=configuration, security_mode=security_mode, filesystem=filesystem)

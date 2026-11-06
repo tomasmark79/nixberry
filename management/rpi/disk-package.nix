@@ -30,13 +30,27 @@ let
       "priority"
       "attributes"
     ]
-    && pkgs.lib.all (key: a.content.${key} == e.content.${key}) [
-      "type"
-      "format"
-      "extraArgs"
-      "mountpoint"
-      "mountOptions"
-    ];
+    && (
+      if (e.content.type or "") == "btrfs" then
+        a.content.type == "btrfs"
+        && a.content.extraArgs == (e.content.extraArgs or [ ])
+        && builtins.attrNames a.content.subvolumes == builtins.attrNames e.content.subvolumes
+        && pkgs.lib.all (
+          name:
+          pkgs.lib.all (key: a.content.subvolumes.${name}.${key} == e.content.subvolumes.${name}.${key}) [
+            "mountpoint"
+            "mountOptions"
+          ]
+        ) (builtins.attrNames e.content.subvolumes)
+      else
+        pkgs.lib.all (key: a.content.${key} == e.content.${key}) [
+          "type"
+          "format"
+          "extraArgs"
+          "mountpoint"
+          "mountOptions"
+        ]
+    );
   supportedLayout =
     builtins.attrNames system.config.disko.devices.disk == [ "ssd" ]
     && actual.content.type == "gpt"

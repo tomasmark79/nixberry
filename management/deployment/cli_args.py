@@ -318,4 +318,8 @@ def create_parser():
             "Show the plan without writing; diff/diffg without connections or builds"
         ),
     )
+    parser.add_argument(
+        "--filesystem", choices=["ext4", "btrfs"],
+        help=_("Root filesystem for a new VM declaration; defaults to ext4"),
+    )
     return parser

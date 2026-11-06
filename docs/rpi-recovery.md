@@ -80,6 +80,10 @@ The filename without `.nix` determines the CLI target, for example
 `nixberry show rpi-demo`. `hostName` determines the system hostname.
 When changing it, preserve `bootLabel` and `rootLabel` for existing partitions;
 otherwise they default from `hostName`. ext4 limits `rootLabel` to 16 characters.
+The same 16-character limit is retained when selecting `rootFilesystem = "btrfs";`.
+Ext4 remains the default. Btrfs uses separate root, snapshot and swap subvolumes;
+see [filesystem selection](cli.md). Changing the declared format requires a
+separately reviewed installation and does not authorize erasing an existing SSD.
 Normal `update` does not rename partitions. Inspect them with
 `nixberry ssh rpi-demo -- lsblk -o NAME,FSTYPE,LABEL,PARTLABEL,MOUNTPOINTS`.
 

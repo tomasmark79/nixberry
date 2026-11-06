@@ -118,10 +118,17 @@ let
         configurations.modules.${target.configuration}
         ({ config, lib, ... }: {
           networking.hostName = lib.mkForce target.guestHostName;
+          nixberry.vm.rootFilesystem = target.rootFilesystem;
           nixberry.vm.network = target.network or { };
           nixberry.vm.adapters = guestAdapters target;
           nixberry.vm.security = builtins.removeAttrs target.security [ "imageDirectory" ];
           assertions = [
+            {
+              assertion =
+                config.nixberry.vm.rootFilesystem == target.rootFilesystem
+                && config.fileSystems."/".fsType == target.rootFilesystem;
+              message = "The selected configuration must preserve the root filesystem declared in the instance.";
+            }
             {
               assertion = config.nixberry.vm.adapters == guestAdapters target;
               message = "The selected configuration must preserve the VM adapter identities declared in the instance.";

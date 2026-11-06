@@ -94,7 +94,9 @@ def binding(target):
             "diskGiB": target["spec"]["diskGiB"],
             "security": {k: v for k, v in policy(target).items() if k != "imageDirectory"}} | (
                 {"networkAdapters": target["spec"]["networkAdapters"]}
-                if "networkAdapters" in target["spec"] else {})
+                if "networkAdapters" in target["spec"] else {}) | (
+                    {"rootFilesystem": target["rootFilesystem"]}
+                    if target.get("rootFilesystem", "ext4") != "ext4" else {})
 
 
 def image_metadata(target, *, name="TARGET"):
@@ -140,13 +142,13 @@ def encryption_checks(target):
     if policy(target)["mode"] == "none":
         return []
     checks = [
-        'test "$(readlink -f "$(findmnt -n -o SOURCE /)")" = "$(readlink -f /dev/mapper/nixberry-root)"',
+        'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /)")" = "$(readlink -f /dev/mapper/nixberry-root)"',
         "LC_ALL=C cryptsetup status nixberry-root | grep -Eq '^[[:space:]]*type:[[:space:]]*LUKS2$'",
         'test "$(readlink -f "$(LC_ALL=C cryptsetup status nixberry-root | sed -n "s/^[[:space:]]*device:[[:space:]]*//p")")" = "$(readlink -f /dev/disk/by-partlabel/disk-system-root)"',
         'test "$(LC_ALL=C cryptsetup luksDump /dev/disk/by-partlabel/disk-system-root | sed -n "s/^Version:[[:space:]]*//p")" = 2',
         'test -n "$(lsblk -ndo PKNAME /dev/disk/by-partlabel/disk-system-root)"',
         'test "$(lsblk -ndo PKNAME /dev/disk/by-partlabel/disk-system-root)" = "$(lsblk -ndo PKNAME /dev/disk/by-partlabel/disk-system-boot)"',
-        'test "$(readlink -f "$(findmnt -n -o SOURCE /boot)")" = "$(readlink -f /dev/disk/by-partlabel/disk-system-boot)"',
+        'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /boot)")" = "$(readlink -f /dev/disk/by-partlabel/disk-system-boot)"',
     ]
     if target["backend"] == "rpi":
         import shlex

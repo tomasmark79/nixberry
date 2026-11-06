@@ -188,7 +188,7 @@ def status(target):
         hostname = target.get("guestHostName", target["spec"].get("name", "nixberry-vm"))
         output = read(ssh_command(target, snapshot) + [
             "set -eu; export PATH=/run/current-system/sw/bin:/run/wrappers/bin; "
-            "uname -m; hostname; findmnt -n -o SOURCE /"
+            "uname -m; hostname; findmnt -n --nofsroot -o SOURCE /"
         ]).splitlines()
         if len(output) != 3 or output[0] != "x86_64" or output[1] != hostname:
             raise RuntimeError(_("The direct SSH target does not match the declared VM architecture and hostname."))
@@ -212,7 +212,7 @@ def status(target):
         script = (
             "set -eu; uname -m; "
             "tr -d '\\000' < /proc/device-tree/serial-number; printf '\\n'; "
-            "hostname; " + link_probe + "; findmnt -n -o SOURCE /"
+            "hostname; " + link_probe + "; findmnt -n --nofsroot -o SOURCE /"
         )
         output = read(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                        "-p", "22", "--", "root@" + candidates[0], script]).splitlines()
@@ -290,8 +290,11 @@ def ssh_command(target, snapshot):
 def installation_checks(target):
     """Distinguish an installed disk system from installation or recovery environments."""
     backend, spec = target["backend"], target["spec"]
+    filesystem = target.get("rootFilesystem", "ext4")
+    if filesystem not in ("ext4", "btrfs"):
+        raise RuntimeError(_("Root filesystem must be ext4 or btrfs."))
     checks = [
-        'test "$(findmnt -n -o FSTYPE /)" = ext4',
+        'test "$(findmnt -n -o FSTYPE /)" = ' + shlex.quote(filesystem),
         'test "$(findmnt -n -o FSTYPE /boot)" = vfat',
         '! mountpoint -q /iso',
     ]
@@ -304,7 +307,7 @@ def installation_checks(target):
                           + partition + '))" = ' + shlex.quote(spec["diskSerial"]))
         else:
             checks.append('test "$(lsblk -dn -o SERIAL /dev/$(lsblk -n -o PKNAME '
-                          '$(findmnt -n -o SOURCE /)))" = ' + shlex.quote(spec["diskSerial"]))
+                          '$(findmnt -n --nofsroot -o SOURCE /)))" = ' + shlex.quote(spec["diskSerial"]))
     else:
         checks.append('test -d /sys/firmware/efi')
         manual = target.get("offline") and direct_connection(target)
@@ -315,17 +318,17 @@ def installation_checks(target):
         elif manual:
             # An importer may change controllers. Image partitions and their shared disk must remain intact.
             checks += [
-                'test "$(readlink -f "$(findmnt -n -o SOURCE /)")" = '
+                'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /)")" = '
                 '"$(readlink -e /dev/disk/by-partlabel/disk-system-root)"',
-                'test "$(readlink -f "$(findmnt -n -o SOURCE /boot)")" = '
+                'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /boot)")" = '
                 '"$(readlink -e /dev/disk/by-partlabel/disk-system-boot)"',
-                'test -n "$(lsblk -ndo PKNAME "$(findmnt -n -o SOURCE /)")"',
-                'test "$(lsblk -ndo PKNAME "$(findmnt -n -o SOURCE /)")" = '
-                '"$(lsblk -ndo PKNAME "$(findmnt -n -o SOURCE /boot)")"',
+                'test -n "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")"',
+                'test "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")" = '
+                '"$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /boot)")"',
             ]
         else:
             disk = "/dev/vda2" if backend in ("libvirt", "proxmox") else "/dev/sda2"
-            checks.append('test "$(readlink -f $(findmnt -n -o SOURCE /))" = ' + shlex.quote(disk))
+            checks.append('test "$(readlink -f $(findmnt -n --nofsroot -o SOURCE /))" = ' + shlex.quote(disk))
         if backend in ("proxmox", "virtualbox", "vmware") and not (
                 target.get("offline") and direct_connection(target)):
             checks += [
@@ -363,7 +366,7 @@ def verify(target, expected_system):
         + "; printf " + shlex.quote(_("Running system: %s") + "\n")
         + ' "$(readlink -f /run/current-system)"; exit 1; }'
     )
-    checks += ["hostname", "readlink -f /run/current-system", "findmnt -n -o SOURCE /"]
+    checks += ["hostname", "readlink -f /run/current-system", "findmnt -n --nofsroot -o SOURCE /"]
     output = read([command[0], "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                    *command[1:], "set -eu; " + "; ".join(checks)]).splitlines()
     if len(output) != 3:

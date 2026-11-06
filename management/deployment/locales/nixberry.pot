@@ -24,23 +24,23 @@ msgstr ""
 msgid "\nImages in the selected directories:"
 msgstr ""
 
-#: deployment/exporter.py:165
+#: deployment/exporter.py:166
 msgid "\nNamed adapters: read NETWORKS.txt and preserve all declared MAC addresses.\n"
 msgstr ""
 
-#: deployment/exporter.py:123
+#: deployment/exporter.py:124
 msgid "\nProxmox handoff: see PROXMOX.txt.\n"
 msgstr ""
 
-#: deployment/exporter.py:124
+#: deployment/exporter.py:125
 msgid "\nVirtualBox handoff: see VIRTUALBOX.txt.\n"
 msgstr ""
 
-#: deployment/cli.py:261
+#: deployment/cli.py:265
 msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
 msgstr ""
 
-#: deployment/cli.py:216
+#: deployment/cli.py:218
 msgid "--artifact-root only applies to cleanup."
 msgstr ""
 
@@ -52,6 +52,10 @@ msgstr ""
 msgid "--erase-existing cannot be combined with --stage."
 msgstr ""
 
+#: deployment/cli.py:180
+msgid "--filesystem only applies to new-*-vm; changing an existing filesystem requires a separate installation."
+msgstr ""
+
 #: deployment/cli.py:165
 msgid "--from only applies to restore TARGET --from SOURCE."
 msgstr ""
@@ -60,7 +64,7 @@ msgstr ""
 msgid "--initrd-key-file only applies to encrypted RPi plan/reproduce."
 msgstr ""
 
-#: deployment/cli.py:263
+#: deployment/cli.py:267
 msgid "--json is available for list, show, status, verify, export, doctor and cleanup."
 msgstr ""
 
@@ -68,15 +72,15 @@ msgstr ""
 msgid "--key-file applies to prepare-image or encrypted RPi plan/reproduce."
 msgstr ""
 
-#: deployment/cli.py:187
+#: deployment/cli.py:189
 msgid "--local-disk only applies to unencrypted RPi plan/reproduce and cannot be combined with --address or runtime keys."
 msgstr ""
 
-#: deployment/cli.py:180
+#: deployment/cli.py:182
 msgid "--method applies to new-*, show, plan, create, install, provision, reproduce and export."
 msgstr ""
 
-#: deployment/cli.py:365
+#: deployment/cli.py:369
 msgid "--method is for VMs; RPi uses a recovery SD card."
 msgstr ""
 
@@ -84,7 +88,7 @@ msgstr ""
 msgid "--offline applies to new-*-vm without --host."
 msgstr ""
 
-#: deployment/cli.py:218
+#: deployment/cli.py:220
 msgid "--output applies to export, prepare-image, recover-source, backup-schedule and backup-monitor."
 msgstr ""
 
@@ -96,7 +100,7 @@ msgstr ""
 msgid "--snapshot only applies to verify-backup, restore and recover-source."
 msgstr ""
 
-#: deployment/cli.py:189
+#: deployment/cli.py:191
 msgid "--ssh applies to server management and cannot be combined with --host or new-*."
 msgstr ""
 
@@ -120,7 +124,7 @@ msgstr ""
 msgid "A backing disk cycle was detected."
 msgstr ""
 
-#: deployment/cli.py:182
+#: deployment/cli.py:184
 msgid "A command after -- is only available for ssh TARGET -- COMMAND."
 msgstr ""
 
@@ -205,12 +209,12 @@ msgstr ""
 msgid "After boot: {command}"
 msgstr ""
 
-#: deployment/cli.py:252
+#: deployment/cli.py:256
 #, python-brace-format
 msgid "After preparation: {command}"
 msgstr ""
 
-#: deployment/cli.py:256
+#: deployment/cli.py:260
 #, python-brace-format
 msgid "After reviewing: {command}"
 msgstr ""
@@ -227,7 +231,7 @@ msgstr ""
 msgid "All selected CI checks passed."
 msgstr ""
 
-#: deployment/cli.py:307
+#: deployment/cli.py:311
 #, python-brace-format
 msgid "All target statuses: {command}"
 msgstr ""
@@ -294,11 +298,11 @@ msgstr ""
 msgid "Assessment"
 msgstr ""
 
-#: deployment/exporter.py:137
+#: deployment/exporter.py:138
 msgid "Attach every declared adapter in order, preserving its MAC and attachment; see NETWORKS.txt."
 msgstr ""
 
-#: deployment/exporter.py:138
+#: deployment/exporter.py:139
 msgid "Attach exactly one network adapter to the chosen network."
 msgstr ""
 
@@ -336,7 +340,7 @@ msgstr ""
 msgid "Backup notification delivery failed; inspect the protected health report."
 msgstr ""
 
-#: deployment/cli.py:213
+#: deployment/cli.py:215
 msgid "Backup operation unavailable: enable source backup policy and configure live access for capture or restore."
 msgstr ""
 
@@ -349,7 +353,7 @@ msgstr ""
 msgid "Backup schedule target names require lowercase letters, digits and hyphens, starting with a letter."
 msgstr ""
 
-#: deployment/cli.py:244
+#: deployment/cli.py:248
 msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
 msgstr ""
 
@@ -361,11 +365,11 @@ msgstr ""
 msgid "Boot verification from VHDX failed."
 msgstr ""
 
-#: deployment/cli.py:303
+#: deployment/cli.py:307
 msgid "Build/export"
 msgstr ""
 
-#: deployment/cli.py:457
+#: deployment/cli.py:461
 #, python-brace-format
 msgid "Build/export: yes; system management: {value1}"
 msgstr ""
@@ -464,7 +468,7 @@ msgstr ""
 msgid "Cannot write to bundle location {path}. Relative paths are resolved from the working directory. Choose a writable directory, for example --output ~/{target}-offline."
 msgstr ""
 
-#: deployment/cli.py:282
+#: deployment/cli.py:286
 msgid "Check"
 msgstr ""
 
@@ -476,7 +480,7 @@ msgstr ""
 msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
 msgstr ""
 
-#: deployment/runtime.py:356
+#: deployment/runtime.py:359
 #, python-brace-format
 msgid "Check failed: {check}"
 msgstr ""
@@ -501,7 +505,7 @@ msgstr ""
 msgid "Choose a new backup schedule directory outside the recipe."
 msgstr ""
 
-#: deployment/scaffold.py:47
+#: deployment/scaffold.py:49
 msgid "Choose a new target name: 1–40 lowercase letters, digits and hyphens, starting with a letter."
 msgstr ""
 
@@ -536,7 +540,7 @@ msgstr ""
 msgid "Compile Czech gettext and shell catalogues; --check verifies generated shell content."
 msgstr ""
 
-#: deployment/exporter.py:166
+#: deployment/exporter.py:167
 msgid "Computing bundle checksums…"
 msgstr ""
 
@@ -544,7 +548,7 @@ msgstr ""
 msgid "Confidential deployment is unavailable: measured launch and attestation-bound key delivery are not implemented. No VM was created and no key was released."
 msgstr ""
 
-#: deployment/cli.py:303
+#: deployment/cli.py:307
 msgid "Configuration"
 msgstr ""
 
@@ -556,7 +560,7 @@ msgstr ""
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
-#: deployment/cli.py:452 deployment/updater.py:94
+#: deployment/cli.py:456 deployment/updater.py:94
 #, python-brace-format
 msgid "Configuration: {configuration}"
 msgstr ""
@@ -565,7 +569,7 @@ msgstr ""
 msgid "Configuring the serial console to capture potential kernel panics…"
 msgstr ""
 
-#: deployment/cli.py:494
+#: deployment/cli.py:498
 #, python-brace-format
 msgid "Connecting: {command}"
 msgstr ""
@@ -633,7 +637,7 @@ msgstr ""
 msgid "Create the VM first using create or reproduce."
 msgstr ""
 
-#: deployment/cli.py:331 deployment/cli.py:69
+#: deployment/cli.py:335 deployment/cli.py:69
 msgid "Created (UTC)"
 msgstr ""
 
@@ -645,7 +649,7 @@ msgstr ""
 msgid "Creation did not return a verified powered-off VM."
 msgstr ""
 
-#: deployment/cli.py:493
+#: deployment/cli.py:497
 msgid "Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."
 msgstr ""
 
@@ -653,12 +657,12 @@ msgstr ""
 msgid "Current DHCP address of the installation environment, overriding the declaration"
 msgstr ""
 
-#: deployment/cli.py:239
+#: deployment/cli.py:243
 #, python-brace-format
 msgid "Declaration created: {path}"
 msgstr ""
 
-#: deployment/cli.py:237
+#: deployment/cli.py:241
 #, python-brace-format
 msgid "Declaration plan: {path}"
 msgstr ""
@@ -687,12 +691,12 @@ msgstr ""
 msgid "Deployment method must be iso or image."
 msgstr ""
 
-#: deployment/cli.py:455 deployment/cli.py:509
+#: deployment/cli.py:459 deployment/cli.py:513
 #, python-brace-format
 msgid "Deployment method: {method}"
 msgstr ""
 
-#: deployment/cli.py:282
+#: deployment/cli.py:286
 msgid "Details"
 msgstr ""
 
@@ -708,11 +712,11 @@ msgstr ""
 msgid "Direct SSD installation currently supports unencrypted RPi targets only; use recovery media for LUKS."
 msgstr ""
 
-#: deployment/cli.py:196
+#: deployment/cli.py:198
 msgid "Direct SSH requires an offline VM declaration without hypervisor management."
 msgstr ""
 
-#: deployment/cli.py:193
+#: deployment/cli.py:195
 msgid "Direct SSH supports update, ssh, verify, status, doctor, diff and diffg."
 msgstr ""
 
@@ -734,7 +738,7 @@ msgstr ""
 msgid "Disallowed SSH account."
 msgstr ""
 
-#: deployment/portable.py:42 deployment/runtime.py:281 deployment/security.py:318
+#: deployment/portable.py:42 deployment/runtime.py:281 deployment/security.py:320
 msgid "Disallowed SSH host or account."
 msgstr ""
 
@@ -871,11 +875,11 @@ msgstr ""
 msgid "Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed."
 msgstr ""
 
-#: deployment/security.py:174
+#: deployment/security.py:176
 msgid "Encrypted image preparation requires a writable tmpfs for temporary secrets."
 msgstr ""
 
-#: deployment/security.py:261
+#: deployment/security.py:263
 msgid "Encrypted image prepared. Keep the passphrase separately; verify a complete locked boot and remote unlock before relying on it."
 msgstr ""
 
@@ -900,7 +904,7 @@ msgstr ""
 msgid "Explicit encrypted snapshot ID from backups TARGET"
 msgstr ""
 
-#: deployment/cli.py:483
+#: deployment/cli.py:487
 #, python-brace-format
 msgid "Export: {command}"
 msgstr ""
@@ -957,7 +961,7 @@ msgstr ""
 msgid "Hyper-V storage must be an absolute path on a local drive without parent directory components."
 msgstr ""
 
-#: deployment/cli.py:303 deployment/cli.py:38
+#: deployment/cli.py:307 deployment/cli.py:38
 msgid "Hypervisor"
 msgstr ""
 
@@ -965,7 +969,7 @@ msgstr ""
 msgid "Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"
 msgstr ""
 
-#: deployment/cli.py:453
+#: deployment/cli.py:457
 #, python-brace-format
 msgid "Hypervisor: {value1}"
 msgstr ""
@@ -1015,7 +1019,7 @@ msgstr ""
 msgid "Import would overwrite an existing volume."
 msgstr ""
 
-#: deployment/cli.py:468
+#: deployment/cli.py:472
 #, python-brace-format
 msgid "Import: VMID {value1}, storage {value2}, bridge {value3}"
 msgstr ""
@@ -1131,7 +1135,7 @@ msgstr ""
 msgid "Installer target system does not match."
 msgstr ""
 
-#: deployment/security.py:189
+#: deployment/security.py:191
 msgid "Interactive passphrase entry requires a terminal; use --key-file for automation."
 msgstr ""
 
@@ -1279,11 +1283,11 @@ msgstr ""
 msgid "Keep backup storage and identities outside the recipe and linked configurations."
 msgstr ""
 
-#: deployment/security.py:211
+#: deployment/security.py:213
 msgid "Keep the runtime password file outside the recipe and Nix store."
 msgstr ""
 
-#: deployment/cli.py:474
+#: deployment/cli.py:478
 #, python-brace-format
 msgid "Key verification: strict known_hosts{value1}{value2}"
 msgstr ""
@@ -1324,7 +1328,7 @@ msgstr ""
 msgid "Linked configuration is not a directory with a regular default.nix: {path}."
 msgstr ""
 
-#: deployment/cli.py:485
+#: deployment/cli.py:489
 #, python-brace-format
 msgid "Live status: {command}"
 msgstr ""
@@ -1406,7 +1410,7 @@ msgstr ""
 msgid "Name from machines/rpi/default.nix"
 msgstr ""
 
-#: deployment/exporter.py:161
+#: deployment/exporter.py:162
 msgid "Named VM network adapters\n\nCreate all adapters in the listed order and preserve their MAC addresses.\nThe first adapter provides management access and uses the top-level network settings.\nSecondary adapters use network.interfaces; omitted entries have no address or DHCP.\nPrepare attachments in the destination environment; manual import does not adopt hypervisor ownership.\nVMware address discovery is not MAC-specific; SSH verification rejects a secondary-interface endpoint.\n\n"
 msgstr ""
 
@@ -1418,16 +1422,16 @@ msgstr ""
 msgid "Network adapter names and MAC addresses must be unique within a VM."
 msgstr ""
 
-#: deployment/cli.py:479
+#: deployment/cli.py:483
 msgid "Network: DHCP"
 msgstr ""
 
-#: deployment/cli.py:477
+#: deployment/cli.py:481
 #, python-brace-format
 msgid "Network: {value1}, gateway {value2}, DNS {value3}"
 msgstr ""
 
-#: deployment/security.py:190
+#: deployment/security.py:192
 msgid "New LUKS passphrase: "
 msgstr ""
 
@@ -1445,7 +1449,7 @@ msgstr ""
 msgid "Newer generation: {path}"
 msgstr ""
 
-#: deployment/cli.py:251 deployment/cli.py:254
+#: deployment/cli.py:255 deployment/cli.py:258
 #, python-brace-format
 msgid "Next step: {command}"
 msgstr ""
@@ -1455,12 +1459,12 @@ msgstr ""
 msgid "NixBerry backup: {target}"
 msgstr ""
 
-#: deployment/exporter.py:132
+#: deployment/exporter.py:133
 #, python-brace-format
 msgid "NixBerry: offline ISO installation\n\n1. Verify sha256sum -c SHA256SUMS.\n2. Create a new VM with UEFI, Secure Boot disabled and exactly one blank disk.\n   CPU, RAM, disk and network parameters are in manifest.json; the target disk must be {disk}.\n   Use the guest agent and controller for the platform described in recipe/README.md.\n3. Attach {filename} and boot the VM from it. The ISO already contains the system and disko.\n4. Transfer INSTALL-ISO.sh to the installation VM over SSH or another medium.\n   First verify the VM identity in the hypervisor console and its actual DMI UUID:\n   cat /sys/class/dmi/id/product_uuid\n5. Read-only check (replace UUID with the verified value):\n   bash INSTALL-ISO.sh dry-run UUID {system} {disko} {bytes} {profile} {disk}\n   After checking, repeat the same command with apply instead of dry-run.\n   Installation refuses disks with partitions or signatures; it does not reinstall an existing system.\n6. Shut down the VM gracefully, detach the ISO and boot from disk.\n   Verify networking and readlink -f /run/current-system against manifest.json.\n\nThe operator prepares the hypervisor network. System networking follows manifest.json.\n"
 msgstr ""
 
-#: deployment/exporter.py:121
+#: deployment/exporter.py:122
 msgid "NixBerry: offline bundle\n\n1. Verify checksums: sha256sum -c SHA256SUMS\n2. Transfer and boot instructions: recipe/README.md\n3. Target and parameters: manifest.json\n\nThe image contains the system and its dependencies. VM disks boot directly;\nthe RPi SD card is a recovery environment with the prebuilt target system.\nInstalled services and applications may have their own network requirements.\n"
 msgstr ""
 
@@ -1476,12 +1480,12 @@ msgstr ""
 msgid "No failed units."
 msgstr ""
 
-#: deployment/security.py:113
+#: deployment/security.py:115
 #, python-brace-format
 msgid "No prepared encrypted image metadata was found at {path}. Run {command} first; its output directory must not already exist."
 msgstr ""
 
-#: deployment/cli.py:301
+#: deployment/cli.py:305
 msgid "No targets are declared. Add a host and instance or an RPi target."
 msgstr ""
 
@@ -1506,16 +1510,16 @@ msgstr ""
 msgid "OK {case}: {value2}"
 msgstr ""
 
-#: deployment/cli.py:393
+#: deployment/cli.py:397
 #, python-brace-format
 msgid "Offline bundle ready: {path}"
 msgstr ""
 
-#: deployment/cli.py:246
+#: deployment/cli.py:250
 msgid "Offline declaration: edit capacity and deployment parameters in the file before export."
 msgstr ""
 
-#: deployment/scaffold.py:37
+#: deployment/scaffold.py:39
 msgid "Offline preparation cannot be combined with --host."
 msgstr ""
 
@@ -1543,16 +1547,16 @@ msgstr ""
 msgid "Only verify the plan without writing"
 msgstr ""
 
-#: deployment/cli.py:214
+#: deployment/cli.py:216
 msgid "Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."
 msgstr ""
 
-#: deployment/cli.py:504
+#: deployment/cli.py:508
 #, python-brace-format
 msgid "Operation {action} is not implemented for {value2}. Available: {value3}"
 msgstr ""
 
-#: deployment/cli.py:481
+#: deployment/cli.py:485
 #, python-brace-format
 msgid "Operation: {value1}"
 msgstr ""
@@ -1631,11 +1635,11 @@ msgstr ""
 msgid "Plan: {name}, 6 CPUs, 12 GiB RAM, 32 + 64 GiB disks, UEFI and a dedicated NAT network."
 msgstr ""
 
-#: deployment/cli.py:303
+#: deployment/cli.py:307
 msgid "Platform"
 msgstr ""
 
-#: deployment/cli.py:458
+#: deployment/cli.py:462
 #, python-brace-format
 msgid "Platform profile: {value1}"
 msgstr ""
@@ -1772,7 +1776,7 @@ msgstr ""
 msgid "RPi verified: {value1}; recovery: {value2}"
 msgstr ""
 
-#: deployment/cli.py:462
+#: deployment/cli.py:466
 #, python-brace-format
 msgid "RPi: {value1}\nAddress: {value2}"
 msgstr ""
@@ -1787,7 +1791,7 @@ msgstr ""
 msgid "RPi: {value1}; serial: {value2}; address: {address}"
 msgstr ""
 
-#: deployment/security.py:201
+#: deployment/security.py:203
 msgid "Raspberry Pi encryption uses its recovery installer, not VM image preparation."
 msgstr ""
 
@@ -1813,7 +1817,7 @@ msgstr ""
 msgid "Regenerate shell catalogue with compile_locales.py"
 msgstr ""
 
-#: deployment/cli.py:460
+#: deployment/cli.py:464
 #, python-brace-format
 msgid "Removal allowed: {value}"
 msgstr ""
@@ -1822,7 +1826,7 @@ msgstr ""
 msgid "Removal cancelled; nothing was changed."
 msgstr ""
 
-#: deployment/cli.py:372
+#: deployment/cli.py:376
 msgid "Removal is not allowed. Set allowReset = true; in this VM's declaration in machines/vm/, then review reset TARGET without --apply."
 msgstr ""
 
@@ -1855,7 +1859,7 @@ msgstr ""
 msgid "Remove this VM and only its verified files through these directory symlinks? [y/N]"
 msgstr ""
 
-#: deployment/security.py:191
+#: deployment/security.py:193
 msgid "Repeat LUKS passphrase: "
 msgstr ""
 
@@ -1934,12 +1938,12 @@ msgstr ""
 msgid "Resolved reset path: {path} → {resolved}"
 msgstr ""
 
-#: deployment/cli.py:466
+#: deployment/cli.py:470
 #, python-brace-format
 msgid "Resources: {value1} CPUs, {value2} MiB RAM, {value3} GiB disk"
 msgstr ""
 
-#: deployment/cli.py:282
+#: deployment/cli.py:286
 msgid "Result"
 msgstr ""
 
@@ -1947,11 +1951,19 @@ msgstr ""
 msgid "Root and boot partitions match the installation."
 msgstr ""
 
+#: deployment/cli_args.py:323
+msgid "Root filesystem for a new VM declaration; defaults to ext4"
+msgstr ""
+
+#: deployment/runtime.py:295 deployment/scaffold.py:37
+msgid "Root filesystem must be ext4 or btrfs."
+msgstr ""
+
 #: deployment/recipe_source.py:51
 msgid "Run NixBerry with linked configurations captured in its recipe."
 msgstr ""
 
-#: deployment/cli.py:423
+#: deployment/cli.py:427
 msgid "Run RPi reproduction through the nixberry launcher from the project root."
 msgstr ""
 
@@ -1967,11 +1979,11 @@ msgstr ""
 msgid "Run isolated NixBerry CI checks without contacting hosts."
 msgstr ""
 
-#: deployment/scaffold.py:65
+#: deployment/scaffold.py:67
 msgid "Run the command from a complete project recipe."
 msgstr ""
 
-#: deployment/cli.py:347 deployment/dispatch.py:25
+#: deployment/cli.py:351 deployment/dispatch.py:25
 msgid "Run the operation through the nixberry launcher with a complete project recipe."
 msgstr ""
 
@@ -1979,7 +1991,7 @@ msgstr ""
 msgid "Run update through the nixberry launcher with a complete pinned recipe."
 msgstr ""
 
-#: deployment/cli.py:400
+#: deployment/cli.py:404
 msgid "Run verify through the nixberry launcher from the project root."
 msgstr ""
 
@@ -1988,7 +2000,7 @@ msgstr ""
 msgid "Running CI check: {check}."
 msgstr ""
 
-#: deployment/runtime.py:363
+#: deployment/runtime.py:366
 #, c-format
 msgid "Running system: %s"
 msgstr ""
@@ -2002,7 +2014,7 @@ msgstr ""
 msgid "Runtime LUKS and initrd SSH secrets are missing; the disk was not changed."
 msgstr ""
 
-#: deployment/cli.py:339 rpi/install.py:106 rpi/local-install.py:33
+#: deployment/cli.py:343 rpi/install.py:106 rpi/local-install.py:33
 msgid "Runtime encryption keys require an encrypted RPi target."
 msgstr ""
 
@@ -2050,12 +2062,12 @@ msgstr ""
 msgid "Secure Boot is not disabled."
 msgstr ""
 
-#: deployment/cli.py:456
+#: deployment/cli.py:460
 #, python-brace-format
 msgid "Security: {mode}; unlock: {unlock}"
 msgstr ""
 
-#: deployment/scaffold.py:55
+#: deployment/scaffold.py:57
 #, python-brace-format
 msgid "Select --host from the declared {backend} hosts: {hosts}. Use --offline to prepare without a hypervisor."
 msgstr ""
@@ -2064,7 +2076,7 @@ msgstr ""
 msgid "Select a snapshot ID from backups TARGET using --snapshot ID."
 msgstr ""
 
-#: deployment/cli.py:322
+#: deployment/cli.py:326
 #, python-brace-format
 msgid "Select a target: {value1}. Arbitrary addresses are not allowed."
 msgstr ""
@@ -2081,12 +2093,12 @@ msgstr ""
 msgid "Sequential NixBerry integration campaign following docs/test-plan.md."
 msgstr ""
 
-#: deployment/cli.py:463
+#: deployment/cli.py:467
 #, python-brace-format
 msgid "Serial number: {value1}\nDisk: {value2}"
 msgstr ""
 
-#: deployment/cli.py:473
+#: deployment/cli.py:477
 #, python-brace-format
 msgid "Server SSH: {value1}@{value2}:{value3}"
 msgstr ""
@@ -2099,7 +2111,7 @@ msgstr ""
 msgid "Server configuration for new-*; defaults to default, other names from configurations/"
 msgstr ""
 
-#: deployment/cli.py:241 deployment/cli.py:374 deployment/cli.py:384 deployment/cli.py:419
+#: deployment/cli.py:245 deployment/cli.py:378 deployment/cli.py:388 deployment/cli.py:423
 #, python-brace-format
 msgid "Server configuration: {configuration}"
 msgstr ""
@@ -2108,15 +2120,15 @@ msgstr ""
 msgid "Set --run-root outside the recipe to run the campaign."
 msgstr ""
 
-#: deployment/cli.py:350
+#: deployment/cli.py:354
 msgid "Set security.imageDirectory or specify --output for prepare-image."
 msgstr ""
 
-#: deployment/security.py:105
+#: deployment/security.py:107
 msgid "Set security.imageDirectory to the prepared encrypted image directory."
 msgstr ""
 
-#: deployment/security.py:285
+#: deployment/security.py:287
 msgid "Set security.initrdHostKey to the trusted RPi boot SSH public key before unlocking."
 msgstr ""
 
@@ -2136,11 +2148,11 @@ msgstr ""
 msgid "Sizes include shared dependencies; they cannot be added or treated as reclaimable space. review means manual assessment, not permission to delete. All retained generations have GC roots."
 msgstr ""
 
-#: deployment/cli.py:331
+#: deployment/cli.py:335
 msgid "Snapshot"
 msgstr ""
 
-#: deployment/cli.py:223
+#: deployment/cli.py:225
 #, python-brace-format
 msgid "Specify a new target name: {value1} NAME."
 msgstr ""
@@ -2154,7 +2166,7 @@ msgstr ""
 msgid "Specify one of these options: {arguments}"
 msgstr ""
 
-#: deployment/cli.py:358 deployment/security.py:294
+#: deployment/cli.py:362 deployment/security.py:296
 msgid "Specify the early-boot VM IP address with unlock TARGET --address IP."
 msgstr ""
 
@@ -2170,11 +2182,11 @@ msgstr ""
 msgid "Starting the new Proxmox VM and its automatic installer…"
 msgstr ""
 
-#: deployment/cli.py:331 deployment/cli.py:38 deployment/cli.py:81
+#: deployment/cli.py:335 deployment/cli.py:38 deployment/cli.py:81
 msgid "State"
 msgstr ""
 
-#: deployment/exporter.py:143 deployment/exporter.py:152
+#: deployment/exporter.py:144 deployment/exporter.py:153
 #, python-brace-format
 msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
 msgstr ""
@@ -2191,7 +2203,7 @@ msgstr ""
 msgid "Store campaign results outside the recipe."
 msgstr ""
 
-#: deployment/security.py:214
+#: deployment/security.py:216
 msgid "Store encrypted images and secrets outside the recipe root."
 msgstr ""
 
@@ -2215,12 +2227,12 @@ msgstr ""
 msgid "System disk copy hash does not match."
 msgstr ""
 
-#: deployment/exporter.py:155
+#: deployment/exporter.py:156
 #, python-brace-format
 msgid "System disk handoff for VM{vmid}\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify sha256sum -c SHA256SUMS.\n2. Prepare a powered-off VM with UEFI/OVMF and Secure Boot disabled.\n   Recommended resources: {vcpus} CPUs, {memory} MiB RAM, {disk} GiB disk.\n3. Import QCOW2 into the chosen storage and attach it as virtio0 or scsi0 (VirtIO SCSI).\n   Configure boot from the attached disk and enable QEMU Guest Agent.\n4. {adapters}\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. In the console, verify ip -4 address, ip route and resolvectl status.\n   System: readlink -f /run/current-system; the expected value is in manifest.json.\n\n{identity}\nManual import does not adopt ownership markers required for hypervisor management.\nManage the server through access in its declaration or nixberry update TARGET --ssh root@HOST:PORT --apply.\nSSH access uses keys from the included recipe; password login is disabled.\nThe image supplies the system; the operator manages the host, bridge and firewall.\n"
 msgstr ""
 
-#: deployment/exporter.py:146
+#: deployment/exporter.py:147
 #, python-brace-format
 msgid "System disk handoff for VirtualBox on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux (64-bit) VM, skip unattended installation and do not attach an ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM. Enable UEFI and leave Secure Boot disabled.\n3. First copy the VDI outside the bundle; attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n   For another VM, use VBoxManage clonemedium disk to assign a unique media UUID.\n4. {adapters}\n   For DHCP, use Bridged Adapter with DHCP or NAT.\n   For a static IP, the network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status virtualbox in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\nFor NAT, configure SSH port forwarding in the operator's environment.\n{identity}\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
 msgstr ""
@@ -2229,7 +2241,7 @@ msgstr ""
 msgid "System does not match."
 msgstr ""
 
-#: deployment/cli.py:303
+#: deployment/cli.py:307
 msgid "System management"
 msgstr ""
 
@@ -2250,7 +2262,7 @@ msgstr ""
 msgid "TARGET"
 msgstr ""
 
-#: deployment/cli.py:282 deployment/cli.py:303 deployment/cli.py:38
+#: deployment/cli.py:286 deployment/cli.py:307 deployment/cli.py:38
 msgid "Target"
 msgstr ""
 
@@ -2258,7 +2270,7 @@ msgstr ""
 msgid "Target VHDX does not match."
 msgstr ""
 
-#: deployment/cli.py:308
+#: deployment/cli.py:312
 #, python-brace-format
 msgid "Target details: {command}"
 msgstr ""
@@ -2271,7 +2283,7 @@ msgstr ""
 msgid "Target inventory regression checks in recipe copies; no host connections or VM changes."
 msgstr ""
 
-#: deployment/cli.py:407
+#: deployment/cli.py:411
 #, python-brace-format
 msgid "Target {name} verification failed: {error}\nDiagnostics: {doctor}\nRecipe comparison: {diff}"
 msgstr ""
@@ -2281,7 +2293,7 @@ msgstr ""
 msgid "Target: Proxmox lab {address}; preparing the dedicated data disk and staging directory."
 msgstr ""
 
-#: deployment/cli.py:451
+#: deployment/cli.py:455
 #, python-brace-format
 msgid "Target: {value1}\nPlatform: {value2}"
 msgstr ""
@@ -2802,7 +2814,7 @@ msgstr ""
 msgid "The data disk is mounted."
 msgstr ""
 
-#: deployment/scaffold.py:121
+#: deployment/scaffold.py:124
 msgid "The declaration already exists; refusing to overwrite it."
 msgstr ""
 
@@ -2826,7 +2838,7 @@ msgstr ""
 msgid "The default mode only verifies the plan. --apply creates a VM using the selected image or iso method."
 msgstr ""
 
-#: deployment/security.py:135
+#: deployment/security.py:137
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr ""
 
@@ -2906,19 +2918,19 @@ msgstr ""
 msgid "The disk record must not be a link."
 msgstr ""
 
-#: deployment/security.py:342
+#: deployment/security.py:344
 msgid "The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."
 msgstr ""
 
-#: deployment/security.py:124
+#: deployment/security.py:126
 msgid "The encrypted image checksum does not match; refusing deployment."
 msgstr ""
 
-#: deployment/security.py:108
+#: deployment/security.py:110
 msgid "The encrypted image directory must be an absolute regular directory."
 msgstr ""
 
-#: deployment/security.py:121
+#: deployment/security.py:123
 msgid "The encrypted image does not match this declaration and system; prepare a new image."
 msgstr ""
 
@@ -2954,7 +2966,7 @@ msgstr ""
 msgid "The first adapter must match the primary MAC and host attachment; it provides management access."
 msgstr ""
 
-#: deployment/scaffold.py:75
+#: deployment/scaffold.py:77
 msgid "The generated MAC conflicts with an existing one; run the command again."
 msgstr ""
 
@@ -3023,7 +3035,7 @@ msgstr ""
 msgid "The host did not return the state of all requested VMs."
 msgstr ""
 
-#: deployment/scaffold.py:61
+#: deployment/scaffold.py:63
 msgid "The host does not match the selected backend."
 msgstr ""
 
@@ -3232,15 +3244,15 @@ msgstr ""
 msgid "The operational target has findings: {checks}. All checks were read-only."
 msgstr ""
 
-#: deployment/cli.py:470
+#: deployment/cli.py:474
 msgid "The operator creates the VM; prepare the image through offline export."
 msgstr ""
 
-#: deployment/exporter.py:140
+#: deployment/exporter.py:141
 msgid "The operator may assign a different MAC and UUID; system networking is not tied to the MAC."
 msgstr ""
 
-#: deployment/exporter.py:139
+#: deployment/exporter.py:140
 msgid "The operator may change the VM UUID, but must preserve every declared adapter MAC."
 msgstr ""
 
@@ -3252,7 +3264,7 @@ msgstr ""
 msgid "The output directory already exists; export will not overwrite it."
 msgstr ""
 
-#: deployment/security.py:206
+#: deployment/security.py:208
 msgid "The output directory already exists; refusing to overwrite it."
 msgstr ""
 
@@ -3260,11 +3272,11 @@ msgstr ""
 msgid "The owner marker must not be a link."
 msgstr ""
 
-#: deployment/security.py:192
+#: deployment/security.py:194
 msgid "The passphrases do not match."
 msgstr ""
 
-#: deployment/security.py:184
+#: deployment/security.py:186
 msgid "The password file must be a private regular file owned by the current user."
 msgstr ""
 
@@ -3333,7 +3345,7 @@ msgstr ""
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
-#: deployment/runtime.py:361
+#: deployment/runtime.py:364
 #, python-brace-format
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
@@ -3383,7 +3395,7 @@ msgstr ""
 msgid "The storage path must not contain a symbolic link."
 msgstr ""
 
-#: deployment/runtime.py:370
+#: deployment/runtime.py:373
 msgid "The system check did not return the expected result."
 msgstr ""
 
@@ -3403,7 +3415,7 @@ msgstr ""
 msgid "The system profile does not match after installation."
 msgstr ""
 
-#: deployment/cli.py:380
+#: deployment/cli.py:384
 #, python-brace-format
 msgid "The system update succeeded, but backup provisioning failed. Run: nixberry backup-stage {target} --apply"
 msgstr ""
@@ -3485,7 +3497,7 @@ msgstr ""
 msgid "The target is not running; login is unavailable."
 msgstr ""
 
-#: deployment/scaffold.py:49
+#: deployment/scaffold.py:51
 msgid "The target name must not be a reserved Windows device name."
 msgstr ""
 
@@ -3533,7 +3545,7 @@ msgstr ""
 msgid "The unlock SSH port must be between 1 and 65535."
 msgstr ""
 
-#: deployment/security.py:299
+#: deployment/security.py:301
 msgid "The unlock address must identify the guest, not the hypervisor or management router."
 msgstr ""
 
@@ -3593,7 +3605,7 @@ msgstr ""
 msgid "This lab is reserved for the local Nixon host."
 msgstr ""
 
-#: deployment/cli.py:265 deployment/cli.py:267
+#: deployment/cli.py:269 deployment/cli.py:271
 msgid "This operation does not accept --apply."
 msgstr ""
 
@@ -3601,7 +3613,7 @@ msgstr ""
 msgid "This operation requires the image method."
 msgstr ""
 
-#: deployment/scaffold.py:60
+#: deployment/scaffold.py:62
 msgid "This procedure currently supports only local libvirt."
 msgstr ""
 
@@ -3697,7 +3709,7 @@ msgstr ""
 msgid "Unknown option: %s"
 msgstr ""
 
-#: deployment/cli.py:270 deployment/cli.py:312
+#: deployment/cli.py:274 deployment/cli.py:316
 #, python-brace-format
 msgid "Unknown target. Available targets: {value1}"
 msgstr ""
@@ -3707,7 +3719,7 @@ msgstr ""
 msgid "Unknown volume list line: {line}"
 msgstr ""
 
-#: deployment/security.py:343
+#: deployment/security.py:345
 msgid "Unlocking the encrypted VM through its pinned early-boot SSH identity…"
 msgstr ""
 
@@ -3716,7 +3728,7 @@ msgstr ""
 msgid "Unrecognized arguments: {arguments}"
 msgstr ""
 
-#: deployment/scaffold.py:45
+#: deployment/scaffold.py:47
 msgid "Unsupported backend for a new declaration."
 msgstr ""
 
@@ -3752,12 +3764,12 @@ msgstr ""
 msgid "Usage: "
 msgstr ""
 
-#: deployment/cli.py:321
+#: deployment/cli.py:325
 #, python-brace-format
 msgid "Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Available targets: {targets}."
 msgstr ""
 
-#: deployment/cli.py:387
+#: deployment/cli.py:391
 msgid "Usage: nixberry export TARGET --output NEW_DIRECTORY."
 msgstr ""
 
@@ -3765,11 +3777,11 @@ msgstr ""
 msgid "Usage: nixberry-vm-create [--dry-run|--apply]"
 msgstr ""
 
-#: deployment/security.py:194
+#: deployment/security.py:196
 msgid "Use a single-line LUKS passphrase of 16 to 4096 bytes."
 msgstr ""
 
-#: deployment/security.py:297
+#: deployment/security.py:299
 msgid "Use an IPv4 or unscoped IPv6 guest address."
 msgstr ""
 
@@ -3842,7 +3854,7 @@ msgstr ""
 msgid "VM security contains unsupported fields; keep secrets outside declarations."
 msgstr ""
 
-#: deployment/exporter.py:145 deployment/exporter.py:154
+#: deployment/exporter.py:146 deployment/exporter.py:155
 msgid "VM system network: DHCP.\n"
 msgstr ""
 
@@ -3851,7 +3863,7 @@ msgstr ""
 msgid "VM {value1}; IP {address}; SSH available."
 msgstr ""
 
-#: deployment/cli.py:465
+#: deployment/cli.py:469
 #, python-brace-format
 msgid "VM: {value1}"
 msgstr ""
@@ -3894,12 +3906,12 @@ msgstr ""
 msgid "Verified: installation VM, UUID, UEFI, pinned outputs and blank /dev/vda."
 msgstr ""
 
-#: deployment/cli.py:414 deployment/updater.py:158
+#: deployment/cli.py:418 deployment/updater.py:158
 #, python-brace-format
 msgid "Verified: {name}, {hostname}, system on {root}."
 msgstr ""
 
-#: deployment/cli.py:395
+#: deployment/cli.py:399
 msgid "Verify SHA256SUMS before transfer; instructions for the selected medium are in README.txt."
 msgstr ""
 
@@ -3989,7 +4001,7 @@ msgstr ""
 msgid "backup-monitor requires backup.monitor.enable and --output NEW_DIRECTORY."
 msgstr ""
 
-#: deployment/cli.py:212
+#: deployment/cli.py:214
 msgid "backup-schedule requires backup.enable = true and backup.schedule in the target declaration. It exports user units on this controller. If the server already schedules its own backups (for example Restic), manage that schedule in its NixOS configuration."
 msgstr ""
 
@@ -4001,7 +4013,7 @@ msgstr ""
 msgid "backup.afterUpdate must be a boolean."
 msgstr ""
 
-#: deployment/cli.py:304 deployment/cli.py:457
+#: deployment/cli.py:308 deployment/cli.py:461
 msgid "configured"
 msgstr ""
 
@@ -4013,7 +4025,7 @@ msgstr ""
 msgid "knownHostsFile must be an absolute path without control characters."
 msgstr ""
 
-#: deployment/cli.py:295
+#: deployment/cli.py:299
 msgid "list does not accept a target or write mode."
 msgstr ""
 
@@ -4025,15 +4037,15 @@ msgstr ""
 msgid "networkAdapters must contain 1–8 ordered adapters."
 msgstr ""
 
-#: deployment/cli.py:221
+#: deployment/cli.py:223
 msgid "new-* only creates a local declaration; it does not accept these options."
 msgstr ""
 
-#: deployment/cli.py:460 rpi/local-install.py:42
+#: deployment/cli.py:464 rpi/local-install.py:42
 msgid "no"
 msgstr ""
 
-#: deployment/security.py:203
+#: deployment/security.py:205
 msgid "prepare-image requires security.mode = luks."
 msgstr ""
 
@@ -4045,7 +4057,7 @@ msgstr ""
 msgid "pythonCommand must be a command name available in the host PATH."
 msgstr ""
 
-#: deployment/cli.py:326
+#: deployment/cli.py:330
 msgid "recover-source requires --output NEW_DIRECTORY."
 msgstr ""
 
@@ -4057,7 +4069,7 @@ msgstr ""
 msgid "running"
 msgstr ""
 
-#: deployment/cli.py:489
+#: deployment/cli.py:493
 msgid "ssh does not accept --dry-run; use status to check the state."
 msgstr ""
 
@@ -4069,7 +4081,7 @@ msgstr ""
 msgid "transport must be local or ssh."
 msgstr ""
 
-#: deployment/cli.py:304 deployment/cli.py:457
+#: deployment/cli.py:308 deployment/cli.py:461
 msgid "unconfigured"
 msgstr ""
 
@@ -4077,15 +4089,15 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
-#: deployment/security.py:280
+#: deployment/security.py:282
 msgid "unlock requires security.mode = luks."
 msgstr ""
 
-#: deployment/cli.py:305 deployment/cli.py:39 deployment/cli.py:453
+#: deployment/cli.py:309 deployment/cli.py:39 deployment/cli.py:457
 msgid "unmanaged"
 msgstr ""
 
-#: deployment/cli.py:304 deployment/cli.py:460 rpi/local-install.py:42
+#: deployment/cli.py:308 deployment/cli.py:464 rpi/local-install.py:42
 msgid "yes"
 msgstr ""
 

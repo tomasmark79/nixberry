@@ -35,7 +35,7 @@ _nixberry_complete() {
         case $word in
             --) return 0 ;;
             --from) backup_source=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
-            --host|--ssh|--output|--address|--local-disk|--artifact-root|--method|--configuration|--security|--key-file|--initrd-key-file|--snapshot)
+            --host|--ssh|--output|--address|--local-disk|--artifact-root|--method|--configuration|--security|--filesystem|--key-file|--initrd-key-file|--snapshot)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
         esac
@@ -68,6 +68,10 @@ _nixberry_complete() {
                     host=
                 fi
             done < "$hosts_file"
+        elif [[ $word == --filesystem ]]; then
+            for name in ext4 btrfs; do
+                [[ $name == "$current"* ]] && COMPREPLY+=("$name")
+            done
         elif [[ $word == --security ]]; then
             for name in none luks confidential; do
                 [[ $name == "$current"* ]] && COMPREPLY+=("$name")
@@ -122,7 +126,7 @@ _nixberry_complete() {
             new-*|show|plan|create|install|provision|reproduce|export) options+=(--method) ;;
         esac
         case $action in
-            new-*) options+=(--host --offline --configuration --security) ;;
+            new-*) options+=(--host --offline --configuration --security --filesystem) ;;
             update|ssh|verify|status|doctor|diff|diffg) options+=(--host --ssh) ;;
             export) options+=(--output) ;;
             recover-source) options+=(--output --snapshot) ;;

@@ -3163,3 +3163,12 @@ msgstr "backup-schedule vyžaduje backup.enable = true a backup.schedule v dekla
 #, python-brace-format
 msgid "Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Available targets: {targets}."
 msgstr "Použití: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Dostupné cíle: {targets}."
+
+msgid "Root filesystem must be ext4 or btrfs."
+msgstr "Kořenový souborový systém musí být ext4 nebo btrfs."
+
+msgid "Root filesystem for a new VM declaration; defaults to ext4"
+msgstr "Kořenový souborový systém nové deklarace VM; výchozí je ext4"
+
+msgid "--filesystem only applies to new-*-vm; changing an existing filesystem requires a separate installation."
+msgstr "--filesystem platí pouze pro new-*-vm; změna existujícího souborového systému vyžaduje samostatnou instalaci."

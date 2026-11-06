@@ -1,4 +1,5 @@
 # Compressed swap takes priority over the fallback disk swap file.
+{ config, ... }:
 {
   zramSwap = {
     enable = true;
@@ -11,7 +12,7 @@
 
   swapDevices = [
     {
-      device = "/swapfile";
+      device = if config.fileSystems."/".fsType == "btrfs" then "/swap/swapfile" else "/swapfile";
       size = 8 * 1024;
       priority = 10;
     }

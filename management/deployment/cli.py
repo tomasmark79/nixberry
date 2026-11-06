@@ -176,6 +176,8 @@ def main(argv=None):
         parser.error(_("--offline applies to new-*-vm without --host."))
     if args.configuration is not None and not args.action.startswith("new-"):
         parser.error(_("--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."))
+    if args.filesystem is not None and not args.action.startswith("new-"):
+        parser.error(_("--filesystem only applies to new-*-vm; changing an existing filesystem requires a separate installation."))
     if args.method and not (args.action.startswith("new-") or args.action in ("show", "plan", "create", "install", "provision", "reproduce", "export")):
         parser.error(_("--method applies to new-*, show, plan, create, install, provision, reproduce and export."))
     if remote_command and args.action != "ssh":
@@ -226,11 +228,13 @@ def main(argv=None):
             path, text = new_libvirt(os.environ.get("NIXBERRY_RECIPE", ""), hosts, registry,
                                     args.target, args.host, write=not args.dry_run, **({"method": args.method} if args.method else {}),
                                     **({"security_mode": args.security} if args.security else {}),
+                                    **({"filesystem": args.filesystem} if args.filesystem else {}),
                                     **({"configuration": args.configuration} if args.configuration is not None else {}))
         else:
             path, text = new_vm(os.environ.get("NIXBERRY_RECIPE", ""), hosts, registry,
                                 args.target, args.action[4:], args.host, write=not args.dry_run, offline=args.offline,
                                 **({"security_mode": args.security} if args.security else {}),
+                                **({"filesystem": args.filesystem} if args.filesystem else {}),
                                 **({"method": args.method} if args.method else {}),
                                 **({"configuration": args.configuration} if args.configuration is not None else {}))
         if args.dry_run:

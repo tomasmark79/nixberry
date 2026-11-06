@@ -78,6 +78,7 @@ class ConfigurationChecks(unittest.TestCase):
     def test_vm_and_rpi_registry_keep_selection_out_of_hardware_spec(self):
         shutil.copyfile(Path(__file__).with_name("default.nix"), self.root / "management/deployment/default.nix")
         shutil.copyfile(Path(__file__).with_name("security.nix"), self.root / "management/deployment/security.nix")
+        shutil.copyfile(Path(__file__).with_name("root-filesystem.nix"), self.root / "management/deployment/root-filesystem.nix")
         shutil.copyfile(Path(__file__).with_name("backup-policy.nix"), self.root / "management/deployment/backup-policy.nix")
         shutil.copyfile(Path(__file__).with_name("vm-network.nix"), self.root / "management/deployment/vm-network.nix")
         (self.root / "hosts.nix").write_text("{}")

@@ -11,6 +11,16 @@ Encrypted VM declarations use `new-*-vm NAME --security luks`. The optional
 attested launch and key delivery are unavailable. Existing declarations are
 edited directly. See [encryption and remote unlocking](security.md).
 
+New VM declarations accept `--filesystem ext4|btrfs`; ext4 remains the default.
+For example, `nixberry new-libvirt-vm vm-demo-server --offline --filesystem btrfs`
+creates a declaration with `rootFilesystem = "btrfs";`. The same field is available
+in RPi declarations. It selects the root layout for images and installation,
+including roots inside LUKS; it does not convert an installed filesystem.
+`update --apply` refuses a root filesystem that differs from the declaration.
+Btrfs uses `@root` mounted at `/`, with separate `@snapshots` at `/.snapshots`
+and `@swap` at `/swap` so active swap is outside root snapshots. Existing ext4
+layouts keep `/swapfile`. Disk format selection alone enables no backup jobs.
+
 | Encryption command | Result |
 | --- | --- |
 | `prepare-image TARGET [--output DIR] [--key-file FILE]` | Prepare encrypted media outside the store; otherwise use `security.imageDirectory` and an interactive passphrase. |

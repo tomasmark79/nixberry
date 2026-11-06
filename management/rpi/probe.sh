@@ -9,7 +9,7 @@ tr -d '\0' < /proc/device-tree/serial-number
 printf '\036'
 hostname
 printf '\036'
-findmnt -n -o SOURCE /
+findmnt -n --nofsroot -o SOURCE /
 printf '\036'
 ip -j link
 printf '\036'

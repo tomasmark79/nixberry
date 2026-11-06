@@ -80,6 +80,18 @@ class SecurityTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "does not match"):
             artifact(self.target)
 
+    def test_prepared_image_cannot_be_reused_for_another_filesystem(self):
+        self.assertEqual(artifact(self.target)[0], self.disk)
+        self.target['rootFilesystem'] = 'btrfs'
+        with self.assertRaisesRegex(RuntimeError, 'does not match'):
+            artifact(self.target)
+        self.metadata['binding'] = binding(self.target)
+        self.save_metadata()
+        self.assertEqual(artifact(self.target)[0], self.disk)
+        self.target['rootFilesystem'] = 'ext4'
+        with self.assertRaisesRegex(RuntimeError, 'does not match'):
+            artifact(self.target)
+
     def test_all_vm_backends_refuse_confidential_and_encrypted_iso(self):
         with patch("security.subprocess.run") as run:
             for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
