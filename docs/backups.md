@@ -2,10 +2,92 @@
 
 [Main guide](../README.md) · [CLI](cli.md) · [Platform contract](platform-consistency.md)
 
-Backup policy belongs to a target declaration in `machines/vm/` or
+Controller provider policy belongs to a target declaration in `machines/vm/` or
 `machines/rpi/`. A configuration supplies a local provider for its
 application format, consistency requirements and restore checks. NixBerry
 dispatches through that provider using one controller interface for every backend.
+
+## Configuration-owned local snapshots
+
+Configurations importing `modules/common.nix` can enable the shared Btrfs capture
+tool. Application paths and writer units belong to that configuration:
+
+```nix
+{ nixberryModules, ... }:
+{
+  imports = [ nixberryModules.common ];
+  nixberry.backup = {
+    enable = true;
+    captureMethod = "snapshot";
+    applications.web = {
+      paths = [ "/var/lib/web" ];
+      stopUnits = [ "web.service" ];
+    };
+  };
+}
+```
+
+Replace the example with paths and services actually supplied by the selecting
+configuration. The target declaration selects the filesystem with
+`rootFilesystem = "btrfs";`; enabling capture does not change an existing disk.
+The default capture root is `/`, with private snapshot storage at
+`/.snapshots/nixberry`. The standard Btrfs layout keeps snapshot storage and
+active swap in sibling subvolumes outside the captured root.
+
+On the installed source, as root:
+
+```sh
+nixberry-capture snapshot --json
+nixberry-capture snapshot --apply --json
+nixberry-capture snapshots --json
+nixberry-capture snapshot-remove --snapshot SNAPSHOT_ID --json
+nixberry-capture snapshot-remove --snapshot SNAPSHOT_ID --apply --json
+nixberry-capture resume --json
+nixberry-capture resume --apply --json
+```
+
+These are guest-side commands. Local snapshots do not upload data, replace the
+controller provider commands below or enable a backup schedule. Planning can
+inspect filesystem metadata but changes no files or services. Inventory is
+recorded capture metadata, not a fresh integrity check.
+The guest tool is shared by all five VM backends and RPi, independently of
+image or ISO installation. It requires a running, unlocked source; exported
+offline media cannot capture a stopped source's application data.
+
+Capture verifies Btrfs source identity, free space, storage placement, mount
+coverage and nested subvolumes before stopping writers. Only services active
+before capture are restarted. All selected subvolumes are captured read-only
+while the configured writers remain stopped. A failed stop, changed source,
+timeout or snapshot error prevents successful publication and attempts writer
+recovery. A failed restart retains the recovery record and blocks new captures.
+`nixberry-capture resume --apply` retries the recorded writers; a boot service
+also attempts recovery after a power loss. Never remove a pending recovery
+record merely to bypass the capture guard.
+
+Declare every nested data subvolume in `nixberry.backup.roots`, including those
+created by container tools. Each entry has `path` and `snapshotDirectory`; its
+storage must be on the same Btrfs filesystem outside that source subvolume.
+Mounts inside application data need an explicitly captured root. Symbolic-link
+directories are rejected; final symbolic-link targets must be included as
+explicit application data paths. Capture state and snapshot storage must stay
+outside those data paths. An empty `stopUnits` explicitly permits live reads.
+The catalogue does not discover unlisted applications or unknown writers.
+Include any sockets or timers which could restart a writer during capture in
+`stopUnits` as well. All configured units are stopped to cancel intervening
+activation jobs; only the originally active set is resumed. A detected writer
+reactivation prevents successful publication.
+
+Snapshots are retained until explicitly removed. Source writes can retain old
+blocks while snapshots exist; `minFreeBytes` is a preflight threshold, not a
+space reservation. Removal requires the recorded source/storage paths, source
+machine identity, filesystem UUID, snapshot UUID, parent UUID and read-only
+state to match. Mounted references visible to the capture process prevent
+removal. Failed captures and uncertain remnants are not silently removed.
+Snapshot data stays on the source disk, so remote backup is still required for
+disk failure. Ext4 remains supported by the disk layout; this local Btrfs
+snapshot tool rejects it rather than making a weaker live copy.
+
+## Controller providers
 
 ```nix
 backup = {

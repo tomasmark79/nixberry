@@ -110,6 +110,14 @@ They verify declaration scaffolding, separate snapshot/swap subvolumes and updat
 format guards. Evaluation does not prove image installation, boot, active swap,
 snapshot capture or restoration; verify those separately in isolated systems.
 
+`test_snapshots.py` injects capture, timeout, identity and restart failures and
+checks durable recovery records, private state, read-only publication and scoped
+removal. Run `nix build --no-link path:.#checks.x86_64-linux.snapshots` for actual
+Btrfs capture in a disposable NixOS VM. It checks unchanged plan state, resumed
+writers, a stable read-only view while the source changes, refusal of unlisted
+nested subvolumes, interrupted-writer recovery and mounted-reference protection
+during removal. This does not prove ARM boot or deployment on any real backend.
+
 Use English defaults for the regression suite; individual translation tests
 select Czech explicitly. Tests use temporary declarations and mocked transports.
 Some invoke Nix with small fixture artifacts or test real Python-to-Python

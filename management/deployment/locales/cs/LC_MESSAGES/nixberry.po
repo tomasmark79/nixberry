@@ -3172,3 +3172,159 @@ msgstr "Kořenový souborový systém nové deklarace VM; výchozí je ext4"
 
 msgid "--filesystem only applies to new-*-vm; changing an existing filesystem requires a separate installation."
 msgstr "--filesystem platí pouze pro new-*-vm; změna existujícího souborového systému vyžaduje samostatnou instalaci."
+
+msgid "--snapshot only applies to snapshot-remove in the capture tool."
+msgstr "--snapshot platí v nástroji zachycení pouze pro snapshot-remove."
+
+msgid "A capture writer is missing or changing state; no consistent capture is available."
+msgstr "Zapisující služba chybí nebo mění stav; konzistentní zachycení není dostupné."
+
+msgid "An application path has no declared snapshot root."
+msgstr "Datová cesta aplikace nemá deklarovaný kořen snapshotu."
+
+msgid "Another snapshot operation holds the capture lock."
+msgstr "Zámek zachycení drží jiná operace se snapshoty."
+
+msgid "Application data crosses an undeclared mount or nested subvolume."
+msgstr "Data aplikace zasahují do nedeklarovaného připojení nebo vnořeného subvolume."
+
+msgid "Application paths must not traverse symbolic-link directories."
+msgstr "Datové cesty aplikací nesmějí procházet adresáři se symbolickými odkazy."
+
+msgid "Apply snapshot capture or writer recovery"
+msgstr "Provést zachycení snapshotu nebo obnovení zapisujících služeb"
+
+msgid "Cannot inspect nested Btrfs subvolumes safely."
+msgstr "Vnořené Btrfs subvolumes nelze bezpečně zkontrolovat."
+
+msgid "Cannot verify the source subvolume identity."
+msgstr "Nelze ověřit identitu zdrojového subvolume."
+
+msgid "Capture configured application data in read-only Btrfs snapshots."
+msgstr "Zachycení nakonfigurovaných dat aplikací do Btrfs snapshotů pouze pro čtení."
+
+msgid "Capture paths must be normalized absolute paths without control characters."
+msgstr "Cesty zachycení musejí být normalizované absolutní cesty bez řídicích znaků."
+
+msgid "Capture recovery names writers outside the current configuration."
+msgstr "Záznam obnovy zachycení uvádí zapisující služby mimo aktuální konfiguraci."
+
+msgid "Capture recovery state does not match this machine identity."
+msgstr "Stav obnovy zachycení neodpovídá identitě tohoto stroje."
+
+msgid "Capture state and snapshot storage must stay outside application data paths."
+msgstr "Stav zachycení a úložiště snapshotů musejí zůstat mimo datové cesty aplikací."
+
+msgid "Capture state directories must be private and owned by root."
+msgstr "Adresáře stavu zachycení musejí být soukromé a vlastněné uživatelem root."
+
+msgid "Capture state directories must not contain symbolic links."
+msgstr "Adresáře stavu zachycení nesmějí obsahovat symbolické odkazy."
+
+msgid "Capture state directories require trusted ownership and private write access."
+msgstr "Adresáře stavu zachycení vyžadují důvěryhodného vlastníka a soukromý přístup k zápisu."
+
+msgid "Capture writers did not resume; retain the recovery record."
+msgstr "Zapisující služby nebyly obnoveny; zachovejte záznam obnovy."
+
+msgid "Capture writers did not stop; refusing to publish a snapshot."
+msgstr "Zapisující služby se nezastavily; snapshot nebude zveřejněn jako dokončený."
+
+msgid "Capture writers must be service units outside networking and management."
+msgstr "Zapisující jednotky musejí být služby mimo síť a správu stroje."
+
+msgid "Captured snapshot identity does not match its declared source."
+msgstr "Identita zachyceného snapshotu neodpovídá jeho deklarovanému zdroji."
+
+msgid "Configuration-owned capture policy file"
+msgstr "Soubor pravidel zachycení spravovaný konfigurací"
+
+msgid "Each captured application requires data paths and explicit writer units."
+msgstr "Každá zachycovaná aplikace vyžaduje datové cesty a výslovně určené zapisující jednotky."
+
+msgid "Each snapshot root requires a source subvolume and a snapshot directory."
+msgstr "Každý kořen snapshotu vyžaduje zdrojové subvolume a adresář snapshotů."
+
+msgid "Explicit local Btrfs snapshot ID"
+msgstr "Výslovné ID místního Btrfs snapshotu"
+
+msgid "Include the resolved target of each application symbolic link explicitly."
+msgstr "Výslovně zahrňte vyhodnocený cíl každého symbolického odkazu aplikace."
+
+msgid "Inspect capture readiness without changing files or services"
+msgstr "Zkontrolovat připravenost zachycení bez změn souborů nebo služeb"
+
+msgid "Insufficient free space for snapshot capture."
+msgstr "Pro zachycení snapshotu není dostatek volného místa."
+
+msgid "Interrupted capture needs writer recovery before another snapshot."
+msgstr "Přerušené zachycení vyžaduje obnovení zapisujících služeb před dalším snapshotem."
+
+msgid "Invalid snapshot capture policy."
+msgstr "Neplatná pravidla zachycení snapshotů."
+
+msgid "Invalid snapshot inventory record."
+msgstr "Neplatný záznam inventáře snapshotů."
+
+msgid "Print technical capture metadata as JSON"
+msgstr "Vypsat technická metadata zachycení jako JSON"
+
+msgid "Select an explicit snapshot ID from the local snapshot inventory."
+msgstr "Vyberte výslovné ID snapshotu z místního inventáře snapshotů."
+
+msgid "Snapshot capture exceeded its configured time limit."
+msgstr "Zachycení snapshotu překročilo nastavený časový limit."
+
+msgid "Snapshot capture requires Btrfs at every declared source and destination."
+msgstr "Zachycení snapshotu vyžaduje Btrfs na každém deklarovaném zdroji a cíli."
+
+msgid "Snapshot capture was interrupted; checking writer recovery."
+msgstr "Zachycení snapshotu bylo přerušeno; kontroluje se obnovení zapisujících služeb."
+
+msgid "Snapshot command failed; inspect the external tool diagnostics."
+msgstr "Příkaz snapshotu selhal; zkontrolujte diagnostiku externího nástroje."
+
+msgid "Snapshot inventory is read-only."
+msgstr "Inventář snapshotů je pouze pro čtení."
+
+msgid "Snapshot operations require root on the declared source."
+msgstr "Operace se snapshoty vyžadují uživatele root na deklarovaném zdroji."
+
+msgid "Snapshot record does not match the configured source and storage paths."
+msgstr "Záznam snapshotu neodpovídá nakonfigurovaným cestám zdroje a úložiště."
+
+msgid "Snapshot removal identity check failed; retain uncertain remnants."
+msgstr "Kontrola identity při odstranění snapshotu selhala; zachovejte nejisté pozůstatky."
+
+msgid "Snapshot roots must name distinct source subvolumes."
+msgstr "Kořeny snapshotů musejí určovat různá zdrojová subvolumes."
+
+msgid "Snapshot source identity changed after writer shutdown."
+msgstr "Identita zdroje snapshotu se po zastavení zapisujících služeb změnila."
+
+msgid "Snapshot source roots must not contain symbolic links."
+msgstr "Kořeny zdrojů snapshotů nesmějí obsahovat symbolické odkazy."
+
+msgid "Snapshot storage must be on the same Btrfs filesystem outside the captured subvolume."
+msgstr "Úložiště snapshotů musí být na stejném souborovém systému Btrfs mimo zachycované subvolume."
+
+msgid "Snapshot storage must not contain symbolic links."
+msgstr "Úložiště snapshotů nesmí obsahovat symbolické odkazy."
+
+msgid "The capture source has no valid machine identity."
+msgstr "Zdroj zachycení nemá platnou identitu stroje."
+
+msgid "The captured subvolume is not read-only."
+msgstr "Zachycené subvolume není pouze pro čtení."
+
+msgid "Unexpected file in snapshot inventory."
+msgstr "Neočekávaný soubor v inventáři snapshotů."
+
+msgid "Unsafe capture state file."
+msgstr "Nezabezpečený soubor stavu zachycení."
+
+msgid "Snapshot command exceeded its time limit."
+msgstr "Příkaz snapshotu překročil svůj časový limit."
+
+msgid "Capture writers and activation units must be services, sockets or timers outside networking and management."
+msgstr "Zapisující a aktivační jednotky musejí být služby, sockety nebo časovače mimo síť a správu stroje."
