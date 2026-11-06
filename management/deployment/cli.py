@@ -22,6 +22,7 @@ from discovery import collect_status
 from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, error as report_error
 from native_controller import ACTIONS as SNAPSHOT_ACTIONS, run as run_native
+from native_access import ACTIONS as ACCESS_ACTIONS, run as run_native_access
 from backups import ACTIONS as BACKUP_ACTIONS, available as backup_operations, run as run_backup, policy as backup_policy
 
 
@@ -105,6 +106,7 @@ def operations(target):
     caps = capabilities(target)
     result = ["show", "export"]
     result += backup_operations(target)
+    result += [action for action in ACCESS_ACTIONS if action not in result]
     if security_policy(target)["mode"] != "none":
         result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
@@ -186,6 +188,19 @@ def main(argv=None):
         parser.error(_("--method applies to new-*, show, plan, create, install, provision, reproduce and export."))
     if remote_command and args.action != "ssh":
         parser.error(_("A command after -- is only available for ssh TARGET -- COMMAND."))
+    if args.backup_access:
+        if (args.action not in ACCESS_ACTIONS or not args.target or args.host or args.ssh or args.address
+                or args.local_disk or args.erase_existing or args.artifact_root):
+            parser.error(_("--backup-access requires a named source and a storage read operation without server connection options."))
+        result = run_native_access(args.backup_access, args.target, args.action, snapshot=args.snapshot,
+                                   output=args.output, apply=args.apply, dry_run=args.dry_run)
+        if args.action == 'backups' and not args.json and not args.dry_run:
+            table([_("Snapshot"), _("Created (UTC)"), _("State")], [
+                [row['snapshotId'], datetime.fromtimestamp(row['createdAt'], timezone.utc).strftime('%Y-%m-%d %H:%M'), row['state']]
+                for row in result.get('snapshots', [])])
+        else:
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
     registry = json.loads(Path(os.environ["NIXBERRY_DEPLOYMENT"]).read_text())
     if args.local_disk and (args.action not in ("plan", "reproduce")
                            or args.target not in registry or registry[args.target]["backend"] != "rpi"
@@ -337,6 +352,8 @@ def main(argv=None):
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
     if args.action in BACKUP_ACTIONS:
+        if args.action in ACCESS_ACTIONS and not backup_policy(target)['enable']:
+            parser.error(_("Native storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."))
         if args.action == "recover-source" and not args.output:
             parser.error(_("recover-source requires --output NEW_DIRECTORY."))
         result = run_backup(os.environ.get("NIXBERRY_RECIPE", ""), registry, args.action, args.target,

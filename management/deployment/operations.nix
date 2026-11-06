@@ -8,6 +8,9 @@ in
 [
   "show"
   "export"
+  "backups"
+  "verify-backup"
+  "recover-source"
 ]
 ++ optional ((target.security.mode or "none") != "none") (
   [ "unlock" ] ++ optional (target.backend != "rpi") [ "prepare-image" ]
@@ -27,9 +30,6 @@ in
   "snapshot-resume"
 ]
 ++ optional backup [
-  "backups"
-  "verify-backup"
-  "recover-source"
   "backup-prune"
   "backup-schedule"
   "backup-check"

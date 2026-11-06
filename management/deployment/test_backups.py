@@ -88,7 +88,7 @@ class BackupPolicyTests(unittest.TestCase):
             self.assertEqual(set(values), set(operations(target)))
             self.assertEqual('backup' in values, target['capabilities']['system'])
             self.assertEqual('backup-stage' in values, target['capabilities']['system'])
-            self.assertEqual('backups' in values, target['backup']['enable'])
+            self.assertIn('backups', values)
 
 
 class ProviderTests(unittest.TestCase):

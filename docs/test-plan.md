@@ -147,6 +147,11 @@ staging and bad-hash refusal, read-only planning, direct and
 systemd-owned captures, actual source-timer firing, strict host-key rejection
 before shutdown and complete
 payload authentication from the storage guest after each source is shut down.
+The storage guest also runs the packaged controller as a non-root recovery user,
+with its own SSH key and no source declaration, to list, verify and recover sealed
+source code. Test read-only SFTP credentials with repository locking disabled.
+`test_native_access.py` covers private contexts, wrong identity/permissions,
+no-contact plans, bounded metadata, write-operation refusal and safe new output.
 It proves neither application publication into a replacement machine nor a
 physical RPi install/boot. Real NAS accounts and host keys remain operator data.
 

@@ -175,7 +175,8 @@ class AccessChecks(unittest.TestCase):
             path.write_text(original.replace('  access = {', '  access = null;\n  unusedAccess = {'))
             unset = evaluate(expression)
             self.assertEqual(unset["system"], before["system"])
-            self.assertEqual(unset["manifest"]["accesscheck"]["operations"], ["show", "export"])
+            self.assertEqual(unset["manifest"]["accesscheck"]["operations"],
+                             ["show", "export", "backups", "verify-backup", "recover-source"])
 
 
 if __name__ == "__main__":

@@ -67,10 +67,12 @@ pkgs.testers.runNixOSTest {
       };
       environment.systemPackages = [
         tools.restic
+        (import ../management/deployment/package.nix { inherit pkgs; })
         pkgs.openssh
         pkgs.restic
       ];
       virtualisation.memorySize = 2048;
+      users.users.recovery.isNormalUser = true;
     };
   };
   testScript = ''
@@ -82,6 +84,9 @@ pkgs.testers.runNixOSTest {
         node.succeed("mkdir -m 700 -p /var/lib/nixberry-backup /run/nixberry-backup; printf test-only-password > /var/lib/nixberry-backup/password; chmod 600 /var/lib/nixberry-backup/password")
         node.succeed("ssh-keygen -q -t ed25519 -N \"\" -f /var/lib/nixberry-backup/ssh-key")
     storage.succeed("mkdir -m 700 -p /root/.ssh /backup")
+    storage.succeed("install -d -m 700 -o recovery -g users /run/recovery-operator; runuser -u recovery -- ssh-keygen -q -t ed25519 -N \"\" -f /home/recovery/ssh-key")
+    recovery_key = storage.succeed("cat /home/recovery/ssh-key.pub").strip()
+    storage.succeed("printf '%s\\n' 'restrict,command=\"internal-sftp -R\" " + recovery_key + "' >> /root/.ssh/authorized_keys; chmod 600 /root/.ssh/authorized_keys")
     host_key = storage.succeed("cat /etc/ssh/ssh_host_ed25519_key.pub").strip()
     for node in [btrfs, cold, storage]:
         public_key = node.succeed("cat /var/lib/nixberry-backup/ssh-key.pub").strip()
@@ -135,5 +140,28 @@ pkgs.testers.runNixOSTest {
         node.shutdown()
         verified = json.loads(storage.succeed("nixberry-restic --config /run/recovery-policy.json verify-backup --snapshot " + report["snapshotId"] + " --json"))
         assert verified["state"] == "recorded-verified"
+        # A non-root operator has independent credentials, no declaration and no
+        # source capture catalogue. The source is already powered off here.
+        access = {"version": 1, "target": "vm-demo-guest", "sourceId": json.loads(policy)["sourceId"],
+                  "repository": json.loads(policy)["repository"], "repositoryId": pin,
+                  "passwordFile": "/home/recovery/password", "runtimeDirectory": "/run/recovery-operator",
+                  "timeoutSeconds": 120, "ssh": {"port": 22, "identityFile": "/home/recovery/ssh-key",
+                  "knownHostsFile": "/home/recovery/known_hosts"}}
+        for name, contents in [("access.json", json.dumps(access)), ("password", "test-only-password"),
+                               ("known_hosts", "storage " + host_key)]:
+            storage.succeed("printf '%s' " + shlex.quote(contents) + " > /home/recovery/" + name + "; chown recovery:users /home/recovery/" + name + "; chmod 600 /home/recovery/" + name)
+        command = "runuser -u recovery -- nixberry "
+        options = " vm-demo-guest --backup-access /home/recovery/access.json --json"
+        rows = json.loads(storage.succeed(command + "backups" + options))["snapshots"]
+        assert len(rows) == 3
+        checked = json.loads(storage.succeed(command + "verify-backup" + options + " --snapshot " + report["snapshotId"]))
+        assert checked["state"] == "recorded-verified"
+        destination = "/home/recovery/recovered-" + node.name
+        recover = command + "recover-source" + options + " --snapshot " + report["snapshotId"] + " --output " + destination
+        assert json.loads(storage.succeed(recover))["applied"] is False
+        storage.succeed("test ! -e " + destination)
+        assert json.loads(storage.succeed(recover + " --apply"))["state"] == "recorded-source-recovered"
+        storage.succeed("test ! -e " + destination + "/INCOMPLETE; grep -Fx test-only " + destination + "/recipe/admin.pub")
+        storage.fail(recover + " --apply")
   '';
 }

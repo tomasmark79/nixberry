@@ -7,6 +7,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 class RecoveryRecipeTests(unittest.TestCase):
@@ -106,6 +107,35 @@ class RecoveryRecipeTests(unittest.TestCase):
                 result.addfile(item, io.BytesIO(b'x'))
             with self.subTest(filename=filename), self.assertRaises(ValueError):
                 self.module.validate(output.getvalue())
+
+    def test_file_cannot_be_a_parent_of_another_archive_entry(self):
+        payload = self.archive()
+        output = io.BytesIO()
+        with tarfile.open(fileobj=io.BytesIO(payload), mode='r:') as source, tarfile.open(fileobj=output, mode='w') as result:
+            for item in source:
+                result.addfile(item, source.extractfile(item) if item.isfile() else None)
+            child = tarfile.TarInfo('recipe/flake.nix/escape')
+            child.size = 1
+            result.addfile(child, io.BytesIO(b'x'))
+        with self.assertRaisesRegex(ValueError, 'Conflicting file'):
+            self.module.validate(output.getvalue())
+
+    def test_failed_extraction_retains_a_visible_incomplete_directory_and_cannot_overwrite_it(self):
+        destination = self.base / 'recovered'
+        data = self.archive()
+        with patch('recovery_recipe.shutil.copyfileobj', side_effect=OSError('simulated disk failure')):
+            with self.assertRaises(OSError):
+                self.module.unpack(data, destination)
+        self.assertTrue((destination / 'INCOMPLETE').is_file())
+        with self.assertRaises(FileExistsError):
+            self.module.unpack(data, destination)
+
+    def test_declared_logical_file_size_is_bounded_before_payload_reads(self):
+        entry = tarfile.TarInfo('recipe/oversized')
+        entry.size = self.module.MAX_ARCHIVE + 1
+        data = entry.tobuf() + b'\0' * 1024
+        with self.assertRaisesRegex(ValueError, 'size limit'):
+            self.module.validate(data)
 
 
 class RecoveryProjectionTests(unittest.TestCase):

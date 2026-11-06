@@ -1,5 +1,6 @@
 """Back up configuration-owned application data directly into an encrypted Restic repository."""
 import hashlib
+import contextlib
 from datetime import datetime
 import json
 import os
@@ -44,6 +45,22 @@ def policy(value):
     snapshots.policy(value['capture'])
     for key in ('passwordFile', 'repositoryIdFile', 'recoveryFile', 'runtimeDirectory'):
         runtime_path(value[key])
+    storage_policy(value)
+    paths = [path for app in value['capture']['applications'].values() for path in app['paths']]
+    internal = [value['runtimeDirectory'], value['recoveryFile'], value['passwordFile'], value['repositoryIdFile']]
+    if value['repository'].startswith('/'):
+        internal.append(value['repository'])
+    if any(Path(a).is_relative_to(b) or Path(b).is_relative_to(a) for a in paths for b in internal):
+        raise ValueError(_("Backup storage, runtime files and credentials must stay outside application data paths."))
+    return value
+
+
+def storage_policy(value):
+    if (not isinstance(value['sourceId'], str) or not re.fullmatch(r'[A-Za-z0-9:_.-]{1,128}', value['sourceId'])
+            or type(value['timeoutSeconds']) is not int or not 1 <= value['timeoutSeconds'] <= 86400):
+        raise ValueError(_("Invalid native Restic backup policy."))
+    for key in ('passwordFile', 'runtimeDirectory'):
+        runtime_path(value[key])
     repository = value['repository']
     if not isinstance(repository, str):
         raise ValueError(_("Restic requires an absolute local repository or an explicitly pinned SFTP repository."))
@@ -61,21 +78,16 @@ def policy(value):
             raise ValueError(_("SFTP backups require an explicit SSH key, host-key file and port."))
         runtime_path(ssh['identityFile'])
         runtime_path(ssh['knownHostsFile'])
-    paths = [path for app in value['capture']['applications'].values() for path in app['paths']]
-    internal = [value['runtimeDirectory'], value['recoveryFile'], value['passwordFile'], value['repositoryIdFile']]
-    if repository.startswith('/'):
-        internal.append(repository)
-    if any(Path(a).is_relative_to(b) or Path(b).is_relative_to(a) for a in paths for b in internal):
-        raise ValueError(_("Backup storage, runtime files and credentials must stay outside application data paths."))
     return value
 
 
-def private_file(path, *, private=True, limit=128 * 1024 * 1024):
-    snapshots.secure_directory(Path(path).parent, private=False)
+def private_file(path, *, private=True, limit=128 * 1024 * 1024, owner_uid=None):
+    owner_uid = snapshots.OWNER_UID if owner_uid is None else owner_uid
+    snapshots.secure_directory(Path(path).parent, private=False, owner_uid=owner_uid)
     descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
     with os.fdopen(descriptor, 'rb') as stream:
         entry = os.fstat(stream.fileno())
-        if (not stat.S_ISREG(entry.st_mode) or entry.st_uid != snapshots.OWNER_UID
+        if (not stat.S_ISREG(entry.st_mode) or entry.st_uid != owner_uid
                 or entry.st_mode & (0o077 if private else 0o022) or entry.st_size > limit):
             raise ValueError(_("Restic runtime files require trusted ownership, safe permissions and bounded size."))
         contents = stream.read(limit + 1)
@@ -91,13 +103,18 @@ def require_tmpfs(path):
 
 
 class Restic:
-    def __init__(self, settings):
+    def __init__(self, settings, *, owner_uid=None, repository_id=None, read_only=False):
         self.settings = settings
+        self.owner_uid = owner_uid
+        self.repository_id = repository_id
+        self.read_only = read_only
         self.deadline = time.monotonic() + settings['timeoutSeconds']
 
     def command(self):
         value = self.settings
         command = ['restic', '--repo', value['repository'], '--password-file', value['passwordFile'], '--no-cache', '--json']
+        if self.read_only:
+            command.append('--no-lock')
         if value['ssh'] is not None:
             ssh = value['ssh']
             user_host = value['repository'].removeprefix('sftp:').split(':', 1)[0]
@@ -109,21 +126,40 @@ class Restic:
             command += ['--option', 'sftp.command=' + shlex.join(transport)]
         return command
 
-    def run(self, arguments, *, input=None, binary=False, discard=False):
+    def run(self, arguments, *, input=None, binary=False, discard=False, max_output=None):
+        if self.read_only and (not arguments or arguments[0] not in ('snapshots', 'dump') and arguments != ['cat', 'config']):
+            raise ValueError(_("Independent backup access permits only repository identity, inventory and payload reads."))
         remaining = self.deadline - time.monotonic()
         if remaining <= 0:
             raise TimeoutError(_("Restic exceeded its configured time limit."))
         environment = {key: value for key, value in os.environ.items() if not key.startswith('RESTIC_')}
         environment.update(TMPDIR=self.settings['runtimeDirectory'], LC_ALL='C')
+        if max_output is None and self.read_only and not discard:
+            max_output = 16 * 1024 * 1024
         try:
             # SFTP StartForeground uses /dev/tty even with redirected standard
             # streams. Detach unattended jobs from the caller's terminal.
-            result = subprocess.run(self.command() + arguments, input=input,
-                                    stdin=subprocess.DEVNULL if input is None else None,
-                                    start_new_session=True,
-                                    stdout=subprocess.DEVNULL if discard else subprocess.PIPE,
-                                    stderr=subprocess.PIPE, text=not binary,
-                                    timeout=remaining, env=environment)
+            with contextlib.ExitStack() as stack:
+                options = {}
+                output = None
+                if max_output is not None:
+                    import resource
+                    directory = snapshots.secure_directory(self.settings['runtimeDirectory'], create=True, owner_uid=self.owner_uid)
+                    require_tmpfs(directory)
+                    output = stack.enter_context(tempfile.TemporaryFile(dir=directory))
+                    def bounded_file():
+                        resource.setrlimit(resource.RLIMIT_FSIZE, (max_output, max_output))
+                    options['preexec_fn'] = bounded_file
+                result = subprocess.run(self.command() + arguments, input=input,
+                                        stdin=subprocess.DEVNULL if input is None else None,
+                                        start_new_session=True,
+                                        stdout=output if output is not None else subprocess.DEVNULL if discard else subprocess.PIPE,
+                                        stderr=subprocess.PIPE, text=not binary,
+                                        timeout=remaining, env=environment, **options)
+                if output is not None:
+                    output.seek(0)
+                    contents = output.read(max_output + 1)
+                    result.stdout = contents if binary else contents.decode('utf-8')
         except subprocess.TimeoutExpired as failure:
             forward_stderr(failure.stderr)
             raise TimeoutError(_("Restic exceeded its configured time limit.")) from None
@@ -134,13 +170,14 @@ class Restic:
 
     def repository(self):
         value = self.settings
-        private_file(value['passwordFile'])
-        expected = private_file(value['repositoryIdFile'], private=False, limit=1024).decode().strip()
+        private_file(value['passwordFile'], owner_uid=self.owner_uid)
+        expected = self.repository_id if self.repository_id is not None else private_file(
+            value['repositoryIdFile'], private=False, limit=1024, owner_uid=self.owner_uid).decode().strip()
         if not ID.fullmatch(expected):
             raise ValueError(_("The pinned Restic repository identity is invalid."))
         if value['ssh'] is not None:
-            private_file(value['ssh']['identityFile'])
-            private_file(value['ssh']['knownHostsFile'], private=False)
+            private_file(value['ssh']['identityFile'], owner_uid=self.owner_uid)
+            private_file(value['ssh']['knownHostsFile'], private=False, owner_uid=self.owner_uid)
             self.transport()
         actual = json.loads(self.run(['cat', 'config']))
         if not isinstance(actual, dict) or actual.get('id') != expected:
@@ -384,8 +421,11 @@ def backup(value, *, apply=False):
 
 
 def inventory(value):
-    settings = policy(value)
-    restic = Restic(settings)
+    return inventory_reader(Restic(policy(value)))
+
+
+def inventory_reader(restic):
+    settings = restic.settings
     restic.repository()
     rows = json.loads(restic.run(['snapshots', '--tag', RECEIPT + ',source:' + settings['sourceId']]))
     if not isinstance(rows, list):
@@ -450,10 +490,13 @@ def validate_manifest(record, manifest):
 
 
 def receipt(value, identifier):
-    settings = policy(value)
+    return receipt_reader(Restic(policy(value)), identifier)
+
+
+def receipt_reader(restic, identifier):
+    settings = restic.settings
     if not isinstance(identifier, str) or not ID.fullmatch(identifier):
         raise ValueError(_("Select a full Restic snapshot ID from the native backup inventory."))
-    restic = Restic(settings)
     restic.repository()
     records = json.loads(restic.run(['snapshots', identifier]))
     if (not isinstance(records, list) or len(records) != 1 or not isinstance(records[0], dict)
@@ -478,13 +521,29 @@ def receipt(value, identifier):
 
 
 def verify(value, identifier):
-    restic, record, manifest = receipt(value, identifier)
+    return verify_reader(Restic(policy(value)), identifier)
+
+
+def verify_reader(restic, identifier):
+    restic, record, manifest = receipt_reader(restic, identifier)
     # Restic authenticates all payload files while streaming the archive to /dev/null.
     restic.run(['dump', record['payloadId'], '/'], discard=True)
-    recovery = restic.run(['dump', record['payloadId'], manifest['recovery']['path']], binary=True)
-    if hashlib.sha256(recovery).hexdigest() != manifest['recovery']['sha256']:
-        raise ValueError(_("The uploaded recovery configuration does not match the capture."))
+    recipe_reader(restic, record, manifest)
     return {'snapshotId': identifier, 'payloadId': record['payloadId'], 'state': 'recorded-verified'}
+
+
+def recipe_reader(restic, record, manifest):
+    archive = restic.run(['dump', record['payloadId'], manifest['recovery']['path']], binary=True,
+                         max_output=recovery_recipe.MAX_ARCHIVE)
+    if hashlib.sha256(archive).hexdigest() != manifest['recovery']['sha256']:
+        raise ValueError(_("The uploaded recovery configuration does not match the capture."))
+    recipe = recovery_recipe.validate(archive)
+    if (recipe['sourceId'] != restic.settings['sourceId']
+            or 'target' in restic.settings and recipe['target'] != restic.settings['target']
+            or recipe['systemPath'] != manifest['recovery']['systemPath']
+            or recipe['policySha256'] != manifest['recovery']['policySha256']):
+        raise ValueError(_("The sealed recovery recipe does not match this source and capture."))
+    return archive, recipe
 
 
 def main(argv=None):

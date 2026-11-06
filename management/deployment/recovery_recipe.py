@@ -140,13 +140,17 @@ def validate(data):
         raise ValueError(_("Recovery recipe archive exceeds its size limit."))
     try:
         with tarfile.open(fileobj=io.BytesIO(data), mode='r:') as archive:
-            names, files, record = set(), {}, None
+            names, files, record, kinds, total = set(), {}, None, {}, 0
             for count, item in enumerate(archive):
                 path = member_name(item.name)
                 if (count > MAX_FILES or item.name in names or item.type not in (tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE)
-                        or item.mode & 0o7000):
+                        or item.mode & 0o7000 or item.sparse is not None or item.isdir() and item.size != 0):
                     raise ValueError(_("Unsafe or duplicate entry in recovery recipe archive."))
+                total += item.size
+                if item.size < 0 or total > MAX_ARCHIVE:
+                    raise ValueError(_("Recovery recipe archive exceeds its size limit."))
                 names.add(item.name)
+                kinds[path] = item.isdir()
                 if item.name == 'recovery.json' and item.isfile() and item.size <= 4 * 1024 * 1024:
                     record = json.load(archive.extractfile(item))
                 elif path.parts[0] == 'recipe':
@@ -160,6 +164,8 @@ def validate(data):
                         files[str(path.relative_to('recipe'))] = hashlib.file_digest(source, 'sha256').hexdigest()
                 else:
                     raise ValueError(_("Unsafe path in recovery recipe archive."))
+            if any(parent in kinds and not kinds[parent] for path in kinds for parent in path.parents):
+                raise ValueError(_("Conflicting file and directory paths in recovery recipe archive."))
             required = {'format', 'sourceId', 'target', 'systemPath', 'policySha256', 'files'}
             if (not isinstance(record, dict) or set(record) != required or record['format'] != FORMAT
                     or not isinstance(record['sourceId'], str) or not re.fullmatch('[A-Za-z0-9:_.-]{1,128}', record['sourceId'])
@@ -171,3 +177,41 @@ def validate(data):
             return record
     except (tarfile.TarError, UnicodeError, json.JSONDecodeError) as failure:
         raise ValueError(_("Invalid recovery recipe archive.")) from failure
+
+
+def unpack(data, destination):
+    """Write validated code into a new directory; never evaluate its contents."""
+    record = validate(data)
+    destination = Path(destination)
+    destination.mkdir(mode=0o700)
+    incomplete = destination / 'INCOMPLETE'
+    with incomplete.open('x') as stream:
+        os.fchmod(stream.fileno(), 0o600)
+        stream.write('Recovery recipe extraction has not completed.\n')
+        stream.flush()
+        os.fsync(stream.fileno())
+    def sync(path):
+        descriptor = os.open(path, os.O_DIRECTORY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    sync(destination)
+    with tarfile.open(fileobj=io.BytesIO(data), mode='r:') as archive:
+        for item in archive:
+            path = destination / item.name
+            if item.isdir():
+                path.mkdir(mode=0o700, parents=True, exist_ok=True)
+            else:
+                path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+                with os.fdopen(descriptor, 'wb') as stream:
+                    shutil.copyfileobj(archive.extractfile(item), stream)
+                    stream.flush()
+                    os.fchmod(stream.fileno(), 0o755 if item.mode & 0o111 else 0o600)
+                    os.fsync(stream.fileno())
+    for path in sorted((path for path in destination.rglob('*') if path.is_dir()), key=lambda path: len(path.parts), reverse=True):
+        sync(path)
+    incomplete.unlink()
+    sync(destination)
+    return record

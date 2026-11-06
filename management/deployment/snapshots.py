@@ -198,7 +198,8 @@ def inspect(settings, *, timeout=120):
     return topology
 
 
-def secure_directory(path, *, create=False, private=True):
+def secure_directory(path, *, create=False, private=True, owner_uid=None):
+    owner_uid = OWNER_UID if owner_uid is None else owner_uid
     path = Path(path)
     for component in reversed([path, *path.parents]):
         if component.is_symlink():
@@ -208,11 +209,11 @@ def secure_directory(path, *, create=False, private=True):
                 continue
             component.mkdir(mode=0o700)
         entry = component.stat()
-        if (not stat.S_ISDIR(entry.st_mode) or entry.st_uid not in (0, OWNER_UID)
+        if (not stat.S_ISDIR(entry.st_mode) or entry.st_uid not in (0, owner_uid)
                 or entry.st_mode & 0o022 and not (entry.st_uid == 0 and entry.st_mode & stat.S_ISVTX)):
             raise ValueError(_("Capture state directories require trusted ownership and private write access."))
-    if private and path.exists() and (path.stat().st_uid != OWNER_UID or path.stat().st_mode & 0o077):
-        raise ValueError(_("Capture state directories must be private and owned by root."))
+    if private and path.exists() and (path.stat().st_uid != owner_uid or path.stat().st_mode & 0o077):
+        raise ValueError(_("State directories require private permissions and the expected owner."))
     return path
 
 

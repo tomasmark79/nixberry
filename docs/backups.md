@@ -91,9 +91,9 @@ A target with an explicit enabled legacy backup provider retains that provider
 for `backup` and `backup-stage`; otherwise these commands use
 `nixberry.backup.restic`. Provision native storage credentials and initialize the
 repository through the guest tools described below, then use the controller to
-prepare and transfer recovery code. The other controller
-backup commands in the legacy provider section still require that provider;
-use `nixberry-restic` for native inventory and source-independent verification.
+prepare and transfer recovery code. Independent native inventory, verification
+and recovery of configuration use `--backup-access` as described below.
+The remaining commands in the legacy provider section require that provider.
 
 Capture verifies Btrfs source identity, free space, storage placement, mount
 coverage and nested subvolumes before stopping writers. Only services active
@@ -317,6 +317,73 @@ Read-only updates never provision backup access.
 set. Editing these fields does not install jobs or remove backups. The selecting
 configuration must also enable its guest-side exporter with the matching public
 recipient; a controller declaration does not deploy guest software.
+
+## Independent native storage access
+
+Keep a private access context, repository password and authorized SSH credentials
+on the recovery workstation, outside every NixBerry recipe and the Nix store.
+These files must survive loss of the source. The context contains storage access
+and source identity, without duplicating the source's application catalogue:
+
+```json
+{
+  "version": 1,
+  "target": "vm-demo-source",
+  "sourceId": "libvirt:EXAMPLE_UUID",
+  "repository": "sftp:recovery@nas.example:/backup/vm-demo-source",
+  "repositoryId": "1111111111111111111111111111111111111111111111111111111111111111",
+  "passwordFile": "/home/operator/.local/share/nixberry-recovery/password",
+  "ssh": {
+    "port": 22,
+    "identityFile": "/home/operator/.local/share/nixberry-recovery/ssh-key",
+    "knownHostsFile": "/home/operator/.local/share/nixberry-recovery/known_hosts"
+  },
+  "runtimeDirectory": "/run/user/1000/nixberry-recovery",
+  "timeoutSeconds": 3600
+}
+```
+
+Replace the fictional `sourceId` with the value from the source's
+`/etc/nixberry/backup.json`, and `repositoryId` with the complete ID from its
+configured `repositoryIdFile`. Preserve these pins before losing the source.
+The target must match the archive's original declaration name. Use the recovery
+operator's local paths and UID; `runtimeDirectory` must reside on tmpfs. For a
+local repository use its absolute path and `"ssh": null`.
+
+Store the context and private credentials with mode `0600`, owned by the user
+running recovery. Parent directories need trusted ownership and no untrusted
+write permissions; symbolic links are refused. Root is not required for these
+operations. A distinct SSH key can use read-only SFTP access to the same pinned
+repository. The reader disables repository locks and permits only identity,
+inventory and payload reads; it cannot initialize, capture, unlock or prune.
+SSH host keys remain explicit, with no agent or automatic trust fallback.
+Metadata uses bounded tmpfs files; full verification streams application data
+to discard without a local data copy.
+
+```sh
+nixberry backups vm-demo-source --backup-access /private/access.json --json
+nixberry verify-backup vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --json
+nixberry recover-source vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --output /home/operator/recovered-source
+nixberry recover-source vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --output /home/operator/recovered-source --apply
+```
+
+`RECEIPT_ID` is a complete 64-character native Restic receipt ID from inventory.
+The context explicitly selects native storage reads, including when a legacy
+provider exists. No source connection, NixOS evaluation or source declaration is
+needed. Any available NixBerry checkout can supply the controller. These
+operations require Linux; all five VM backends and RPi use the same storage
+contract. Inventory operation lists are candidates and do not evaluate native
+enablement or inspect access contexts.
+
+Source recovery plans without storage access by default; `--apply` retrieves the
+authenticated recipe and writes a new private output directory. It checks the
+receipt, manifest, archive hash, sealed file manifest and source/generation/policy
+identity before writing. The result contains `recovery.json` and `recipe/`.
+Existing output is refused. An interrupted extraction retains a partial
+directory with `INCOMPLETE`; inspect it and choose a new output for a retry.
+Recovered code is never evaluated or activated. Source recovery alone does not
+restore application data; native publication into a replacement is separate.
+`--dry-run` skips storage access for all three operations.
 
 ## Commands and write boundaries
 

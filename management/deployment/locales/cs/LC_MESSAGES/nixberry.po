@@ -3631,3 +3631,57 @@ msgstr "Běžící systém se před vytvořením snapshotu změnil."
 
 msgid "--system only applies to snapshot in the capture tool."
 msgstr "--system se v nástroji pro zachycení vztahuje pouze na snapshot."
+
+msgid "--backup-access requires a named source and a storage read operation without server connection options."
+msgstr "--backup-access vyžaduje pojmenovaný zdroj a operaci čtení úložiště bez voleb připojení k serveru."
+
+msgid "Choose a recovery output directory outside the recipe."
+msgstr "Zvolte výstupní adresář obnovy mimo recept."
+
+msgid "Conflicting file and directory paths in recovery recipe archive."
+msgstr "Konfliktní cesty souborů a adresářů v archivu receptu pro obnovu."
+
+msgid "Independent inventory and verification are read-only and do not accept --apply."
+msgstr "Nezávislý výpis a ověření jsou pouze pro čtení a nepřijímají --apply."
+
+msgid "Invalid native backup access context or source identity."
+msgstr "Neplatný kontext přístupu k nativním zálohám nebo identita zdroje."
+
+msgid "Keep backup access contexts and runtime credentials outside the recipe."
+msgstr "Kontexty přístupu k zálohám a provozní přihlašovací údaje uchovávejte mimo recept."
+
+msgid "Native backup access currently requires Linux."
+msgstr "Přístup k nativním zálohám nyní vyžaduje Linux."
+
+msgid "Native storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."
+msgstr "Čtení nativního úložiště vyžaduje --backup-access PRIVATE_CONTEXT_FILE; zdroj není kontaktován."
+
+msgid "Private native storage access context for inventory, verification and source recovery"
+msgstr "Soukromý kontext přístupu k nativnímu úložišti pro výpis, ověření a obnovu zdrojového kódu"
+
+msgid "Recovery requires a new output directory; existing data is never overwritten."
+msgstr "Obnova vyžaduje nový výstupní adresář; existující data se nepřepisují."
+
+msgid "Select a full Restic receipt ID for verification or source recovery."
+msgstr "Pro ověření nebo obnovu zdrojového kódu vyberte úplné ID záznamu dokončení Resticu."
+
+msgid "Source recovery requires --output NEW_DIRECTORY; other storage reads do not accept it."
+msgstr "Obnova zdrojového kódu vyžaduje --output NEW_DIRECTORY; ostatní čtení úložiště tuto volbu nepřijímají."
+
+msgid "The sealed recovery recipe does not match this source and capture."
+msgstr "Zapečetěný recept pro obnovu neodpovídá tomuto zdroji a zachycené záloze."
+
+msgid "This operation does not support independent native backup access."
+msgstr "Tato operace nepodporuje nezávislý přístup k nativním zálohám."
+
+msgid "Independent backup access permits only repository identity, inventory and payload reads."
+msgstr "Nezávislý přístup k zálohám povoluje pouze čtení identity repozitáře, výpisu a dat."
+
+msgid "State directories require private permissions and the expected owner."
+msgstr "Adresáře se stavem vyžadují soukromá oprávnění a očekávaného vlastníka."
+
+msgid "Native storage reads accept --backup-access PRIVATE_CONTEXT_FILE for backups, verify-backup and recover-source, even without a source declaration."
+msgstr "Nativní čtení úložiště přijímá --backup-access PRIVATE_CONTEXT_FILE pro backups, verify-backup a recover-source i bez deklarace zdroje."
+
+msgid "Target name, preserved source name for --backup-access, or a new name for new-*"
+msgstr "Název cíle, uchovaný název zdroje pro --backup-access nebo nový název pro new-*"

@@ -53,11 +53,14 @@ through other tools and rollbacks require explicit staging before backup.
 `--ssh` can supply access to an offline
 VM for native capture and staging.
 
-The legacy controller commands `backups`, `verify-backup`, `restore`,
-`recover-source`, `backup-prune`, `backup-schedule`, `backup-check`,
-`backup-monitor` require an explicit target provider policy. An enabled legacy
-provider retains its `backup-stage` behavior.
-Native Restic inventory and independent verification use the guest helper.
+`backups`, `verify-backup` and `recover-source` accept an explicit private
+`--backup-access FILE` for native storage reads without contacting the source
+or requiring its declaration. Source recovery writes only with `--apply` into
+a new `--output` directory; it never evaluates recovered code. Without an access
+context these commands use an enabled legacy provider. The other legacy commands
+`restore`, `backup-prune`, `backup-schedule`, `backup-check` and `backup-monitor`
+require a target provider policy. An enabled legacy provider retains its
+`backup-stage` behavior. Native guest inventory and verification remain available.
 See [backup commands and write boundaries](backups.md).
 
 `backup-schedule TARGET --output NEW_DIRECTORY --dry-run` previews systemd user

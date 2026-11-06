@@ -9,7 +9,7 @@ _nixberry_completion_recipe=$(cd -- "$_nixberry_completion_recipe" && pwd -P)
 source "$_nixberry_completion_recipe/management/deployment/shell-path.sh"
 
 _nixberry_complete() {
-    local current=${COMP_WORDS[COMP_CWORD]} action= target= word file name backup_source=
+    local current=${COMP_WORDS[COMP_CWORD]} action= target= word file name backup_source= backup_access=
     local skip_value=0 i
     local recipe
     COMPREPLY=()
@@ -36,6 +36,8 @@ _nixberry_complete() {
         case $word in
             --) return 0 ;;
             --from) backup_source=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
+            --backup-access) backup_access=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
+            --backup-access=*) backup_access=${word#*=}; used[--backup-access]=1; continue ;;
             --host|--ssh|--output|--address|--local-disk|--artifact-root|--method|--configuration|--security|--filesystem|--key-file|--initrd-key-file|--snapshot)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
@@ -87,7 +89,7 @@ _nixberry_complete() {
             done < <(NIXBERRY_COMPLETION_ACTION=backups NIXBERRY_COMPLETION_DIRECT=0 \
                 nix eval --offline --impure --raw --option allow-import-from-derivation false \
                 --file "$recipe/management/deployment/completion-targets.nix" 2>/dev/null)
-        elif [[ $word == --snapshot && $action != snapshot-remove ]]; then
+        elif [[ $word == --snapshot && $action != snapshot-remove && -z $backup_access ]]; then
             while IFS= read -r name || [[ -n $name ]]; do
                 [[ -n $name && $name == "$current"* ]] && COMPREPLY+=("$name")
             done < <(NIXBERRY_COMPLETION_SOURCE="${backup_source:-$target}" \
@@ -95,7 +97,7 @@ _nixberry_complete() {
                 --file "$recipe/management/deployment/completion-snapshots.nix" 2>/dev/null)
         elif [[ $word == --output ]]; then
             mapfile -t COMPREPLY < <(compgen -d -- "$current")
-        elif [[ $word == --key-file || $word == --initrd-key-file || $word == --local-disk ]]; then
+        elif [[ $word == --key-file || $word == --initrd-key-file || $word == --local-disk || $word == --backup-access ]]; then
             mapfile -t COMPREPLY < <(compgen -f -- "$current")
         elif [[ $word == --configuration ]]; then
             local -A configurations=()
@@ -116,6 +118,9 @@ _nixberry_complete() {
         return 0
     fi
     if [[ $current == -* ]]; then
+        case $action in
+            backups|verify-backup|recover-source) options+=(--backup-access) ;;
+        esac
         case $action in
             list|show|status|verify|export|doctor|cleanup|prepare-image|snapshot|snapshots|snapshot-remove|snapshot-resume|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor|backup-stage) options+=(--json) ;;
         esac

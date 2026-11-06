@@ -11,6 +11,9 @@ let
         ./cli.py
         ./cli_args.py
         ./native_controller.py
+        ./native_access.py
+        ./native_restic.py
+        ./snapshots.py
         ./recovery_recipe.py
         ./backups.py
         ./backup_watch.py
@@ -142,6 +145,8 @@ in
     pkgs.nvd
     pkgs.qemu
     pkgs.age
+    pkgs.restic
+    pkgs.util-linux
     pkgs.zstd
     pkgs.gnutar
     pkgs.git
