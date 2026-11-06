@@ -86,6 +86,7 @@ let
       isSystemUser = true;
       uid = 2001;
       group = "demo";
+      home = "/var/lib/restore-demo";
     };
     systemd.tmpfiles.rules = [ "d /var/lib/restore-demo 0750 demo demo -" ];
     systemd.services.demo = {

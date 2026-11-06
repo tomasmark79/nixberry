@@ -73,6 +73,111 @@ class RestoreApplyTests(unittest.TestCase):
         marker = restore_apply.restore_target.marker_path(self.value)
         self.assertEqual(json.loads(marker.read_text())['snapshotId'], '1' * 64)
 
+    def test_service_home_without_ssh_restores_application_data(self):
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]):
+            result = self.run_restore(apply=True)
+        self.assertEqual(result['state'], 'recorded-restored')
+        self.assertEqual((self.app / 'example').read_text(), 'restored data')
+        self.assertFalse((self.app / '.ssh').exists())
+        self.assertEqual(self.units, ['started'])
+
+    def test_service_home_payload_ssh_objects_are_rejected_before_publication(self):
+        original = restore_apply.restore_payload.stage.side_effect
+        for kind in ('directory', 'file', 'symlink'):
+            with self.subTest(kind=kind):
+                def stage(*args):
+                    report = original(*args)
+                    ssh = Path(report['paths'][0]['staged']) / '.ssh'
+                    if kind == 'directory':
+                        ssh.mkdir()
+                        (ssh / 'authorized_keys').write_text('incoming SSH identity')
+                    elif kind == 'file':
+                        ssh.write_text('incoming SSH object')
+                    else:
+                        ssh.symlink_to(self.root / 'missing-ssh-target')
+                    return report
+                with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]), \
+                        patch('restore_apply.restore_payload.stage', side_effect=stage), self.assertRaises(ValueError):
+                    self.run_restore(apply=True)
+                self.assertFalse(self.app.exists())
+                self.assertFalse(restore_apply.restore_target.marker_path(self.value).exists())
+                self.assertEqual(self.units, [])
+
+    def test_separately_captured_service_home_ssh_is_rejected(self):
+        original = restore_apply.restore_payload.stage.side_effect
+        def stage(*args):
+            report = original(*args)
+            ssh = Path(args[2]) / 'data/ssh'
+            ssh.mkdir()
+            (ssh / 'authorized_keys').write_text('separately captured SSH identity')
+            report['paths'].append({'source': str(self.app / '.ssh'), 'staged': str(ssh)})
+            return report
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]), \
+                patch('restore_apply.restore_payload.stage', side_effect=stage), self.assertRaises(ValueError):
+            self.run_restore(apply=True)
+        self.assertFalse(self.app.exists())
+        self.assertEqual(self.units, [])
+
+    def test_existing_service_home_ssh_is_preserved(self):
+        self.app.mkdir()
+        ssh = self.app / '.ssh'
+        ssh.mkdir()
+        (ssh / 'authorized_keys').write_text('destination SSH identity')
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]), \
+                self.assertRaises(ValueError):
+            self.run_restore(apply=True)
+        self.assertEqual((ssh / 'authorized_keys').read_text(), 'destination SSH identity')
+        self.assertFalse((self.app / 'example').exists())
+        self.assertFalse(self.state.exists())
+        self.assertEqual(self.units, [])
+
+    def test_copying_retry_rejects_new_live_service_home_ssh(self):
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]):
+            with patch('restore_apply.transfer', side_effect=RuntimeError('copy interrupted')), self.assertRaises(RuntimeError):
+                self.run_restore(apply=True)
+            self.app.mkdir()
+            ssh = self.app / '.ssh'
+            ssh.symlink_to(self.root / 'missing-ssh-target')
+            with self.assertRaises(ValueError):
+                self.run_restore(apply=True)
+        self.assertTrue(ssh.is_symlink())
+        self.assertEqual(os.readlink(ssh), str(self.root / 'missing-ssh-target'))
+        self.assertFalse((self.app / 'example').exists())
+        self.assertFalse(restore_apply.restore_target.marker_path(self.value).exists())
+        self.assertEqual(self.units, [])
+
+    def test_copying_retry_rejects_injected_private_service_home_ssh(self):
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]):
+            with patch('restore_apply.transfer', side_effect=RuntimeError('copy interrupted')), self.assertRaises(RuntimeError):
+                self.run_restore(apply=True)
+            pending = json.loads((self.state / 'restore-pending.json').read_text())
+            ssh = Path(pending['directory']) / 'view' / str(self.app).removeprefix('/') / '.ssh'
+            ssh.write_text('injected SSH object')
+            with self.assertRaises(ValueError):
+                self.run_restore(apply=True)
+        self.assertFalse(self.app.exists())
+        self.assertFalse(restore_apply.restore_target.marker_path(self.value).exists())
+        self.assertEqual(self.units, [])
+
+    def test_nested_service_home_symlink_is_not_followed(self):
+        original = restore_apply.restore_payload.stage.side_effect
+        home = self.app / 'service'
+        def stage(*args):
+            report = original(*args)
+            (Path(report['paths'][0]['staged']) / 'service').symlink_to(self.root / 'missing-home')
+            return report
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(home))]), \
+                patch('restore_apply.restore_payload.stage', side_effect=stage), self.assertRaises(ValueError):
+            self.run_restore(apply=True)
+        self.assertFalse(self.app.exists())
+        self.assertEqual(self.units, [])
+
+    def test_direct_service_home_ssh_paths_are_rejected_even_when_absent(self):
+        with patch('restore_apply.pwd.getpwall', return_value=[SimpleNamespace(pw_dir=str(self.app))]):
+            for path in (self.app / '.ssh', self.app / '.ssh/authorized_keys'):
+                with self.subTest(path=path), self.assertRaises(ValueError):
+                    restore_apply.protect([path], self.value['stateDirectory'])
+
     def test_partial_staging_report_is_replaced_on_exact_retry(self):
         original = restore_apply.restore_payload.stage.side_effect
         calls = []

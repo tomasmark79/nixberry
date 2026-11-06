@@ -24,15 +24,40 @@ def roots(value):
     return [Path(path) for path in paths if not any(Path(path).is_relative_to(other) for other in paths if other != path)]
 
 
-def protect(paths, state):
+def protected_object(path):
+    """Treat any symlink on the route as protected without following it."""
+    descriptor = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        parts = path.parts[1:]
+        for index, name in enumerate(parts):
+            try:
+                details = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            except FileNotFoundError:
+                return False
+            if stat.S_ISLNK(details.st_mode) or index == len(parts) - 1:
+                return True
+            if not stat.S_ISDIR(details.st_mode):
+                return False
+            child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+    finally:
+        os.close(descriptor)
+
+
+def protect(paths, state, view=None):
     reserved = ['/bin', '/sbin', '/lib', '/lib64', '/usr', '/boot', '/dev', '/proc', '/sys', '/run', '/nix',
                 '/etc/passwd', '/etc/group', '/etc/shadow', '/etc/gshadow', '/etc/machine-id', '/etc/ssh',
                 '/etc/nixos', '/var/lib/nixos', '/var/lib/systemd', '/root/.ssh', state]
-    reserved += [str(Path(user.pw_dir) / '.ssh') for user in pwd.getpwall() if user.pw_dir.startswith('/')]
+    ssh_paths = {Path(user.pw_dir) / '.ssh' for user in pwd.getpwall() if user.pw_dir.startswith('/')}
     for name in paths:
         snapshots.absolute(str(name))
         if any(Path(name).is_relative_to(item) or Path(item).is_relative_to(name) for item in reserved):
             raise ValueError(_("Application restoration must not replace operating-system identity or restore state."))
+        for ssh in ssh_paths:
+            if Path(name).is_relative_to(ssh) or (ssh.is_relative_to(name) and (
+                    protected_object(ssh) or view is not None and protected_object(view / str(ssh).removeprefix('/')))):
+                raise ValueError(_("Application restoration must not replace operating-system identity or restore state."))
 
 
 def layout(paths):
@@ -196,6 +221,7 @@ def guard(value, expected_system, expected_machine):
     if (snapshots.running_system() != expected_system or snapshots.machine_id() != expected_machine
             or not restore_target.SYSTEM.fullmatch(expected_system) or not snapshots.ID.fullmatch(expected_machine)):
         raise ValueError(_("The destination machine or generation differs from the explicit restore target."))
+    protect(roots(value), value['stateDirectory'])
     for path in roots(value):
         snapshots.secure_directory(path.parent, private=False)
     report = restore_target.status(value, expected_system=expected_system, inspect_paths=False)
@@ -294,6 +320,7 @@ def restore(value, capture, reader, identifier, expected_system, expected_machin
                     or any(not any(Path(name).is_relative_to(root) for root in paths) for name in names)):
                 raise ValueError(_("The selected backup does not match the distinct destination application catalogue."))
             view = canonical(report, directory)
+            protect(paths, value['stateDirectory'], view)
             empty(paths, view)
             compatible_links(view, paths)
             pending.update(phase='copying', treeSha256=tree_hash(view, paths, durable=True))
@@ -302,6 +329,7 @@ def restore(value, capture, reader, identifier, expected_system, expected_machin
             view = directory / 'view'
             if tree_hash(view, paths) != pending['treeSha256']:
                 raise ValueError(_("The private verified application stage changed during restoration."))
+            protect(paths, value['stateDirectory'], view)
             guard(value, expected_system, expected_machine)
             if layout([*paths, Path(value['stateDirectory'])]) != pending['layout']:
                 raise ValueError(_("The destination filesystem layout changed during restoration."))
