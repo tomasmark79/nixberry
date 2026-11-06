@@ -16,6 +16,9 @@ let
         ./native_access.py
         ./backup_identity.py
         ./native_restic.py
+        ./native_health.py
+        ./native_retention.py
+        ./native_maintenance.py
         ./recovery_recipe.py
         ./update_guard.py
         ./messages.py

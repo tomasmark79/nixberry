@@ -128,6 +128,8 @@ pkgs.testers.runNixOSTest {
       nixberry.backup.restic = {
         enable = true;
         repository = "sftp:root@storage:/backup/source";
+        keepLast = 2;
+        maxAgeSeconds = 3600;
         ssh = {
           port = 22;
           identityFile = "/var/lib/nixberry-backup/ssh-key";
@@ -194,6 +196,21 @@ pkgs.testers.runNixOSTest {
     source.succeed("nixberry-restic backup-init --apply --json")
     storage.succeed(command + "backup-stage vm-demo-source --apply --json")
     captured = json.loads(storage.succeed(command + "backup vm-demo-source --apply --json"))
+    health = json.loads(storage.succeed(command + "backup-check vm-demo-source --json"))
+    assert health["status"] == "ok" and health["snapshotId"] == captured["snapshotId"]
+    assert health["maxAgeSeconds"] == 3600 and 0 <= health["ageSeconds"] <= 3600
+    before_retention = json.loads(source.succeed("nixberry-restic backups --json"))["snapshots"]
+    assert [row["snapshotId"] for row in before_retention] == [captured["snapshotId"]]
+    preview = json.loads(storage.succeed(command + "backup-prune vm-demo-source --json"))
+    assert preview["applied"] is False and preview["keepLast"] == 2
+    assert preview["keep"] == [captured["snapshotId"]]
+    assert preview["remove"] == [] and preview["payloads"] == []
+    assert json.loads(source.succeed("nixberry-restic backups --json"))["snapshots"] == before_retention
+    retained = json.loads(storage.succeed(command + "backup-prune vm-demo-source --apply --json"))
+    assert retained["applied"] is True and retained["keep"] == [captured["snapshotId"]]
+    assert retained["remove"] == [] and retained["payloads"] == []
+    assert retained["verifiedSnapshotId"] is None
+    assert json.loads(source.succeed("nixberry-restic backups --json"))["snapshots"] == before_retention
     source_system = source.succeed("readlink -f /run/current-system").strip()
     destination_machine = destination.succeed("cat /etc/machine-id").strip()
     destination_ssh = destination.succeed("sha256sum /etc/ssh/ssh_host_ed25519_key").split()[0]
@@ -205,6 +222,10 @@ pkgs.testers.runNixOSTest {
     storage.succeed("rm /root/recipe/machines/vm/vm-demo-source.nix")
     declarations.pop("vm-demo-source")
     storage.succeed("printf '%s' " + shlex.quote(json.dumps(declarations)) + " > /root/registry.json")
+    independent = json.loads(storage.succeed(command + "backup-check vm-demo-source --backup-access /root/access.json --max-age-seconds 3600 --json"))
+    assert independent["status"] == "ok" and independent["snapshotId"] == captured["snapshotId"]
+    assert independent["sourceId"] == access["sourceId"] and independent["machineId"] == health["machineId"]
+    assert independent["maxAgeSeconds"] == 3600
     operation = command + "restore vm-demo-destination --from vm-demo-source --backup-access /root/access.json --snapshot " + captured["snapshotId"] + " --json"
     assert json.loads(storage.succeed(operation))["applied"] is False
     destination.succeed("test ! -e /var/lib/restore-demo/state.sqlite")

@@ -11,6 +11,7 @@ in
   "backups"
   "verify-backup"
   "recover-source"
+  "backup-check"
 ]
 ++ optional ((target.security.mode or "none") != "none") (
   [ "unlock" ] ++ optional (target.backend != "rpi") [ "prepare-image" ]
@@ -28,13 +29,13 @@ in
   "snapshots"
   "snapshot-remove"
   "snapshot-resume"
+  "backup-prune"
 ]
 ++ optional backup [
-  "backup-prune"
   "backup-schedule"
-  "backup-check"
   "backup-monitor"
 ]
+++ optional (backup && !caps.system) [ "backup-prune" ]
 ++ optional caps.system [
   "backup"
   "backup-stage"

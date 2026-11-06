@@ -9,6 +9,7 @@ import tempfile
 
 from messages import _, error
 from updater import freeze_recipe
+from recipe_source import recipe_uri
 
 
 def launch(target, command, arguments):
@@ -30,7 +31,7 @@ def launch(target, command, arguments):
         frozen = freeze_recipe(str(Path(recipe).resolve()), target, expected, directory)
         return subprocess.run([
             "nix", "shell", "--no-write-lock-file",
-            "path:" + frozen + "#" + ("nixberryToolsByMethod." + method + "." if method else "nixberryTools.") + target,
+            recipe_uri(frozen) + "#" + ("nixberryToolsByMethod." + method + "." if method else "nixberryTools.") + target,
             "--command", command, *arguments,
         ], check=False).returncode
 

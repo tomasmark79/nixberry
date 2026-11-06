@@ -59,6 +59,71 @@ class AccessTests(unittest.TestCase):
         self.assertEqual(result['readiness'], 'not-checked')
         self.assertFalse(destination.exists())
 
+    def test_independent_health_reads_only_storage_with_an_explicit_threshold(self):
+        password = Path(self.value['passwordFile'])
+        password.write_text('test-only-password')
+        password.chmod(0o600)
+        calls = []
+        def read(reader, arguments, **kwargs):
+            self.assertTrue(reader.read_only)
+            self.assertEqual(reader.repository_id, self.value['repositoryId'])
+            self.assertEqual(reader.owner_uid, os.geteuid())
+            calls.append(arguments)
+            if arguments == ['cat', 'config']:
+                return json.dumps({'id': self.value['repositoryId']})
+            if arguments == ['snapshots', '--tag', native_restic.RECEIPT + ',source:' + self.value['sourceId']]:
+                return '[]'
+            self.fail('Unexpected repository operation: ' + repr(arguments))
+        with patch('native_restic.Restic._execute', read), patch('native_restic.require_tmpfs'), \
+                patch('snapshots.machine_id', side_effect=AssertionError('source must be independent')):
+            result = native_access.run(self.path, 'vm-demo-source', 'backup-check', max_age_seconds=3600)
+        self.assertEqual(result['status'], 'missing')
+        self.assertEqual(result['sourceId'], self.value['sourceId'])
+        self.assertEqual(result['maxAgeSeconds'], 3600)
+        self.assertIsNone(result['snapshotId'])
+        self.assertEqual(len(calls), 2)
+        self.assertFalse((self.root / 'repository').exists())
+
+    def test_health_dry_run_is_unverified_and_preserves_the_explicit_age_threshold(self):
+        with patch('native_access.runtime', side_effect=AssertionError('dry-run created runtime')), \
+                patch('native_restic.Restic', side_effect=AssertionError('dry-run opened storage')):
+            result = native_access.run(self.path, 'vm-demo-source', 'backup-check',
+                                       max_age_seconds=31536000, dry_run=True)
+        self.assertEqual(result, {'target': 'vm-demo-source', 'sourceId': self.value['sourceId'],
+            'repository': self.value['repository'], 'action': 'backup-check', 'snapshotId': None,
+            'destination': None, 'applied': False, 'readiness': 'not-checked', 'maxAgeSeconds': 31536000})
+        self.assertFalse((self.root / 'runtime').exists())
+
+    def test_health_requires_a_positive_bounded_integer_age_before_opening_access(self):
+        with patch('native_access.load', side_effect=AssertionError('invalid arguments opened access')):
+            for age in (None, True, False, 0, -1, 31536001, 3600.0, '3600'):
+                with self.subTest(age=age), self.assertRaises(ValueError):
+                    native_access.run(self.path, 'vm-demo-source', 'backup-check', max_age_seconds=age)
+
+    def test_age_threshold_is_rejected_for_other_independent_operations(self):
+        with patch('native_access.load', side_effect=AssertionError('invalid arguments opened access')):
+            for action in ('backups', 'verify-backup', 'recover-source'):
+                with self.subTest(action=action), self.assertRaisesRegex(ValueError, 'age'):
+                    native_access.run(self.path, 'vm-demo-source', action,
+                        snapshot='b' * 64 if action != 'backups' else None,
+                        output=str(self.root / 'recovered') if action == 'recover-source' else None,
+                        max_age_seconds=3600)
+
+    def test_health_is_read_only_and_does_not_accept_a_snapshot_or_output(self):
+        with patch('native_access.load', side_effect=AssertionError('invalid arguments opened access')):
+            for arguments in ({'apply': True}, {'snapshot': 'b' * 64}, {'output': str(self.root / 'recovered')}):
+                with self.subTest(arguments=arguments), self.assertRaises(ValueError):
+                    native_access.run(self.path, 'vm-demo-source', 'backup-check',
+                                       max_age_seconds=3600, **arguments)
+
+    def test_inventory_rejects_snapshot_and_existing_snapshot_actions_require_full_ids(self):
+        with patch('native_access.load', side_effect=AssertionError('invalid arguments opened access')):
+            for action, identifier in (('backups', 'b' * 64), ('verify-backup', None),
+                                       ('verify-backup', 'b' * 8), ('recover-source', None),
+                                       ('recover-source', 'b' * 8)):
+                with self.subTest(action=action, identifier=identifier), self.assertRaises(ValueError):
+                    native_access.run(self.path, 'vm-demo-source', action, snapshot=identifier)
+
     def test_readonly_reader_cannot_initialize_or_delete_repository_state(self):
         reader = native_restic.Restic(self.value, owner_uid=os.geteuid(), repository_id=self.value['repositoryId'], read_only=True)
         with patch('native_restic.subprocess.run', side_effect=AssertionError('must reject before execution')):

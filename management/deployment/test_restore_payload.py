@@ -67,6 +67,15 @@ class OwnershipTests(unittest.TestCase):
 
 
 class StageTests(unittest.TestCase):
+    def test_failed_atomic_report_publication_leaves_only_incomplete_staging(self):
+        from unittest.mock import patch
+        with patch('snapshots.os.replace', side_effect=OSError('simulated report publication failure')):
+            with self.assertRaises(OSError):
+                restore_payload.stage(self.reader, 'd' * 64, self.destination, self.identity)
+        self.assertTrue((self.destination / 'INCOMPLETE').exists())
+        self.assertFalse((self.destination / 'stage.json').exists())
+        self.assertEqual(list(self.destination.glob('.stage.json-*')), [])
+
     def setUp(self):
         from unittest.mock import patch
         from types import SimpleNamespace

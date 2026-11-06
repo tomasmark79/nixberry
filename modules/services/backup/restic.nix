@@ -25,6 +25,51 @@ let
       ssh
       ;
   };
+  maintenancePolicy = {
+    version = 1;
+    inherit (r) keepLast maxAgeSeconds;
+  };
+  maintenanceService = action: additionalAfter: {
+    description =
+      if action == "prune" then
+        "Prune source-owned Restic backups"
+      else
+        "Check source-owned Restic backup freshness";
+    wants = [ "network-online.target" ];
+    after = [
+      "network-online.target"
+      "nixberry-backup.service"
+    ]
+    ++ additionalAfter;
+    restartIfChanged = false;
+    serviceConfig = {
+      Type = "oneshot";
+      User = "root";
+      Group = "root";
+      ExecStart = "${tools.restic}/bin/nixberry-restic backup-${action} ${
+        if action == "prune" then "--apply" else "--json"
+      }";
+      UMask = "0077";
+      RuntimeDirectory = lib.removePrefix "/run/" r.runtimeDirectory;
+      RuntimeDirectoryMode = "0700";
+      TemporaryFileSystem = [ "${r.runtimeDirectory}:rw,nosuid,nodev,noexec,size=512M,mode=0700" ];
+      MemoryMax = "1G";
+      MemorySwapMax = 0;
+      PrivateTmp = true;
+      NoNewPrivileges = true;
+      TimeoutStartSec = r.timeoutSeconds + 240;
+      TimeoutStopSec = "5min";
+    };
+  };
+  maintenanceTimer = action: schedule: {
+    description = "Schedule source-owned Restic backup ${action}";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = schedule;
+      Persistent = r.persistent;
+      Unit = "nixberry-backup-${action}.service";
+    };
+  };
 in
 {
   options.nixberry.backup.restic = {
@@ -64,10 +109,30 @@ in
       default = null;
       description = "Optional source systemd calendar; null leaves capture manual.";
     };
+    keepLast = mkOption {
+      type = types.nullOr (types.ints.between 1 100000);
+      default = null;
+      description = "Optional number of this source's backups to retain; null disables native pruning.";
+    };
+    maxAgeSeconds = mkOption {
+      type = types.nullOr (types.ints.between 1 31536000);
+      default = null;
+      description = "Optional maximum age of the latest authenticated source capture; null disables freshness checks.";
+    };
+    pruneSchedule = mkOption {
+      type = types.nullOr types.nonEmptyStr;
+      default = null;
+      description = "Optional source systemd calendar for pruning; requires keepLast.";
+    };
+    checkSchedule = mkOption {
+      type = types.nullOr types.nonEmptyStr;
+      default = null;
+      description = "Optional source systemd calendar for freshness checks; requires maxAgeSeconds.";
+    };
     persistent = mkOption {
       type = types.bool;
       default = false;
-      description = "Opt in to catching up missed source backup schedules.";
+      description = "Opt in to catching up missed source backup and maintenance schedules.";
     };
     ssh = mkOption {
       default = null;
@@ -92,10 +157,20 @@ in
         assertion = r.repository != "" && builtins.match "/run/[a-z][a-z0-9-]*" r.runtimeDirectory != null;
         message = "Native Restic requires a repository and a dedicated /run/NAME runtime directory.";
       }
+      {
+        assertion = r.pruneSchedule == null || r.keepLast != null;
+        message = "Restic pruneSchedule requires keepLast.";
+      }
+      {
+        assertion = r.checkSchedule == null || r.maxAgeSeconds != null;
+        message = "Restic checkSchedule requires maxAgeSeconds.";
+      }
     ];
     environment.systemPackages = [ tools.restic ];
     environment.etc."nixberry/backup.json".text = builtins.toJSON backupPolicy;
+    environment.etc."nixberry/maintenance.json".text = builtins.toJSON maintenancePolicy;
     system.build.nixberryBackupPolicy = backupPolicy;
+    system.build.nixberryBackupMaintenancePolicy = maintenancePolicy;
     system.build.nixberryBackupTool = tools.restic;
     systemd.services.nixberry-backup = {
       description = "Back up configuration-owned application data with Restic";
@@ -131,5 +206,17 @@ in
         Unit = "nixberry-backup.service";
       };
     };
+    systemd.services.nixberry-backup-prune = lib.mkIf (r.keepLast != null) (
+      maintenanceService "prune" [ "nixberry-capture-recovery.service" ]
+    );
+    systemd.services.nixberry-backup-check = lib.mkIf (r.maxAgeSeconds != null) (
+      maintenanceService "check" [ ]
+    );
+    systemd.timers.nixberry-backup-prune = lib.mkIf (r.keepLast != null && r.pruneSchedule != null) (
+      maintenanceTimer "prune" r.pruneSchedule
+    );
+    systemd.timers.nixberry-backup-check = lib.mkIf (
+      r.maxAgeSeconds != null && r.checkSchedule != null
+    ) (maintenanceTimer "check" r.checkSchedule);
   };
 }

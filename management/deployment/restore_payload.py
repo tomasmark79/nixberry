@@ -1,6 +1,5 @@
 """Restore authenticated application payloads into new private staging only."""
 import errno
-import json
 import os
 from pathlib import Path
 import stat
@@ -117,9 +116,7 @@ def stage(reader, identifier, destination, target_identity):
               'snapshotId': identifier, 'payloadId': receipt['payloadId'],
               'manifestSha256': receipt['manifestSha256'], 'sourceMachineId': manifest['machineId'],
               'architecture': target_identity['architecture'], 'paths': rows}
-    record = destination / 'stage.json'
-    record.write_text(json.dumps(report, sort_keys=True) + '\n')
-    record.chmod(0o600)
+    snapshots.write_record(destination / 'stage.json', report)
     incomplete.unlink()
     # This is a verified private stage, never a live restore completion marker.
     return report

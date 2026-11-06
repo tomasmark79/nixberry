@@ -38,6 +38,10 @@ let
       restic = {
         enable = true;
         schedule = "2099-01-01 00:00:00";
+        keepLast = 2;
+        maxAgeSeconds = 3600;
+        checkSchedule = "2099-01-01 00:00:00";
+        pruneSchedule = "2099-01-01 00:00:00";
         repository = "sftp:root@storage:/backup/${config.networking.hostName}";
         ssh = {
           port = 22;
@@ -123,6 +127,15 @@ pkgs.testers.runNixOSTest {
         node.succeed("nixberry-restic backup-init --json")
         node.succeed("test ! -e /var/lib/nixberry-backup/repository-id")
         node.succeed("nixberry-restic backup-init --apply --json")
+        maintenance = json.loads(node.succeed("cat /etc/nixberry/maintenance.json"))
+        assert maintenance == {"version": 1, "keepLast": 2, "maxAgeSeconds": 3600}
+        node.succeed("systemctl is-active nixberry-backup-check.timer nixberry-backup-prune.timer")
+        missing_status, missing_output = node.execute("nixberry-restic backup-check --json")
+        assert missing_status == 1, "An empty initialized repository must not pass freshness"
+        missing = json.loads(missing_output)
+        assert missing["status"] == "missing"
+        assert missing["snapshotId"] is None and missing["ageSeconds"] is None
+        assert missing["maxAgeSeconds"] == 3600
         node.succeed("nixberry-restic backup --json; systemctl is-active writer.service")
         assert json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"] == []
         report = json.loads(node.succeed("nixberry-restic backup --apply --json"))
@@ -130,6 +143,10 @@ pkgs.testers.runNixOSTest {
         node.succeed("systemctl is-active writer.service; test ! -e /var/lib/nixberry-capture/pending.json")
         listed = json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"]
         assert [row["snapshotId"] for row in listed] == [report["snapshotId"]]
+        healthy = json.loads(node.succeed("nixberry-restic backup-check --json"))
+        assert healthy["status"] == "ok" and healthy["snapshotId"] == report["snapshotId"]
+        assert healthy["maxAgeSeconds"] == 3600 and 0 <= healthy["ageSeconds"] <= 3600
+        node.succeed("systemctl start nixberry-backup-check.service; test $(systemctl show nixberry-backup-check.service -p Result --value) = success")
         if node == btrfs:
             probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r,p,m=native_restic.receipt(v," + repr(report["snapshotId"]) + "); paths={x['source']:x['payload'] for x in m['paths']}; rows=[json.loads(x) for x in r.run(['ls',p['payloadId'],'--json']).splitlines()]; print(json.dumps({'paths':[x['path'] for x in rows if x.get('struct_type')=='node'], 'parent':paths['/data/live/web'], 'child':r.run(['dump',p['payloadId'],paths[" + repr(nested) + "]+'/current']), 'sibling':r.run(['dump',p['payloadId'],paths['/data/live/web']+'/database1Q-otherraw name'])}))"
             tree = json.loads(node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(probe)))
@@ -137,16 +154,62 @@ pkgs.testers.runNixOSTest {
             assert tree["sibling"] == "keep-sibling"
             hidden = tree["parent"] + nested.removeprefix("/data/live/web")
             assert not any(path == hidden or path.startswith(hidden + "/") for path in tree["paths"]), "Hidden parent underlay leaked into encrypted payload"
+        # Keep the capture timestamps distinct so the removed oldest group is exact.
+        node.wait_until_succeeds("test $(date +%s) -gt " + str(healthy["createdAt"]))
         # Exercise the actual source service, including its bounded private tmpfs.
         node.succeed("systemctl start nixberry-backup.service")
         node.succeed("systemctl is-active writer.service; test ! -e /var/lib/nixberry-capture/pending.json")
         assert len(json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"]) == 2
+        second = json.loads(node.succeed("nixberry-restic backup-check --json"))
+        assert second["status"] == "ok" and second["snapshotId"] != report["snapshotId"]
+        node.wait_until_succeeds("test $(date +%s) -gt " + str(second["createdAt"]))
         # Trigger the installed timer without waiting for its distant test calendar.
         node.succeed("mkdir -p /run/systemd/system/nixberry-backup.timer.d; printf '[Timer]\\nOnCalendar=\\nOnActiveSec=1s\\nAccuracySec=1us\\n' > /run/systemd/system/nixberry-backup.timer.d/test.conf; systemctl daemon-reload; systemctl restart nixberry-backup.timer")
         node.wait_until_succeeds("test $(nixberry-restic backups --json | ${pkgs.jq}/bin/jq '.snapshots | length') = 3")
         node.succeed("systemctl stop nixberry-backup.timer")
         node.wait_until_succeeds("test $(systemctl show nixberry-backup.service -p ActiveState --value) = inactive")
         node.succeed("systemctl is-active writer.service; test ! -e /var/lib/nixberry-capture/pending.json")
+        listed_before = json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"]
+        assert len(listed_before) == 3
+        # Inspect authenticated receipt times and actual repository snapshot IDs.
+        catalogue_probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r=native_restic.Restic(v,read_only=True); rows=[(row['snapshotId'],native_restic.receipt_reader(r,row['snapshotId'])[1]) for row in native_restic.inventory_reader(r)['snapshots']]; print(json.dumps([{'snapshotId':i,'payloadId':p['payloadId'],'createdAt':p['createdAt']} for i,p in rows]))"
+        captures = json.loads(node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(catalogue_probe)))
+        ordered = sorted(captures, key=lambda row: (row["createdAt"], row["payloadId"]), reverse=True)
+        assert ordered[-1]["snapshotId"] == report["snapshotId"]
+        kept_receipts = {row["snapshotId"] for row in ordered[:2]}
+        kept_payloads = {row["payloadId"] for row in ordered[:2]}
+        removed_receipt, removed_payload = ordered[-1]["snapshotId"], ordered[-1]["payloadId"]
+        repository_probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r=native_restic.Restic(v,read_only=True); r.repository(); print(r.run(['snapshots']))"
+        repository_command = "env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(repository_probe)
+        repository_before = {row["id"]: row for row in json.loads(node.succeed(repository_command))}
+        assert set(repository_before) == {row["snapshotId"] for row in captures} | {row["payloadId"] for row in captures}
+        assert len(repository_before) == 6
+        writer_pid = node.succeed("systemctl show writer.service -p MainPID --value").strip()
+        preview = json.loads(node.succeed("nixberry-restic backup-prune --json"))
+        assert preview["applied"] is False and preview["keepLast"] == 2
+        assert set(preview["keep"]) == kept_receipts
+        assert preview["remove"] == [removed_receipt] and preview["payloads"] == [removed_payload]
+        assert preview["untouchedMachines"] == []
+        assert json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"] == listed_before
+        assert {row["id"]: row for row in json.loads(node.succeed(repository_command))} == repository_before
+        pruned = json.loads(node.succeed("nixberry-restic backup-prune --apply --json"))
+        assert pruned["applied"] is True
+        assert set(pruned["keep"]) == kept_receipts
+        assert pruned["remove"] == [removed_receipt] and pruned["payloads"] == [removed_payload]
+        assert pruned["verifiedSnapshotId"] == ordered[0]["snapshotId"]
+        repository_after = {row["id"]: row for row in json.loads(node.succeed(repository_command))}
+        assert set(repository_after) == kept_receipts | kept_payloads
+        assert repository_after == {identifier: row for identifier, row in repository_before.items() if identifier not in {removed_receipt, removed_payload}}
+        retained = json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"]
+        assert len(retained) == 2 and {row["snapshotId"] for row in retained} == kept_receipts
+        # All source-loss checks below must use a retained capture, never the deleted oldest one.
+        report = ordered[0]
+        newest = json.loads(node.succeed("nixberry-restic backup-check --json"))
+        assert newest["status"] == "ok" and newest["snapshotId"] == report["snapshotId"]
+        assert newest["machineId"] == preview["machineId"]
+        retained_verified = json.loads(node.succeed("nixberry-restic verify-backup --snapshot " + report["snapshotId"] + " --json"))
+        assert retained_verified["state"] == "recorded-verified"
+        assert node.succeed("systemctl show writer.service -p MainPID --value").strip() == writer_pid
         # Strict host trust must fail before shutting down the writer.
         bad_key = node.succeed("cat /var/lib/nixberry-backup/ssh-key.pub").strip()
         node.succeed("printf '%s\\n' 'storage " + bad_key + "' > /var/lib/nixberry-backup/known_hosts")
@@ -200,7 +263,28 @@ pkgs.testers.runNixOSTest {
         command = "runuser -u recovery -- nixberry "
         options = " vm-demo-guest --backup-access /home/recovery/access.json --json"
         rows = json.loads(storage.succeed(command + "backups" + options))["snapshots"]
-        assert len(rows) == 3
+        assert len(rows) == 2 and {row["snapshotId"] for row in rows} == kept_receipts
+        # Exercise the helper through actual non-root SFTP reads after source loss.
+        # Guard the command boundary to prove freshness never streams all app data.
+        independent_probe = (
+            "import json,native_access\n"
+            "calls=[]\n"
+            "original=native_access.native_restic.Restic.run\n"
+            "def read(self,arguments,**kwargs):\n"
+            "    assert arguments[0] != 'dump' or arguments[-1] != '/', 'Freshness streamed application payload'\n"
+            "    calls.append(arguments)\n"
+            "    return original(self,arguments,**kwargs)\n"
+            "native_access.native_restic.Restic.run=read\n"
+            "health=native_access.run('/home/recovery/access.json','vm-demo-guest','backup-check',max_age_seconds=3600)\n"
+            "print(json.dumps({'health':health,'calls':calls}))\n"
+        )
+        independent = json.loads(storage.succeed("runuser -u recovery -- env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(independent_probe)))
+        assert independent["health"]["status"] == "ok"
+        assert independent["health"]["snapshotId"] == report["snapshotId"]
+        assert independent["health"]["machineId"] == newest["machineId"]
+        assert independent["health"]["sourceId"] == access["sourceId"]
+        assert all(arguments[0] in ("cat", "snapshots", "dump") for arguments in independent["calls"])
+        assert not any(arguments[0] == "dump" and arguments[-1] == "/" for arguments in independent["calls"])
         checked = json.loads(storage.succeed(command + "verify-backup" + options + " --snapshot " + report["snapshotId"]))
         assert checked["state"] == "recorded-verified"
         destination = "/home/recovery/recovered-" + node.name

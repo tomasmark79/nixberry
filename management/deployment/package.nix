@@ -16,6 +16,7 @@ let
         ./restore_access.py
         ./backup_identity.py
         ./native_restic.py
+        ./native_health.py
         ./snapshots.py
         ./unit_names.py
         ./protected-units.json

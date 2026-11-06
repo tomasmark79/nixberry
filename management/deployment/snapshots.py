@@ -239,7 +239,7 @@ def sync_directory(path):
 
 
 def read_record(path):
-    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     with os.fdopen(descriptor) as stream:
         entry = os.fstat(stream.fileno())
         if (not stat.S_ISREG(entry.st_mode) or entry.st_uid != OWNER_UID

@@ -81,7 +81,8 @@ class NativeSourceTests(unittest.TestCase):
                         'roots': {'system': {'path': '/', 'snapshotDirectory': '/.snapshots/nixberry'}},
                         'stateDirectory': '/var/lib/nixberry-capture', 'minFreeBytes': 1024, 'timeoutSeconds': 120}
         self.policy = {'enabled': True, 'captureMethod': 'snapshot', 'capture': self.capture,
-                       'restic': {'timeoutSeconds': 600}, 'systemPath': self.system}
+                       'restic': {'timeoutSeconds': 600}, 'systemPath': self.system,
+                       'maintenance': {'version': 1, 'keepLast': 2, 'maxAgeSeconds': 3600}}
         self.target = NativeDispatchTests().target()
         self.patches = [patch('native_controller.freeze_recipe', return_value='/frozen'),
                         patch('native_controller.projection', return_value=self.policy)]
@@ -177,6 +178,37 @@ class NativeSourceTests(unittest.TestCase):
                              ('snapshots', {'apply': True}), ('snapshot', {'snapshot': 'a' * 32})]:
             with self.subTest(action=action, args=args), self.assertRaises(ValueError):
                 self.controller.run('/recipe', self.target, action, 'rpi-demo', **args)
+
+    def test_native_maintenance_checks_both_installed_policies_and_allows_unhealthy_json(self):
+        import subprocess
+        for action in ('backup-prune', 'backup-check'):
+            calls = []
+            def execute(command, **kwargs):
+                script = command[-1]
+                calls.append(script)
+                if script.endswith('cat /etc/nixberry/backup.json'):
+                    return subprocess.CompletedProcess(command, 0, json.dumps(self.policy['restic']), '')
+                if script.endswith('cat /etc/nixberry/maintenance.json'):
+                    return subprocess.CompletedProcess(command, 0, json.dumps(self.policy['maintenance']), '')
+                self.assertIn('nixberry-restic ' + action + ' --json', script)
+                self.assertNotIn('--apply', script)
+                result = {'status': 'stale'} if action == 'backup-check' else {'applied': False, 'remove': []}
+                return subprocess.CompletedProcess(command, int(action == 'backup-check'), json.dumps(result), '')
+            with self.subTest(action=action), patch('native_controller.status', return_value={'state': 'running'}), \
+                    patch('native_controller.preflight', return_value=self.system), \
+                    patch('native_controller.connection', return_value=['ssh', '--', 'root@vm-demo-source']), \
+                    patch('native_controller.subprocess.run', side_effect=execute):
+                result = self.controller.run('/recipe', self.target, action, 'rpi-demo')
+            self.assertEqual(len(calls), 3)
+            self.assertEqual(result['target'], 'rpi-demo')
+
+    def test_health_exit_code_and_report_must_agree(self):
+        import subprocess
+        for code, payload in ((1, {'status': 'ok'}), (0, {'status': 'missing'}), (1, {}), (1, None)):
+            with self.subTest(code=code, payload=payload), patch('native_controller.subprocess.run',
+                    return_value=subprocess.CompletedProcess([], code, json.dumps(payload), '')):
+                with self.assertRaises(RuntimeError):
+                    self.controller.remote(['ssh', 'host'], 'check', 30, health=True)
 
 
 class NativeProjectionErrors(unittest.TestCase):

@@ -5,6 +5,7 @@ import io
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -226,6 +227,30 @@ class SnapshotTests(unittest.TestCase):
         self.host.fail_start = False
         with self.assertRaisesRegex(RuntimeError, 'identity'):
             snapshots.resume(self.policy, apply=True)
+
+    def test_read_record_rejects_fifo_without_waiting_for_a_writer(self):
+        fifo = self.root / 'pending-fifo'
+        os.mkfifo(fifo, 0o600)
+        script = '''import os, sys
+sys.path.insert(0, sys.argv[1])
+import snapshots
+snapshots.OWNER_UID = os.getuid()
+try:
+    snapshots.read_record(sys.argv[2])
+except ValueError:
+    pass
+else:
+    raise SystemExit('FIFO state file was accepted')
+'''
+        try:
+            result = subprocess.run([sys.executable, '-c', script, str(Path(snapshots.__file__).parent), str(fifo)],
+                                    capture_output=True, text=True, timeout=3)
+        except subprocess.TimeoutExpired:
+            self.fail('Capture state inspection blocked on a FIFO')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        record = self.root / 'record.json'
+        snapshots.write_record(record, {'version': 1})
+        self.assertEqual(snapshots.read_record(record), {'version': 1})
 
     def test_nested_subvolumes_must_be_declared_when_application_includes_them(self):
         with self.assertRaisesRegex(ValueError, 'subvolume'):

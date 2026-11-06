@@ -3928,3 +3928,87 @@ msgstr "Nepodporovaný speciální soubor při obnově aplikací."
 
 msgid "Applied restoration requires the managed nixberry-restore system service."
 msgstr "Provedení obnovy vyžaduje spravovanou systémovou službu nixberry-restore."
+
+msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check native freshness; independent access requires --max-age-seconds N.\n                         Legacy providers also check run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nLegacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
+msgstr "\nMístní snapshoty spravované konfigurací:\n  snapshot TARGET        Plán místního zachycení; --apply krátce zastaví deklarované zapisující služby a zachytí kořeny Btrfs.\n  snapshots TARGET       Na ověřeném běžícím zdroji přečte evidované místní snapshoty.\n  snapshot-remove TARGET Smaže --snapshot ID pouze s --apply; jinak ukáže plán.\n  snapshot-resume TARGET Pouze s --apply zopakuje obnovení zapisujících služeb po přerušení.\n  Nativní záloha používá zvolenou konfiguraci NixOS, pokud není deklarován původní poskytovatel.\n  Zachycení vyžaduje shodu běžící generace a pravidel se zvoleným receptem.\n  Pouze řídicí stanice Linux; list/show/doplňování nevyhodnocují systémy NixOS.\n\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek na řídicím počítači s --output DIR; nezapíná je.\n  backup-check TARGET    Kontrola stáří nativních záloh; nezávislý přístup vyžaduje --max-age-seconds N.\n                         Původní poskytovatelé kontrolují i historii; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled zvoleného kódu pro obnovu; --apply jej připraví nebo předá povolenému původnímu poskytovateli.\n\nPlánování na řídicím počítači:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Vyžaduje backup.enable = true a backup.schedule v deklaraci cíle.\n  Bez --dry-run zapíše soubory uživatelské služby a časovače na tento počítač, ne na TARGET.\n  Jednotky neinstaluje ani nezapíná a nemění časovač spravovaný serverem.\n  Pokud server už zálohuje pravidelně (například přes Restic), uprav časování\n  v jeho konfiguraci NixOS; ponech pouze jeden plánovač pořizování záloh.\n\nPravidla původního poskytovatele jsou v deklaraci cíle; nativní pravidla patří do jeho konfigurace NixOS.\nKlíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
+
+msgid "--apply only applies to native backup capture, staging, retention or repository initialization."
+msgstr "--apply se vztahuje pouze na pořizování, přípravu a promazávání nativních záloh nebo inicializaci repozitáře."
+
+msgid "--dry-run only applies to native backup capture, staging, maintenance or repository initialization."
+msgstr "--dry-run se vztahuje pouze na pořizování, přípravu a údržbu nativních záloh nebo inicializaci repozitáře."
+
+msgid "--max-age-seconds requires backup-check with independent --backup-access."
+msgstr "--max-age-seconds vyžaduje backup-check s nezávislým --backup-access."
+
+msgid "--system only applies to recovery archive staging or native retention."
+msgstr "--system se vztahuje pouze na přípravu archivu pro obnovu nebo promazávání nativních záloh."
+
+msgid "An age limit is supported only for independent backup freshness checks."
+msgstr "Mezní stáří lze zadat pouze při nezávislé kontrole stáří záloh."
+
+msgid "Backup freshness requires a finite nonnegative current timestamp."
+msgstr "Kontrola stáří záloh vyžaduje konečný nezáporný aktuální čas."
+
+msgid "Backup freshness requires a positive age limit of at most one year in seconds."
+msgstr "Kontrola stáří záloh vyžaduje kladné mezní stáří nejvýše jeden rok v sekundách."
+
+msgid "Backup freshness requires a read-only repository reader."
+msgstr "Kontrola stáří záloh vyžaduje přístup k repozitáři pouze pro čtení."
+
+msgid "Backup freshness requires a valid expected source machine identity."
+msgstr "Kontrola stáří záloh vyžaduje platnou očekávanou identitu zdrojového stroje."
+
+msgid "Completion receipts disagree about their shared native payload."
+msgstr "Potvrzení dokončených záloh se neshodují na společných nativních datech."
+
+msgid "Configuration-owned backup maintenance policy file"
+msgstr "Soubor pravidel údržby záloh spravovaný konfigurací"
+
+msgid "Configure nixberry.backup.restic.keepLast before pruning native backups."
+msgstr "Před promazáváním nativních záloh nastavte nixberry.backup.restic.keepLast."
+
+msgid "Configure nixberry.backup.restic.maxAgeSeconds before checking native backup freshness."
+msgstr "Před kontrolou stáří nativních záloh nastavte nixberry.backup.restic.maxAgeSeconds."
+
+msgid "Expected running NixOS generation for recovery staging or retention"
+msgstr "Očekávaná spuštěná generace NixOS pro přípravu obnovy nebo promazávání záloh"
+
+msgid "Future capture timestamps prevent native retention."
+msgstr "Zálohy s časem v budoucnosti brání promazávání nativních záloh."
+
+msgid "Independent backup inventory and freshness checks do not accept a snapshot ID."
+msgstr "Nezávislý výpis záloh a kontrola jejich stáří nepřijímají ID snapshotu."
+
+msgid "Independent backup reads do not accept --apply."
+msgstr "Nezávislé čtení záloh nepřijímá --apply."
+
+msgid "Interrupted capture needs writer recovery before native retention."
+msgstr "Přerušené pořizování zálohy vyžaduje před promazáváním obnovení zapisujících služeb."
+
+msgid "Invalid native backup maintenance policy."
+msgstr "Neplatná pravidla údržby nativních záloh."
+
+msgid "Maximum capture age for an independent native backup freshness check"
+msgstr "Nejvyšší stáří zálohy pro nezávislou kontrolu stáří nativních záloh"
+
+msgid "Native backup inventory changed during retention; no snapshots were deleted."
+msgstr "Seznam nativních záloh se během promazávání změnil; žádné snapshoty nebyly odstraněny."
+
+msgid "Native retention requires an explicit keepLast between 1 and 100000."
+msgstr "Promazávání nativních záloh vyžaduje výslovné keepLast od 1 do 100000."
+
+msgid "Native retention requires the current source machine identity."
+msgstr "Promazávání nativních záloh vyžaduje aktuální identitu zdrojového stroje."
+
+msgid "The installed maintenance policy differs from the selected configuration."
+msgstr "Nainstalovaná pravidla údržby se liší od vybrané konfigurace."
+
+msgid "The source did not return valid native operation metadata."
+msgstr "Zdroj nevrátil platná metadata nativní operace."
+
+msgid "The source freshness status does not match its reported outcome."
+msgstr "Stav stáří záloh zdroje neodpovídá oznámenému výsledku."
+
+msgid "The source generation or machine identity changed; native retention was refused."
+msgstr "Generace nebo identita zdrojového stroje se změnila; promazávání nativních záloh bylo odmítnuto."

@@ -2,7 +2,7 @@
 
 from messages import _, info, shell_script
 from runtime import deployment_method
-from recipe_source import materialized_recipe
+from recipe_source import materialized_recipe, recipe_uri
 from backups import policy as backup_policy
 
 import hashlib
@@ -31,13 +31,13 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
     security = require_supported(target, selected)
     attribute = ("nixberryInstallers." if selected == "iso" and target["backend"] != "rpi" else "nixberryImages.") + target_name
     command = ["nix", "build", "--print-out-paths", "--no-write-lock-file",
-               "path:" + str(recipe) + "#" + attribute]
+               recipe_uri(recipe) + "#" + attribute]
     if dry_run:
         with materialized_recipe(recipe) as source:
             if source != str(recipe):
                 metadata = json.loads(subprocess.check_output([
-                    "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + source], text=True))
-                command[-1] = "path:" + metadata["path"] + "#" + attribute
+                    "nix", "flake", "metadata", "--json", "--no-write-lock-file", recipe_uri(source)], text=True))
+                command[-1] = recipe_uri(metadata["path"]) + "#" + attribute
         return {"target": target_name, "destination": str(destination), "deploymentMethod": selected,
                 "configuration": target.get("configuration", "default"),
                 "allowReset": target.get("allowReset", False),
@@ -56,7 +56,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         # Nix creates one immutable source snapshot. Do not read the working recipe again.
         with materialized_recipe(recipe) as source:
             metadata = json.loads(subprocess.check_output([
-                "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + source], text=True))
+                "nix", "flake", "metadata", "--json", "--no-write-lock-file", recipe_uri(source)], text=True))
         snapshot = Path(metadata["path"])
         staging = Path(staging)
         # GC roots live outside bundle content and remain until copying completes.
@@ -70,7 +70,7 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         # Nix store directories are read-only; this private copy must be movable.
         for directory in [frozen_recipe, *(path for path in frozen_recipe.rglob("*") if path.is_dir())]:
             directory.chmod(directory.stat().st_mode | stat.S_IWUSR)
-        flake = "path:" + str(frozen_recipe)
+        flake = recipe_uri(frozen_recipe)
         # The declaration comes from the image snapshot, not a previously built CLI.
         target = json.loads(subprocess.check_output([
             "nix", "eval", "--json", "--no-write-lock-file",

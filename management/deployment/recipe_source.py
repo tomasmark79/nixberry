@@ -7,10 +7,16 @@ import re
 import shutil
 import subprocess
 import tempfile
+from urllib.parse import quote
 
 from messages import _, ArgumentParser, error
 
 IGNORE = shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "result", "result-*", "*.log")
+
+
+def recipe_uri(recipe):
+    """Keep filesystem characters distinct from flake URI syntax."""
+    return "path:" + quote(os.fspath(recipe), safe="/")
 
 
 @contextmanager
@@ -55,7 +61,7 @@ def main():
     environment = os.environ.copy()
     environment["NIXBERRY_RECIPE"] = str(Path(args.recipe).resolve(strict=True))
     with materialized_recipe(args.recipe) as recipe:
-        return subprocess.run(["nix", "run", "--no-write-lock-file", "path:" + recipe + "#nixberry",
+        return subprocess.run(["nix", "run", "--no-write-lock-file", recipe_uri(recipe) + "#nixberry",
                                "--", *args.arguments], env=environment).returncode
 
 

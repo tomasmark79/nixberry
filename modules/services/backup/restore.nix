@@ -23,7 +23,16 @@ let
     && !(builtins.elem (builtins.head parsed) rules.management)
     && !(lib.any (prefix: lib.hasPrefix prefix unit) rules.prefixes);
   automatic = lib.optionals cfg.restic.enable (
-    [ "nixberry-backup.service" ] ++ lib.optional (cfg.restic.schedule != null) "nixberry-backup.timer"
+    [ "nixberry-backup.service" ]
+    ++ lib.optional (cfg.restic.schedule != null) "nixberry-backup.timer"
+    ++ lib.optional (cfg.restic.keepLast != null) "nixberry-backup-prune.service"
+    ++ lib.optional (
+      cfg.restic.keepLast != null && cfg.restic.pruneSchedule != null
+    ) "nixberry-backup-prune.timer"
+    ++ lib.optional (cfg.restic.maxAgeSeconds != null) "nixberry-backup-check.service"
+    ++ lib.optional (
+      cfg.restic.maxAgeSeconds != null && cfg.restic.checkSchedule != null
+    ) "nixberry-backup-check.timer"
   );
   policy =
     assert lib.assertMsg (

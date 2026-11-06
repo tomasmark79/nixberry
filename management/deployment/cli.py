@@ -18,7 +18,7 @@ from updater import update
 from diffing import compare
 from inspection import doctor, exit_code
 from cleanup import preview, failed
-from recipe_source import materialized_recipe
+from recipe_source import materialized_recipe, recipe_uri
 from discovery import collect_status
 from security import policy as security_policy, require_supported, prepare_image, image_metadata, unlock
 from messages import _, info, success, warning, error as report_error
@@ -113,7 +113,7 @@ def operations(target):
         result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
         result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg", *SNAPSHOT_ACTIONS]
-        for action in ("backup", "backup-stage", "restore"):
+        for action in ("backup", "backup-stage", "restore", "backup-prune"):
             if action not in result:
                 result += [action]
     if caps["hypervisor"] or target["backend"] == "rpi":
@@ -167,6 +167,8 @@ def main(argv=None):
         argv, remote_command = argv[:delimiter], argv[delimiter + 1:]
     parser = create_parser()
     args = parser.parse_args(argv)
+    if args.max_age_seconds is not None and (args.action != 'backup-check' or not args.backup_access):
+        parser.error(_("--max-age-seconds requires backup-check with independent --backup-access."))
     if args.snapshot and args.action not in ("verify-backup", "restore", "recover-source", "snapshot-remove"):
         parser.error(_("--snapshot only applies to verify-backup, restore, recover-source and snapshot-remove."))
     if args.backup_source and args.action != "restore":
@@ -198,14 +200,15 @@ def main(argv=None):
                 or args.local_disk or args.erase_existing or args.artifact_root):
             parser.error(_("--backup-access requires a named source and a storage read operation without server connection options."))
         result = run_native_access(args.backup_access, args.target, args.action, snapshot=args.snapshot,
-                                   output=args.output, apply=args.apply, dry_run=args.dry_run)
+                                   output=args.output, apply=args.apply, dry_run=args.dry_run,
+                                   **({'max_age_seconds': args.max_age_seconds} if args.action == 'backup-check' else {}))
         if args.action == 'backups' and not args.json and not args.dry_run:
             table([_("Snapshot"), _("Created (UTC)"), _("State")], [
                 [row['snapshotId'], datetime.fromtimestamp(row['createdAt'], timezone.utc).strftime('%Y-%m-%d %H:%M'), row['state']]
                 for row in result.get('snapshots', [])])
         else:
             print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0
+        return int(result.get('status') != 'ok') if args.action == 'backup-check' and not args.dry_run else 0
     registry = json.loads(Path(os.environ["NIXBERRY_DEPLOYMENT"]).read_text())
     if args.local_disk and (args.action not in ("plan", "reproduce")
                            or args.target not in registry or registry[args.target]["backend"] != "rpi"
@@ -215,14 +218,14 @@ def main(argv=None):
         parser.error(_("--ssh applies to server management and cannot be combined with --host or new-*."))
     override = args.ssh or (args.host if not args.action.startswith("new-") else None)
     if override:
-        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup", "backup-stage", "restore"):
+        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup", "backup-stage", "backup-prune", "backup-check", "restore"):
             parser.error(_("Direct SSH supports system management, local snapshots and native backup capture."))
         if (args.target not in registry or registry[args.target]["backend"] not in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware")
                 or not registry[args.target].get("offline")):
             parser.error(_("Direct SSH requires an offline VM declaration without hypervisor management."))
         if args.action == 'restore' and not args.backup_access:
             parser.error(_("Direct SSH restoration overrides require independent native storage access."))
-        if args.action in ("backup", "backup-stage") and backup_policy(registry[args.target])['enable']:
+        if args.action in ("backup", "backup-stage", "backup-prune", "backup-check") and backup_policy(registry[args.target])['enable']:
             parser.error(_("Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."))
         try:
             direct = guest_connection(override)
@@ -353,11 +356,11 @@ def main(argv=None):
             parser.error(_("Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Available targets: {targets}.").format(targets=", ".join(sorted(registry))))
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
-    if args.action in SNAPSHOT_ACTIONS or (args.action in ("backup", "backup-stage") and not backup_policy(target)['enable']):
+    if args.action in SNAPSHOT_ACTIONS or (args.action in ("backup", "backup-stage", "backup-prune", "backup-check") and not backup_policy(target)['enable']):
         result = run_native(os.environ.get("NIXBERRY_RECIPE", ""), target, args.action, args.target,
                             snapshot=args.snapshot, apply=args.apply, dry_run=args.dry_run)
         print(json.dumps(result, ensure_ascii=False, indent=2))
-        return 0
+        return int(result.get('status') != 'ok') if args.action == 'backup-check' and not args.dry_run else 0
     if args.action == 'restore' and args.backup_access:
         if args.output or args.local_disk or args.erase_existing or args.artifact_root:
             parser.error(_("Native restoration does not accept export or installation options."))
@@ -446,7 +449,7 @@ def main(argv=None):
             parser.error(_("Run verify through the nixberry launcher from the project root."))
         with materialized_recipe(recipe) as source:
             expected = read(["nix", "eval", "--raw", "--no-write-lock-file",
-                             "path:" + source + "#nixberrySystems." + args.target + ".config.system.build.toplevel.outPath"])
+                             recipe_uri(source) + "#nixberrySystems." + args.target + ".config.system.build.toplevel.outPath"])
         try:
             result = verify(target, expected)
         except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
@@ -467,7 +470,7 @@ def main(argv=None):
         recipe = os.environ.get("NIXBERRY_RECIPE")
         if not recipe:
             parser.error(_("Run RPi reproduction through the nixberry launcher from the project root."))
-        command = ["nix", "run", "--no-write-lock-file", "path:" + recipe + "#nixberry-rpi-install",
+        command = ["nix", "run", "--no-write-lock-file", recipe_uri(recipe) + "#nixberry-rpi-install",
                    "--", "--target", args.target,
                    "--apply" if args.apply else "--dry-run"]
         if args.address:
@@ -479,9 +482,9 @@ def main(argv=None):
         if args.initrd_key_file:
             command += ["--initrd-key-file", args.initrd_key_file]
         with materialized_recipe(recipe) as source:
-            command[3] = "path:" + source + "#nixberry-rpi-install"
+            command[3] = recipe_uri(source) + "#nixberry-rpi-install"
             if args.local_disk:
-                command[3] = "path:" + source + "#nixberryRpiDiskTools." + args.target
+                command[3] = recipe_uri(source) + "#nixberryRpiDiskTools." + args.target
                 command[5:] = ["--local-disk", args.local_disk,
                                "--apply" if args.apply else "--dry-run"]
                 if args.erase_existing:

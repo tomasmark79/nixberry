@@ -48,11 +48,16 @@ def policy(value):
     for key in ('passwordFile', 'repositoryIdFile', 'recoveryFile', 'runtimeDirectory'):
         runtime_path(value[key])
     storage_policy(value)
-    paths = [path for app in value['capture']['applications'].values() for path in app['paths']]
+    paths = [Path(path) for app in value['capture']['applications'].values() for path in app['paths']]
     internal = [value['runtimeDirectory'], value['recoveryFile'], value['passwordFile'], value['repositoryIdFile']]
+    if value['ssh'] is not None:
+        internal += [value['ssh']['identityFile'], value['ssh']['knownHostsFile']]
     if value['repository'].startswith('/'):
         internal.append(value['repository'])
-    if any(Path(a).is_relative_to(b) or Path(b).is_relative_to(a) for a in paths for b in internal):
+    internal = [Path(path) for path in internal]
+    variants = ((paths, internal), ([path.resolve() for path in paths], [path.resolve() for path in internal]))
+    if any(a.is_relative_to(b) or b.is_relative_to(a)
+           for sources, destinations in variants for a in sources for b in destinations):
         raise ValueError(_("Backup storage, runtime files and credentials must stay outside application data paths."))
     return value
 
@@ -86,7 +91,7 @@ def storage_policy(value):
 def private_file(path, *, private=True, limit=128 * 1024 * 1024, owner_uid=None):
     owner_uid = snapshots.OWNER_UID if owner_uid is None else owner_uid
     snapshots.secure_directory(Path(path).parent, private=False, owner_uid=owner_uid)
-    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     with os.fdopen(descriptor, 'rb') as stream:
         entry = os.fstat(stream.fileno())
         if (not stat.S_ISREG(entry.st_mode) or entry.st_uid != owner_uid
@@ -595,10 +600,12 @@ def recipe_reader(restic, record, manifest):
 
 def main(argv=None):
     parser = ArgumentParser(description=_(__doc__))
-    parser.add_argument('action', choices=['backup-init', 'backup-stage', 'backup', 'backups', 'verify-backup'])
+    parser.add_argument('action', choices=['backup-init', 'backup-stage', 'backup', 'backups', 'verify-backup',
+                                         'backup-prune', 'backup-check'])
     parser.add_argument('--config', default='/etc/nixberry/backup.json', help=_("Configuration-owned Restic policy file"))
+    parser.add_argument('--maintenance', default='/etc/nixberry/maintenance.json', help=_("Configuration-owned backup maintenance policy file"))
     parser.add_argument('--snapshot', help=_("Full native Restic completion snapshot ID"))
-    parser.add_argument('--system', help=_("Expected running NixOS generation for recovery archive staging"))
+    parser.add_argument('--system', help=_("Expected running NixOS generation for recovery staging or retention"))
     parser.add_argument('--receive-sha256', help=_("Receive a sealed recipe archive from standard input with this SHA256 identity"))
     parser.add_argument('--json', action='store_true', help=_("Print technical backup metadata as JSON"))
     modes = parser.add_mutually_exclusive_group()
@@ -607,20 +614,21 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if os.geteuid() != 0:
         raise RuntimeError(_("Native backup operations require root and protected runtime credentials."))
-    if args.apply and args.action not in ('backup-init', 'backup-stage', 'backup'):
-        parser.error(_("--apply only applies to native backup capture, staging or repository initialization."))
+    if args.apply and args.action not in ('backup-init', 'backup-stage', 'backup', 'backup-prune'):
+        parser.error(_("--apply only applies to native backup capture, staging, retention or repository initialization."))
     if args.snapshot is not None and args.action != 'verify-backup':
         parser.error(_("--snapshot only applies to native backup verification."))
-    if args.dry_run and args.action not in ('backup-init', 'backup-stage', 'backup'):
-        parser.error(_("--dry-run only applies to native backup capture, staging or repository initialization."))
-    if args.system is not None and args.action != 'backup-stage':
-        parser.error(_("--system only applies to recovery archive staging."))
+    if args.dry_run and args.action not in ('backup-init', 'backup-stage', 'backup', 'backup-prune', 'backup-check'):
+        parser.error(_("--dry-run only applies to native backup capture, staging, maintenance or repository initialization."))
+    if args.system is not None and args.action not in ('backup-stage', 'backup-prune'):
+        parser.error(_("--system only applies to recovery archive staging or native retention."))
     if args.receive_sha256 is not None and args.action != 'backup-stage':
         parser.error(_("--receive-sha256 only applies to recovery archive staging."))
     def interrupted(signum, frame):
         raise InterruptedError(_("Native backup was interrupted; checking writer recovery."))
     for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         signal.signal(signum, interrupted)
+    expected_system = args.system or (running_system() if args.action == 'backup-prune' else None)
     settings = policy(json.loads(Path(args.config).read_text()))
     if args.action == 'backup-init':
         result = initialize(settings, apply=args.apply)
@@ -633,14 +641,24 @@ def main(argv=None):
         result = backup(settings, apply=args.apply)
     elif args.action == 'backups':
         result = inventory(settings)
+    elif args.action in ('backup-check', 'backup-prune'):
+        import native_maintenance
+        maintenance = native_maintenance.policy(json.loads(Path(args.maintenance).read_text()))
+        if args.dry_run:
+            result = {'action': args.action, 'maintenance': maintenance, 'applied': False, 'readiness': 'not-checked'}
+        elif args.action == 'backup-check':
+            result = native_maintenance.check(settings, maintenance)
+        else:
+            result = native_maintenance.prune(settings, maintenance, expected_system, apply=args.apply)
     else:
         result = verify(settings, args.snapshot)
     print(json.dumps(result, sort_keys=True))
+    return int(result.get('status') != 'ok') if args.action == 'backup-check' and not args.dry_run else 0
 
 
 if __name__ == '__main__':
     try:
-        main()
+        raise SystemExit(main())
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as failure:
         error("{error}", error=str(failure))
         raise SystemExit(1)

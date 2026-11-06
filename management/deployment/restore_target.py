@@ -17,7 +17,9 @@ from recovery_recipe import SYSTEM
 import snapshots
 import unit_names
 
-AUTOMATIC = {'nixberry-backup.service', 'nixberry-backup.timer'}
+AUTOMATIC = {'nixberry-backup.service', 'nixberry-backup.timer',
+             'nixberry-backup-prune.service', 'nixberry-backup-prune.timer',
+             'nixberry-backup-check.service', 'nixberry-backup-check.timer'}
 
 
 def policy(value):
@@ -110,10 +112,13 @@ def unit_state(value, unit):
     return fields['ActiveState']
 
 
-def path_state(value):
+def path_state(value, *, allow_leaf_symlink=False):
     path = Path(value)
-    if path.is_symlink() or path.parent.resolve(strict=False) != path.parent:
+    symbolic = path.is_symlink()
+    if symbolic and not allow_leaf_symlink or path.parent.resolve(strict=False) != path.parent:
         raise ValueError(_("Restore paths must not contain symbolic links."))
+    if symbolic:
+        return {'path': value, 'exists': True, 'empty': False}
     exists = path.exists()
     empty = not exists
     if exists and path.is_dir():
@@ -133,7 +138,8 @@ def status(value, *, expected_system=None, inspect_paths=True):
     interrupted = pending_path.exists() or pending_path.is_symlink()
     units = sorted(set(value['automaticUnits']) | {unit for app in value['applications'].values() for unit in app['units']})
     states = {unit: unit_state(value, unit) for unit in units}
-    paths = [path_state(path) for path in sorted({path for app in value['applications'].values() for path in app['paths']})] if inspect_paths else []
+    paths = [path_state(path, allow_leaf_symlink=done)
+             for path in sorted({path for app in value['applications'].values() for path in app['paths']})] if inspect_paths else []
     return {'systemPath': system, 'machineId': snapshots.machine_id(), 'policySha256': policy_hash(value),
             'architecture': value['architecture'], 'completed': done, 'pending': interrupted, 'units': states, 'paths': paths,
             'ready': not done and not interrupted and all(state in ('inactive', 'failed') for state in states.values()) and all(path['empty'] for path in paths)}

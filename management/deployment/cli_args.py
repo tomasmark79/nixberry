@@ -136,7 +136,8 @@ Encrypted backup commands:
   recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.
   backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.
   backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.
-  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.
+  backup-check TARGET    Check native freshness; independent access requires --max-age-seconds N.
+                         Legacy providers also check run history; --apply records and notifies.
   backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.
   backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.
 
@@ -295,6 +296,7 @@ def create_parser():
         help=_("Backup source name for restoration into a distinct target; native access also supports preserved sources"),
     )
     parser.add_argument('--backup-access', help=_("Private native storage access context for inventory, verification, source recovery or destination restore"))
+    parser.add_argument('--max-age-seconds', type=int, help=_("Maximum capture age for an independent native backup freshness check"))
     parser.add_argument(
         "--address", help=_("Early-boot unlock address or current RPi recovery address")
     )

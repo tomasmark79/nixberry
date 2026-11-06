@@ -51,21 +51,45 @@ and policy without changing locks or importing derivation results. NixBerry
 updates refresh the archive automatically after verified activation; updates
 through other tools and rollbacks require explicit staging before backup.
 `--ssh` can supply access to an offline
-VM for native capture and staging.
+VM for native capture, staging and maintenance.
 
-`backups`, `verify-backup` and `recover-source` accept an explicit private
-`--backup-access FILE` for native storage reads without contacting the source
-or requiring its declaration. Source recovery writes only with `--apply` into
-a new `--output` directory; it never evaluates recovered code. Without an access
-context these commands use an enabled legacy provider. The other legacy commands
-`restore`, `backup-prune`, `backup-schedule`, `backup-check` and `backup-monitor`
-require a target provider policy. An enabled legacy provider retains its
-`backup-stage` behavior. Native guest inventory and verification remain available.
+`backup-prune TARGET` uses configuration-owned `restic.keepLast` when no enabled
+legacy provider is declared. Its default reads the actual plan from the verified
+source and repository; `--dry-run` contacts neither. `--apply` revalidates the
+generation and current machine identity under the capture lock, authenticates
+metadata and verifies the newest retained payload and sealed recipe before
+deleting explicit old receipt/payload IDs. Duplicate receipts share a retention
+group; other machines and incomplete captures remain untouched.
+
+`backup-check TARGET` uses configured `restic.maxAgeSeconds` for the current
+source machine. Native checks are read-only and reject `--apply`. They authenticate
+metadata and the selected sealed recipe, with full payload verification remaining
+separate. Status is `ok`, `stale`, `missing` or `future`; return code is `0` for
+healthy and `1` otherwise. Source check service/timer failures provide systemd
+status and journal diagnostics without desktop notifications.
+
+`backups`, `verify-backup`, `backup-check` and `recover-source` accept an explicit
+private `--backup-access FILE` for native storage reads without contacting the source
+or requiring its declaration. Independent `backup-check` also requires
+`--max-age-seconds N` (1–31536000); it works after source loss and uses the newest
+authenticated capture for the preserved source identity. Source recovery writes
+only with `--apply` into a new `--output` directory; it never evaluates recovered code. Without an access
+context, inventory, verification and source recovery use an enabled legacy provider.
+`backup-schedule` and `backup-monitor` require that provider policy. Legacy
+`backup-check --apply` retains its protected history and desktop notifications;
+legacy scheduling and monitoring exports remain controller user units.
+Native guest inventory and verification remain available.
+
 Prepared destinations can enable `nixberry.backup.restore.prepare` in their
 selected configuration. The installed `nixberry-restore-target status --json`
-inspects held writers and empty paths without changing data or services; it does
-not implement native data publication. See the destination preparation section
-in the [backup guide](backups.md#prepared-restore-destinations).
+inspects held writers and application paths without changing data or services.
+`restore TARGET --from SOURCE --backup-access FILE --snapshot RECEIPT_ID --apply`
+publishes authenticated application data into a distinct prepared destination;
+without `--apply` it only plans. Enabled source backup, prune and check jobs/timers
+are held until restoration completes. Independent reads and restore use Restic
+`--no-lock`; the storage operator must coordinate them with pruning because
+read-only SFTP access provides no reader lease. See the destination preparation
+section in the [backup guide](backups.md#prepared-restore-destinations).
 See [backup commands and write boundaries](backups.md).
 
 `backup-schedule TARGET --output NEW_DIRECTORY --dry-run` previews systemd user
@@ -179,9 +203,13 @@ See [bundle contents and handoff](offline.md).
 | `--method image|iso` | VM `new-*`, `show`, `plan`, `create`, `install`, `provision`, `reproduce`, `export`. |
 | `--configuration NAME` | Only `new-*`; edit the declaration for an existing target. |
 | `--offline` | Only `new-*` without `--host`. |
-| `--ssh root@HOST[:PORT]` | Offline VM `status`, `ssh`, `doctor`, `verify`, `update`, `diff`, `diffg`. |
+| `--ssh root@HOST[:PORT]` | Offline VM system management, native snapshots/backup maintenance and prepared restore; legacy providers use declared access. |
 | `--host` | Hypervisor host for `new-*`; an alternative to `--ssh` for direct offline VM management. |
-| `--output DIRECTORY` | `export` and VM `prepare-image`. |
+| `--output DIRECTORY` | `export`, VM `prepare-image`, source recovery and legacy timer exports. |
+| `--backup-access FILE` | Private native context for storage inventory, verification, freshness, source recovery or prepared destination restore. |
+| `--max-age-seconds N` | Required explicit threshold for `backup-check --backup-access`, from 1 through 31536000. |
+| `--snapshot ID` | Explicit backup receipt for verification/recovery/restore, or local capture ID for `snapshot-remove`. |
+| `--from SOURCE` | Source identity for `restore TARGET`; native access also requires a full receipt ID. |
 | `--artifact-root DIRECTORY` | Only `cleanup`; repeatable. |
 | `--address IP` | RPi `plan`/`reproduce`, or early-boot `unlock` for encrypted VMs and RPi. |
 | `--local-disk /dev/disk/by-id/ID` | RPi `plan`/`reproduce`: prepare an attached SSD on Linux without contacting the board. Unencrypted targets only; incompatible with `--address` and runtime keys. |
@@ -210,5 +238,7 @@ be translated. Colors follow the destination stream, `NO_COLOR` and
 
 `doctor` returns `0` for no findings, `1` for errors and `2` for warnings only.
 Incomplete `cleanup` inventory returns `1` and retains partial results.
+Native `backup-check` returns `0` only for `status = ok`; unhealthy findings and
+errors return `1`. Legacy checks retain their alarm and notification exit behavior.
 Interpret nonzero codes together with the diagnostic and known operation state:
 they do not imply previous writes were rolled back.

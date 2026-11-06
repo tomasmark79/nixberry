@@ -32,6 +32,10 @@ pkgs.testers.runNixOSTest {
         enable = true;
         repository = "/backup/test-only";
         schedule = "2099-01-01 00:00:00";
+        keepLast = 2;
+        maxAgeSeconds = 3600;
+        checkSchedule = "2099-01-01 00:00:00";
+        pruneSchedule = "2099-01-01 00:00:00";
       };
     };
     systemd.services.writer = {
@@ -69,14 +73,14 @@ pkgs.testers.runNixOSTest {
     machine.wait_for_unit("multi-user.target")
     machine.succeed("NIXBERRY_LANG=cs nixberry-restore-target --help | grep -F 'připravený cíl obnovy'")
     machine.succeed("touch /allow-writer")
-    units = "writer-alias.service instance@one.service trigger.socket trigger.timer nixberry-backup.service nixberry-backup.timer"
+    units = "writer-alias.service instance@one.service trigger.socket trigger.timer nixberry-backup.service nixberry-backup.timer nixberry-backup-check.service nixberry-backup-check.timer nixberry-backup-prune.service nixberry-backup-prune.timer"
     for unit in units.split():
         machine.succeed("systemctl start " + unit)
         machine.fail("systemctl is-active " + unit)
     machine.succeed("test ! -e /var/lib/restore-demo")
     ready = json.loads(machine.succeed("nixberry-restore-target status --json"))
     assert ready["ready"] is True and ready["completed"] is False
-    assert len(ready["units"]) == 6
+    assert len(ready["units"]) == 10
     machine.succeed("systemctl show instance@one.service -p ExecStart --value | grep -F instance")
     # Merely inspecting readiness never creates completion state or starts writers.
     machine.succeed("test -z \"$(find /var/lib/nixberry-restore -mindepth 1 -maxdepth 1)\"")

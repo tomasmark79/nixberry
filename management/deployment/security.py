@@ -198,6 +198,7 @@ def read_password(key_file=None):
 
 
 def prepare_image(recipe, name, target, destination, *, key_file=None, dry_run=False):
+    from recipe_source import recipe_uri
     require_supported(target)
     if target["backend"] == "rpi":
         raise ValueError(_("Raspberry Pi encryption uses its recovery installer, not VM image preparation."))
@@ -215,7 +216,7 @@ def prepare_image(recipe, name, target, destination, *, key_file=None, dry_run=F
     if recipe == destination or recipe in destination.resolve().parents:
         raise ValueError(_("Store encrypted images and secrets outside the recipe root."))
     command = ["nix", "build", "--no-link", "--print-out-paths", "--no-write-lock-file",
-               "path:" + str(recipe) + "#nixberryImageBuilders." + name]
+               recipe_uri(recipe) + "#nixberryImageBuilders." + name]
     plan = {"target": name, "destination": str(destination), "security": policy(target), "build": command}
     if dry_run:
         return plan
@@ -224,10 +225,10 @@ def prepare_image(recipe, name, target, destination, *, key_file=None, dry_run=F
     from updater import freeze_recipe
     with tempfile.TemporaryDirectory(prefix="nixberry-encrypted-build-") as capture:
         frozen = freeze_recipe(str(recipe), name, target, capture)
-        command[-1] = "path:" + frozen + "#nixberryImageBuilders." + name
+        command[-1] = recipe_uri(frozen) + "#nixberryImageBuilders." + name
         builder = subprocess.check_output(command, text=True).strip()
         system = subprocess.check_output(["nix", "eval", "--raw", "--no-write-lock-file",
-            "path:" + frozen + "#nixberrySystems." + name + ".config.system.build.toplevel.outPath"], text=True).strip()
+            recipe_uri(frozen) + "#nixberrySystems." + name + ".config.system.build.toplevel.outPath"], text=True).strip()
         destination.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix=".nixberry-encrypted-", dir=destination.parent) as staging:
             staging = Path(staging)

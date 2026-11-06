@@ -83,6 +83,46 @@ class RestoreTargetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             restore_target.status(self.settings)
 
+    def test_uncompleted_leaf_symlinks_are_refused(self):
+        link = self.root / 'link'
+        link.symlink_to(self.data, target_is_directory=True)
+        self.settings['applications']['web']['paths'].append(str(link))
+        self.guard.write_text(restore_target.guard_text(self.settings))
+        with self.assertRaises(ValueError):
+            restore_target.status(self.settings)
+
+    def test_completed_leaf_symlinks_are_reported_without_following_targets(self):
+        link = self.root / 'link'
+        self.settings['applications']['web']['paths'].append(str(link))
+        self.guard.write_text(restore_target.guard_text(self.settings))
+        marker = restore_target.marker_path(self.settings)
+        marker.parent.mkdir(mode=0o700)
+        snapshots.write_record(marker, {'version': 1, 'machineId': MACHINE,
+            'policySha256': restore_target.policy_hash(self.settings), 'sourceId': 'vm-demo-source',
+            'snapshotId': 'd' * 64, 'systemPath': SYSTEM, 'completedAt': 123})
+        for target in (self.data, self.root / 'missing'):
+            link.symlink_to(target, target_is_directory=True)
+            with self.subTest(target=str(target)):
+                report = restore_target.status(self.settings)
+                self.assertTrue(report['completed'])
+                self.assertFalse(report['ready'])
+                self.assertEqual(next(row for row in report['paths'] if row['path'] == str(link)),
+                                 {'path': str(link), 'exists': True, 'empty': False})
+            link.unlink()
+
+    def test_completed_restore_still_refuses_symlink_parents(self):
+        parent = self.root / 'linked-parent'
+        parent.symlink_to(self.data, target_is_directory=True)
+        self.settings['applications']['web']['paths'] = [str(parent / 'leaf')]
+        self.guard.write_text(restore_target.guard_text(self.settings))
+        marker = restore_target.marker_path(self.settings)
+        marker.parent.mkdir(mode=0o700)
+        snapshots.write_record(marker, {'version': 1, 'machineId': MACHINE,
+            'policySha256': restore_target.policy_hash(self.settings), 'sourceId': 'vm-demo-source',
+            'snapshotId': 'd' * 64, 'systemPath': SYSTEM, 'completedAt': 123})
+        with self.assertRaises(ValueError):
+            restore_target.status(self.settings)
+
     def test_absent_stale_or_edited_guard_and_reload_are_refused(self):
         for problem in ('absent', 'edited', 'reload'):
             with self.subTest(problem=problem):

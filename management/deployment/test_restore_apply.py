@@ -73,6 +73,45 @@ class RestoreApplyTests(unittest.TestCase):
         marker = restore_apply.restore_target.marker_path(self.value)
         self.assertEqual(json.loads(marker.read_text())['snapshotId'], '1' * 64)
 
+    def test_partial_staging_report_is_replaced_on_exact_retry(self):
+        original = restore_apply.restore_payload.stage.side_effect
+        calls = []
+        def interrupted(*args):
+            report = original(*args)
+            calls.append(str(args[2]))
+            if len(calls) == 1:
+                directory = Path(args[2])
+                (directory / 'INCOMPLETE').write_text('interrupted staging')
+                (directory / 'stage.json').write_text('{')
+                raise InterruptedError('simulated interrupted report')
+            return report
+        with patch('restore_apply.restore_payload.stage', side_effect=interrupted):
+            with self.assertRaises(InterruptedError):
+                self.run_restore(apply=True)
+            self.assertFalse(self.app.exists())
+            self.assertEqual(self.units, [])
+            result = self.run_restore(apply=True)
+        self.assertEqual(result['state'], 'recorded-restored')
+        self.assertEqual(calls, [calls[0], calls[0]])
+        self.assertEqual((self.app / 'example').read_text(), 'restored data')
+
+    def test_report_without_copying_journal_does_not_allow_unverified_stage_reuse(self):
+        original = restore_apply.restore_payload.stage.side_effect
+        calls = []
+        def stage(*args):
+            report = original(*args)
+            calls.append(str(args[2]))
+            return report
+        with patch('restore_apply.restore_payload.stage', side_effect=stage):
+            with patch('restore_apply.canonical', side_effect=InterruptedError('before durable copying journal')):
+                with self.assertRaises(InterruptedError):
+                    self.run_restore(apply=True)
+            (Path(calls[0]) / 'data/payload/example').write_text('unverified changed private stage')
+            self.assertFalse(self.app.exists())
+            self.run_restore(apply=True)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual((self.app / 'example').read_text(), 'restored data')
+
     def test_separately_captured_nested_paths_publish_into_one_logical_tree(self):
         original = restore_apply.restore_payload.stage.side_effect
         def nested(*args):

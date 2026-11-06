@@ -176,7 +176,7 @@ class AccessChecks(unittest.TestCase):
             unset = evaluate(expression)
             self.assertEqual(unset["system"], before["system"])
             self.assertEqual(unset["manifest"]["accesscheck"]["operations"],
-                             ["show", "export", "backups", "verify-backup", "recover-source"])
+                             ["show", "export", "backups", "verify-backup", "recover-source", "backup-check"])
 
 
 if __name__ == "__main__":

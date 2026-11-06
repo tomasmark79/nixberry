@@ -7,11 +7,10 @@ import re
 import shlex
 import subprocess
 import tempfile
-from urllib.parse import quote
 
 from runtime import installation_checks, read, ssh_command, status, verify, guest_host_option, direct_connection
 from messages import _, info, success, warning
-from recipe_source import materialized_recipe
+from recipe_source import materialized_recipe, recipe_uri
 
 
 def system_path(value):
@@ -39,7 +38,7 @@ def preflight(target, snapshot):
 
 
 def build(recipe, name, directory):
-    attribute = "path:" + recipe + "#nixberrySystems." + name + ".config.system.build.toplevel"
+    attribute = recipe_uri(recipe) + "#nixberrySystems." + name + ".config.system.build.toplevel"
     link = Path(directory) / "system"
     # A temporary GC root protects the result through transfer and activation; builds have no SSH timeout.
     subprocess.run(["nix", "build", "--no-write-lock-file", "--out-link", str(link), attribute],
@@ -49,7 +48,7 @@ def build(recipe, name, directory):
 
 def build_update_tool(recipe, name, directory):
     link = Path(directory) / 'update-tool'
-    attribute = 'path:' + quote(recipe, safe='/') + '#nixberrySystems.' + name + '.config.system.build.nixberryUpdateTool'
+    attribute = recipe_uri(recipe) + '#nixberrySystems.' + name + '.config.system.build.nixberryUpdateTool'
     subprocess.run(['nix', 'build', '--no-update-lock-file', '--out-link', str(link), attribute], check=True)
     tool = str(link.resolve(strict=True))
     if not re.fullmatch('/nix/store/[a-z0-9]{32}-nixberry-update-guard', tool):
@@ -77,14 +76,14 @@ def refresh_recovery(target, name, prepared):
 def freeze_recipe(recipe, name, target, directory):
     with materialized_recipe(recipe) as source:
         metadata = json.loads(subprocess.check_output([
-            "nix", "flake", "metadata", "--json", "--no-write-lock-file", "path:" + source], text=True))
+            "nix", "flake", "metadata", "--json", "--no-write-lock-file", recipe_uri(source)], text=True))
     frozen = metadata["path"]
     # Protect both the snapshot and build from GC until the operation completes.
     subprocess.run(["nix-store", "--add-root", str(Path(directory) / "recipe"),
                     "--indirect", "--realise", frozen], check=True, stdout=subprocess.DEVNULL)
     declared = json.loads(subprocess.check_output([
         "nix", "eval", "--json", "--no-write-lock-file",
-        "path:" + frozen + "#nixberryDeployment.targets." + name], text=True))
+        recipe_uri(frozen) + "#nixberryDeployment.targets." + name], text=True))
     # Commands come from the CLI package; a matching declaration guarantees validity.
     identity = {key: value for key, value in target.items()
                 if key not in ("commands", "operations", "capabilities", "_guestConnection")}
@@ -120,7 +119,7 @@ def update(recipe, name, target, *, apply=False):
         raise RuntimeError(_("Run update through the nixberry launcher with a complete pinned recipe."))
     info(_("System update: {name} ({backend})"), name=name, backend=target["backend"])
     info(_("Configuration: {configuration}"),
-         configuration=f"path:{recipe}#nixberrySystems.{name}.config.system.build.toplevel")
+         configuration=recipe_uri(recipe) + f"#nixberrySystems.{name}.config.system.build.toplevel")
     host_option = guest_host_option(target)
     if not apply:
         info(_("Plan: verify the running installation → build → transfer over SSH → activate → verify."))

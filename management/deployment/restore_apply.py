@@ -280,13 +280,13 @@ def restore(value, capture, reader, identifier, expected_system, expected_machin
         if directory.exists() or directory.is_symlink():
             snapshots.secure_directory(directory)
         if pending['phase'] == 'staging':
-            if directory.exists() and not (directory / 'stage.json').exists():
+            # Only the copying journal binds a fully synced, verified view.
+            # Any earlier private stage is rebuilt after interruption, even
+            # when its report was written before the durable phase transition.
+            if directory.exists():
                 snapshots.secure_directory(directory)
                 shutil.rmtree(directory)
-            if directory.exists():
-                report = snapshots.read_record(directory / 'stage.json')
-            else:
-                report = restore_payload.stage(reader, identifier, directory, backup_identity.collect())
+            report = restore_payload.stage(reader, identifier, directory, backup_identity.collect())
             names = {row['source'] for row in report['paths']}
             declared = {path for app in value['applications'].values() for path in app['paths']}
             if (report['architecture'] != value['architecture'] or report['sourceMachineId'] == expected_machine or report['snapshotId'] != identifier

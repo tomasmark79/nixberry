@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -336,6 +337,54 @@ class NativeResticTests(unittest.TestCase):
                              ('sourceId', 'invalid,tag'), ('timeoutSeconds', True)]:
             with self.subTest(field=field), self.assertRaises(ValueError):
                 native_restic.policy({**self.policy, field: value})
+
+    def test_sftp_credentials_stay_outside_application_data(self):
+        for method in ('cold', 'snapshot'):
+            for key in ('identityFile', 'knownHostsFile'):
+                value = copy.deepcopy(self.policy)
+                value.update(captureMethod=method, repository='sftp:backup@nas.example:/backup', ssh={
+                    'port': 22, 'identityFile': str(self.root / 'key'),
+                    'knownHostsFile': str(self.root / 'known_hosts')})
+                value['ssh'][key] = str(self.data / key)
+                with self.subTest(method=method, key=key), self.assertRaises(ValueError):
+                    native_restic.policy(value)
+
+    def test_local_repository_aliases_cannot_hide_application_data_overlap(self):
+        repository = self.data / 'repository'
+        repository.mkdir()
+        alias = self.root / 'repository-alias'
+        for method in ('cold', 'snapshot'):
+            for destination in (repository, self.root):
+                alias.symlink_to(destination, target_is_directory=True)
+                value = {**self.policy, 'captureMethod': method, 'repository': str(alias)}
+                with self.subTest(method=method, destination=str(destination)), self.assertRaises(ValueError):
+                    native_restic.policy(value)
+                alias.unlink()
+        storage = self.root / 'storage'
+        storage.mkdir()
+        alias.symlink_to(storage, target_is_directory=True)
+        native_restic.policy({**self.policy, 'repository': str(alias)})
+
+    def test_private_file_rejects_fifo_without_waiting_for_a_writer(self):
+        fifo = self.root / 'password-fifo'
+        os.mkfifo(fifo, 0o600)
+        script = '''import os, sys
+sys.path.insert(0, sys.argv[1])
+import native_restic
+try:
+    native_restic.private_file(sys.argv[2], owner_uid=os.getuid())
+except ValueError:
+    pass
+else:
+    raise SystemExit('FIFO runtime file was accepted')
+'''
+        try:
+            result = subprocess.run([sys.executable, '-c', script, str(Path(native_restic.__file__).parent), str(fifo)],
+                                    capture_output=True, text=True, timeout=3)
+        except subprocess.TimeoutExpired:
+            self.fail('Runtime file inspection blocked on a FIFO')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(native_restic.private_file(self.password), b'test-only')
 
     def test_sftp_requires_explicit_private_identity_and_pinned_host_file(self):
         with self.assertRaises(ValueError):

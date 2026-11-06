@@ -132,7 +132,10 @@ boundaries are mocked; this is not controller-to-guest deployment proof.
 checks unchanged capture application keys, rejects missing writer coverage and
 management holds, and compares Nix/Python policy hashes including Unicode paths.
 `test_restore_target.py` injects active writers, populated paths, symlinks,
-missing/edited guards, daemon-reload and completion-identity failures.
+missing/edited guards, daemon-reload and completion-identity failures. Check that
+pre-completion readiness rejects symbolic links and parent traversal, while status
+after valid completion reports a final symbolic link as present/nonempty without
+following it. Parent directory links remain refused.
 `nix build --no-link path:.#checks.x86_64-linux.restore-preparation` boots and
 reboots a disposable prepared destination. Check ordinary/template services,
 socket/timer activation and native backup jobs stay held; synthetic completion
@@ -173,6 +176,36 @@ before shutdown and complete
 payload authentication from the storage guest after each source is shut down.
 Inspect the authenticated manifest there for the source architecture and numeric
 account evidence, with no password, login or membership fields.
+
+For both the Btrfs and ext4 guests, the native Restic scenario inspects the
+separate maintenance JSON and enabled timers, runs the source freshness service
+and executes retention through the installed helper.
+Check `missing` with exit `1` before the first capture, then `ok` with the configured
+threshold and current machine identity. Create more captures than `keepLast`,
+compare the no-write preview with actual inventory, apply retention and inspect
+the exact removed receipt/payload IDs and verified newest retained receipt.
+Repeat full payload authentication on retained captures. Source-loss reads on the
+storage guest include an independent freshness check with an explicit threshold.
+These x86_64 VM procedures do not prove physical RPi boot or maintenance.
+
+`test_native_retention.py` covers authenticated grouping, duplicate receipts,
+machine isolation and invalid/future metadata. `test_native_maintenance.py` checks
+generation/machine revalidation, capture-lock use, pending recovery,
+retained payload verification, changed inventory and explicit deletion arguments.
+`test_native_health.py` covers authenticated timestamp selection, machine filtering,
+`ok/stale/missing/future`, damaged evidence and the distinction between recipe
+authentication and full application payload verification.
+`test_native_maintenance_policy.py` evaluates nullable defaults, threshold bounds,
+schedule prerequisites, root-only services/timers and prepared restore holds on
+all six profiles. Legacy monitoring history/notifications and exported controller
+timers have their separate tests; native check jobs provide systemd failure state
+without that notification path.
+
+Independent verification and restore use Restic `--no-lock` with read-only SFTP.
+The storage operator must prevent scheduled/manual pruning during these readers;
+the source capture lock supplies no independent reader lease. Do not interpret
+an ordinary freshness check as complete payload verification or a restore test.
+
 `test_backup_identity.py` checks evidence bounds and malformed account values;
 `test_native_restic.py` checks pre-shutdown lookup failure and compatibility with
 both manifest versions, including downgrade refusal.

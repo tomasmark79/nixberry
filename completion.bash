@@ -38,7 +38,7 @@ _nixberry_complete() {
             --from) backup_source=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
             --backup-access) backup_access=${COMP_WORDS[i+1]-}; used[$word]=1; skip_value=1; continue ;;
             --backup-access=*) backup_access=${word#*=}; used[--backup-access]=1; continue ;;
-            --host|--ssh|--output|--address|--local-disk|--artifact-root|--method|--configuration|--security|--filesystem|--key-file|--initrd-key-file|--snapshot)
+            --host|--ssh|--output|--address|--local-disk|--artifact-root|--method|--configuration|--security|--filesystem|--key-file|--initrd-key-file|--snapshot|--max-age-seconds)
                 used[$word]=1; skip_value=1; continue ;;
             -*) used[${word%%=*}]=1; continue ;;
         esac
@@ -119,7 +119,7 @@ _nixberry_complete() {
     fi
     if [[ $current == -* ]]; then
         case $action in
-            backups|verify-backup|recover-source|restore) options+=(--backup-access) ;;
+            backups|verify-backup|recover-source|restore|backup-check) options+=(--backup-access) ;;
         esac
         case $action in
             list|show|status|verify|export|doctor|cleanup|prepare-image|snapshot|snapshots|snapshot-remove|snapshot-resume|backup|backups|verify-backup|restore|recover-source|backup-prune|backup-schedule|backup-check|backup-monitor|backup-stage) options+=(--json) ;;
@@ -134,7 +134,8 @@ _nixberry_complete() {
         case $action in
             new-*) options+=(--host --offline --configuration --security --filesystem) ;;
             snapshot-remove) options+=(--host --ssh --snapshot) ;;
-            update|ssh|verify|status|doctor|diff|diffg|snapshot|snapshots|snapshot-resume|backup|backup-stage) options+=(--host --ssh) ;;
+            update|ssh|verify|status|doctor|diff|diffg|snapshot|snapshots|snapshot-resume|backup|backup-stage|backup-prune) options+=(--host --ssh) ;;
+            backup-check) options+=(--host --ssh --max-age-seconds) ;;
             export) options+=(--output) ;;
             recover-source) options+=(--output --snapshot) ;;
             backup-schedule) options+=(--output) ;;
