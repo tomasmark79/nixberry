@@ -183,6 +183,37 @@ def compatible_links(view, paths):
                 raise ValueError(_("Destination filesystems cannot preserve a source hardlink group."))
 
 
+def link_dest_compatible(view, paths):
+    mounts = list(map(Path, snapshots.mountpoints()))
+    def covering(path):
+        return max((mount for mount in mounts if path.is_relative_to(mount)), key=lambda mount: len(mount.parts))
+    source_mount = covering(view)
+    device = view.stat().st_dev
+    for path in paths:
+        if covering(path) != source_mount or any(mount != source_mount and mount.is_relative_to(path) for mount in mounts):
+            return False
+        ancestor = path
+        while not ancestor.exists() and not ancestor.is_symlink():
+            ancestor = ancestor.parent
+        if ancestor.lstat().st_dev != device:
+            return False
+        pending = [path]
+        while pending:
+            destination = pending.pop()
+            try:
+                details = destination.lstat()
+            except FileNotFoundError:
+                continue
+            if not stat.S_ISDIR(details.st_mode):
+                continue
+            # Btrfs subvolumes can change devices without a mountpoint.
+            if details.st_dev != device:
+                return False
+            with os.scandir(destination) as entries:
+                pending.extend(Path(entry.path) for entry in entries if entry.is_dir(follow_symlinks=False))
+    return True
+
+
 def transfer(view, paths, directory, *, check=False):
     listing = directory / 'paths.list'
     listing.write_bytes(b''.join(os.fsencode(str(path).removeprefix('/')) + b'\0' for path in paths))
@@ -193,7 +224,9 @@ def transfer(view, paths, directory, *, check=False):
     if check:
         arguments += ['--dry-run', '--delete', '--itemize-changes']
     else:
-        arguments += ['--link-dest=' + str(view), '--temp-dir=' + str(temporary)]
+        if link_dest_compatible(view, paths):
+            arguments += ['--link-dest=' + str(view)]
+        arguments += ['--temp-dir=' + str(temporary)]
     result = snapshots.run([*arguments, '--', str(view) + '/', '/'], timeout=86400)
     if check and result:
         raise ValueError(_("Restored application data differs or contains unexpected files; no completion was written."))

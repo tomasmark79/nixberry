@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import tempfile
 import unittest
 from types import SimpleNamespace
@@ -290,6 +291,88 @@ class RestoreApplyTests(unittest.TestCase):
             self.run_restore(apply=True)
             self.assertEqual((self.app / 'example').read_text(), 'restored data')
             self.assertEqual((self.app / 'example').stat().st_ino, (self.app / 'hardlink').stat().st_ino)
+
+    def test_cross_filesystem_transfer_keeps_cross_root_hardlinks_and_symlinks_without_link_dest(self):
+        with tempfile.TemporaryDirectory(dir='/dev/shm') as memory:
+            paths = [Path(memory) / 'first', Path(memory) / 'second']
+            view = self.root / 'view'
+            sources = [view / str(path).removeprefix('/') for path in paths]
+            for source in sources:
+                source.mkdir(parents=True)
+            (sources[0] / 'example').write_text('cross-root data')
+            os.link(sources[0] / 'example', sources[1] / 'hardlink')
+            (sources[1] / 'symlink').symlink_to('../first/example')
+            original_run = snapshots.run
+            def run(arguments, **kwargs):
+                if arguments[0] == 'rsync':
+                    self.assertFalse(any(argument.startswith('--link-dest=') for argument in arguments))
+                return original_run(arguments, **kwargs)
+            expected = restore_apply.tree_hash(view, paths)
+            restore_apply.compatible_links(view, paths)
+            with patch('restore_apply.snapshots.run', side_effect=run):
+                restore_apply.transfer(view, paths, self.root)
+                restore_apply.transfer(view, paths, self.root, check=True)
+            self.assertEqual(restore_apply.tree_hash(Path('/'), paths), expected)
+            self.assertEqual((paths[0] / 'example').stat().st_ino, (paths[1] / 'hardlink').stat().st_ino)
+            self.assertEqual(os.readlink(paths[1] / 'symlink'), '../first/example')
+
+    def test_same_mount_publication_reuses_verified_regular_files(self):
+        original = restore_apply.restore_payload.stage.side_effect
+        staged = []
+        def stage(*args):
+            report = original(*args)
+            staged.append((Path(report['paths'][0]['staged']) / 'example').stat().st_ino)
+            return report
+        with patch('restore_apply.restore_payload.stage', side_effect=stage):
+            self.run_restore(apply=True)
+        self.assertEqual((self.app / 'example').stat().st_ino, staged[0])
+
+    def test_unmounted_nested_subvolume_device_disables_link_dest(self):
+        view = self.root / 'view'
+        view.mkdir()
+        nested = self.app / 'nested-subvolume'
+        nested.mkdir(parents=True)
+        original = Path.lstat
+        def lstat(path, *args, **kwargs):
+            details = original(path, *args, **kwargs)
+            if path == nested:
+                fields = list(details)
+                fields[2] = details.st_dev + 1
+                return os.stat_result(fields)
+            return details
+        with patch.object(Path, 'lstat', lstat):
+            self.assertFalse(restore_apply.link_dest_compatible(view, [self.app]))
+
+    @unittest.skipUnless(os.geteuid() == 0, 'Nested mount fixtures require root')
+    def test_nested_different_device_and_same_device_bind_mount_disable_link_dest_for_entire_batch(self):
+        for kind in ('tmpfs', 'bind'):
+            with self.subTest(kind=kind):
+                target = self.root / ('application-' + kind)
+                nested = target / 'nested'
+                nested.mkdir(parents=True)
+                source = self.root / 'view' / str(target).removeprefix('/')
+                (source / 'nested').mkdir(parents=True)
+                (source / 'top').write_text('same-mount data')
+                (source / 'nested/example').write_text('nested data')
+                os.link(source / 'nested/example', source / 'nested/hardlink')
+                (source / 'nested/symlink').symlink_to('example')
+                if kind == 'tmpfs':
+                    command = ['mount', '-t', 'tmpfs', '-o', 'size=8m', 'tmpfs', str(nested)]
+                else:
+                    backing = self.root / 'bind-backing'
+                    backing.mkdir()
+                    command = ['mount', '--bind', str(backing), str(nested)]
+                subprocess.run(command, check=True)
+                try:
+                    expected = restore_apply.tree_hash(self.root / 'view', [target])
+                    restore_apply.transfer(self.root / 'view', [target], self.root)
+                    restore_apply.transfer(self.root / 'view', [target], self.root, check=True)
+                    self.assertEqual(restore_apply.tree_hash(Path('/'), [target]), expected)
+                    self.assertNotEqual((target / 'top').stat().st_ino, (source / 'top').stat().st_ino)
+                    self.assertEqual((nested / 'example').stat().st_ino, (nested / 'hardlink').stat().st_ino)
+                    self.assertEqual(os.readlink(nested / 'symlink'), 'example')
+                finally:
+                    subprocess.run(['umount', str(nested)], check=True)
 
     def test_source_hardlinks_cannot_be_split_across_destination_filesystems(self):
         view = self.root / 'view'
