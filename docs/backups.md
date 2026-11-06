@@ -2,10 +2,16 @@
 
 [Main guide](../README.md) · [CLI](cli.md) · [Platform contract](platform-consistency.md)
 
-Legacy controller provider policy belongs to a target declaration in `machines/vm/` or
-`machines/rpi/`. A configuration supplies a local provider for its
-application format, consistency requirements and restore checks. NixBerry
-dispatches through that provider using one controller interface for every backend.
+Native backup and application restoration use shared NixBerry tools. Each
+configuration declares its application paths, writer units and storage settings;
+it does not implement its own backup or restore program. The selected recipe is
+preserved with the backup so recovery can reproduce its source configuration
+without the original checkout or device.
+
+Optional legacy controller providers retain a separate format contract. Their
+policy belongs to a target declaration in `machines/vm/` or `machines/rpi/`, and
+the configuration supplies the provider implementation. NixBerry dispatches
+these providers through one controller interface for every backend.
 
 ## Configuration-owned local snapshots
 
@@ -558,6 +564,10 @@ Preparation holds the configuration's `restoreUnits`; it does not stop a running
 production installation for takeover. Keep account names and the numeric IDs used
 by application files, ACLs and capabilities compatible with the archived source.
 The tool preserves the destination's machine ID, SSH keys and account databases.
+Declare stable service UID/GID values before a fresh installation. Ordinary NixOS
+activation does not renumber existing accounts; a destination with incompatible
+allocations needs a fresh preparation or a separate account migration before
+application restoration. Never install the source's account databases over it.
 
 ```sh
 nixberry restore vm-demo-destination --from vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --json
