@@ -129,7 +129,7 @@ _nixberry_complete() {
         case $action in
             new-*) options+=(--host --offline --configuration --security --filesystem) ;;
             snapshot-remove) options+=(--host --ssh --snapshot) ;;
-            update|ssh|verify|status|doctor|diff|diffg|snapshot|snapshots|snapshot-resume|backup) options+=(--host --ssh) ;;
+            update|ssh|verify|status|doctor|diff|diffg|snapshot|snapshots|snapshot-resume|backup|backup-stage) options+=(--host --ssh) ;;
             export) options+=(--output) ;;
             recover-source) options+=(--output --snapshot) ;;
             backup-schedule) options+=(--output) ;;

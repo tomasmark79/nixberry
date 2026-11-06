@@ -35,8 +35,10 @@ in
   "backup-check"
   "backup-monitor"
 ]
-++ optional caps.system [ "backup" ]
-++ optional (backup && caps.system) [ "backup-stage" ]
+++ optional caps.system [
+  "backup"
+  "backup-stage"
+]
 ++ optional caps.hypervisor [
   "probe"
   "create"

@@ -42,6 +42,7 @@ class NativeResticTests(unittest.TestCase):
             'recoveryFile': str(self.recovery), 'runtimeDirectory': str(self.root / 'runtime'),
             'timeoutSeconds': 600, 'ssh': None}
         self.system = '/nix/store/' + 'd' * 32 + '-nixos-system-vm-demo-server'
+        self.recovery.write_bytes(self.staged_archive())
         Path(str(self.recovery) + '.json').write_text(json.dumps({
             'version': 1, 'sourceId': self.policy['sourceId'], 'systemPath': self.system,
             'policySha256': hashlib.sha256(native_restic.encode(self.policy).encode()).hexdigest(),
@@ -133,9 +134,9 @@ class NativeResticTests(unittest.TestCase):
 
     def test_snapshot_lease_blocks_removal_until_encrypted_upload_finishes(self):
         self.policy['captureMethod'] = 'snapshot'
-        metadata = json.loads(Path(str(self.recovery) + '.json').read_text())
-        metadata['policySha256'] = hashlib.sha256(native_restic.encode(self.policy).encode()).hexdigest()
-        Path(str(self.recovery) + '.json').write_text(json.dumps(metadata))
+        contents = self.staged_archive()
+        native_restic.stage(self.policy, self.system, archive=contents,
+                            expected_sha256=hashlib.sha256(contents).hexdigest(), apply=True)
         topology = {'roots': {'system': {**self.capture['roots']['system'],
             'filesystemUuid': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
             'subvolumeUuid': '11111111-1111-1111-1111-111111111111'}},
@@ -195,6 +196,51 @@ class NativeResticTests(unittest.TestCase):
         self.assertFalse(metadata.exists())
         native_restic.stage(self.policy, self.system, apply=True)
         self.assertEqual(json.loads(metadata.read_text())['systemPath'], self.system)
+
+    def staged_archive(self):
+        import recovery_recipe
+        tree = self.root / 'recipe'
+        tree.mkdir(exist_ok=True)
+        for name in ('flake.nix', 'flake.lock', 'admin.pub'):
+            (tree / name).write_text('{}' if name == 'flake.lock' else 'test-only')
+        filename = self.root / 'received.tar'
+        recovery_recipe.pack(tree, {'format': recovery_recipe.FORMAT, 'sourceId': self.policy['sourceId'],
+            'target': 'vm-demo-server', 'systemPath': self.system,
+            'policySha256': hashlib.sha256(native_restic.encode(self.policy).encode()).hexdigest()}, filename)
+        contents = filename.read_bytes()
+        filename.unlink()
+        return contents
+
+    def test_existing_unstructured_archive_cannot_be_rebound_as_recovery_code(self):
+        self.recovery.write_bytes(b'not a sealed recipe archive')
+        with self.assertRaises(ValueError):
+            native_restic.stage(self.policy, self.system, apply=True)
+
+    def test_received_archive_is_bound_atomically_only_after_hash_and_generation_checks(self):
+        contents = self.staged_archive()
+        checksum = hashlib.sha256(contents).hexdigest()
+        before = self.recovery.read_bytes()
+        with self.assertRaises(ValueError):
+            native_restic.stage(self.policy, self.system, archive=contents, expected_sha256='0' * 64, apply=True)
+        self.assertEqual(self.recovery.read_bytes(), before)
+        with snapshots.lock(self.capture), self.assertRaisesRegex(RuntimeError, 'lock'):
+            native_restic.stage(self.policy, self.system, archive=contents, expected_sha256=checksum, apply=True)
+        self.assertEqual(self.recovery.read_bytes(), before)
+        report = native_restic.stage(self.policy, self.system, archive=contents, expected_sha256=checksum, apply=True)
+        self.assertTrue(report['applied'])
+        self.assertEqual(self.recovery.read_bytes(), contents)
+        self.assertEqual(native_restic.recovery(self.policy)['archiveSha256'], checksum)
+        self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
+
+    def test_received_archive_with_a_valid_hash_but_foreign_policy_cannot_replace_configuration(self):
+        contents = self.staged_archive()
+        checksum = hashlib.sha256(contents).hexdigest()
+        before = self.recovery.read_bytes()
+        different = copy.deepcopy(self.policy)
+        different['sourceId'] = 'vm-demo-other'
+        with self.assertRaises(ValueError):
+            native_restic.stage(different, self.system, archive=contents, expected_sha256=checksum, apply=True)
+        self.assertEqual(self.recovery.read_bytes(), before)
 
     def test_unsafe_password_permissions_and_storage_paths_fail_closed(self):
         self.password.chmod(0o644)
@@ -278,3 +324,18 @@ class NativePolicySystemTests(unittest.TestCase):
                 self.assertEqual(selected['restic'], values[name])
                 self.assertEqual(selected['capture'], values[name]['capture'])
                 self.assertRegex(selected['systemPath'], r'^/nix/store/[a-z0-9]{32}-nixos-system-')
+
+
+class RecoveryInputTests(unittest.TestCase):
+    def test_an_incomplete_transfer_times_out_without_waiting_for_eof(self):
+        read_descriptor, write_descriptor = os.pipe()
+        self.addCleanup(os.close, write_descriptor)
+        with os.fdopen(read_descriptor, 'rb') as stream, self.assertRaises(TimeoutError):
+            native_restic.read_archive(stream, timeout=0.02)
+
+    def test_transfer_size_is_bounded_before_archive_parsing(self):
+        read_descriptor, write_descriptor = os.pipe()
+        os.write(write_descriptor, b'x' * 33)
+        os.close(write_descriptor)
+        with os.fdopen(read_descriptor, 'rb') as stream, patch('recovery_recipe.MAX_ARCHIVE', 32), self.assertRaises(ValueError):
+            native_restic.read_archive(stream)

@@ -21,7 +21,7 @@ class NativeDispatchTests(unittest.TestCase):
         for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware', 'rpi'):
             with self.subTest(backend=backend):
                 available = operations(self.target(backend))
-                for action in ('snapshot', 'snapshots', 'snapshot-remove', 'snapshot-resume', 'backup'):
+                for action in ('snapshot', 'snapshots', 'snapshot-remove', 'snapshot-resume', 'backup', 'backup-stage'):
                     self.assertIn(action, available)
 
     def test_snapshot_plan_dispatches_without_apply_and_keeps_json_on_stdout(self):
@@ -89,6 +89,15 @@ class NativeSourceTests(unittest.TestCase):
             item.start()
             self.addCleanup(item.stop)
 
+    def test_native_stage_plan_prepares_reviewable_archive_without_source_access(self):
+        from native_controller import run
+        with patch('native_controller.prepare_archive', create=True, return_value=(b'test archive', {'files': {'flake.nix': 'a'*64}})), \
+                patch('native_controller.status', side_effect=AssertionError('Stage plan must not contact source')):
+            result = run('/recipe', self.target, 'backup-stage', 'rpi-demo')
+        self.assertFalse(result['applied'])
+        self.assertEqual(result['archiveFiles'], ['flake.nix'])
+        self.assertEqual(result['archiveBytes'], 12)
+
     def test_default_plan_never_contacts_source_or_stops_writers(self):
         with patch('native_controller.status', side_effect=AssertionError('Plan must not contact the source')):
             result = self.controller.run('/recipe', self.target, 'snapshot', 'rpi-demo')
@@ -122,6 +131,32 @@ class NativeSourceTests(unittest.TestCase):
         self.assertEqual(result['snapshotId'], 'a' * 32)
         self.assertEqual(len(calls), 2)
 
+    def test_staging_sends_binary_archive_after_installed_backup_policy_check(self):
+        import hashlib
+        import subprocess
+        contents = b'archive bytes\x00\r\n'
+        checksum = hashlib.sha256(contents).hexdigest()
+        calls = []
+        def execute(command, **kwargs):
+            calls.append(command)
+            if command[-1].endswith('cat /etc/nixberry/backup.json'):
+                self.assertIsNone(kwargs['input'])
+                return subprocess.CompletedProcess(command, 0, json.dumps(self.policy['restic']), '')
+            self.assertIn('nixberry-restic backup-stage --json --apply', command[-1])
+            self.assertIn('--receive-sha256 ' + checksum, command[-1])
+            self.assertIn('--system ' + self.system, command[-1])
+            self.assertEqual(kwargs['input'], contents)
+            self.assertFalse(kwargs['text'])
+            return subprocess.CompletedProcess(command, 0, b'{"applied":true}', b'')
+        with patch('native_controller.prepare_archive', return_value=(contents, {'files': {}})), \
+                patch('native_controller.status', return_value={'state':'running'}), \
+                patch('native_controller.preflight', return_value=self.system), \
+                patch('native_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
+                patch('native_controller.subprocess.run', side_effect=execute):
+            result = self.controller.run('/recipe', self.target, 'backup-stage', 'rpi-demo', apply=True)
+        self.assertTrue(result['applied'])
+        self.assertEqual(len(calls), 2)
+
     def test_remote_policy_mismatch_cannot_capture_or_recover_writers(self):
         import subprocess
         calls = []
@@ -152,3 +187,43 @@ class NativeProjectionErrors(unittest.TestCase):
                 contextlib.redirect_stderr(errors), self.assertRaises(RuntimeError):
             projection('/fixture', 'vm-demo-source')
         self.assertEqual(errors.getvalue(), 'Nix fixture failure\n')
+
+    def test_projection_refuses_untracked_absolute_file_reads(self):
+        from native_controller import projection
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'recipe'
+            root.mkdir()
+            external = Path(directory) / 'outside-recipe'
+            external.write_text('/nix/store/' + 'a' * 32 + '-nixos-system-external')
+            (root / 'flake.nix').write_text('{ outputs={ self }: { nixberrySystems.test.config={ nixberry.backup.enable=true; system.build.toplevel.outPath=builtins.readFile ' + json.dumps(str(external)) + '; }; }; }')
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(RuntimeError):
+                projection(str(root), 'test')
+
+    def test_projection_cannot_resolve_missing_lock_entries(self):
+        from native_controller import projection
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'recipe'
+            root.mkdir()
+            dependency = Path(directory) / 'dependency'
+            dependency.mkdir()
+            (dependency / 'flake.nix').write_text('{ outputs={ self }: { system="/nix/store/' + 'a'*32 + '-nixos-system-unlocked"; }; }')
+            (root / 'flake.nix').write_text('{ inputs.extra.url=' + json.dumps('path:'+str(dependency)) + '; outputs={ self,extra }: { nixberrySystems.test.config={ nixberry.backup.enable=true; system.build.toplevel.outPath=extra.system; }; }; }')
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(RuntimeError):
+                projection(str(root), 'test')
+
+
+class NativeTransportTests(unittest.TestCase):
+    def test_binary_transfer_forces_no_tty_and_preserves_archive_bytes(self):
+        import hashlib
+        import sys
+        from native_controller import remote
+        contents = b'\x00\x03\r\nsealed recipe bytes\xff'
+        with tempfile.TemporaryDirectory() as directory:
+            command = Path(directory) / 'ssh-fixture'
+            command.write_text('#!' + sys.executable + '\nimport hashlib,json,sys\n'
+                'print(json.dumps({"sha256":hashlib.sha256(sys.stdin.buffer.read()).hexdigest(), "args":sys.argv[1:]}))\n')
+            command.chmod(0o700)
+            result = remote([str(command), '--', 'root@fixture'], 'source-command', 5, input=contents)
+        self.assertEqual(result['sha256'], hashlib.sha256(contents).hexdigest())
+        self.assertIn('-T', result['args'])
+        self.assertIn('ForwardAgent=no', result['args'])

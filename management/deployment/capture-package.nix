@@ -8,6 +8,7 @@ let
       fileset = pkgs.lib.fileset.unions [
         ./snapshots.py
         ./native_restic.py
+        ./recovery_recipe.py
         ./messages.py
       ];
     };
@@ -30,6 +31,7 @@ let
     };
 in
 {
+  inherit source;
   capture = entry "nixberry-capture" "snapshots.py" [ ];
   restic = entry "nixberry-restic" "native_restic.py" [
     pkgs.restic

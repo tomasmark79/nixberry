@@ -87,7 +87,7 @@ class BackupPolicyTests(unittest.TestCase):
         for target, values in zip(targets, json.loads(result.stdout), strict=True):
             self.assertEqual(set(values), set(operations(target)))
             self.assertEqual('backup' in values, target['capabilities']['system'])
-            self.assertEqual('backup-stage' in values, target['backup']['enable'] and target['capabilities']['system'])
+            self.assertEqual('backup-stage' in values, target['capabilities']['system'])
             self.assertEqual('backups' in values, target['backup']['enable'])
 
 

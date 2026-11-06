@@ -138,7 +138,7 @@ Encrypted backup commands:
   backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.
   backup-check TARGET    Check backup freshness and run history; --apply records and notifies.
   backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.
-  backup-stage TARGET    Review source-owned backup provisioning; --apply refreshes runtime access and recovery code.
+  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.
 
 Controller-side scheduling:
   nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run

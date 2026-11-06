@@ -88,9 +88,10 @@ snapshot removal. Offline bundles carry the configuration and shared tools;
 they do not capture application data from stopped systems.
 
 A target with an explicit enabled legacy backup provider retains that provider
-for `backup`; otherwise `backup` uses `nixberry.backup.restic`. Native storage
-credentials, repository initialization and recovery-archive staging must already
-be provisioned through the guest tools described below. The other controller
+for `backup` and `backup-stage`; otherwise these commands use
+`nixberry.backup.restic`. Provision native storage credentials and initialize the
+repository through the guest tools described below, then use the controller to
+prepare and transfer recovery code. The other controller
 backup commands in the legacy provider section still require that provider;
 use `nixberry-restic` for native inventory and source-independent verification.
 
@@ -162,16 +163,44 @@ root-owned runtime files outside the Nix store, under directories with trusted
 ownership and no untrusted write access. Passwords, SSH private keys and the
 recovery archive require private permissions such as `0600`. The host-key and
 repository identity files may be publicly readable but not writable by others.
-The recovery archive contains the materialized recipe, local declarations and
-selected configuration, prepared separately; capture reads it without evaluating
-or activating its contents. Preserve the repository password and authorized
-storage access separately from the source and its encrypted backup.
-`backup-stage` binds the archive hash to the explicit expected running NixOS
-generation and current backup policy in a private `.json` sidecar. After
-provisioning or refreshing the archive, stage that binding. A missing or stale
-binding prevents capture before any writer shutdown; refresh it after an update
-or policy change. Staging neither initializes storage nor captures application
-data, and it does not activate recovered configuration.
+Keep `recoveryFile` on private local storage; Restic encrypts its uploaded copy.
+The controller creates the sealed recipe archive and binds it to the expected
+running system generation and current backup policy:
+
+```sh
+nixberry backup-stage vm-demo-server --json
+nixberry backup-stage vm-demo-server --apply --json
+```
+
+Planning prepares a temporary archive locally and lists its file inventory,
+byte size and SHA256 without contacting the source. The archive includes shared
+project sources, the selected configuration, its local machine declaration,
+the public administrator key and only the selected hypervisor host. Other local
+declarations and configurations are excluded. Custom configuration code must
+live under the standard project source directories or selected configuration.
+Nested symbolic links and private key/secret source files are refused; runtime
+credentials stay separate. Archive size is limited to 128 MiB.
+
+Preparation evaluates the selected recipe in pure mode with unchanged lockfiles
+and derivation imports disabled. It must reproduce the exact expected system
+generation and policies before transfer. Absolute machine-local flake inputs
+are refused; retain access to the pinned downloadable inputs for rebuilding.
+This check does not activate configuration or read application data.
+
+With `--apply`, the controller verifies the source installation, generation and
+installed policy, then sends the archive through strict SSH. The receiver checks
+its size, SHA256, file manifest and source/system/policy identity before taking
+the capture lock. It replaces the private archive and publishes its binding
+atomically while no capture can use it. A failed or interrupted transfer does
+not replace the archive. A failure after archive replacement but before binding
+publication leaves a stale binding; captures refuse it until staging succeeds.
+No services are stopped and no repository is initialized by staging.
+
+A missing or stale binding prevents capture before writer shutdown. After a
+source update or policy change, rerun `backup-stage --apply` before capture.
+Staging reads a verified archive without evaluating or activating its contents
+on the source. The same source-side lock protects snapshot capture, cold capture
+and archive publication.
 
 On the installed source, as root:
 
@@ -195,7 +224,8 @@ agent fallback or automatic host-key acceptance is used. Absolute local
 repositories are also supported for isolated testing; other Restic storage
 backends are not accepted by this interface.
 Replace the staging example with the complete store path of the system expected
-from the recipe that produced the archive. The tool compares it with the actual
+from the recipe that produced the sealed archive. Existing-file staging also
+validates that archive's manifest and identity. The tool compares it with the actual
 `/run/current-system`; supplying an unrelated generation fails without publishing
 the sidecar.
 
@@ -280,6 +310,9 @@ recipient; a controller declaration does not deploy guest software.
 
 ## Commands and write boundaries
 
+This section describes the legacy provider interface. Native capture and recipe
+staging use the configuration-owned commands above.
+
 ```sh
 nixberry backup vm-demo-server --json
 nixberry backup vm-demo-server --apply --json
@@ -361,6 +394,9 @@ before relying on scheduled operation. Monitoring or automatic timer activation
 is not performed by bundle export.
 
 ## Source-owned automation
+
+The following provisioning interface applies to target-declared legacy providers.
+Native Restic jobs use the shared module and recipe staging described above.
 
 A configuration may install its own system service and timer to push encrypted
 backups directly to remote storage. This runs inside the NixOS source, on either

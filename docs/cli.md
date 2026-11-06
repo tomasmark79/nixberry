@@ -44,11 +44,17 @@ policy. Local snapshot IDs have 32 hexadecimal characters.
 `backup TARGET --apply` dispatches to an enabled target-level legacy provider,
 or otherwise to `nixberry.backup.restic` in the selected NixOS configuration.
 Native capture requires separately provisioned source credentials and a staged
-recovery archive. `--ssh` can supply access to an offline VM for native capture.
+recovery archive. `backup-stage TARGET` prepares a reviewable selected recipe;
+`--apply` verifies the source and transfers/binds it under the capture lock.
+The controller checks that the selected archive reproduces the expected system
+and policy without changing locks or importing derivation results. After source
+updates, repeat staging before backup. `--ssh` can supply access to an offline
+VM for native capture and staging.
 
 The legacy controller commands `backups`, `verify-backup`, `restore`,
 `recover-source`, `backup-prune`, `backup-schedule`, `backup-check`,
-`backup-monitor` and `backup-stage` require an explicit target provider policy.
+`backup-monitor` require an explicit target provider policy. An enabled legacy
+provider retains its `backup-stage` behavior.
 Native Restic inventory and independent verification use the guest helper.
 See [backup commands and write boundaries](backups.md).
 

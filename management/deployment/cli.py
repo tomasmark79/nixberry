@@ -109,8 +109,9 @@ def operations(target):
         result += ["unlock"] + (["prepare-image"] if target["backend"] != "rpi" else [])
     if caps["system"]:
         result += ["status", "doctor", "ssh", "verify", "update", "diff", "diffg", *SNAPSHOT_ACTIONS]
-        if "backup" not in result:
-            result += ["backup"]
+        for action in ("backup", "backup-stage"):
+            if action not in result:
+                result += [action]
     if caps["hypervisor"] or target["backend"] == "rpi":
         result += ["cleanup", *target.get("commands", {})]
         if "provision" in target.get("commands", {}) or target["backend"] == "rpi":
@@ -194,12 +195,12 @@ def main(argv=None):
         parser.error(_("--ssh applies to server management and cannot be combined with --host or new-*."))
     override = args.ssh or (args.host if not args.action.startswith("new-") else None)
     if override:
-        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup"):
+        if args.action not in ("update", "ssh", "verify", "status", "doctor", "diff", "diffg", *SNAPSHOT_ACTIONS, "backup", "backup-stage"):
             parser.error(_("Direct SSH supports system management, local snapshots and native backup capture."))
         if (args.target not in registry or registry[args.target]["backend"] not in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware")
                 or not registry[args.target].get("offline")):
             parser.error(_("Direct SSH requires an offline VM declaration without hypervisor management."))
-        if args.action == "backup" and backup_policy(registry[args.target])['enable']:
+        if args.action in ("backup", "backup-stage") and backup_policy(registry[args.target])['enable']:
             parser.error(_("Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."))
         try:
             direct = guest_connection(override)
@@ -330,7 +331,7 @@ def main(argv=None):
             parser.error(_("Usage: nixberry backup-schedule TARGET --output NEW_DIRECTORY [--dry-run]. Available targets: {targets}.").format(targets=", ".join(sorted(registry))))
         parser.error(_("Select a target: {value1}. Arbitrary addresses are not allowed.").format(value1=", ".join(sorted(registry))))
     target = registry[args.target]
-    if args.action in SNAPSHOT_ACTIONS or (args.action == "backup" and not backup_policy(target)['enable']):
+    if args.action in SNAPSHOT_ACTIONS or (args.action in ("backup", "backup-stage") and not backup_policy(target)['enable']):
         result = run_native(os.environ.get("NIXBERRY_RECIPE", ""), target, args.action, args.target,
                             snapshot=args.snapshot, apply=args.apply, dry_run=args.dry_run)
         print(json.dumps(result, ensure_ascii=False, indent=2))

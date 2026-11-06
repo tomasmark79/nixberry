@@ -120,17 +120,20 @@ during removal. This does not prove ARM boot or deployment on any real backend.
 
 `test_native_controller.py` checks no-contact plans, identity/generation and
 installed-policy refusal before capture, explicit write dispatch and preservation
-of diagnostic streams. CLI/completion contract tests cover all VM backends,
-image/ISO, declared access and one-time SSH overrides without evaluating systems
-for inventory. Native configuration projections include VM and RPi system paths;
-these checks do not prove a physical installation or every hypervisor transport.
+of diagnostic streams. It rejects impure file reads and missing lock entries.
+`test_recovery_recipe.py` exercises selected-source scope, unrelated private data
+exclusion, host encoding, archive manifest tampering, unsafe paths and exact VM
+and RPi generation reproduction. CLI/completion contracts cover all VM backends,
+image/ISO and access variants without system evaluation for inventory. These
+checks do not prove a physical installation or every hypervisor transport.
 
 `test_native_restic.py` checks cold-capture recovery, unsuccessful publication,
 repository/credential policy, capture leases and configuration-owned metadata for
 all six platforms and both filesystem choices, including legacy Hyper-V owner
 identities. `nix build --no-link path:.#checks.x86_64-linux.native-restic` runs
 actual Btrfs and ext4 source guests against a separate SFTP storage guest. It
-exercises explicit repository initialization, read-only planning, direct and
+exercises explicit repository initialization, existing/received sealed archive
+staging and bad-hash refusal, read-only planning, direct and
 systemd-owned captures, actual source-timer firing, strict host-key rejection
 before shutdown and complete
 payload authentication from the storage guest after each source is shut down.

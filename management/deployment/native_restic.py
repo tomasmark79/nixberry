@@ -5,16 +5,19 @@ import json
 import os
 from pathlib import Path
 import re
+import select
 import shlex
 import signal
 import stat
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
 
 from messages import _, ArgumentParser, error, forward_stderr
 import snapshots
+import recovery_recipe
 
 ID = re.compile(r'[0-9a-f]{64}')
 FORMAT = 'nixberry-restic-v1'
@@ -183,22 +186,75 @@ def running_system():
     return value
 
 
-def stage(value, expected_system, *, apply=False):
+def read_archive(stream, *, timeout=120):
+    deadline = time.monotonic() + timeout
+    chunks, total = [], 0
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0 or not select.select([stream.fileno()], [], [], remaining)[0]:
+            raise TimeoutError(_("Recovery archive transfer exceeded its time limit."))
+        chunk = os.read(stream.fileno(), 64 * 1024)
+        if not chunk:
+            return b''.join(chunks)
+        total += len(chunk)
+        if total > recovery_recipe.MAX_ARCHIVE:
+            raise ValueError(_("Recovery recipe archive exceeds its size limit."))
+        chunks.append(chunk)
+
+
+def validate_recipe(archive, settings, system):
+    record = recovery_recipe.validate(archive)
+    if (record['sourceId'] != settings['sourceId'] or record['systemPath'] != system
+            or record['policySha256'] != hashlib.sha256(encode(settings).encode()).hexdigest()):
+        raise ValueError(_("The received recovery archive belongs to a different source, system or policy."))
+
+
+def stage(value, expected_system, *, archive=None, expected_sha256=None, apply=False):
     settings = policy(value)
     if not isinstance(expected_system, str) or not SYSTEM.fullmatch(expected_system):
         raise ValueError(_("Recovery staging requires the explicit expected NixOS system path."))
     if running_system() != expected_system:
         raise RuntimeError(_("The running system does not match the recovery configuration being staged."))
-    archive = private_file(settings['recoveryFile'])
+    if expected_sha256 is not None:
+        if not isinstance(expected_sha256, str) or not ID.fullmatch(expected_sha256):
+            raise ValueError(_("Recovery transfer requires a full SHA256 archive identity."))
+        if apply and (not isinstance(archive, bytes) or hashlib.sha256(archive).hexdigest() != expected_sha256):
+            raise ValueError(_("The received recovery archive does not match its expected SHA256 identity."))
+        if apply:
+            validate_recipe(archive, settings, expected_system)
+    elif archive is not None:
+        raise ValueError(_("Recovery transfer requires a full SHA256 archive identity."))
+    else:
+        archive = private_file(settings['recoveryFile'])
+        validate_recipe(archive, settings, expected_system)
     metadata = {'version': 1, 'sourceId': settings['sourceId'], 'systemPath': expected_system,
                 'policySha256': hashlib.sha256(encode(settings).encode()).hexdigest(),
-                'archiveSha256': hashlib.sha256(archive).hexdigest()}
+                'archiveSha256': expected_sha256 or hashlib.sha256(archive).hexdigest()}
     if not apply:
         return {'applied': False, **metadata}
     with snapshots.lock(settings['capture']) as state:
         if snapshots.pending(settings['capture'], state):
             raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
-        if running_system() != expected_system or hashlib.sha256(private_file(settings['recoveryFile'])).hexdigest() != metadata['archiveSha256']:
+        if running_system() != expected_system:
+            raise RuntimeError(_("Recovery configuration changed while staging; no binding was published."))
+        if expected_sha256 is not None:
+            destination = Path(settings['recoveryFile'])
+            snapshots.secure_directory(destination.parent, create=True)
+            if destination.exists() or destination.is_symlink():
+                private_file(destination)
+            temporary = destination.with_name('.' + destination.name + '-' + uuid.uuid4().hex)
+            descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            try:
+                with os.fdopen(descriptor, 'wb') as stream:
+                    stream.write(archive)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temporary, destination)
+                snapshots.sync_directory(destination.parent)
+            finally:
+                temporary.unlink(missing_ok=True)
+        if (running_system() != expected_system
+                or hashlib.sha256(private_file(settings['recoveryFile'])).hexdigest() != metadata['archiveSha256']):
             raise RuntimeError(_("Recovery configuration changed while staging; no binding was published."))
         snapshots.write_record(settings['recoveryFile'] + '.json', metadata)
     return {'applied': True, **metadata}
@@ -215,6 +271,7 @@ def recovery(settings):
                 'archiveSha256': hashlib.sha256(archive).hexdigest()}
     if metadata != expected or type(metadata.get('version')) is not int:
         raise RuntimeError(_("The staged recovery configuration is stale or does not match this backup policy."))
+    validate_recipe(archive, settings, expected['systemPath'])
     return metadata
 
 
@@ -433,6 +490,7 @@ def main(argv=None):
     parser.add_argument('--config', default='/etc/nixberry/backup.json', help=_("Configuration-owned Restic policy file"))
     parser.add_argument('--snapshot', help=_("Full native Restic completion snapshot ID"))
     parser.add_argument('--system', help=_("Expected running NixOS generation for recovery archive staging"))
+    parser.add_argument('--receive-sha256', help=_("Receive a sealed recipe archive from standard input with this SHA256 identity"))
     parser.add_argument('--json', action='store_true', help=_("Print technical backup metadata as JSON"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument('--apply', action='store_true', help=_("Apply native application backup"))
@@ -448,6 +506,8 @@ def main(argv=None):
         parser.error(_("--dry-run only applies to native backup capture, staging or repository initialization."))
     if args.system is not None and args.action != 'backup-stage':
         parser.error(_("--system only applies to recovery archive staging."))
+    if args.receive_sha256 is not None and args.action != 'backup-stage':
+        parser.error(_("--receive-sha256 only applies to recovery archive staging."))
     def interrupted(signum, frame):
         raise InterruptedError(_("Native backup was interrupted; checking writer recovery."))
     for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
@@ -456,7 +516,10 @@ def main(argv=None):
     if args.action == 'backup-init':
         result = initialize(settings, apply=args.apply)
     elif args.action == 'backup-stage':
-        result = stage(settings, args.system, apply=args.apply)
+        if args.receive_sha256 is not None and not ID.fullmatch(args.receive_sha256):
+            parser.error(_("Recovery transfer requires a full SHA256 archive identity."))
+        archive = read_archive(sys.stdin.buffer) if args.apply and args.receive_sha256 is not None else None
+        result = stage(settings, args.system, archive=archive, expected_sha256=args.receive_sha256, apply=args.apply)
     elif args.action == 'backup':
         result = backup(settings, apply=args.apply)
     elif args.action == 'backups':

@@ -74,7 +74,7 @@ pkgs.testers.runNixOSTest {
     };
   };
   testScript = ''
-    import json
+    import json, shlex
     start_all()
     for node in [btrfs, cold, storage]:
         node.wait_for_unit("multi-user.target")
@@ -91,8 +91,14 @@ pkgs.testers.runNixOSTest {
     cold.succeed("mkdir -p /var/lib/web")
     for node, data in [(btrfs, "/data/live/web"), (cold, "/var/lib/web")]:
         node.succeed("printf only-encrypted-application-data > " + data + "/example; chmod 600 " + data + "/example")
-        node.succeed("tar -cf /var/lib/nixberry-backup/recovery.tar -C /etc os-release; chmod 600 /var/lib/nixberry-backup/recovery.tar")
-        node.succeed("nixberry-restic backup-stage --system $(readlink -f /run/current-system) --apply --json")
+        # Receive a sealed recipe fixture through the installed binary stdin protocol.
+        fixture = "import hashlib,json,pathlib,recovery_recipe; p=pathlib.Path('/tmp/recovery-fixture'); p.mkdir(); [(p/n).write_text('{}' if n == 'flake.lock' else 'test-only') for n in ('flake.nix','flake.lock','admin.pub')]; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); m={'format':recovery_recipe.FORMAT,'sourceId':v['sourceId'],'target':'vm-demo-guest','systemPath':str(pathlib.Path('/run/current-system').resolve()),'policySha256':hashlib.sha256(recovery_recipe.encode(v).encode()).hexdigest()}; recovery_recipe.pack(p,m,'/tmp/received-recovery.tar')"
+        node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(fixture))
+        checksum = node.succeed("sha256sum /tmp/received-recovery.tar").split()[0]
+        node.succeed("install -m 600 /tmp/received-recovery.tar /var/lib/nixberry-backup/recovery.tar; nixberry-restic backup-stage --system $(readlink -f /run/current-system) --apply --json")
+        node.fail("nixberry-restic backup-stage --system $(readlink -f /run/current-system) --receive-sha256 " + "0" * 64 + " --apply --json < /tmp/received-recovery.tar")
+        received = json.loads(node.succeed("nixberry-restic backup-stage --system $(readlink -f /run/current-system) --receive-sha256 " + checksum + " --apply --json < /tmp/received-recovery.tar"))
+        assert received["archiveSha256"] == checksum
         node.succeed("systemctl start writer.service")
         node.wait_until_succeeds("test -s " + data + "/counter")
         node.succeed("nixberry-restic backup-init --json")
