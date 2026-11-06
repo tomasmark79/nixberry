@@ -151,6 +151,9 @@ def tree_hash(base, paths, *, durable=False):
                 row += [details.st_size, contents.hexdigest()]
             elif stat.S_ISLNK(details.st_mode):
                 row.append(os.readlink(path))
+            elif stat.S_ISCHR(details.st_mode) and details.st_rdev == os.makedev(0, 0):
+                # Overlay whiteouts have device metadata, never file contents.
+                row.append(details.st_rdev)
             elif not stat.S_ISDIR(details.st_mode) and not stat.S_ISFIFO(details.st_mode):
                 raise ValueError(_("Unsupported special file in application restoration."))
             digest.update(json.dumps(row, ensure_ascii=True, separators=(',', ':')).encode() + b'\n')

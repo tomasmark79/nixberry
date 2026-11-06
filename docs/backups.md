@@ -589,14 +589,17 @@ payload and temporary files used during cross-filesystem publication. The defaul
 is `/var/lib/nixberry-restore`; declare another suitable persistent volume when
 needed. The original source never receives this restoration staging copy.
 Same-filesystem hardlinks avoid a second full copy where possible. A source
-hardlink group spanning incompatible destination filesystems is refused.
+regular-file hardlink group spanning incompatible destination filesystems is
+refused. Publication preserves character-device `0:0` overlay whiteouts as
+metadata without reading a device. Other character or block devices and sockets
+are refused.
 
 The private transaction records the exact source receipt, destination machine,
 generation, policy and filesystem layout. A retry with the same command resumes
 an interrupted transaction. Before the durable copying phase, the unpublished
 private stage is discarded and downloaded again, including after an interrupted
 report write. After that phase begins, the verified stage is reused. Writers
-remain held; checksums, metadata and hardlink
+remain held; checksums, metadata and regular-file hardlink
 relationships are verified and synced before durable completion. Unexpected
 additional destination files are retained and prevent completion. No account,
 SSH, boot or other operating-system identity paths can be replaced. Native
