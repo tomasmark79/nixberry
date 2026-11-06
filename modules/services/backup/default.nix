@@ -88,29 +88,36 @@ in
       description = "Bounded writer shutdown and snapshot creation; writer recovery has its own timeout.";
     };
   };
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = cfg.applications != { };
-        message = "Configuration-owned backups require an explicit application catalogue.";
-      }
-    ];
-    environment.systemPackages = [ tool ];
-    environment.etc."nixberry/capture.json".text = builtins.toJSON capturePolicy;
-    system.build.nixberryCapturePolicy = capturePolicy;
-    system.build.nixberryCaptureTool = tool;
-    # Abrupt power loss leaves the source recovery list intact. Ordinary command
-    # failures and handled signals resume writers in the capture process itself.
-    systemd.services.nixberry-capture-recovery = {
-      description = "Recover writers from an interrupted NixBerry capture";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "local-fs.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${tool}/bin/nixberry-capture resume --apply --json";
-        UMask = "0077";
-        TimeoutStartSec = "5min";
+  config = lib.mkMerge [
+    {
+      # A build output only: disabled backups add no installed-system dependency.
+      system.build.nixberryUpdateTool =
+        (import ../../../management/deployment/capture-package.nix { inherit pkgs; }).update;
+    }
+    (lib.mkIf cfg.enable {
+      assertions = [
+        {
+          assertion = cfg.applications != { };
+          message = "Configuration-owned backups require an explicit application catalogue.";
+        }
+      ];
+      environment.systemPackages = [ tool ];
+      environment.etc."nixberry/capture.json".text = builtins.toJSON capturePolicy;
+      system.build.nixberryCapturePolicy = capturePolicy;
+      system.build.nixberryCaptureTool = tool;
+      # Abrupt power loss leaves the source recovery list intact. Ordinary command
+      # failures and handled signals resume writers in the capture process itself.
+      systemd.services.nixberry-capture-recovery = {
+        description = "Recover writers from an interrupted NixBerry capture";
+        wantedBy = [ "multi-user.target" ];
+        after = [ "local-fs.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${tool}/bin/nixberry-capture resume --apply --json";
+          UMask = "0077";
+          TimeoutStartSec = "5min";
+        };
       };
-    };
-  };
+    })
+  ];
 }

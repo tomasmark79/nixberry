@@ -2,13 +2,16 @@
 { pkgs }:
 pkgs.testers.runNixOSTest {
   name = "nixberry-snapshots";
-  nodes.machine = { ... }: {
+  nodes.machine = { config, lib, ... }: {
     imports = [ ../modules/services/backup ];
     virtualisation.emptyDiskImages = [ 1024 ];
     virtualisation.memorySize = 2048;
+    # The test driver boots the kernel directly, without an embedding partition.
+    boot.loader.grub.devices = lib.mkForce [ "nodev" ];
     environment.systemPackages = [
       pkgs.btrfs-progs
       pkgs.jq
+      config.system.build.nixberryUpdateTool
     ];
     nixberry.backup = {
       enable = true;
@@ -38,6 +41,8 @@ pkgs.testers.runNixOSTest {
     systemd.services.idle-writer = {
       script = "sleep infinity";
     };
+    specialisation.next.configuration.nixberry.backup.stateDirectory =
+      lib.mkForce "/var/lib/nixberry-capture-next";
   };
   testScript = ''
     import json
@@ -50,6 +55,9 @@ pkgs.testers.runNixOSTest {
     before = machine.succeed("find /data -mindepth 1 -maxdepth 1 | sort")
     plan = json.loads(machine.succeed("nixberry-capture snapshot --json"))
     assert plan["applied"] is False
+    assert machine.succeed("find /data -mindepth 1 -maxdepth 1 | sort") == before
+    machine.succeed("systemctl is-active writer.service")
+    machine.fail("nixberry-capture snapshot --system /nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-nixos-system-wrong --apply --json")
     assert machine.succeed("find /data -mindepth 1 -maxdepth 1 | sort") == before
     machine.succeed("systemctl is-active writer.service")
     report = json.loads(machine.succeed("nixberry-capture snapshot --apply --json"))
@@ -71,6 +79,8 @@ pkgs.testers.runNixOSTest {
                          "snapshotId": "a" * 32, "activeUnits": ["writer.service"]})
     machine.succeed("systemctl stop writer.service")
     machine.succeed("printf '%s' '" + marker + "' > /var/lib/nixberry-capture/pending.json; chmod 600 /var/lib/nixberry-capture/pending.json")
+    machine.fail('test_generation=$(readlink -f /run/current-system); nixberry-update-guard --previous-system "$test_generation" --system "$test_generation" --apply')
+    machine.succeed("test -e /var/lib/nixberry-capture/pending.json")
     machine.succeed("nixberry-capture resume --apply --json")
     machine.succeed("systemctl is-active writer.service; test ! -e /var/lib/nixberry-capture/pending.json")
     # Mounted references outside the snapshot directory must prevent deletion.
@@ -105,5 +115,24 @@ pkgs.testers.runNixOSTest {
     mounted = json.loads(machine.succeed(command + "snapshot --apply --json"))
     machine.succeed("test -s " + mounted["roots"]["system"]["snapshot"] + "/web/value")
     machine.succeed(command + "snapshot-remove --snapshot " + mounted["snapshotId"] + " --apply --json")
+    # An update guards the state directories of both generations, including a
+    # change of stateDirectory. No physical host or original gaming data is used.
+    old = machine.succeed("readlink -f /run/current-system").strip()
+    new = machine.succeed("readlink -f /run/current-system/specialisation/next").strip()
+    update = "nixberry-update-guard --previous-system " + old + " --system " + new
+    assert json.loads(machine.succeed(update))["applied"] is False
+    machine.succeed("test ! -e /var/lib/nixberry-capture-next")
+    machine.succeed("mkdir -m 700 /var/lib/nixberry-capture-next; touch /var/lib/nixberry-capture-next/lock; chmod 600 /var/lib/nixberry-capture-next/lock")
+    for state in ("/var/lib/nixberry-capture", "/var/lib/nixberry-capture-next"):
+        machine.fail("flock " + state + "/lock " + update + " --apply")
+        assert machine.succeed("readlink -f /run/current-system").strip() == old
+        machine.succeed("systemctl is-active writer.service")
+    changed = json.loads(machine.succeed(update + " --apply"))
+    assert changed["applied"] is True
+    assert machine.succeed("readlink -f /run/current-system").strip() == new
+    machine.succeed("systemctl is-active writer.service")
+    restored = json.loads(machine.succeed("nixberry-update-guard --previous-system " + new + " --system " + old + " --apply"))
+    assert restored["applied"] is True
+    assert machine.succeed("readlink -f /run/current-system").strip() == old
   '';
 }

@@ -185,6 +185,13 @@ class NativeResticTests(unittest.TestCase):
                 native_restic.backup(self.policy, apply=True)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
+    def test_generation_change_before_capture_lock_is_rechecked_before_writer_shutdown(self):
+        new = '/nix/store/' + 'e' * 32 + '-nixos-system-new'
+        with patch('native_restic.running_system', side_effect=[self.system, new]):
+            with self.assertRaisesRegex(RuntimeError, 'recovery'):
+                native_restic.backup(self.policy, apply=True)
+        self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
+
     def test_recovery_staging_plans_and_refuses_wrong_running_generation(self):
         metadata = Path(str(self.recovery) + '.json')
         metadata.unlink()

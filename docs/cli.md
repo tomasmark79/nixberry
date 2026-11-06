@@ -47,8 +47,10 @@ Native capture requires separately provisioned source credentials and a staged
 recovery archive. `backup-stage TARGET` prepares a reviewable selected recipe;
 `--apply` verifies the source and transfers/binds it under the capture lock.
 The controller checks that the selected archive reproduces the expected system
-and policy without changing locks or importing derivation results. After source
-updates, repeat staging before backup. `--ssh` can supply access to an offline
+and policy without changing locks or importing derivation results. NixBerry
+updates refresh the archive automatically after verified activation; updates
+through other tools and rollbacks require explicit staging before backup.
+`--ssh` can supply access to an offline
 VM for native capture and staging.
 
 The legacy controller commands `backups`, `verify-backup`, `restore`,
@@ -96,8 +98,12 @@ and builds. System comparison does not compare application data. After a rollbac
 the highest generation may not be active; `diffg` reports the active system separately.
 
 Updates use the current `flake.lock`, do not update dependencies or partitions,
-and do not reboot automatically. After interruption, inspect `nixberry-update`
-and verify the server before retrying.
+and do not reboot automatically. Activation takes the capture locks of both
+generations and refuses pending writer recovery. Native Restic configurations
+prepare recovery code before transfer and stage it after verified activation.
+A staging failure reports that the update was verified and provides a retry
+command; stale recovery code cannot be used for a native capture. After
+interruption, inspect `nixberry-update` and verify the server before retrying.
 
 ## New VM declarations
 

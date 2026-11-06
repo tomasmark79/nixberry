@@ -18,6 +18,7 @@ import updater
 
 OLD = "/nix/store/" + "a" * 32 + "-nixos-system-old-26.05"
 NEW = "/nix/store/" + "b" * 32 + "-nixos-system-new-26.05"
+TOOL = "/nix/store/" + "c" * 32 + "-nixberry-update-guard"
 SNAPSHOT = {"state": "running", "addresses": ["172.21.222.76"]}
 HYPERV = {"host": "windows", "backend": "hyperv", "guestHostName": "nixberry-vm", "spec": {
     "sshHost": "192.168.50.10", "sshUser": "operator", "ownerId": "test-owner"}}
@@ -48,6 +49,9 @@ class UpdateChecks(unittest.TestCase):
             "status": Mock(return_value=SNAPSHOT),
             "preflight": Mock(return_value=OLD),
             "build": Mock(return_value=NEW),
+            "build_update_tool": Mock(return_value=TOOL),
+            "prepare_recovery": Mock(return_value=None),
+            "refresh_recovery": Mock(),
             "verify": Mock(return_value={"verified": True, "hostname": "nixberry-vm",
                                          "system": NEW, "root": "/dev/sda2",
                                          "addresses": SNAPSHOT["addresses"]}),
@@ -64,7 +68,7 @@ class UpdateChecks(unittest.TestCase):
 
     def test_default_and_explicit_plan_are_offline_for_every_backend(self):
         fixtures, runner = self.dependencies()
-        for target in (RPI, LIBVIRT, HYPERV):
+        for target in (RPI, HYPERV, *(dict(LIBVIRT, backend=backend) for backend in ('libvirt', 'proxmox', 'virtualbox', 'vmware'))):
             self.assertIsNone(updater.update(self.recipe, "test", target))
             self.assertIsNone(updater.update(self.recipe, "test", target, apply=False))
         runner.assert_not_called()
@@ -89,7 +93,7 @@ class UpdateChecks(unittest.TestCase):
         fixtures["build"].assert_called_once()
         self.assertEqual(fixtures["build"].call_args.args[:2], (self.recipe, "musicbox-test"))
         copy, activate = runner.call_args_list
-        self.assertEqual(copy.args[0], ["nix", "copy", "--to", "ssh://root@172.21.222.76", NEW])
+        self.assertEqual(copy.args[0], ["nix", "copy", "--to", "ssh://root@172.21.222.76", NEW, TOOL])
         options = shlex.split(copy.kwargs["env"]["NIX_SSHOPTS"])
         self.assertIn("StrictHostKeyChecking=yes", options)
         self.assertIn("BatchMode=yes", options)
@@ -101,10 +105,9 @@ class UpdateChecks(unittest.TestCase):
         self.assertEqual(script[:4], ["systemd-run", "--unit=nixberry-update", "--collect", "--wait"])
         self.assertIn("--property=Type=oneshot", script)
         self.assertIn("--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin", script)
-        self.assertIn(OLD, script[-1])
-        self.assertIn("nix-env -p /nix/var/nix/profiles/system --set " + NEW, script[-1])
-        self.assertIn(NEW + "/bin/switch-to-configuration switch", script[-1])
-        self.assertNotIn("reboot", script[-1])
+        self.assertEqual(script[-6:], [TOOL + '/bin/nixberry-update-guard',
+                                      '--previous-system', OLD, '--system', NEW, '--apply'])
+        self.assertNotIn("reboot", script)
         fixtures["verify"].assert_called_once_with(HYPERV, NEW)
         self.assertTrue(result["rebootRequired"])
         self.assertIn("nixberry ssh musicbox-test -- reboot", self.messages.getvalue())
@@ -235,6 +238,79 @@ class UpdateChecks(unittest.TestCase):
         updater.update(self.recipe, "test", RPI, apply=True)
         self.assertEqual(fixtures["build"].call_args.args[0], "/nix/store/frozen-recipe")
 
+    def test_recovery_is_prepared_before_transfer_and_staged_after_verification_from_same_frozen_source(self):
+        fixtures, runner = self.dependencies()
+        events = []
+        frozen = '/nix/store/frozen-recipe'
+        fixtures['freeze_recipe'].return_value = frozen
+        bundle = {'settings': {'systemPath': NEW}, 'archive': b'sealed source'}
+        fixtures['prepare_recovery'].side_effect = lambda *args: events.append(('prepare', args)) or bundle
+        runner.side_effect = lambda *args, **kwargs: events.append(('remote', args[0])) or Mock(returncode=0)
+        verified = fixtures['verify'].return_value
+        fixtures['verify'].side_effect = lambda *args: events.append(('verify', args)) or verified
+        fixtures['refresh_recovery'].side_effect = lambda *args: events.append(('stage', args))
+        updater.update(self.recipe, 'test', RPI, apply=True)
+        self.assertEqual([event[0] for event in events], ['prepare', 'remote', 'remote', 'verify', 'stage'])
+        self.assertEqual(events[0][1][:3], (frozen, 'test', RPI))
+        self.assertEqual(events[0][1][-1], NEW)
+        self.assertEqual(events[-1][1], (RPI, 'test', bundle))
+        fixtures['build_update_tool'].assert_called_once()
+        self.assertEqual(fixtures['build_update_tool'].call_args.args[0], frozen)
+
+    def test_unrecoverable_selected_recipe_prevents_copy_and_activation(self):
+        fixtures, runner = self.dependencies()
+        fixtures['prepare_recovery'].side_effect = RuntimeError('recipe does not reproduce generation')
+        with self.assertRaisesRegex(RuntimeError, 'reproduce generation'):
+            updater.update(self.recipe, 'test', RPI, apply=True)
+        runner.assert_not_called()
+        fixtures['refresh_recovery'].assert_not_called()
+
+    def test_stage_failure_reports_verified_update_and_explicit_recovery_command(self):
+        fixtures, _ = self.dependencies()
+        fixtures['prepare_recovery'].return_value = {'archive': b'sealed'}
+        fixtures['refresh_recovery'].side_effect = RuntimeError('connection lost')
+        with self.assertRaisesRegex(RuntimeError, 'update was verified.*backup-stage test.*--apply'):
+            updater.update(self.recipe, 'test', RPI, apply=True)
+        fixtures['verify'].assert_called_once_with(RPI, NEW)
+
+    def test_failed_activation_or_verification_never_stages_archive(self):
+        for failed in ('activation', 'verification'):
+            with self.subTest(failed=failed):
+                fixtures, runner = self.dependencies()
+                fixtures['prepare_recovery'].return_value = {'archive': b'sealed'}
+                if failed == 'activation':
+                    runner.side_effect = [Mock(returncode=0), Mock(returncode=1)]
+                else:
+                    fixtures['verify'].side_effect = RuntimeError('not verified')
+                with self.assertRaises(RuntimeError):
+                    updater.update(self.recipe, 'test', RPI, apply=True)
+                fixtures['refresh_recovery'].assert_not_called()
+
+    def test_every_platform_and_vm_method_uses_the_guard_and_refreshes_native_recipe(self):
+        fixtures, runner = self.dependencies()
+        fixtures['prepare_recovery'].return_value = {'archive': b'sealed'}
+        for backend in ('rpi', 'libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware'):
+            for method in (('recovery-sd',) if backend == 'rpi' else ('image', 'iso')):
+                target = {**(RPI if backend == 'rpi' else HYPERV if backend == 'hyperv' else LIBVIRT),
+                          'backend': backend, 'deploymentMethod': method}
+                with self.subTest(backend=backend, method=method):
+                    runner.reset_mock()
+                    fixtures['refresh_recovery'].reset_mock()
+                    with patch.dict(os.environ, {'NIXBERRY_LANG': 'cs'}):
+                        updater.update(self.recipe, 'test', target, apply=True)
+                    activation = shlex.split(runner.call_args_list[-1].args[0][-1])
+                    self.assertIn(TOOL + '/bin/nixberry-update-guard', activation)
+                    self.assertIn('--setenv=NIXBERRY_LANG=cs', activation)
+                    fixtures['refresh_recovery'].assert_called_once_with(target, 'test', {'archive': b'sealed'})
+
+    def test_legacy_provider_retry_command_still_reaches_native_update_staging(self):
+        fixtures, _ = self.dependencies()
+        fixtures['prepare_recovery'].return_value = {'archive': b'sealed'}
+        fixtures['refresh_recovery'].side_effect = RuntimeError('lost SSH')
+        target = {**RPI, 'backup': {'enable': True}}
+        with self.assertRaisesRegex(RuntimeError, 'Run nixberry update test --apply'):
+            updater.update(self.recipe, 'test', target, apply=True)
+
     @unittest.skipUnless(shutil.which("nix"), "Integrační zkouška potřebuje Nix")
     def test_real_snapshot_survives_recipe_changes_and_rejects_stale_identity(self):
         recipe = Path(self.recipe)
@@ -290,6 +366,13 @@ class UpdateChecks(unittest.TestCase):
         self.assertTrue(run.call_args.kwargs["check"])
         resolve.assert_called_once_with(strict=True)
 
+    def test_update_helper_is_gc_rooted_and_uses_the_unchanged_selected_lock(self):
+        with patch.object(updater.subprocess, 'run') as run, \
+                patch.object(Path, 'resolve', return_value=Path(TOOL)):
+            self.assertEqual(updater.build_update_tool('/tmp/recipe with spaces', 'test', '/tmp/build'), TOOL)
+        self.assertEqual(run.call_args.args[0], ['nix', 'build', '--no-update-lock-file', '--out-link', '/tmp/build/update-tool',
+            'path:/tmp/recipe%20with%20spaces#nixberrySystems.test.config.system.build.nixberryUpdateTool'])
+
     def test_reboot_check_compares_actual_boot_artifacts(self):
         for value, expected in (("yes", True), ("no", False)):
             with patch.object(updater, "read", return_value=value) as read:
@@ -300,6 +383,33 @@ class UpdateChecks(unittest.TestCase):
                 self.assertIn("cmp -s /run/booted-system/kernel-params", script)
         with patch.object(updater, "read", return_value="unknown"), self.assertRaises(RuntimeError):
             updater.reboot_required(["ssh", "host"])
+
+class NativeRecoveryUpdateChecks(unittest.TestCase):
+    def test_disabled_native_restic_does_not_prepare_or_transfer_an_archive(self):
+        for settings in ({'enabled': False}, {'enabled': True, 'restic': None}):
+            with self.subTest(settings=settings), patch('native_controller.projection', return_value=settings), \
+                    patch('native_controller.prepare_archive') as archive:
+                self.assertIsNone(updater.prepare_recovery('/frozen', 'test', RPI, '/tmp/stage', NEW))
+                archive.assert_not_called()
+
+    def test_native_archive_is_prepared_for_exact_built_generation(self):
+        settings = {'enabled': True, 'restic': {}, 'systemPath': NEW}
+        with patch('native_controller.projection', return_value=settings), \
+                patch('native_controller.prepare_archive', return_value=(b'sealed', {})) as archive:
+            self.assertEqual(updater.prepare_recovery('/frozen', 'test', RPI, '/tmp/stage', NEW),
+                             {'settings': settings, 'archive': b'sealed'})
+            archive.assert_called_once_with('/frozen', 'test', RPI, settings, '/tmp/stage')
+            with self.assertRaisesRegex(RuntimeError, 'does not match'):
+                updater.prepare_recovery('/frozen', 'test', RPI, '/tmp/stage', OLD)
+            self.assertEqual(archive.call_count, 1)
+
+    def test_refresh_uses_prepared_bytes_and_policy_without_freezing_the_checkout_again(self):
+        prepared = {'settings': {'systemPath': NEW}, 'archive': b'exact prepared bytes'}
+        with patch('native_controller.freeze_recipe', side_effect=AssertionError('must retain original frozen source')), \
+                patch('native_controller.execute', return_value={'applied': True}) as execute:
+            self.assertEqual(updater.refresh_recovery(RPI, 'test', prepared), {'applied': True})
+        execute.assert_called_once_with(RPI, 'test', 'backup-stage', prepared['settings'], apply=True, archive=prepared['archive'])
+
 
 
 if __name__ == "__main__":

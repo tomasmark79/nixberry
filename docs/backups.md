@@ -196,11 +196,21 @@ not replace the archive. A failure after archive replacement but before binding
 publication leaves a stale binding; captures refuse it until staging succeeds.
 No services are stopped and no repository is initialized by staging.
 
-A missing or stale binding prevents capture before writer shutdown. After a
-source update or policy change, rerun `backup-stage --apply` before capture.
+A missing or stale binding prevents capture before writer shutdown.
+`update TARGET --apply` prepares the selected recovery archive from the same
+frozen recipe used to build the system, before transferring or activating it.
+After verified activation, it transfers and binds that prepared archive. A recipe
+which cannot reproduce the built system prevents activation. Staging failure
+after verified activation is reported as a partial update with a retry command;
+native captures continue to refuse the stale archive. Updates through other
+tools and rollbacks require explicit `backup-stage --apply` before capture.
 Staging reads a verified archive without evaluating or activating its contents
 on the source. The same source-side lock protects snapshot capture, cold capture
-and archive publication.
+and archive publication. NixBerry activation holds the capture locks of both the
+installed and replacement configurations, including a changed `stateDirectory`.
+An active capture or pending writer recovery refuses activation before changing
+the system profile. Capture recovery with no pending writers is a no-op, so the
+boot recovery service can run during an update without contending with it.
 
 On the installed source, as root:
 

@@ -120,6 +120,7 @@ class NativeSourceTests(unittest.TestCase):
             if command[-1].endswith('cat /etc/nixberry/capture.json'):
                 return subprocess.CompletedProcess(command, 0, json.dumps(self.capture), '')
             self.assertIn('nixberry-capture snapshot --json --apply', command[-1])
+            self.assertIn('--system ' + self.system, command[-1])
             self.assertIn(self.system, command[-1])
             return subprocess.CompletedProcess(command, 0, json.dumps({'applied': True, 'snapshotId': 'a' * 32, 'state': 'ready'}), '')
         with patch('native_controller.status', return_value={'state': 'running'}), \

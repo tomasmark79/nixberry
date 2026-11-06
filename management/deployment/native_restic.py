@@ -358,6 +358,9 @@ def backup(value, *, apply=False):
     runtime = snapshots.secure_directory(settings['runtimeDirectory'], create=True)
     require_tmpfs(runtime)
     with snapshots.lock(capture_policy) as state, tempfile.TemporaryDirectory(dir=runtime) as temporary:
+        # An update may have completed after the initial storage/recipe probes.
+        # Validate again inside the lease before stopping any old writer set.
+        recovery(settings)
         if snapshots.pending(capture_policy, state):
             raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
         attempt = uuid.uuid4().hex

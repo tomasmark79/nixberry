@@ -1,4 +1,4 @@
-# Both guest entry points share one packaged catalogue and capture implementation.
+# Guest entry points share one packaged catalogue and capture implementation.
 { pkgs }:
 let
   source = import ../with-locales.nix {
@@ -9,6 +9,7 @@ let
         ./snapshots.py
         ./native_restic.py
         ./recovery_recipe.py
+        ./update_guard.py
         ./messages.py
       ];
     };
@@ -33,6 +34,7 @@ in
 {
   inherit source;
   capture = entry "nixberry-capture" "snapshots.py" [ ];
+  update = entry "nixberry-update-guard" "update_guard.py" [ pkgs.nix ];
   restic = entry "nixberry-restic" "native_restic.py" [
     pkgs.restic
     pkgs.openssh

@@ -311,11 +311,15 @@ def resume_locked(settings, state):
 
 def resume(settings, *, apply=False):
     settings = policy(settings)
-    if apply:
-        with lock(settings) as state:
-            return resume_locked(settings, state)
     state = secure_directory(settings['stateDirectory'])
     value = pending(settings, state) if state.exists() else None
+    if apply:
+        # Activation and snapshot upload can hold the lease without stopped
+        # writers. A boot/stop-post recovery then has nothing to recover.
+        if value is None:
+            return {'applied': True, 'resumedUnits': []}
+        with lock(settings) as state:
+            return resume_locked(settings, state)
     return {'applied': False, 'resumedUnits': value['activeUnits'] if value else []}
 
 
@@ -368,7 +372,12 @@ def cold(settings, state):
         resume_locked(settings, state)
 
 
-def capture(settings, *, apply=False):
+def running_system():
+    return str(Path('/run/current-system').resolve(strict=True))
+
+
+def capture(settings, *, apply=False, expected_system=None):
+    expected = (expected_system if expected_system is not None else running_system()) if apply else None
     settings = policy(settings)
     topology = inspect(settings)
     if not apply:
@@ -377,6 +386,8 @@ def capture(settings, *, apply=False):
             raise RuntimeError(_("Interrupted capture needs writer recovery before another snapshot."))
         return {'applied': False, **topology, 'writers': writers(settings)}
     with lock(settings) as state:
+        if running_system() != expected:
+            raise RuntimeError(_("The running system changed before snapshot capture."))
         return capture_locked(settings, state, topology)
 
 
@@ -582,6 +593,7 @@ def main(argv=None):
     parser.add_argument('--config', default='/etc/nixberry/capture.json', help=_("Configuration-owned capture policy file"))
     parser.add_argument('--json', action='store_true', help=_("Print technical capture metadata as JSON"))
     parser.add_argument('--snapshot', help=_("Explicit local Btrfs snapshot ID"))
+    parser.add_argument('--system', help=_("Expected running NixOS system generation"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument('--apply', action='store_true', help=_("Apply snapshot capture or writer recovery"))
     modes.add_argument('--dry-run', action='store_true', help=_("Inspect capture readiness without changing files or services"))
@@ -592,15 +604,18 @@ def main(argv=None):
         parser.error(_("Snapshot inventory is read-only."))
     if args.snapshot is not None and args.action != 'snapshot-remove':
         parser.error(_("--snapshot only applies to snapshot-remove in the capture tool."))
+    if args.system is not None and args.action != 'snapshot':
+        parser.error(_("--system only applies to snapshot in the capture tool."))
 
     def interrupted(signum, frame):
         raise InterruptedError(_("Snapshot capture was interrupted; checking writer recovery."))
 
     for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         signal.signal(signum, interrupted)
+    expected = (args.system or running_system()) if args.action == 'snapshot' and args.apply else None
     settings = policy(json.loads(Path(args.config).read_text()))
     if args.action == 'snapshot':
-        result = capture(settings, apply=args.apply)
+        result = capture(settings, apply=args.apply, expected_system=expected)
     elif args.action == 'resume':
         result = resume(settings, apply=args.apply)
     elif args.action == 'snapshot-remove':

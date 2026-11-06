@@ -7,6 +7,7 @@ import re
 import shlex
 import subprocess
 import tempfile
+from urllib.parse import quote
 
 from runtime import installation_checks, read, ssh_command, status, verify, guest_host_option, direct_connection
 from messages import _, info, success, warning
@@ -44,6 +45,33 @@ def build(recipe, name, directory):
     subprocess.run(["nix", "build", "--no-write-lock-file", "--out-link", str(link), attribute],
                    check=True)
     return system_path(str(link.resolve(strict=True)))
+
+
+def build_update_tool(recipe, name, directory):
+    link = Path(directory) / 'update-tool'
+    attribute = 'path:' + quote(recipe, safe='/') + '#nixberrySystems.' + name + '.config.system.build.nixberryUpdateTool'
+    subprocess.run(['nix', 'build', '--no-update-lock-file', '--out-link', str(link), attribute], check=True)
+    tool = str(link.resolve(strict=True))
+    if not re.fullmatch('/nix/store/[a-z0-9]{32}-nixberry-update-guard', tool):
+        raise RuntimeError(_("The update helper did not return a valid store path."))
+    return tool
+
+
+def prepare_recovery(frozen, name, target, directory, system):
+    # Import at invocation time: the native controller shares our SSH guards.
+    from native_controller import projection, prepare_archive
+    settings = projection(frozen, name)
+    if not settings['enabled'] or settings['restic'] is None:
+        return None
+    if settings['systemPath'] != system:
+        raise RuntimeError(_("The recovery recipe does not match the system prepared for update."))
+    archive, _manifest = prepare_archive(frozen, name, target, settings, directory)
+    return {'settings': settings, 'archive': archive}
+
+
+def refresh_recovery(target, name, prepared):
+    from native_controller import execute
+    return execute(target, name, 'backup-stage', prepared['settings'], apply=True, archive=prepared['archive'])
 
 
 def freeze_recipe(recipe, name, target, directory):
@@ -96,6 +124,8 @@ def update(recipe, name, target, *, apply=False):
     host_option = guest_host_option(target)
     if not apply:
         info(_("Plan: verify the running installation → build → transfer over SSH → activate → verify."))
+        info(_("Activation refuses active captures or pending writer recovery in either generation."))
+        info(_("Native Restic configurations prepare recovery code before activation and stage it after verification."))
         direct = direct_connection(target)
         if direct:
             info(_("Direct SSH to VM: {endpoint}; verifying the SSH key and declared hostname."),
@@ -113,6 +143,8 @@ def update(recipe, name, target, *, apply=False):
         info(_("Previous system: {system}"), system=previous)
         info(_("Building the target configuration…"))
         system = build(frozen, name, directory)
+        recovery = prepare_recovery(frozen, name, target, directory, system)
+        tool = build_update_tool(frozen, name, directory)
         # A long build must not activate on a stale address or a foreign VM.
         current_snapshot = status(target)
         current = preflight(target, current_snapshot)
@@ -122,23 +154,22 @@ def update(recipe, name, target, *, apply=False):
         destination = "ssh://" + command[-1]
         ssh_options = shlex.join(command[1:command.index("--")])
         info(_("Transferring the system to {host}…"), host=command[-1])
-        subprocess.run(["nix", "copy", "--to", destination, system], check=True,
+        subprocess.run(["nix", "copy", "--to", destination, system, tool], check=True,
                        env={**os.environ, "NIX_SSHOPTS": ssh_options})
         final_snapshot = status(target)
         if (final_snapshot["addresses"] != current_snapshot["addresses"]
                 or preflight(target, final_snapshot) != previous):
             raise RuntimeError(_("The target changed during transfer. Activation was not performed; run update again."))
-        activation = (
-            'set -eu; test "$(readlink -f /run/current-system)" = ' + shlex.quote(previous)
-            + "; nix-env -p /nix/var/nix/profiles/system --set " + shlex.quote(system)
-            + "; " + shlex.quote(system + "/bin/switch-to-configuration") + " switch"
-        )
         # A separate systemd unit lets activation finish even if sshd restarts.
         # It does not inherit SSH's PATH; nix-env requires an explicit environment.
+        language = os.environ.get('NIXBERRY_LANG', 'en')
+        language = language if language in ('en', 'cs') else 'en'
         remote = (
             "systemd-run --unit=nixberry-update --collect --wait "
             "--setenv=PATH=/run/current-system/sw/bin:/run/wrappers/bin "
-            "--property=Type=oneshot -- /bin/sh -c " + shlex.quote(activation)
+            f"--setenv=NIXBERRY_LANG={language} "
+            "--property=Type=oneshot -- " + shlex.join([
+                tool + '/bin/nixberry-update-guard', '--previous-system', previous, '--system', system, '--apply'])
         )
         info(_("Activating the new generation without rebooting…"))
         activated = subprocess.run(command + [remote], check=False)
@@ -155,6 +186,14 @@ def update(recipe, name, target, *, apply=False):
             raise RuntimeError(
                 _("Activation completed, but the subsequent check failed: {error}. Once SSH is restored, run {command}.").format(
                       error=error, command=f"nixberry verify {name}{host_option}")) from error
+        if recovery is not None:
+            try:
+                refresh_recovery(target, name, recovery)
+            except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as error:
+                action = 'update' if target.get('backup', {}).get('enable') else 'backup-stage'
+                raise RuntimeError(
+                    _("The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next native backup; no reboot was performed.").format(
+                        error=error, command=f"nixberry {action} {name}{host_option} --apply")) from error
     success(_("Verified: {name}, {hostname}, system on {root}."),
             name=name, hostname=result["hostname"], root=result["root"])
     print(system)

@@ -97,27 +97,36 @@ def run(recipe, target, action, name, *, snapshot=None, apply=False, dry_run=Fal
                     'applied': False, 'readiness': 'not-checked',
                     **({'archiveSha256': hashlib.sha256(archive).hexdigest(), 'archiveBytes': len(archive),
                         'archiveFiles': sorted(manifest['files'])} if archive is not None else {})}
-        live = status(target)
-        if preflight(target, live) != expected:
-            raise RuntimeError(_("The running system differs from this recipe; update it before native capture."))
-        command = connection(target, live)
-        guard = ('set -eu; export PATH=/run/current-system/sw/bin:/run/wrappers/bin; '
-                 + 'test "$(readlink -f /run/current-system)" = ' + shlex.quote(expected) + '; ')
-        policy_file = '/etc/nixberry/' + ('backup.json' if action in ('backup', 'backup-stage') else 'capture.json')
-        if remote(command, guard + 'cat ' + policy_file, 30) != policy:
-            raise RuntimeError(_("The installed capture policy differs from the selected configuration."))
-        language = os.environ.get('NIXBERRY_LANG', 'en')
-        language = language if language in ('en', 'cs') else 'en'
-        tool = '/run/current-system/sw/bin/nixberry-' + ('restic' if action in ('backup', 'backup-stage') else 'capture')
-        arguments = [tool, 'resume' if action == 'snapshot-resume' else action, '--json']
-        if apply:
-            arguments.append('--apply')
-        if snapshot is not None:
-            arguments += ['--snapshot', snapshot]
-        if archive is not None:
-            arguments += ['--system', expected, '--receive-sha256', hashlib.sha256(archive).hexdigest()]
-        timeout = settings['capture']['timeoutSeconds'] + (policy['timeoutSeconds'] if action == 'backup' else 0) + 240
-        result = remote(command, guard + 'exec env NIXBERRY_LANG=' + language + ' ' + shlex.join(arguments), timeout, input=archive)
-        if not isinstance(result, dict) or (apply and result.get('applied') is not True):
-            raise RuntimeError(_("The source did not confirm the requested native capture operation."))
-        return {'target': name, **result}
+        return execute(target, name, action, settings, snapshot=snapshot, apply=apply, archive=archive)
+
+
+def execute(target, name, action, settings, *, snapshot=None, apply=False, archive=None):
+    """Use already evaluated policy/archive, including an update's frozen recipe."""
+    expected = system_path(settings['systemPath'])
+    policy = settings['restic'] if action in ('backup', 'backup-stage') else settings['capture']
+    live = status(target)
+    if preflight(target, live) != expected:
+        raise RuntimeError(_("The running system differs from this recipe; update it before native capture."))
+    command = connection(target, live)
+    guard = ('set -eu; export PATH=/run/current-system/sw/bin:/run/wrappers/bin; '
+             + 'test "$(readlink -f /run/current-system)" = ' + shlex.quote(expected) + '; ')
+    policy_file = '/etc/nixberry/' + ('backup.json' if action in ('backup', 'backup-stage') else 'capture.json')
+    if remote(command, guard + 'cat ' + policy_file, 30) != policy:
+        raise RuntimeError(_("The installed capture policy differs from the selected configuration."))
+    language = os.environ.get('NIXBERRY_LANG', 'en')
+    language = language if language in ('en', 'cs') else 'en'
+    tool = '/run/current-system/sw/bin/nixberry-' + ('restic' if action in ('backup', 'backup-stage') else 'capture')
+    arguments = [tool, 'resume' if action == 'snapshot-resume' else action, '--json']
+    if apply:
+        arguments.append('--apply')
+    if snapshot is not None:
+        arguments += ['--snapshot', snapshot]
+    if action == 'snapshot':
+        arguments += ['--system', expected]
+    if archive is not None:
+        arguments += ['--system', expected, '--receive-sha256', hashlib.sha256(archive).hexdigest()]
+    timeout = settings['capture']['timeoutSeconds'] + (policy['timeoutSeconds'] if action == 'backup' else 0) + 240
+    result = remote(command, guard + 'exec env NIXBERRY_LANG=' + language + ' ' + shlex.join(arguments), timeout, input=archive)
+    if not isinstance(result, dict) or (apply and result.get('applied') is not True):
+        raise RuntimeError(_("The source did not confirm the requested native capture operation."))
+    return {'target': name, **result}

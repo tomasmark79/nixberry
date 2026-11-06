@@ -71,6 +71,9 @@ class SnapshotTests(unittest.TestCase):
         self.identity = patch('snapshots.machine_id', return_value='a' * 32)
         self.identity.start()
         self.addCleanup(self.identity.stop)
+        generation = patch('snapshots.running_system', return_value='/nix/store/' + 'a' * 32 + '-nixos-system-test')
+        generation.start()
+        self.addCleanup(generation.stop)
         self.owner = patch('snapshots.OWNER_UID', os.getuid())
         self.owner.start()
         self.addCleanup(self.owner.stop)
@@ -98,6 +101,25 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(list(self.root.iterdir()), [])
         self.assertFalse(any(command[:2] in (['systemctl', 'stop'], ['systemctl', 'start'])
                              for command in self.host.commands))
+
+    def test_recovery_without_pending_writers_does_not_contend_with_update_or_upload(self):
+        with snapshots.lock(self.policy):
+            self.assertEqual(snapshots.resume(self.policy, apply=True), {'applied': True, 'resumedUnits': []})
+        self.assertFalse(any(command[:2] == ['systemctl', 'start'] for command in self.host.commands))
+
+    def test_recovery_with_pending_writers_still_requires_the_exclusive_lock(self):
+        with snapshots.lock(self.policy) as state:
+            snapshots.write_record(state / 'pending.json', {'version': 1, 'machineId': 'a' * 32,
+                'snapshotId': 'b' * 32, 'activeUnits': ['web.service']})
+            with self.assertRaisesRegex(RuntimeError, 'holds the capture lock'):
+                snapshots.resume(self.policy, apply=True)
+            self.assertTrue((state / 'pending.json').exists())
+
+    def test_generation_change_before_snapshot_lease_refuses_writer_shutdown(self):
+        with patch('snapshots.running_system', side_effect=['old generation', 'new generation']):
+            with self.assertRaisesRegex(RuntimeError, 'changed'):
+                snapshots.capture(self.policy, apply=True)
+        self.assertFalse(any(command[:2] == ['systemctl', 'stop'] for command in self.host.commands))
 
     def test_capture_resumes_only_previously_active_writers_and_publishes_readonly(self):
         report = snapshots.capture(self.policy, apply=True)

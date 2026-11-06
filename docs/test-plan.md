@@ -116,7 +116,17 @@ removal. Run `nix build --no-link path:.#checks.x86_64-linux.snapshots` for actu
 Btrfs capture in a disposable NixOS VM. It checks unchanged plan state, resumed
 writers, a stable read-only view while the source changes, refusal of unlisted
 nested subvolumes, interrupted-writer recovery and mounted-reference protection
-during removal. This does not prove ARM boot or deployment on any real backend.
+during removal. It also checks capture-lock refusal for both update generations
+and actual activation forward/backward while changing `stateDirectory`. The
+driver boots the kernel directly; GRUB disk installation is disabled in this
+fixture. This does not prove ARM boot or deployment on any real backend.
+
+`test_update_guard.py` checks activation leases, generation/policy changes,
+pending writer recovery and disabled/enabled capture combinations.
+`test_updater.py` checks archive preparation before transfer, staging after
+verified activation from the same frozen recipe, partial-failure diagnostics
+and guarded update dispatch across all five VM backends and RPi. Transport
+boundaries are mocked; this is not controller-to-guest deployment proof.
 
 `test_native_controller.py` checks no-contact plans, identity/generation and
 installed-policy refusal before capture, explicit write dispatch and preservation
