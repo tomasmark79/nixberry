@@ -76,7 +76,10 @@ pkgs.testers.runNixOSTest {
       };
       environment.systemPackages = [
         tools.restic
-        (import ../management/deployment/package.nix { inherit pkgs; })
+        (import ../management/deployment/package.nix {
+          inherit pkgs;
+          registry = { instances = { }; targets = { }; hosts = { }; };
+        })
         pkgs.openssh
         pkgs.restic
       ];

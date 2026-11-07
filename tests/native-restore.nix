@@ -3,7 +3,10 @@
 let
   lib = pkgs.lib;
   tools = import ../management/deployment/capture-package.nix { inherit pkgs; };
-  controller = import ../management/deployment/package.nix { inherit pkgs; };
+  controller = import ../management/deployment/package.nix {
+    inherit pkgs;
+    registry = { instances = { }; targets = { }; hosts = { }; };
+  };
   originalLock = builtins.fromJSON (builtins.readFile ../flake.lock);
   pinned =
     originalLock.nodes.${

@@ -1,12 +1,43 @@
 """The CI recipe contains public tracked sources and an isolated test identity."""
 
 from pathlib import Path
+import json
+import shutil
 import stat
 import subprocess
 import tempfile
 import unittest
 
 from check_ci import TEST_KEY, public_recipe
+
+
+class IsolatedControllerChecks(unittest.TestCase):
+    def test_explicit_empty_registry_does_not_evaluate_private_inventory(self):
+        source = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="nixberry-controller-check-") as directory:
+            recipe = Path(directory) / "recipe"
+            shutil.copytree(source / "management", recipe / "management",
+                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            shutil.copy2(source / "VERSION", recipe / "VERSION")
+            for kind in ("vm", "rpi"):
+                (recipe / "machines" / kind).mkdir(parents=True)
+                (recipe / "machines" / kind / "default.nix").write_text("{}\n")
+            (recipe / "machines/vm/default.nix").write_text('throw "Private inventory evaluated"\n')
+            (recipe / "hosts.nix").write_text("{}\n")
+            expression = '''let
+              f = builtins.getFlake ''' + json.dumps("path:" + str(source)) + ''';
+              pkgs = f.inputs.nixos-raspberrypi.inputs.nixpkgs.legacyPackages.x86_64-linux;
+              tool = import ''' + str(recipe / "management/deployment/package.nix") + ''' {
+                inherit pkgs;
+                registry = { instances = {}; targets = {}; hosts = {}; };
+              };
+            in { manifest = builtins.fromJSON tool.manifest.text; package = tool.drvPath; }'''
+            result = subprocess.run(["nix", "eval", "--impure", "--json", "--no-write-lock-file",
+                                     "--expr", expression], text=True, capture_output=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stderr[-5000:])
+            value = json.loads(result.stdout)
+            self.assertEqual(value["manifest"], {})
+            self.assertTrue(value["package"].endswith(".drv"))
 
 
 class PublicRecipeChecks(unittest.TestCase):

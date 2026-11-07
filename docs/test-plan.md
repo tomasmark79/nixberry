@@ -178,6 +178,9 @@ Check that destination SSH keys and machine ID remain unchanged. Recover the
 sealed source recipe after source loss and evaluate its original system path.
 This proves the exercised x86_64 VM setup; it does not prove physical ARM boot,
 RPi deployment, every hypervisor transport or arbitrary application health.
+The native restore and Restic VM scenarios package an empty controller inventory
+and supply their own test identities. Local declarations and linked server
+configurations are not imported into these controllers.
 
 `test_native_restic.py` checks cold-capture recovery, unsuccessful publication,
 repository/credential policy, capture leases and configuration-owned metadata for

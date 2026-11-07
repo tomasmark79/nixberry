@@ -1,7 +1,7 @@
-{ pkgs }:
+# Disposable test controllers supply a registry without reading local declarations.
+{ pkgs, registry ? import ./. }:
 let
   version = pkgs.lib.removeSuffix "\n" (builtins.readFile ../../VERSION);
-  registry = import ./.;
   # Tests and local Python caches must not change the resulting management tool.
   source = import ../with-locales.nix {
     inherit pkgs;
