@@ -2,6 +2,12 @@
 
 [Main guide](../README.md) · [CLI](cli.md) · [Platform contract](platform-consistency.md)
 
+Start with [backup basics in the main README](../README.md#backups) for the
+workflow, snapshot terminology and everyday commands. This file is the technical
+reference for initial storage setup, application coverage, scheduling, retention
+and restore tools. Your selected server configuration's recovery guide supplies
+its credentials, service requirements and replacement-machine procedure.
+
 Restic backup and application restoration use shared NixBerry tools. Each
 configuration declares its application paths, writer units and storage settings;
 it does not implement its own backup or restore program. The selected recipe is
