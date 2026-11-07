@@ -144,9 +144,9 @@ The common base adds only Git to the standard NixOS tools. Each configuration
 owns its additional host packages through `environment.systemPackages`.
 For a larger configuration, put this list in its own `packages.nix` and import
 it from `default.nix`. Container packages remain in the container's setup.
-The shipped configurations explicitly select EMCX and HSTR; remove those imports
-if you want a smaller system. Their modules and pinned packages remain reusable
-without making them mandatory for every server.
+The `default` and `router` configurations explicitly select EMCX and HSTR;
+`rpilab` and `retrogaming` omit them. Their modules and pinned packages remain
+reusable without making them mandatory for every server.
 
 Use the project launcher for linked configurations. It captures the linked
 directory into a temporary recipe before evaluating the CLI. Updates, direct
