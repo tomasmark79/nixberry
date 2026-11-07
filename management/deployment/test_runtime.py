@@ -145,7 +145,7 @@ lsblk() { case "${@: -1}" in "$ROOTDEV") echo "$ROOTPARENT";; "$BOOTDEV") echo "
                                             env={**env, **change}, capture_output=True, text=True)
                     self.assertEqual(result.returncode == 0, not change, result.stderr)
 
-    def test_unencrypted_installation_rejects_boot_from_another_disk(self):
+    def test_unencrypted_installation_requires_declared_partitions_on_one_disk(self):
         fixture = r'''
 findmnt() {
     case "$*" in
@@ -156,7 +156,14 @@ findmnt() {
         *) return 1;;
     esac
 }
-readlink() { printf '%s\n' "${@: -1}"; }
+readlink() {
+    case "${@: -1}" in
+        "/dev/disk/by-partlabel/$ROOTLABEL") echo "$ROOTDEV";;
+        "/dev/disk/by-partlabel/$BOOTLABEL") echo "$BOOTDEV";;
+        /dev/disk/by-partlabel/*) return 1;;
+        *) printf '%s\n' "${@: -1}";;
+    esac
+}
 lsblk() {
     case "$*" in
         *SERIAL*) [[ "${@: -1}" == "/dev/$ROOTDISK" ]] && echo expected-ssd;;
@@ -174,18 +181,34 @@ lsblk() {
             target = {"backend": backend, "spec": {"hostName": "pi", "diskSerial": "expected-ssd",
                                                    "uuid": "test-uuid", "mac": "02:00:00:00:00:20"}}
             disk = "vda" if backend in ("libvirt", "proxmox") else "sda"
+            label = "pi" if backend == "rpi" else "disk-system"
+            cases = [
+                ("matching", {}, {}, True),
+                ("foreign boot disk", {}, {"BOOTDEV": "/dev/sdb1", "BOOTDISK": "sdb"}, False),
+                ("unknown boot disk", {}, {"BOOTDEV": "/dev/unknown1", "BOOTDISK": ""}, False),
+                ("wrong root label", {}, {"ROOTLABEL": "foreign-root"}, False),
+                ("wrong boot label", {}, {"BOOTLABEL": "foreign-boot"}, False),
+            ]
+            if backend == "rpi":
+                cases += [
+                    ("renamed host changes defaults", {"hostName": "new-pi"}, {}, False),
+                    ("renamed host preserves labels", {"hostName": "new-pi", "rootLabel": "pi-root",
+                                                       "bootLabel": "pi-boot"}, {}, True),
+                ]
             for filesystem in ("ext4", "btrfs"):
-                checks = [line for line in runtime.installation_checks({**target, "rootFilesystem": filesystem})
-                          if "findmnt" in line or "lsblk" in line]
-                for boot_disk in (disk, "sdb", ""):
-                    with self.subTest(backend=backend, filesystem=filesystem, boot_disk=boot_disk):
+                for case, spec, changes, accepted in cases:
+                    variant = {**target, "rootFilesystem": filesystem, "spec": {**target["spec"], **spec}}
+                    checks = [line for line in runtime.installation_checks(variant)
+                              if "findmnt" in line or "lsblk" in line]
+                    with self.subTest(backend=backend, filesystem=filesystem, case=case):
                         result = subprocess.run(["bash", "-c", fixture + " && ".join(checks)],
                                                 env={**os.environ, "ROOTFS": filesystem, "ROOTDISK": disk,
                                                      "ROOTDEV": "/dev/" + disk + "2",
-                                                     "BOOTDEV": "/dev/" + (boot_disk or "unknown") + "1",
-                                                     "BOOTDISK": boot_disk}, capture_output=True, text=True,
+                                                     "BOOTDEV": "/dev/" + disk + "1", "BOOTDISK": disk,
+                                                     "ROOTLABEL": label + "-root", "BOOTLABEL": label + "-boot",
+                                                     **changes}, capture_output=True, text=True,
                                                 timeout=5)
-                        self.assertEqual(result.returncode == 0, boot_disk == disk, result.stderr)
+                        self.assertEqual(result.returncode == 0, accepted, result.stderr)
 
     def test_failed_remote_check_preserves_stdout_diagnostic(self):
         with patch.object(runtime.subprocess, "run", return_value=SimpleNamespace(

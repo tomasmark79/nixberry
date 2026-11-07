@@ -26,7 +26,8 @@ The same 16-character limit is retained when selecting `rootFilesystem = "btrfs"
 Ext4 remains the default. Btrfs uses separate root, snapshot and swap subvolumes;
 see [filesystem selection](cli.md). Changing the declared format requires a
 separately reviewed installation and does not authorize erasing an existing SSD.
-Normal `update` does not rename partitions. Inspect them with
+Normal `update` refuses mismatched declared partition labels before activation;
+it does not rename partitions. Inspect them with
 `nixberry ssh rpi-demo -- lsblk -o NAME,FSTYPE,LABEL,PARTLABEL,MOUNTPOINTS`.
 
 | Field | Example; replace with actual values |

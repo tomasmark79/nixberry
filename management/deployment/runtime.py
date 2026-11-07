@@ -316,15 +316,7 @@ def installation_checks(target):
         if policy(target)["mode"] != "none":
             from security import encryption_checks
             checks += encryption_checks(target)
-        elif manual:
-            # An importer may change controllers. Image partitions and their shared disk must remain intact.
-            checks += [
-                'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /)")" = '
-                '"$(readlink -e /dev/disk/by-partlabel/disk-system-root)"',
-                'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /boot)")" = '
-                '"$(readlink -e /dev/disk/by-partlabel/disk-system-boot)"',
-            ]
-        else:
+        elif not manual:
             disk = "/dev/vda2" if backend in ("libvirt", "proxmox") else "/dev/sda2"
             checks.append('test "$(readlink -f $(findmnt -n --nofsroot -o SOURCE /))" = ' + shlex.quote(disk))
         if backend in ("proxmox", "virtualbox", "vmware") and not (
@@ -333,9 +325,17 @@ def installation_checks(target):
                 'test "$(tr A-Z a-z < /sys/class/dmi/id/product_uuid)" = ' + shlex.quote(spec["uuid"]),
                 'grep -i -x -q -- ' + shlex.quote(spec["mac"]) + ' /sys/class/net/*/address',
             ]
-    # Both mounted partitions must belong to the installed disk. LUKS checks
-    # compare the mapping's backing partition instead of its mapped device.
+    # Preserve declared partition identities, including after a hostname change
+    # or an offline VM controller change. LUKS checks use its backing partition.
     if policy(target)["mode"] == "none":
+        labels = ("disk-system-root", "disk-system-boot")
+        if backend == "rpi":
+            labels = (spec.get("rootLabel", spec["hostName"] + "-root"),
+                      spec.get("bootLabel", spec["hostName"] + "-boot"))
+        for mount, label in zip(("/", "/boot"), labels):
+            partition = shlex.quote("/dev/disk/by-partlabel/" + label)
+            checks.append('test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE ' + mount + ')")" = '
+                          '"$(readlink -e ' + partition + ')"')
         checks += [
             'test -n "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")"',
             'test "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")" = '

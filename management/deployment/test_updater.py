@@ -339,7 +339,9 @@ class UpdateChecks(unittest.TestCase):
                 updater.freeze_recipe(frozen, "test", {**RPI, "host": "other"}, second)
 
     def test_preflight_checks_disk_and_architecture_without_new_hostname(self):
-        for target, disk, arch in ((RPI, "ssd-serial", "aarch64"),
+        rpi = {**RPI, "spec": {**RPI["spec"], "hostName": "new-pi",
+                              "rootLabel": "pi-root", "bootLabel": "pi-boot"}}
+        for target, disk, arch in ((rpi, "ssd-serial", "aarch64"),
                                    (LIBVIRT, "/dev/vda2", "x86_64"),
                                    (HYPERV, "/dev/sda2", "x86_64")):
             with patch.object(updater, "read", return_value=OLD) as read:

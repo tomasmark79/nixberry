@@ -55,9 +55,9 @@ hypervisor management. `status` and `doctor` may explain missing access settings
   an added prefix. UUID ownership markers keep their own technical namespace.
 - VM default is `image`; `iso` is an equally supported choice.
   `--offline` is independent of the method.
-- Installation checks require root and `/boot` on the same disk; LUKS checks
-  use the root mapping's backing partition. A `/boot` mounted from recovery
-  media does not count as the installed layout.
+- Installation checks require the declared root and `/boot` partition labels
+  on the same disk; LUKS checks use the root mapping's backing partition.
+  A `/boot` mounted from recovery media does not count as the installed layout.
 - Direct tool packages provide the same operations. Reset builds separately
   without systems/media, without bypassing permissions or verification.
 - Media manifests distinguish `imagePath` and `isoPath`; the unused field is `null`.
