@@ -195,6 +195,7 @@
           jq
           libxml2.bin
           nvd
+          openssh
           powershell
           python3
           ruff

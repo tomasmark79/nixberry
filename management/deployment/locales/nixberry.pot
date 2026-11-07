@@ -299,7 +299,7 @@ msgstr ""
 msgid "All inventory checks passed; no VMs or hosts were contacted."
 msgstr ""
 
-#: deployment/check_ci.py:140
+#: deployment/check_ci.py:141
 msgid "All selected CI checks passed."
 msgstr ""
 
@@ -538,7 +538,7 @@ msgstr ""
 msgid "CD-ROM does not match."
 msgstr ""
 
-#: deployment/check_ci.py:111
+#: deployment/check_ci.py:112
 #, python-brace-format
 msgid "CI recipe copy: {path}."
 msgstr ""
@@ -2463,7 +2463,7 @@ msgstr ""
 msgid "Repository initialization requires a new repository identity file."
 msgstr ""
 
-#: deployment/check_ci.py:106
+#: deployment/check_ci.py:107
 #, python-brace-format
 msgid "Required CI tools are missing: {tools}."
 msgstr ""
@@ -2715,7 +2715,7 @@ msgstr ""
 msgid "Run diff through the nixberry launcher with a complete pinned recipe."
 msgstr ""
 
-#: deployment/check_ci.py:100
+#: deployment/check_ci.py:101
 msgid "Run isolated NixBerry CI checks without contacting hosts."
 msgstr ""
 
@@ -2735,7 +2735,7 @@ msgstr ""
 msgid "Run verify through the nixberry launcher from the project root."
 msgstr ""
 
-#: deployment/check_ci.py:50 deployment/check_ci.py:56
+#: deployment/check_ci.py:51 deployment/check_ci.py:57
 #, python-brace-format
 msgid "Running CI check: {check}."
 msgstr ""
@@ -2841,7 +2841,7 @@ msgstr ""
 msgid "Select an explicit snapshot ID from the local snapshot inventory."
 msgstr ""
 
-#: deployment/check_ci.py:102
+#: deployment/check_ci.py:103
 msgid "Select regression checks, inventory checks, or both."
 msgstr ""
 
@@ -4647,7 +4647,7 @@ msgstr ""
 msgid "Timed out waiting for the guest: {last_message}"
 msgstr ""
 
-#: deployment/check_ci.py:38
+#: deployment/check_ci.py:39
 #, python-brace-format
 msgid "Tracked path escapes the isolated recipe: {path}."
 msgstr ""

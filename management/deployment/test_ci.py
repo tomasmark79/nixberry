@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import json
+import os
 import shutil
 import stat
 import subprocess
@@ -9,6 +10,28 @@ import tempfile
 import unittest
 
 from check_ci import TEST_KEY, public_recipe
+from recipe_source import recipe_uri
+from test_support import copy_test_recipe
+
+
+class DevelopmentShellChecks(unittest.TestCase):
+    def test_ci_uses_its_own_ssh_instead_of_the_host_client(self):
+        source = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="nixberry-ci-shell-") as directory:
+            root = Path(directory)
+            recipe = root / "recipe"
+            copy_test_recipe(source, recipe)
+            tools = root / "host-tools"
+            tools.mkdir()
+            ssh = tools / "ssh"
+            ssh.write_text("#!/bin/sh\nprintf 'Host SSH was selected\\n' >&2\nexit 99\n")
+            ssh.chmod(0o755)
+            result = subprocess.run([
+                "nix", "develop", "--no-write-lock-file", recipe_uri(recipe) + "#ci",
+                "--command", "ssh", "-V",
+            ], env={**os.environ, "PATH": str(tools) + os.pathsep + os.environ["PATH"]},
+                capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stderr[-2000:])
 
 
 class IsolatedControllerChecks(unittest.TestCase):

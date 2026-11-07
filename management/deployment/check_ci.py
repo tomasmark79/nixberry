@@ -16,6 +16,7 @@ from messages import _, ArgumentParser, error, info, success
 TOOLS = (
     "nix", "nix-instantiate", "nix-build", "nix-store", "git", "bash", "msgfmt",
     "jq", "xmllint", "nvd", "pwsh", "ruff", "shellcheck", "actionlint",
+    "ssh", "sftp", "ssh-keygen",
 )
 SUITES = (
     "management/deployment", "management/libvirt", "management/hyperv",
