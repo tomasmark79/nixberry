@@ -14,6 +14,21 @@
 - Use QEMU/KVM (libvirt), Hyper-V, Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5. Backend identifiers and commands remain `libvirt`, `hyperv`, `proxmox`, `virtualbox`, `vmware` and `rpi`.
 - Describe current behavior, supported variants and limitations verified against source. Use `vm-demo-*` examples. Do not add migration history, dated results, archives, roadmaps or diagrams. Keep logs and test evidence outside user documentation; the test guide describes procedures and evidence boundaries.
 
+## Related projects and context
+
+- On Nixon, use `~/.codex/PROJECTS.md`, when available, to locate related projects;
+  read only the relevant repository guidance and sources, not their whole history.
+- Nixon owns its shell integration of the local NixBerry launcher. NixBerry owns
+  the CLI, deployment backends, platform modules and machine declarations.
+  Broucekconf owns Broucek's selected NixOS configuration and production services.
+- Keep the shared host package base minimal. Host tools belong to the selected
+  configuration; packages inside a container belong to that container's setup.
+  For ownership and configuration boundaries, use `docs/reference.md`.
+- Use `docs/test-plan.md` for checks and `docs/rpi-recovery.md` for physical RPi
+  recovery. Neither documentation work nor a successful build authorizes a live
+  update, restart, cutover or disk write. Do not turn old incident notes into a
+  new deployment requirement without checking the current source.
+
 ## Consistency across platforms
 
 - Review related behavior across all five VM backends and RPi at every change. Separate shared behavior, intentional exceptions and missing implementations. Explain exceptions and consequences. RPi is not a VM and need not support VM operations.
