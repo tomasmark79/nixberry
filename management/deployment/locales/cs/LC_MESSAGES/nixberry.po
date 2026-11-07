@@ -1299,8 +1299,8 @@ msgstr "Pro běh kampaně zadej --run-root mimo recept."
 msgid "Show help and exit"
 msgstr "Zobrazit nápovědu a skončit"
 
-msgid "Show the plan without writing; diff/diffg without connections or builds"
-msgstr "Zobrazit plán bez zápisu; diff/diffg bez připojení a sestavení"
+msgid "Preview writes; read-only diagnostics still query hosts; diff/diffg skip connections and builds"
+msgstr "Náhled zápisů; čtecí diagnostika se stále připojuje k hostům; diff/diffg přeskočí připojení i sestavení"
 
 msgid "Sizes include shared dependencies; they cannot be added or treated as reclaimable space. review means manual assessment, not permission to delete. All retained generations have GC roots."
 msgstr "Velikosti zahrnují sdílené závislosti; nelze je sčítat ani považovat za uvolnitelné místo. review znamená ruční posouzení, nikoli povolení smazat. Všechny dochované generace drží GC roots."

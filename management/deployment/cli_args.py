@@ -335,7 +335,7 @@ def create_parser():
         "--dry-run",
         action="store_true",
         help=_(
-            "Show the plan without writing; diff/diffg without connections or builds"
+            "Preview writes; read-only diagnostics still query hosts; diff/diffg skip connections and builds"
         ),
     )
     parser.add_argument(

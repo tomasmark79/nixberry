@@ -184,8 +184,10 @@ See [bundle contents and handoff](offline.md).
 | `--initrd-key-file FILE` | Encrypted RPi `plan`/`reproduce`; private SSH key matching `security.initrdHostKey`. |
 | `--json` | `list`, `show`, `status`, `verify`, `doctor`, `cleanup`, `export`, `prepare-image`, and all snapshot and backup commands described above. |
 
-`--apply` and `--dry-run` are mutually exclusive. For `doctor` and `cleanup`,
-`--dry-run` does not skip read-only queries. `ssh` and `list` do not accept it.
+`--apply` and `--dry-run` are mutually exclusive. Read-only diagnostics
+(`status`, `probe`, `doctor`, `verify`, `cleanup`) still query hosts with
+`--dry-run`; `verify` also evaluates the expected system. `ssh` and `list`
+do not accept it.
 `--ssh` and `--host` cannot be combined. Direct SSH does not change image networking.
 
 ## Language, output and exit codes

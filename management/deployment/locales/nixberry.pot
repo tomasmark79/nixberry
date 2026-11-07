@@ -2190,6 +2190,10 @@ msgstr ""
 msgid "Preserved Restic backup source name"
 msgstr ""
 
+#: deployment/cli_args.py:337
+msgid "Preview writes; read-only diagnostics still query hosts; diff/diffg skip connections and builds"
+msgstr ""
+
 #: deployment/diffing.py:39
 #, python-brace-format
 msgid "Previous generation: {path}"
@@ -2899,10 +2903,6 @@ msgstr ""
 
 #: deployment/messages.py:170
 msgid "Show help and exit"
-msgstr ""
-
-#: deployment/cli_args.py:337
-msgid "Show the plan without writing; diff/diffg without connections or builds"
 msgstr ""
 
 #: deployment/inspection.py:206
