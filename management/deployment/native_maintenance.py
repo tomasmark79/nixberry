@@ -22,13 +22,13 @@ def reader(settings):
     return native_restic.Restic(settings, read_only=True)
 
 
-def check(settings, maintenance):
+def check(settings, maintenance, *, include_statistics=False):
     settings = native_restic.policy(settings)
     maintenance = policy(maintenance)
     if maintenance['maxAgeSeconds'] is None:
         raise ValueError(_("Configure nixberry.backup.restic.maxAgeSeconds before checking native backup freshness."))
     return native_health.check(reader(settings), max_age_seconds=maintenance['maxAgeSeconds'],
-                               expected_machine_id=snapshots.machine_id())
+                               expected_machine_id=snapshots.machine_id(), include_statistics=include_statistics)
 
 
 def prune(settings, maintenance, expected_system, *, apply=False):

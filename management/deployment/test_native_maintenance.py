@@ -87,7 +87,8 @@ class MaintenanceTests(unittest.TestCase):
     def test_health_uses_read_only_metadata_and_current_machine_without_capture_lock(self):
         with patch('native_maintenance.native_health.check', return_value={'status': 'missing'}) as check:
             result = native_maintenance.check(self.settings, self.policy)
-        check.assert_called_once_with(self.reader, max_age_seconds=3600, expected_machine_id='a' * 32)
+            check.assert_called_once_with(self.reader, max_age_seconds=3600,
+                                          expected_machine_id='a' * 32, include_statistics=False)
         self.assertEqual(result, {'status': 'missing'})
         self.assertEqual(self.events, [])
 

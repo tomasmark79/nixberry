@@ -4012,3 +4012,12 @@ msgstr "Stav stáří záloh zdroje neodpovídá oznámenému výsledku."
 
 msgid "The source generation or machine identity changed; native retention was refused."
 msgstr "Generace nebo identita zdrojového stroje se změnila; promazávání nativních záloh bylo odmítnuto."
+
+msgid "Invalid native backup statistics."
+msgstr "Neplatné statistiky nativních záloh."
+
+msgid "Include completed restore-point count and latest logical backup size"
+msgstr "Zahrnout počet dokončených bodů obnovy a logickou velikost poslední zálohy"
+
+msgid "--statistics only applies to native backup freshness checks."
+msgstr "--statistics lze použít pouze pro kontrolu stáří nativních záloh."

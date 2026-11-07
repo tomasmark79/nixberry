@@ -113,6 +113,19 @@ class MaintenanceCliTests(unittest.TestCase):
         self.assertEqual(report['remove'], [])
         self.assertTrue((Path(self.capture['stateDirectory']) / 'lock').is_file())
 
+    def test_guest_statistics_extend_only_the_opted_in_health_report(self):
+        code, report = self.guest('backup-check', '--statistics')
+        self.assertEqual(code, 1)
+        self.assertEqual(report['statistics'], {'restorePoints': 0, 'latestLogicalBytes': None})
+        _, ordinary = self.guest('backup-check')
+        self.assertNotIn('statistics', ordinary)
+
+    def test_statistics_are_rejected_for_other_operations_before_configuration_reads(self):
+        with patch('pathlib.Path.read_text', side_effect=AssertionError('Invalid statistics option read configuration')), \
+                self.assertRaises(SystemExit) as failure:
+            self.guest('backup-prune', '--statistics')
+        self.assertEqual(failure.exception.code, 2)
+
     def test_guest_maintenance_dry_run_never_opens_storage_or_creates_runtime(self):
         for action in ('backup-check', 'backup-prune'):
             with self.subTest(action=action):

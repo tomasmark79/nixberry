@@ -390,6 +390,16 @@ application payload files. Use `verify-backup` separately for full payload
 authentication. Invalid metadata fails the check instead of falling back to an
 older apparently healthy capture.
 
+On the source, `nixberry-restic backup-check --statistics --json` additionally
+reports `statistics.restorePoints` and `statistics.latestLogicalBytes`. The
+count covers distinct completed payloads authenticated for the current machine;
+unfinished uploads and backups of previous machine identities are excluded.
+The size uses Restic's `restore-size` mode on the selected full payload ID and
+includes its sealed recovery recipe and manifest. It is logical restored size,
+not repository disk usage or full payload verification. A missing backup reports
+zero points and a null size. Statistics errors fail the check; ordinary checks
+retain their existing JSON schema and avoid this additional metadata traversal.
+
 ## Controller providers
 
 ```nix

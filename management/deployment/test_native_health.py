@@ -34,6 +34,7 @@ class NativeHealthTests(unittest.TestCase):
         self.entries = {}
         self.headers = []
         self.repository_id = 'a' * 64
+        self.statistics = {'total_size': 4096, 'total_file_count': 3, 'snapshots_count': 1}
         self.system = '/nix/store/' + 'd' * 32 + '-nixos-system-vm-demo-source'
         recipe = self.root / 'recipe'
         recipe.mkdir()
@@ -79,6 +80,9 @@ class NativeHealthTests(unittest.TestCase):
 
     def execute(self, arguments, **kwargs):
         self.calls.append((arguments, kwargs))
+        if arguments[:3] == ['stats', '--mode', 'restore-size']:
+            self.assertIn(arguments[3], [e['receipt']['payloadId'] for e in self.entries.values()])
+            return json.dumps(self.statistics)
         if arguments == ['cat', 'config']:
             return json.dumps({'id': self.repository_id})
         if arguments == ['snapshots', '--tag', native_restic.RECEIPT + ',source:' + self.settings['sourceId']]:
@@ -123,6 +127,40 @@ class NativeHealthTests(unittest.TestCase):
         self.add_capture(6400)
         self.assertEqual(self.check()['status'], 'ok')
         self.assertEqual(self.check(now=10001)['status'], 'stale')
+
+    def test_optional_statistics_count_distinct_completed_payloads_for_current_machine(self):
+        latest = self.add_capture(9900, header_time=1)
+        self.add_capture(9800, header_time=20000)
+        self.add_capture(9950, machine='2' * 32)
+        self.headers.append(self.headers[0])
+        result = self.check(expected_machine_id='1' * 32, include_statistics=True)
+        self.assertEqual(result['snapshotId'], latest)
+        self.assertEqual(result['statistics'], {'restorePoints': 2, 'latestLogicalBytes': 4096})
+        self.assertEqual([a for a, _ in self.calls if a[0] == 'stats'], [
+            ['stats', '--mode', 'restore-size', self.entries[latest]['receipt']['payloadId']]])
+
+    def test_optional_statistics_report_zero_points_without_inventing_a_size_when_missing(self):
+        result = self.check(include_statistics=True)
+        self.assertEqual(result['statistics'], {'restorePoints': 0, 'latestLogicalBytes': None})
+        self.assertFalse(any(a[0] == 'stats' for a, _ in self.calls))
+
+    def test_optional_statistics_reject_invalid_sizes_and_aggregated_results(self):
+        self.add_capture()
+        for value in ({}, {'total_size': True, 'snapshots_count': 1},
+                      {'total_size': -1, 'snapshots_count': 1},
+                      {'total_size': '4096', 'snapshots_count': 1},
+                      {'total_size': 4096, 'snapshots_count': 2},
+                      {'total_size': 4096, 'snapshots_count': True}):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.statistics = value
+                self.check(include_statistics=True)
+
+    def test_statistics_preserve_stale_status_and_accept_measured_zero_bytes(self):
+        self.add_capture(100)
+        self.statistics['total_size'] = 0
+        result = self.check(include_statistics=True)
+        self.assertEqual(result['status'], 'stale')
+        self.assertEqual(result['statistics'], {'restorePoints': 1, 'latestLogicalBytes': 0})
 
     def test_source_local_health_uses_only_the_current_authenticated_machine(self):
         current = self.add_capture(6400)

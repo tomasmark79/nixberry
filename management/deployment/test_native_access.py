@@ -127,10 +127,20 @@ class AccessTests(unittest.TestCase):
     def test_readonly_reader_cannot_initialize_or_delete_repository_state(self):
         reader = native_restic.Restic(self.value, owner_uid=os.geteuid(), repository_id=self.value['repositoryId'], read_only=True)
         with patch('native_restic.subprocess.run', side_effect=AssertionError('must reject before execution')):
-            for arguments in (['init'], ['backup', '/data'], ['forget', 'b'*64], ['unlock'], ['prune']):
+            for arguments in (['init'], ['backup', '/data'], ['forget', 'b'*64], ['unlock'], ['prune'],
+                              ['stats'], ['stats', '--mode', 'raw-data', 'b'*64],
+                              ['stats', '--mode', 'restore-size', 'latest'],
+                              ['stats', '--mode', 'restore-size', 'b'*64, 'c'*64]):
                 with self.subTest(arguments=arguments), self.assertRaisesRegex(ValueError, 'only'):
                     reader.run(arguments)
         self.assertIn('--no-lock', reader.command())
+
+    def test_readonly_statistics_accept_one_explicit_payload(self):
+        reader = native_restic.Restic(self.value, owner_uid=os.geteuid(), repository_id=self.value['repositoryId'], read_only=True)
+        with patch.object(reader, '_execute', return_value='{"total_size":1024,"snapshots_count":1}') as execute:
+            self.assertEqual(reader.run(['stats', '--mode', 'restore-size', 'b'*64]),
+                             '{"total_size":1024,"snapshots_count":1}')
+        self.assertEqual(execute.call_args.args[0], ['stats', '--mode', 'restore-size', 'b'*64])
 
     def test_metadata_reads_are_bounded_before_the_output_is_loaded_into_memory(self):
         import sys

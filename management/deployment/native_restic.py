@@ -134,7 +134,10 @@ class Restic:
         return command
 
     def run(self, arguments, *, input=None, binary=False, discard=False, max_output=None):
-        if self.read_only and (not arguments or arguments[0] not in ('snapshots', 'dump') and arguments != ['cat', 'config']):
+        statistics = (len(arguments) == 4 and arguments[:3] == ['stats', '--mode', 'restore-size']
+                      and isinstance(arguments[3], str) and ID.fullmatch(arguments[3]))
+        if self.read_only and (not arguments or arguments[0] not in ('snapshots', 'dump')
+                              and arguments != ['cat', 'config'] and not statistics):
             raise ValueError(_("Independent backup access permits only repository identity, inventory and payload reads."))
         return self._execute(arguments, input=input, binary=binary, discard=discard, max_output=max_output)
 
@@ -608,10 +611,14 @@ def main(argv=None):
     parser.add_argument('--system', help=_("Expected running NixOS generation for recovery staging or retention"))
     parser.add_argument('--receive-sha256', help=_("Receive a sealed recipe archive from standard input with this SHA256 identity"))
     parser.add_argument('--json', action='store_true', help=_("Print technical backup metadata as JSON"))
+    parser.add_argument('--statistics', action='store_true',
+                        help=_("Include completed restore-point count and latest logical backup size"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument('--apply', action='store_true', help=_("Apply native application backup"))
     modes.add_argument('--dry-run', action='store_true', help=_("Inspect backup readiness without stopping writers"))
     args = parser.parse_args(argv)
+    if args.statistics and args.action != 'backup-check':
+        parser.error(_("--statistics only applies to native backup freshness checks."))
     if os.geteuid() != 0:
         raise RuntimeError(_("Native backup operations require root and protected runtime credentials."))
     if args.apply and args.action not in ('backup-init', 'backup-stage', 'backup', 'backup-prune'):
@@ -647,7 +654,7 @@ def main(argv=None):
         if args.dry_run:
             result = {'action': args.action, 'maintenance': maintenance, 'applied': False, 'readiness': 'not-checked'}
         elif args.action == 'backup-check':
-            result = native_maintenance.check(settings, maintenance)
+            result = native_maintenance.check(settings, maintenance, include_statistics=args.statistics)
         else:
             result = native_maintenance.prune(settings, maintenance, expected_system, apply=args.apply)
     else:
