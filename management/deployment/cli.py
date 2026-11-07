@@ -520,7 +520,11 @@ def main(argv=None):
                 direct = direct_connection(target)
                 if direct:
                     print(_("Server SSH: {value1}@{value2}:{value3}").format(value1=direct["user"], value2=direct["host"], value3=direct["port"]))
-                    print(_("Key verification: strict known_hosts{value1}{value2}").format(value1=", soubor " + direct["knownHostsFile"] if direct.get("knownHostsFile") else "", value2=", alias " + direct["hostKeyAlias"] if direct.get("hostKeyAlias") else ""))
+                    print(_("Key verification: strict known_hosts"))
+                    if direct.get("knownHostsFile"):
+                        print(_("Known-hosts file: {path}").format(path=direct["knownHostsFile"]))
+                    if direct.get("hostKeyAlias"):
+                        print(_("Host key alias: {alias}").format(alias=direct["hostKeyAlias"]))
                 network = target.get("network", {"mode": "dhcp"})
                 if network.get("mode", "dhcp") == "static":
                     print(_("Network: {value1}, gateway {value2}, DNS {value3}").format(value1=network["address"], value2=network["gateway"], value3=", ".join(network["dns"])))

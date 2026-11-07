@@ -817,7 +817,7 @@ msgstr ""
 msgid "Conflicting logical application paths in the captured backup."
 msgstr ""
 
-#: deployment/cli.py:543
+#: deployment/cli.py:547
 #, python-brace-format
 msgid "Connecting: {command}"
 msgstr ""
@@ -905,7 +905,7 @@ msgstr ""
 msgid "Creation did not return a verified powered-off VM."
 msgstr ""
 
-#: deployment/cli.py:542
+#: deployment/cli.py:546
 msgid "Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."
 msgstr ""
 
@@ -947,7 +947,7 @@ msgstr ""
 msgid "Deployment method must be iso or image."
 msgstr ""
 
-#: deployment/cli.py:504 deployment/cli.py:558
+#: deployment/cli.py:504 deployment/cli.py:562
 #, python-brace-format
 msgid "Deployment method: {method}"
 msgstr ""
@@ -1236,7 +1236,7 @@ msgstr ""
 msgid "Explicit verified destination machine ID"
 msgstr ""
 
-#: deployment/cli.py:532
+#: deployment/cli.py:536
 #, python-brace-format
 msgid "Export: {command}"
 msgstr ""
@@ -1283,6 +1283,11 @@ msgstr ""
 
 #: hyperv/manage.py:212
 msgid "Guest shutdown failed."
+msgstr ""
+
+#: deployment/cli.py:527
+#, python-brace-format
+msgid "Host key alias: {alias}"
 msgstr ""
 
 #: hyperv/guest-install.sh:39
@@ -1764,8 +1769,12 @@ msgid "Keep the runtime password file outside the recipe and Nix store."
 msgstr ""
 
 #: deployment/cli.py:523
+msgid "Key verification: strict known_hosts"
+msgstr ""
+
+#: deployment/cli.py:525
 #, python-brace-format
-msgid "Key verification: strict known_hosts{value1}{value2}"
+msgid "Known-hosts file: {path}"
 msgstr ""
 
 #: proxmox/lab/configure.sh:5
@@ -1804,7 +1813,7 @@ msgstr ""
 msgid "Linked configuration is not a directory with a regular default.nix: {path}."
 msgstr ""
 
-#: deployment/cli.py:534
+#: deployment/cli.py:538
 #, python-brace-format
 msgid "Live status: {command}"
 msgstr ""
@@ -1906,11 +1915,11 @@ msgstr ""
 msgid "Network adapter names and MAC addresses must be unique within a VM."
 msgstr ""
 
-#: deployment/cli.py:528
+#: deployment/cli.py:532
 msgid "Network: DHCP"
 msgstr ""
 
-#: deployment/cli.py:526
+#: deployment/cli.py:530
 #, python-brace-format
 msgid "Network: {value1}, gateway {value2}, DNS {value3}"
 msgstr ""
@@ -2043,12 +2052,12 @@ msgstr ""
 msgid "Operation unavailable. Set access or use --ssh root@HOST:PORT for system management; hypervisor management requires a declared host."
 msgstr ""
 
-#: deployment/cli.py:553
+#: deployment/cli.py:557
 #, python-brace-format
 msgid "Operation {action} is not implemented for {value2}. Available: {value3}"
 msgstr ""
 
-#: deployment/cli.py:530
+#: deployment/cli.py:534
 #, python-brace-format
 msgid "Operation: {value1}"
 msgstr ""
@@ -5122,7 +5131,7 @@ msgstr ""
 msgid "snapshot-remove requires a full local capture ID from snapshots TARGET."
 msgstr ""
 
-#: deployment/cli.py:538
+#: deployment/cli.py:542
 msgid "ssh does not accept --dry-run; use status to check the state."
 msgstr ""
 

@@ -810,9 +810,16 @@ msgstr "Metoda iso: install spustí instalační ISO a zapíše systém pouze na
 msgid "ISO storage {storage} is inactive on the target node."
 msgstr "Úložiště ISO {storage} není aktivní na cílovém uzlu."
 
+msgid "Key verification: strict known_hosts"
+msgstr "Ověření klíče: striktní known_hosts"
+
 #, python-brace-format
-msgid "Key verification: strict known_hosts{value1}{value2}"
-msgstr "Ověření klíče: striktní known_hosts{value1}{value2}"
+msgid "Known-hosts file: {path}"
+msgstr "Soubor known_hosts: {path}"
+
+#, python-brace-format
+msgid "Host key alias: {alias}"
+msgstr "Alias klíče hostitele: {alias}"
 
 msgid "knownHostsFile must be an absolute path without control characters."
 msgstr "knownHostsFile musí být absolutní cesta bez řídicích znaků."
