@@ -192,7 +192,7 @@ msgstr ""
 msgid "A new VM must have a declared owner tied to its UUID."
 msgstr ""
 
-#: deployment/restore_apply.py:69
+#: deployment/restore_apply.py:94
 msgid "A new restore requires empty destination application paths."
 msgstr ""
 
@@ -373,11 +373,11 @@ msgstr ""
 msgid "Application paths must not traverse symbolic-link directories."
 msgstr ""
 
-#: deployment/restore_apply.py:208 deployment/restore_apply.py:335 deployment/restore_payload.py:87
+#: deployment/restore_apply.py:270 deployment/restore_apply.py:399 deployment/restore_payload.py:87
 msgid "Application payload restoration requires root to preserve ownership and metadata."
 msgstr ""
 
-#: deployment/restore_apply.py:35
+#: deployment/restore_apply.py:56 deployment/restore_apply.py:60
 msgid "Application restoration must not replace operating-system identity or restore state."
 msgstr ""
 
@@ -569,7 +569,7 @@ msgstr ""
 msgid "Cannot determine the VM disk size."
 msgstr ""
 
-#: deployment/restore_apply.py:44
+#: deployment/restore_apply.py:69
 msgid "Cannot identify the destination filesystem layout."
 msgstr ""
 
@@ -805,7 +805,7 @@ msgstr ""
 msgid "Configuring the serial console to capture potential kernel panics…"
 msgstr ""
 
-#: deployment/recovery_recipe.py:174
+#: deployment/recovery_recipe.py:179
 msgid "Conflicting file and directory paths in recovery recipe archive."
 msgstr ""
 
@@ -857,7 +857,7 @@ msgstr ""
 msgid "Could not evaluate the prepared native restore target."
 msgstr ""
 
-#: deployment/native_controller.py:39
+#: deployment/native_controller.py:39 deployment/native_controller.py:49
 msgid "Could not evaluate the selected native backup configuration."
 msgstr ""
 
@@ -948,11 +948,11 @@ msgstr ""
 msgid "Deployment method: {method}"
 msgstr ""
 
-#: deployment/restore_apply.py:311 deployment/restore_apply.py:65
+#: deployment/restore_apply.py:375 deployment/restore_apply.py:90
 msgid "Destination application paths must not traverse symbolic links."
 msgstr ""
 
-#: deployment/restore_apply.py:155
+#: deployment/restore_apply.py:183
 msgid "Destination filesystems cannot preserve a source hardlink group."
 msgstr ""
 
@@ -972,7 +972,7 @@ msgstr ""
 msgid "Destination restore requires system, machine ID, source, snapshot and private storage access."
 msgstr ""
 
-#: deployment/restore_apply.py:71
+#: deployment/restore_apply.py:96
 msgid "Destination scaffolding is absent from the selected application backup."
 msgstr ""
 
@@ -980,7 +980,7 @@ msgstr ""
 msgid "Destination writer inspection failed or timed out; inspect the external tool diagnostics."
 msgstr ""
 
-#: deployment/restore_apply.py:203
+#: deployment/restore_apply.py:265
 msgid "Destination writers must remain held until application restoration completes."
 msgstr ""
 
@@ -1159,11 +1159,11 @@ msgstr ""
 msgid "Enable backup in the source target declaration first."
 msgstr ""
 
-#: deployment/native_controller.py:98
+#: deployment/native_controller.py:121
 msgid "Enable nixberry.backup in the selected NixOS configuration first."
 msgstr ""
 
-#: deployment/native_controller.py:100
+#: deployment/native_controller.py:123
 msgid "Enable nixberry.backup.restic in the selected NixOS configuration first."
 msgstr ""
 
@@ -1478,7 +1478,7 @@ msgstr ""
 msgid "Installation plan verified; nothing was changed."
 msgstr ""
 
-#: deployment/restore_apply.py:226
+#: deployment/restore_apply.py:288
 msgid "Installed capture and restore application catalogues differ."
 msgstr ""
 
@@ -1675,11 +1675,11 @@ msgstr ""
 msgid "Invalid or incomplete generation inventory."
 msgstr ""
 
-#: deployment/restore_apply.py:279 deployment/restore_apply.py:354
+#: deployment/restore_apply.py:341 deployment/restore_apply.py:418
 msgid "Invalid private restore transaction directory."
 msgstr ""
 
-#: deployment/recovery_recipe.py:185
+#: deployment/recovery_recipe.py:190
 msgid "Invalid recovery recipe archive."
 msgstr ""
 
@@ -1906,11 +1906,11 @@ msgstr ""
 msgid "Native backup was interrupted; checking writer recovery."
 msgstr ""
 
-#: deployment/native_controller.py:91
+#: deployment/native_controller.py:114
 msgid "Native capture controller operations currently require Linux."
 msgstr ""
 
-#: deployment/native_controller.py:93
+#: deployment/native_controller.py:116
 msgid "Native capture requires a declared target with verified live system access."
 msgstr ""
 
@@ -2021,7 +2021,7 @@ msgstr ""
 msgid "No targets are declared. Add a host and instance or an RPi target."
 msgstr ""
 
-#: deployment/restore_apply.py:341
+#: deployment/restore_apply.py:405
 msgid "No unpublished restore transaction exists to abort."
 msgstr ""
 
@@ -2063,7 +2063,7 @@ msgstr ""
 msgid "One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"
 msgstr ""
 
-#: deployment/restore_apply.py:350
+#: deployment/restore_apply.py:414
 msgid "Only an unpublished staging transaction can be aborted; partial application data is never deleted."
 msgstr ""
 
@@ -2392,7 +2392,7 @@ msgstr ""
 msgid "Recover from the full SD card alone; no internet, SSH or builds on another computer."
 msgstr ""
 
-#: deployment/restore_apply.py:261
+#: deployment/restore_apply.py:323
 msgid "Recover pending capture writers before restoring application data."
 msgstr ""
 
@@ -2417,11 +2417,11 @@ msgstr ""
 msgid "Recovery interface: {interface}"
 msgstr ""
 
-#: deployment/recovery_recipe.py:182
+#: deployment/recovery_recipe.py:187
 msgid "Recovery recipe archive does not match its sealed file manifest."
 msgstr ""
 
-#: deployment/native_restic.py:261 deployment/recovery_recipe.py:146 deployment/recovery_recipe.py:157 deployment/recovery_recipe.py:98
+#: deployment/native_restic.py:261 deployment/recovery_recipe.py:103 deployment/recovery_recipe.py:151 deployment/recovery_recipe.py:162
 msgid "Recovery recipe archive exceeds its size limit."
 msgstr ""
 
@@ -2429,7 +2429,7 @@ msgstr ""
 msgid "Recovery recipe source must not contain symbolic links."
 msgstr ""
 
-#: deployment/recovery_recipe.py:102 deployment/recovery_recipe.py:55
+#: deployment/recovery_recipe.py:107 deployment/recovery_recipe.py:55
 msgid "Recovery recipes require regular source files and directories."
 msgstr ""
 
@@ -2437,11 +2437,11 @@ msgstr ""
 msgid "Recovery requires a new output directory; existing data is never overwritten."
 msgstr ""
 
-#: deployment/recovery_recipe.py:83
+#: deployment/recovery_recipe.py:84 deployment/recovery_recipe.py:89
 msgid "Recovery requires one regular source for each selected configuration."
 msgstr ""
 
-#: deployment/recovery_recipe.py:134 deployment/recovery_recipe.py:141 deployment/recovery_recipe.py:167
+#: deployment/recovery_recipe.py:139 deployment/recovery_recipe.py:146 deployment/recovery_recipe.py:172
 msgid "Recovery requires portable pinned flake inputs."
 msgstr ""
 
@@ -2623,7 +2623,7 @@ msgstr ""
 msgid "Restore access and mutation options only apply to destination restore."
 msgstr ""
 
-#: deployment/restore_apply.py:223
+#: deployment/restore_apply.py:285
 msgid "Restore access credentials and repository storage must stay outside application data."
 msgstr ""
 
@@ -2647,7 +2647,7 @@ msgstr ""
 msgid "Restore completion does not match this destination and policy."
 msgstr ""
 
-#: deployment/restore_apply.py:49
+#: deployment/restore_apply.py:74
 msgid "Restore destinations require identified writable Btrfs or ext4 filesystems."
 msgstr ""
 
@@ -2663,11 +2663,11 @@ msgstr ""
 msgid "Restore state requires a normalized path without spaces or systemd specifiers."
 msgstr ""
 
-#: deployment/restore_apply.py:322
+#: deployment/restore_apply.py:386
 msgid "Restored application data changed before restore completion."
 msgstr ""
 
-#: deployment/restore_apply.py:171 deployment/restore_apply.py:315
+#: deployment/restore_apply.py:232 deployment/restore_apply.py:379
 msgid "Restored application data differs or contains unexpected files; no completion was written."
 msgstr ""
 
@@ -3690,7 +3690,7 @@ msgstr ""
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr ""
 
-#: deployment/native_restore.py:94
+#: deployment/native_restore.py:96
 msgid "The destination did not confirm this exact native restoration."
 msgstr ""
 
@@ -3698,7 +3698,7 @@ msgstr ""
 msgid "The destination directory already exists; refusing to overwrite an existing or partial result."
 msgstr ""
 
-#: deployment/restore_apply.py:307 deployment/restore_apply.py:320
+#: deployment/restore_apply.py:371 deployment/restore_apply.py:384
 msgid "The destination filesystem layout changed during restoration."
 msgstr ""
 
@@ -3706,7 +3706,7 @@ msgstr ""
 msgid "The destination generation or architecture differs from the expected restore target."
 msgstr ""
 
-#: deployment/restore_apply.py:198 deployment/restore_apply.py:213 deployment/restore_apply.py:239
+#: deployment/restore_apply.py:259 deployment/restore_apply.py:275 deployment/restore_apply.py:301
 msgid "The destination machine or generation differs from the explicit restore target."
 msgstr ""
 
@@ -3969,15 +3969,15 @@ msgstr ""
 msgid "The installation media contains different pinned outputs."
 msgstr ""
 
-#: deployment/native_controller.py:126
+#: deployment/native_controller.py:149
 msgid "The installed capture policy differs from the selected configuration."
 msgstr ""
 
-#: deployment/native_restore.py:77
+#: deployment/native_restore.py:79
 msgid "The installed destination policies or identity differ from the selected restore configuration."
 msgstr ""
 
-#: deployment/native_controller.py:129
+#: deployment/native_controller.py:152
 msgid "The installed maintenance policy differs from the selected configuration."
 msgstr ""
 
@@ -4168,7 +4168,7 @@ msgstr ""
 msgid "The password file must be a private regular file owned by the current user."
 msgstr ""
 
-#: deployment/restore_apply.py:244 deployment/restore_apply.py:271
+#: deployment/restore_apply.py:306 deployment/restore_apply.py:333
 msgid "The pending restore belongs to a different source, destination or filesystem layout."
 msgstr ""
 
@@ -4217,11 +4217,11 @@ msgstr ""
 msgid "The private initrd SSH key must be a private regular file owned by the current user."
 msgstr ""
 
-#: deployment/restore_apply.py:85
+#: deployment/restore_apply.py:110
 msgid "The private restore stage contains an invalid application mapping."
 msgstr ""
 
-#: deployment/restore_apply.py:304
+#: deployment/restore_apply.py:367
 msgid "The private verified application stage changed during restoration."
 msgstr ""
 
@@ -4273,7 +4273,7 @@ msgstr ""
 msgid "The running system changed before update activation."
 msgstr ""
 
-#: deployment/native_controller.py:120
+#: deployment/native_controller.py:143
 msgid "The running system differs from this recipe; update it before native capture."
 msgstr ""
 
@@ -4302,7 +4302,7 @@ msgstr ""
 msgid "The selected Restic snapshot is not a completion receipt for this source."
 msgstr ""
 
-#: deployment/restore_apply.py:295
+#: deployment/restore_apply.py:357
 msgid "The selected backup does not match the distinct destination application catalogue."
 msgstr ""
 
@@ -4310,19 +4310,19 @@ msgstr ""
 msgid "The selected recipe has no nixberry launcher."
 msgstr ""
 
-#: deployment/native_controller.py:72
+#: deployment/native_controller.py:95
 msgid "The selected recovery recipe does not reproduce the expected source generation and policy."
 msgstr ""
 
-#: deployment/native_controller.py:148
+#: deployment/native_controller.py:171
 msgid "The source did not confirm the requested native capture operation."
 msgstr ""
 
-#: deployment/native_controller.py:57
+#: deployment/native_controller.py:79
 msgid "The source did not return valid native operation metadata."
 msgstr ""
 
-#: deployment/native_controller.py:60
+#: deployment/native_controller.py:82
 msgid "The source freshness status does not match its reported outcome."
 msgstr ""
 
@@ -4330,11 +4330,11 @@ msgstr ""
 msgid "The source generation or machine identity changed; native retention was refused."
 msgstr ""
 
-#: deployment/native_controller.py:53
+#: deployment/native_controller.py:75
 msgid "The source operation failed; inspect its diagnostics and retained capture state."
 msgstr ""
 
-#: deployment/native_controller.py:50
+#: deployment/native_controller.py:72
 msgid "The source operation timed out; inspect writer recovery before retrying."
 msgstr ""
 
@@ -4602,7 +4602,7 @@ msgstr ""
 msgid "This command requires the prepared full-SD installation environment."
 msgstr ""
 
-#: deployment/restore_apply.py:233
+#: deployment/restore_apply.py:295
 msgid "This destination already contains a different completed restoration."
 msgstr ""
 
@@ -4610,7 +4610,7 @@ msgstr ""
 msgid "This lab is reserved for the local Nixon host."
 msgstr ""
 
-#: deployment/cli.py:300 deployment/cli.py:302 deployment/native_controller.py:89
+#: deployment/cli.py:300 deployment/cli.py:302 deployment/native_controller.py:112
 msgid "This operation does not accept --apply."
 msgstr ""
 
@@ -4745,11 +4745,11 @@ msgstr ""
 msgid "Unsafe capture state file."
 msgstr ""
 
-#: deployment/recovery_recipe.py:154
+#: deployment/recovery_recipe.py:159
 msgid "Unsafe or duplicate entry in recovery recipe archive."
 msgstr ""
 
-#: deployment/recovery_recipe.py:127 deployment/recovery_recipe.py:172
+#: deployment/recovery_recipe.py:132 deployment/recovery_recipe.py:177
 msgid "Unsafe path in recovery recipe archive."
 msgstr ""
 
@@ -4765,7 +4765,7 @@ msgstr ""
 msgid "Unsupported host system."
 msgstr ""
 
-#: deployment/native_controller.py:84
+#: deployment/native_controller.py:107
 msgid "Unsupported native source backup operation."
 msgstr ""
 
@@ -4773,7 +4773,7 @@ msgstr ""
 msgid "Unsupported nvd metadata query."
 msgstr ""
 
-#: deployment/restore_apply.py:130
+#: deployment/restore_apply.py:158
 msgid "Unsupported special file in application restoration."
 msgstr ""
 
@@ -5106,7 +5106,7 @@ msgstr ""
 msgid "running"
 msgstr ""
 
-#: deployment/native_controller.py:87
+#: deployment/native_controller.py:110
 msgid "snapshot-remove requires a full local capture ID from snapshots TARGET."
 msgstr ""
 

@@ -216,7 +216,7 @@ See [bundle contents and handoff](offline.md).
 | `--erase-existing` | Only RPi `plan` and `reproduce`. |
 | `--key-file FILE` | VM `prepare-image`, or encrypted RPi `plan`/`reproduce`; otherwise prompt on execution. |
 | `--initrd-key-file FILE` | Encrypted RPi `plan`/`reproduce`; private SSH key matching `security.initrdHostKey`. |
-| `--json` | `list`, `show`, `status`, `verify`, `doctor`, `cleanup`, `export`, `prepare-image`. |
+| `--json` | `list`, `show`, `status`, `verify`, `doctor`, `cleanup`, `export`, `prepare-image`, and all snapshot and backup commands described above. |
 
 `--apply` and `--dry-run` are mutually exclusive. For `doctor` and `cleanup`,
 `--dry-run` does not skip read-only queries. `ssh` and `list` do not accept it.

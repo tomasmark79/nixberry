@@ -59,11 +59,12 @@ are rejected. The original checkout and its local identity are preserved.
 Add new source files to the Git index before checking them locally.
 
 [GitHub Actions](../.github/workflows/checks.yml) runs on pushes, pull requests
-and manual dispatches, with separate `regression` and `inventory` jobs. They
-require no repository secrets, administrator keys, SSH agent or hypervisor.
+and manual dispatches, with separate `regression`, `inventory` and
+`restore-publication` jobs. The regression and inventory jobs require no
+repository secrets, administrator keys, SSH agent or hypervisor.
 Repository access is read-only and checkout credentials are not retained.
-Both jobs run catalogue checks and reject stale generated translations before
-compilation can rewrite them. Select either job locally with:
+The regression and inventory jobs run catalogue checks and reject stale generated
+translations before compilation can rewrite them. Select either suite locally with:
 
 ```sh
 nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py --suite regression
@@ -77,6 +78,20 @@ isolated inventory variants across all five VM backends, including the
 Linux and Windows example host declarations, and builds the empty CLI. RPi-specific
 installation behavior is covered by mocked regression checks; CI does not
 prove physical recovery, boot or live deployment on any platform.
+
+The `restore-publication` job runs privileged filesystem checks inside a
+disposable NixOS VM. It checks overlay whiteout ownership, timestamps and extended
+attributes, rejection of other device nodes, and publication across real tmpfs
+and bind mounts. These tests are separate from unprivileged Python discovery;
+both test jobs reject missing tools, failures and skipped tests. Run them locally
+without host root access:
+
+```sh
+nix build --no-link --no-write-lock-file path:.#checks.x86_64-linux.restore-publication
+```
+
+This requires KVM. It verifies filesystem publication, not application recovery
+or deployment on any real VM backend or Raspberry Pi.
 
 The separate direct-SSD integration check boots an isolated x86 Linux workstation
 VM with a disposable virtual SSD and ARM binfmt. It performs real partitioning,

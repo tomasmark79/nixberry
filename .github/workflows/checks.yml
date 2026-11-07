@@ -36,3 +36,19 @@ jobs:
             max-jobs = 2
       - name: Run isolated checks
         run: nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py --suite "${{ matrix.suite }}"
+
+  restore-publication:
+    name: Privileged restore publication in a disposable VM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+        with:
+          enable_kvm: true
+          extra_nix_config: |
+            max-jobs = 2
+      - name: Check device metadata and nested mounts
+        run: nix build --no-link --no-write-lock-file path:.#checks.x86_64-linux.restore-publication
