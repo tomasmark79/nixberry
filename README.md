@@ -4,6 +4,14 @@
   <img src="assets/NixBerryLogo.svg" alt="NixBerry logo" width="240">
 </p>
 
+<p align="center">
+  <a href="https://github.com/tomasmark79/nixberry/actions/workflows/checks.yml"><img src="https://github.com/tomasmark79/nixberry/actions/workflows/checks.yml/badge.svg?branch=main" alt="GitHub Actions checks"></a>
+  <a href="flake.nix"><img src="https://img.shields.io/badge/Nix-flakes-5277C3?logo=nixos&amp;logoColor=white" alt="Nix flakes"></a>
+  <a href="docs/rpi-recovery.md"><img src="https://img.shields.io/badge/Raspberry_Pi-5-A22846?logo=raspberrypi&amp;logoColor=white" alt="Raspberry Pi 5"></a>
+  <a href="docs/vm.md"><img src="https://img.shields.io/badge/VM_backends-5-2563EB" alt="5 VM backends"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-16A34A" alt="MIT license"></a>
+</p>
+
 NixBerry builds and manages NixOS systems on **Raspberry Pi 5**, **QEMU/KVM
 (libvirt), Hyper-V, Proxmox VE, VirtualBox and VMware Workstation**. A local
 machine declaration selects its configuration, hardware, network and resources.
