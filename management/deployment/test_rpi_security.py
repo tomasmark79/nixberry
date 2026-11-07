@@ -33,6 +33,17 @@ class RpiSecurityTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return json.loads(result.stdout)
 
+    def test_install_app_does_not_build_ram_recovery_media(self):
+        derivations = self.evaluate('''builtins.attrNames (
+          builtins.getContext f.apps.x86_64-linux.nixberry-rpi-install.program
+        )''')
+        self.assertTrue(derivations)
+        result = subprocess.run(['nix-store', '--query', '--requisites', *derivations],
+                                capture_output=True, text=True, timeout=90)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        recovery = [path for path in result.stdout.splitlines() if path.endswith('-kexec-tree.drv')]
+        self.assertEqual(recovery, [], 'Installation must not build unused RAM recovery images')
+
     def test_encrypted_and_default_root_boot_contracts(self):
         result = self.evaluate('''let describe = name: let c = f.nixberrySystems.${name}.config; in {
           system = c.system.build.toplevel.drvPath;

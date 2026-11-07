@@ -44,6 +44,7 @@ let
 in
 pkgs.symlinkJoin {
   name = "nixberry-rpi-tools";
+  passthru = { inherit install recoveryTest; };
   paths = [
     install
     recoveryTest

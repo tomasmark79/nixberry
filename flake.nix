@@ -253,11 +253,11 @@
         };
         nixberry-rpi-install = {
           type = "app";
-          program = "${rpiTools}/bin/nixberry-rpi-install";
+          program = "${rpiTools.install}/bin/nixberry-rpi-install";
         };
         nixberry-rpi-recovery-test = {
           type = "app";
-          program = "${rpiTools}/bin/nixberry-rpi-recovery-test";
+          program = "${rpiTools.recoveryTest}/bin/nixberry-rpi-recovery-test";
         };
       };
     };
