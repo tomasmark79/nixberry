@@ -293,9 +293,9 @@ def main(argv=None):
     if (args.address or args.erase_existing) and not (args.action == "unlock" and not args.erase_existing) and not (
             args.action in ("plan", "reproduce") and args.target in registry
             and registry[args.target]["backend"] == "rpi"):
-        parser.error(_("--address and --erase-existing only apply to plan/reproduce for RPi targets."))
+        parser.error(_("--address applies to RPi plan/reproduce or unlock; --erase-existing only applies to RPi plan/reproduce."))
     if args.json and args.action not in ("list", "show", "status", "verify", "export", "doctor", "cleanup", "prepare-image", *BACKUP_ACTIONS, *SNAPSHOT_ACTIONS):
-        parser.error(_("--json is available for list, show, status, verify, export, doctor and cleanup."))
+        parser.error(_("This operation does not accept --json."))
     if args.action in ("list", "show", "status", "ssh", "probe", "plan", "verify", "export", "diff", "diffg", "doctor", "cleanup", "prepare-image", "unlock") and args.apply:
         parser.error(_("This operation does not accept --apply."))
     if args.action in ("backups", "verify-backup", "backup-schedule", "backup-monitor", "snapshots") and args.apply:

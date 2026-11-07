@@ -41,8 +41,8 @@ msgstr "\nPředání pro Proxmox: viz PROXMOX.txt.\n"
 msgid "\nVirtualBox handoff: see VIRTUALBOX.txt.\n"
 msgstr "\nPředání pro VirtualBox: viz VIRTUALBOX.txt.\n"
 
-msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
-msgstr "--address a --erase-existing patří pouze k plan/reproduce cíle RPi."
+msgid "--address applies to RPi plan/reproduce or unlock; --erase-existing only applies to RPi plan/reproduce."
+msgstr "--address patří k plan/reproduce cíle RPi nebo k unlock; --erase-existing patří pouze k plan/reproduce cíle RPi."
 
 msgid "--artifact-root only applies to cleanup."
 msgstr "--artifact-root patří pouze k cleanup."
@@ -53,8 +53,8 @@ msgstr "--configuration patří pouze k new-*-vm; u existujícího cíle uprav c
 msgid "--erase-existing cannot be combined with --stage."
 msgstr "--erase-existing nelze kombinovat s --stage."
 
-msgid "--json is available for list, show, status, verify, export, doctor and cleanup."
-msgstr "--json je dostupné pro list, show, status, verify, export, doctor a cleanup."
+msgid "This operation does not accept --json."
+msgstr "Tato operace nepřijímá --json."
 
 msgid "--method applies to new-*, show, plan, create, install, provision, reproduce and export."
 msgstr "--method patří k new-*, show, plan, create, install, provision, reproduce a export."

@@ -37,7 +37,7 @@ msgid "\nVirtualBox handoff: see VIRTUALBOX.txt.\n"
 msgstr ""
 
 #: deployment/cli.py:296
-msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
+msgid "--address applies to RPi plan/reproduce or unlock; --erase-existing only applies to RPi plan/reproduce."
 msgstr ""
 
 #: deployment/restic_backup.py:638
@@ -74,10 +74,6 @@ msgstr ""
 
 #: deployment/cli.py:181
 msgid "--initrd-key-file only applies to encrypted RPi plan/reproduce."
-msgstr ""
-
-#: deployment/cli.py:298
-msgid "--json is available for list, show, status, verify, export, doctor and cleanup."
 msgstr ""
 
 #: deployment/cli.py:179
@@ -4633,6 +4629,10 @@ msgstr ""
 
 #: deployment/capture_controller.py:112 deployment/cli.py:300 deployment/cli.py:302
 msgid "This operation does not accept --apply."
+msgstr ""
+
+#: deployment/cli.py:298
+msgid "This operation does not accept --json."
 msgstr ""
 
 #: deployment/restic_access.py:58
