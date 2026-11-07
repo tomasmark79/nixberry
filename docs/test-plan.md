@@ -1,111 +1,36 @@
 # Testing NixBerry
 
-[← Main guide](../README.md) · [Platform contract](platform-consistency.md)
+[Main guide](../README.md) · [Platform contract](platform-consistency.md)
 
-Separate static review, isolated regression tests, builds, live deployment and
-running-system verification. A built image does not prove boot; a mock does
-not prove a real hypervisor works.
+Match verification to the change. Static review and isolated regression checks do
+not prove deployment; a built image does not prove boot. Keep logs and results
+outside user documentation. Documentation-only changes need source/link checks,
+not a full backend campaign.
 
 ## Isolated checks
 
-The backup controller tests compare policy validation and operation availability
-for all five VM backends and RPi, including image/ISO and offline/direct-access
-variants. Provider fixtures check explicit recipe selection, snapshot/target
-identity, JSON/error streams, no provider execution during dry-run, private timer
-export and refusal to overwrite an existing export. Completion tests use only
-local declarations/receipts. Configuration-specific tests must additionally cover
-crypto EOF, interrupted transport, retained-copy verification, concurrent access
-and retention refusal for partial, corrupt, unknown or changed state.
-Monitoring tests cover freshness boundaries, failed/interrupted/overdue captures,
-PID reuse, private state, read-only behavior, notification deduplication/reminders
-and recovery, transport failure and monitoring-only timer exports. A desktop
-notification transport acknowledgement is separate from visual/user receipt.
-
-Live backup acceptance is separate: use an authorized isolated source/restore
-target and host fence, capture through the main CLI, authenticate complete payloads,
-restore only into an empty distinct target and activate recovered configuration
-separately. Verify existing data without recreating it, numeric ownership and
-service identities, then gracefully reboot and repeat application checks. Keep
-protected evidence outside Git. Timer export/validation does not prove scheduled
-execution or authorize activation; backup tests do not authorize VM creation,
-reinstallation or removal. See [the backup contract](backups.md).
-
-The named-adapter contract is exercised by `test_multinic.py` across all five VM
-backends, including guest addressing, LUKS initrd selection, adapter identity and
-management endpoint rejection. For live verification, use a separately authorized
-disposable VM with isolated networks and an independent client. Check image and
-ISO boot, adapter names/MACs, primary SSH selection, secondary addressing, rejection
-of altered or extra adapters, and reset preview after hardware changes. Test both
-supported host operating systems where available; isolated tests do not establish
-live backend support or authorize changes to existing machines.
-
-On x86_64 Linux, run the same isolated checks as CI from the recipe root:
+On x86_64 Linux, run the same checks as CI from the recipe root:
 
 ```sh
 nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py
 ```
 
-Nix must be installed and able to build local derivations. The `ci` development
-shell supplies the remaining tools from the recipe lock without replacing the
-installed Nix client. The first run downloads locked sources and runtime
-dependencies. It builds management tools and small test artifacts, without
-building guest systems, images or installation media.
+The locked `ci` shell supplies tools while retaining the installed Nix client.
+The runner checks catalogue freshness before compilation, Python/Nix/Bash/
+PowerShell/workflow syntax, unresolved names, shell errors, all Python suites and
+isolated inventory variants. Missing tools, failed tests and skipped tests fail
+the run. It builds management tools and small fixtures, not guest systems/media.
+Select `--suite regression` or `--suite inventory` to narrow the run.
 
-The runner copies tracked working files into a temporary recipe with a test-only
-public key. It excludes ignored and untracked files, including local hosts,
-VM/RPi declarations and private linked configurations. Tracked absolute links,
-links leaving the recipe and tracked paths through symbolic-link directories
-are rejected. The original checkout and its local identity are preserved.
-Add new source files to the Git index before checking them locally.
+The runner copies tracked working files into a temporary recipe with a test key.
+It excludes ignored/untracked hosts, machine declarations and private linked
+configurations; add new public source files to the index before checking them.
+Unsafe tracked links are rejected. The original recipe and local identities are
+preserved, and no hypervisor or administrator credentials are needed.
+[GitHub Actions](../.github/workflows/checks.yml) runs regression, inventory and a
+separate privileged restore-publication job with read-only repository access.
 
-[GitHub Actions](../.github/workflows/checks.yml) runs on pushes, pull requests
-and manual dispatches, with separate `regression`, `inventory` and
-`restore-publication` jobs. The regression and inventory jobs require no
-repository secrets, administrator keys, SSH agent or hypervisor.
-Repository access is read-only and checkout credentials are not retained.
-The regression and inventory jobs run catalogue checks and reject stale generated
-translations before compilation can rewrite them. Select either suite locally with:
-
-```sh
-nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py --suite regression
-nix develop --no-write-lock-file path:.#ci --command python3 management/deployment/check_ci.py --suite inventory
-```
-
-The regression job checks Python, Nix, Bash and PowerShell syntax, unresolved
-Python names, shell errors, workflow syntax and all five Python test suites.
-Missing tools and skipped tests fail the job. The inventory job evaluates
-isolated inventory variants across all five VM backends, including the
-Linux and Windows example host declarations, and builds the empty CLI. RPi-specific
-installation behavior is covered by mocked regression checks; CI does not
-prove physical recovery, boot or live deployment on any platform.
-
-The `restore-publication` job runs privileged filesystem checks inside a
-disposable NixOS VM. It checks overlay whiteout ownership, timestamps and extended
-attributes, rejection of other device nodes, and publication across real tmpfs
-and bind mounts. These tests are separate from unprivileged Python discovery;
-both test jobs reject missing tools, failures and skipped tests. Run them locally
-without host root access:
-
-```sh
-nix build --no-link --no-write-lock-file path:.#checks.x86_64-linux.restore-publication
-```
-
-This requires KVM. It verifies filesystem publication, not application recovery
-or deployment on any real VM backend or Raspberry Pi.
-
-The separate direct-SSD integration check boots an isolated x86 Linux workstation
-VM with a disposable virtual SSD and ARM binfmt. It performs real partitioning,
-installs the ARM closure, generates RPi boot files, checks mount protection and
-repeats an explicitly authorized erase. It never contacts a physical board:
-
-```sh
-nix build --no-link path:.#checks.x86_64-linux.rpi-local-ssd
-```
-
-This needs KVM and several GiB of temporary storage. It verifies installation
-output, not RPi firmware boot; physical boot remains a separate hardware check.
-
-For focused checks, use tools from the development shell and English defaults:
+For focused checks, use the development shell:
 
 ```sh
 export NIXBERRY_LANG=en
@@ -119,286 +44,127 @@ python3 -m unittest discover -s management/proxmox/lab -p 'test_*.py'
 python3 management/deployment/check_inventory.py
 ```
 
-Filesystem selection checks in `management/deployment/test_storage.py` evaluate
-ext4 and Btrfs roots with and without LUKS for all five VM backends and RPi.
-They verify declaration scaffolding, separate snapshot/swap subvolumes and update
-format guards. Evaluation does not prove image installation, boot, active swap,
-snapshot capture or restoration; verify those separately in isolated systems.
+Tests use temporary declarations, test keys, mocked transports and selected small
+real artifacts. English is the default; individual translation tests select Czech.
+Find focused cases under `management/deployment/test_*.py` and backend directories:
 
-`test_snapshots.py` injects capture, timeout, identity and restart failures and
-checks durable recovery records, private state, read-only publication and scoped
-removal. Run `nix build --no-link path:.#checks.x86_64-linux.snapshots` for actual
-Btrfs capture in a disposable NixOS VM. It checks unchanged plan state, resumed
-writers, a stable read-only view while the source changes, refusal of unlisted
-nested subvolumes, interrupted-writer recovery and mounted-reference protection
-during removal. It also checks capture-lock refusal for both update generations
-and actual activation forward/backward while changing `stateDirectory`. The
-driver boots the kernel directly; GRUB disk installation is disabled in this
-fixture. This does not prove ARM boot or deployment on any real backend.
-
-`test_update_guard.py` checks activation leases, generation/policy changes,
-pending writer recovery and disabled/enabled capture combinations.
-`test_updater.py` checks archive preparation before transfer, staging after
-verified activation from the same frozen recipe, partial-failure diagnostics
-and guarded update dispatch across all five VM backends and RPi. Transport
-boundaries are mocked; this is not controller-to-guest deployment proof.
-
-`test_restore_policy.py` evaluates destination preparation on all six platforms,
-checks unchanged capture application keys, rejects missing writer coverage and
-management holds, and compares Nix/Python policy hashes including Unicode paths.
-`test_restore_target.py` injects active writers, populated paths, symlinks,
-missing/edited guards, daemon-reload and completion-identity failures. Check that
-pre-completion readiness rejects symbolic links and parent traversal, while status
-after valid completion reports a final symbolic link as present/nonempty without
-following it. Parent directory links remain refused.
-`nix build --no-link path:.#checks.x86_64-linux.restore-preparation` boots and
-reboots a disposable prepared destination. Check ordinary/template services,
-socket/timer activation and Restic backup jobs stay held; synthetic completion
-opens only the restore gate and preserves existing unit conditions. This is not
-application-data recovery or proof of a physical boot.
-
-`test_capture_controller.py` checks no-contact plans, identity/generation and
-installed-policy refusal before capture, explicit write dispatch and preservation
-of diagnostic streams. It rejects impure file reads and missing lock entries.
-`test_recovery_recipe.py` exercises selected-source scope, unrelated private data
-exclusion, host encoding, archive manifest tampering, unsafe paths and exact VM
-and RPi generation reproduction. CLI/completion contracts cover all VM backends,
-image/ISO and access variants without system evaluation for inventory. These
-checks do not prove a physical installation or every hypervisor transport.
-
-`test_restore_apply.py`, `test_restic_restore.py` and `test_update_guard.py` check
-publication, explicit target binding, private credential cleanup, retry after
-copy/marker interruption, unknown-file refusal and activation exclusion. Run
-`nix build --no-link path:.#checks.x86_64-linux.restic-restore` for the integrated
-scenario: UEFI guests, a selected source recipe that reproduces the actual source
-generation, global encrypted backup, source shutdown and declaration removal,
-prepared destination restoration through a read-only SFTP key, forced interruption
-and reboot, retry and actual HTTP application behavior backed by restored SQLite.
-Check that destination SSH keys and machine ID remain unchanged. Recover the
-sealed source recipe after source loss and evaluate its original system path.
-This proves the exercised x86_64 VM setup; it does not prove physical ARM boot,
-RPi deployment, every hypervisor transport or arbitrary application health.
-The Restic restore and backup VM scenarios package an empty controller inventory
-and supply their own test identities. Local declarations and linked server
-configurations are not imported into these controllers.
-
-`test_restic_backup.py` checks cold-capture recovery, unsuccessful publication,
-repository/credential policy, capture leases and configuration-owned metadata for
-all six platforms and both filesystem choices, including legacy Hyper-V owner
-identities. `nix build --no-link path:.#checks.x86_64-linux.restic-backup` runs
-actual Btrfs and ext4 source guests against a separate SFTP storage guest. It
-exercises explicit repository initialization, existing/received sealed archive
-staging and bad-hash refusal, read-only planning, direct and
-systemd-owned captures, actual source-timer firing, strict host-key rejection
-before shutdown and complete
-payload authentication from the storage guest after each source is shut down.
-Inspect the authenticated manifest there for the source architecture and numeric
-account evidence, with no password, login or membership fields.
-
-For both the Btrfs and ext4 guests, the Restic backup scenario inspects the
-separate maintenance JSON and enabled timers, runs the source freshness service
-and executes retention through the installed helper.
-Check `missing` with exit `1` before the first capture, then `ok` with the configured
-threshold and current machine identity. Create more captures than `keepLast`,
-compare the no-write preview with actual inventory, apply retention and inspect
-the exact removed receipt/payload IDs and verified newest retained receipt.
-Repeat full payload authentication on retained captures. Source-loss reads on the
-storage guest include an independent freshness check with an explicit threshold.
-These x86_64 VM procedures do not prove physical RPi boot or maintenance.
-
-`test_restic_retention.py` covers authenticated grouping, duplicate receipts,
-machine isolation and invalid/future metadata. `test_restic_maintenance.py` checks
-generation/machine revalidation, capture-lock use, pending recovery,
-retained payload verification, changed inventory and explicit deletion arguments.
-`test_restic_health.py` covers authenticated timestamp selection, machine filtering,
-`ok/stale/missing/future`, damaged evidence and the distinction between recipe
-authentication and full application payload verification.
-`test_restic_maintenance_policy.py` evaluates nullable defaults, threshold bounds,
-schedule prerequisites, root-only services/timers and prepared restore holds on
-all six profiles. Provider monitoring history/notifications and exported controller
-timers have their separate tests; Restic check jobs provide systemd failure state
-without that notification path.
-
-Independent verification and restore use Restic `--no-lock` with read-only SFTP.
-The storage operator must prevent scheduled/manual pruning during these readers;
-the source capture lock supplies no independent reader lease. Do not interpret
-an ordinary freshness check as complete payload verification or a restore test.
-
-`test_backup_identity.py` checks evidence bounds and malformed account values;
-`test_restic_backup.py` checks pre-shutdown lookup failure and compatibility with
-both manifest versions, including downgrade refusal.
-The Btrfs case includes a child subvolume bind-mounted over nonempty parent
-data. Inspect the encrypted payload to confirm that the hidden parent subtree
-is absent while the child and unrelated sibling remain present, including paths
-containing glob characters, backslashes and spaces.
-The internal payload restoration engine also restores selected application paths
-into a new private staging directory on storage after source shutdown. Check
-hardlinks, sparse files, symlinks, user xattrs, numeric ownership and POSIX ACL
-entries, while hidden parent data remains excluded. A successful private stage
-is not publication into live application paths or a restore completion marker.
-`test_restore_payload.py` checks architecture and account conflicts, ACL/capability
-owners, private incomplete staging on failures and the fixed Restic read-only
-restore arguments. These checks do not prove prepared-target data publication
-or application behavior after restoration.
-The storage guest also runs the packaged controller as a non-root recovery user,
-with its own SSH key and no source declaration, to list, verify and recover sealed
-source code. Test read-only SFTP credentials with repository locking disabled.
-`test_restic_access.py` covers private contexts, wrong identity/permissions,
-no-contact plans, bounded metadata, write-operation refusal and safe new output.
-Storage warning tests cover default warnings and an explicit `warnNoPqKex`
-exception in both capture modes, the SFTP probe, Restic transport and independent
-restore credential transfer. Policy evaluation checks the unchanged default SSH
-fields and the optional exception across all six platforms and both filesystems.
-It proves neither application publication into a replacement machine nor a
-physical RPi install/boot. Real NAS accounts and host keys remain operator data.
-
-Use English defaults for the regression suite; individual translation tests
-select Czech explicitly. Tests use temporary declarations and mocked transports.
-Some invoke Nix with small fixture artifacts or test real Python-to-Python
-transport. They do not require reinstalling a live server. Recipe fixtures use
-test keys rather than the administrator's local identity.
-
-| Area | Checks in `management/deployment/` |
+| Change area | Required focus |
 | --- | --- |
-| CLI capabilities and rejected options | `test_cli.py`, `test_platform_contract.py` |
-| Configurations and all backend declarations | `test_configurations.py`, `test_scaffold.py`, `test_methods.py` |
-| Tool packages, image/ISO manifests, reset without media | `test_platform_contract.py` |
-| Portable adapter, identities, disks, transfer | `test_portable.py` |
-| Hyper-V media selection and transport | `test_hyperv_media.py`, `management/hyperv/test_*.py` |
-| Reset and rejected unsafe steps | `test_reset.py` and backend checks |
-| libvirt directory-symlink confirmation and revalidation | `management/libvirt/test_reset_symlinks.py`: temporary files and mocked hypervisor operations; no live VM removal |
-| Completion, aliases, online/offline and direct SSH | `test_completion.py` |
-| Output, diagnostics, colors, languages and catalogues | `test_diagnostics.py`, `test_messages.py`, `test_message_contract.py` |
-| Metadata comparisons without importing unsigned paths | `test_diffing.py`, `test_closure_metadata.py` (real local `nvd` when available) |
-| Campaign isolation and resource tracking | `test_campaign.py` |
-| CI export excludes local data and unsafe links | `test_ci.py` |
+| CLI, declarations, methods, configurations | Capabilities, validation, scaffolding, help, aliases, completion and exported manifests across all applicable platforms. |
+| Networking | Adapter order/MACs, primary management endpoint, secondary addressing, LUKS initrd selection and altered/extra adapter refusal. |
+| Identity, storage, reset | Owner/UUID/disk/reference checks, links, graceful shutdown, revalidation and refusal of uncertain state. Libvirt symlink cases use temporary files/mocked operations. |
+| Updates and comparisons | No-contact plans, generation/policy guards, capture leases, partial updates, archive staging and metadata comparisons without importing running-system code. |
+| Capture and Restic | Ext4 cold/Btrfs modes, paths/writers, nested roots, timeout/restart failure, durable recovery, strict storage trust, receipts and full authentication. |
+| Retention and health | Machine isolation, duplicate receipts, bad/future metadata, retained-payload authentication, changed inventory, exact deletion IDs and freshness boundaries. |
+| Restore | Prepared guards, empty destinations, accounts/architecture, private credentials, interrupted publication/retry, unknown files, completion and activation exclusion. |
+| Provider automation | Explicit recipe, source-loss reads, private timer exports, no execution on dry-run, run history, PID reuse and notification failures/deduplication. |
+| Messages and output | English/Czech/fallback, placeholders, remote packaging, stdout/stderr, JSON, exit codes, TTY, `NO_COLOR` and `TERM=dumb`. |
 
-Nixon's separate shell integration check is run from its own repository:
-`nix build --no-link path:.#checks.x86_64-linux.nixberry-shell`.
-It substitutes Nix, editors and deployment, including generated launchers/loaders.
+## Disposable integration checks
+
+The following [flake checks](../flake.nix) use isolated fixtures. For example:
+
+```sh
+nix build --no-link --no-write-lock-file path:.#checks.x86_64-linux.rpi-local-ssd
+```
+
+VM checks need KVM and temporary storage, without host root access. Run only
+checks relevant to the change:
+
+| `checks.x86_64-linux.NAME` | What to verify |
+| --- | --- |
+| `rpi-local-ssd` | Real partitioning of a disposable disk, ARM binfmt, closure/boot-file installation, mount protection and explicit repeated erase. |
+| `snapshots` | Actual Btrfs capture, stable read-only view, writer recovery, nested-root refusal, mounted-reference protection and both update-generation locks. |
+| `restic-backup` | Btrfs/ext4 sources with SFTP storage, explicit init/staging, source-timer execution, strict-host-key refusal, complete payload authentication, maintenance and source-loss reads. |
+| `restore-preparation` | Writer/socket/timer and backup-job holds across boot/reboot, policy/machine-bound completion and preservation of other unit conditions. |
+| `restore-publication` | Real filesystem ownership, timestamps/xattrs, overlay whiteouts, device refusal, tmpfs and bind-mount publication. |
+| `restic-restore` | UEFI source, encrypted backup, source shutdown/declaration loss, read-only SFTP recovery, interrupted restore/reboot/retry and HTTP/SQLite application checks; unchanged destination identity. |
+| `playground` | Declared router behavior with isolated upstream/downstream clients. |
+| `retrogaming` | Player policy, launcher paths, writable settings and Pegasus collection discovery in a virtual display. |
+| `dosbox-pure` | Execution of a small original DOS program with dynamic recompilation. Also available for `aarch64-linux`. |
+
+These prove only their exercised fixtures. Direct SSD preparation does not test
+RPi firmware; x86_64 source/restore guests do not prove physical ARM boot or every
+hypervisor transport. Run the ARM DOSBox check natively on a 16 KiB RPi kernel
+to exercise that page-size boundary; emulation on a 4 KiB host does not prove it.
+
+For backup integration, inspect authenticated account/architecture evidence and
+numeric ownership, ACLs, hardlinks, sparse files, symlinks and xattrs. Nested child
+captures must replace hidden parent data, including literal special characters
+in paths. Verify retained payloads after pruning. Independent reads use Restic
+`--no-lock`: prevent concurrent storage pruning during verification/restore.
+A freshness check is neither full payload authentication nor a restore test.
 
 ## Prebuilt media checks
 
-With `qemu-img` and mtools, inspect QCOW2, VDI and VMDK:
+With `qemu-img` and mtools:
 
 ```sh
 python3 management/deployment/check_images.py /path/system.qcow2 /path/system.vdi /path/system.vmdk
 ```
 
-Checks read format, capacity, GPT, ext4, UEFI fallback and boot entries referencing
-kernel, initrd and system. Images are neither mounted nor changed.
-This does not replace a real boot test.
-
-Application checks:
-
-```sh
-nix build --no-link path:.#emcx
-nix run path:.#emcx-tests
-nix build --no-link path:.#hstr path:.#packages.x86_64-linux.hstr.tests.scroll
-```
-
-emcx needs `unshare -Ur` and runs TUI checks in tmux. HSTR uses temporary history.
-Select the appropriate architecture for ARM packages.
+This reads format, capacity, GPT, ext4, UEFI fallback and kernel/initrd/system
+boot entries without mounting or modifying images. It does not replace boot.
+For shared shell applications, use `nix run path:.#emcx-tests` and the HSTR
+package tests; emcx TUI checks need `unshare -Ur` and tmux.
 
 ## Live scenario matrix
 
+Live creation, installation, shutdown, removal, updates and physical disk writes
+need explicit authorization for dedicated targets/resources. A running machine
+is not permission to change it. Use an isolated recipe and separate identities,
+networks, storage and clients; production services must not receive test traffic
+or send mail/jobs to real users.
+
+| Variant | Acceptance |
+| --- | --- |
+| All five VM backends | Both image and ISO; supported Linux/Windows hosts; correct UEFI/controller/agent, capacity, disk boot and exact system path. |
+| Online VM | `plan`, authorized deployment, SSH/doctor/verify, diff/update/generations, cleanup preview and scoped reset of owned test resources. |
+| Offline VM | Disk/ISO export, manifest/recipe/checksums, actual manual import or installation, then direct SSH management. |
+| VM networking | DHCP/static primary, gateway/DNS, named secondary adapters and refusal of altered identities/attachments. |
+| Physical RPi | Correct board/SSD, direct preparation or SD recovery, boot without SD, network, updates and application persistence. |
+| Existing servers | Read-only checks unless a separate write scope is authorized. |
+| Backups | CLI capture, complete authentication after source loss, restore into an empty distinct destination, ownership and application checks, then an authorized reboot and repeat checks. |
+
+For VMs, exercise `reproduce`, `provision` and separate `create/install`, method
+and configuration selection. Verify target absence first. Image boots without
+formatting; ISO installs only onto a blank disk, detaches after successful
+installation/graceful shutdown and boots the installed system. Reject repeated
+creation, foreign ownership, shared disks and stale identity. Inventory/cleanup
+must not delete anything. Never force shutdown after a graceful-shutdown failure.
+
 ### Encrypted Raspberry Pi root
 
-Use a verified encrypted backup and prepared SD/USB recovery media. Live physical
-disk installation and reboot require separate authorization and exact board/disk
-identity checks. A build or local bootloader test does not prove RPi cold boot.
+Follow [RPi encryption](security.md#raspberry-pi-5) with a verified backup and
+prepared recovery media. Check exact board/disk identity, pinned recovery SSH,
+matching runtime boot key and passphrase, mounted-disk refusal, LUKS2/root/boot
+links, correct SSD serial and absence of secrets from store artifacts/logs.
 
-Check that plaintext defaults remain unchanged, private boot keys are absent
-from the built initrd, and RP1, USB storage, cryptsetup and the declared static
-network are available before root. Verify that missing runtime secrets abort a
-generation update before the previous default generation is replaced.
-
-Reject changed recovery SSH keys, mismatched public/private boot keys, a
-different media policy and mounted or wrong-serial SSDs before formatting.
-Install LUKS2 with runtime credentials, then verify the mapped root and original
-physical SSD identity. Test a locked cold boot, wrong passphrase, changed boot
-SSH key, successful unlock, installed-system verification, repeat cold boot and
-an update that preserves runtime initrd-secret installation. Confirm persistent
-application state survives the authorized migration.
+Test a locked cold boot, wrong passphrase, changed boot SSH key, successful
+unlock, ordinary verification, another cold boot and an update retaining runtime
+initrd-secret handling. Missing secrets must stop a generation update before
+replacing its previous default. Check USB Ethernet/storage and RP1 in initrd on
+the actual hardware, plus persistent application data after recovery.
 
 ### Encrypted VM images
 
-Use a new isolated recipe, per-test SSH identities and a fresh disk. Never
-reencrypt, reinstall or delete an existing VM as part of these checks.
+Use fresh declarations/disks and per-test keys. Prepare outside the recipe/store;
+check that passphrases never enter artifacts or logs. For each backend, verify
+locked boot and pinned initrd SSH before services, wrong-password/key refusal,
+LUKS2 and backing-partition identity, unlock and installed-system verification.
+A later cold boot must require unlocking again. Check encrypted offline handoff
+and refusal of changed media/policy and encrypted ISO requests.
 
-For each available VM backend and image format:
-
-1. Prepare a LUKS image outside the recipe and store. Confirm that neither
-   the recipe, derivations, export nor logs contain the test passphrase.
-2. Review `plan`, create the new VM and boot it. Confirm that initrd SSH is
-   reachable while ordinary services are unavailable and the root stays locked.
-3. Reject a wrong passphrase and a changed pinned SSH host key. Neither case
-   may start the installed system or silently relax key verification.
-4. Unlock through the pinned initrd identity. Verify LUKS2, the mapped root,
-   the expected backing partition, boot partition, system and required services.
-5. Shut down gracefully and boot the same VM again. It must wait for a new
-   unlock; unlocking once must not install a persistent disk key.
-6. Check export and offline import, including the public unlock metadata.
-   Refuse corrupted media, changed identity/policy and encrypted ISO requests.
-
-Confidential requests must fail before creation or key release on unsupported
-implementations. An intentional refusal is evidence of that guard, not evidence
-of confidential execution. Successful confidential execution additionally needs
-real supported hardware, measured launch and independent attestation-bound key
-delivery; mock evidence cannot substitute for these.
-
-Unit tests and evaluated options cover declaration and validation contracts.
-Image creation proves preparation only. A libvirt boot does not prove Hyper-V,
-Proxmox VE, VirtualBox or VMware Workstation behavior.
-
-Test both methods for each supported backend/host combination.
-Windows uses SSH; local libvirt, VirtualBox and VMware run on Linux.
-
-| Group | Scope |
-| --- | --- |
-| ON | Declaration, plan, deployment, disk boot, SSH, doctor/verify, update, generations and cleanup. |
-| OFF | Every backend's image/ISO and full RPi SD export, manifests, recipe, instructions and checksums. |
-| HAND | Real manual disk import or exported ISO installation, then SSH management. |
-| NET | DHCP and static IP, gateway, DNS and reachability in a dedicated network. |
-| NATIVE | Existing servers and RPi, read-only checks only. |
-
-Alternate ON entry points: `reproduce`, `provision` and separate `create/install`.
-Check method override with `--method` and configuration selection.
-
-Each case must demonstrate:
-
-1. Target absence and dedicated owned resources before creation.
-2. Correct format, capacity, UEFI, controller, network and agent.
-3. Prebuilt disk without formatting for image; blank disk and installer for ISO.
-4. Boot of the exact system path from disk without an attached ISO.
-5. SSH, identity, network, services, `doctor` and `verify`.
-6. `diff` before update, a read-only plan, activation, then `diffg`.
-7. Rejection of repeated creation of an existing VM.
-8. Cleanup preview and safe removal of only owned test resources.
-
-Separately test RPi SD recovery, SSD identity, boot without the card and normal
-updates. Live writes need a specific target and explicitly authorized scope.
-Availability alone is not permission to update or recover a machine.
-
-## Error and safety cases
-
-- Name, UUID, MAC, VMID and foreign-owner collisions must stop writes.
-- Incorrect host, disk, checksum, profile or capacity must prevent installation.
-- Reset checks snapshots, backing images, sharing, links and identity changes
-  between plan and removal. No permission or no `--apply` means no deletion.
-- Failed graceful shutdown must not escalate to forced power-off.
-  Failed ISO installation must not detach media early or reboot into an unverified system.
-- Unreachable SSH, missing tools and missing agents must fail within bounded
-  time with actionable diagnostics.
-- Interrupted transfer or lost responses must not blindly repeat creation.
-- Check English and Czech output, fallback, stdout/stderr, JSON, exit codes,
-  TTY, `NO_COLOR` and `TERM=dumb`.
+`confidential` requests must fail before creation or key delivery. That refusal
+proves a guard, not confidential execution. A successful libvirt unlock does not
+prove the other hypervisors; neither memory snapshots nor saved VM state count
+as locked-disk backups.
 
 ## Campaign runner
 
-[management/deployment/campaign.py](../management/deployment/campaign.py)
-prints its matrix without `--apply`. Live runs require prepared hosts,
-dedicated resources and explicit settings:
+[management/deployment/campaign.py](../management/deployment/campaign.py) prints
+its matrix without `--apply`. Authorized live runs need prepared hosts, explicit
+settings and dedicated resources:
 
 ```sh
 python3 management/deployment/campaign.py
@@ -407,28 +173,21 @@ python3 management/deployment/campaign.py --apply \
   --settings /home/shared/tmp/nixberry-campaign-settings.json
 ```
 
-`--case ID` selects a case; `--resume` continues an existing report.
-Settings may include `hostOverrides` and dedicated `networks`.
-See the [nested lab guide](proxmox-lab.md) for that host.
+`--case ID` selects a case; `--resume` continues a report. Settings may include
+`hostOverrides` and dedicated `networks`. The [nested Proxmox lab](proxmox-lab.md)
+is optional. The runner pins a private recipe and uses unique `vm-demo-test-*`
+identities; logs/results stay outside Git.
 
-The runner explicitly pins a private recipe copy so shell settings cannot
-redirect it. Results and logs live outside the source repository.
-It uses `vm-demo-test-*` names, unique UUIDs and resource evidence.
-
-Online cleanup uses public `reset`: enable removal in the private declaration,
-check the plan, then pass `--apply`.
-HAND import is verified against manual-creation evidence. VMware uses internal
-cleanup because its manual imports have no automatic-management marker.
-Uncertain remnants are retained for review.
+Online cleanup uses public `reset` with private declaration permission and a
+reviewed plan. Manual-import cleanup requires its recorded identity evidence;
+VMware uses the runner's internal cleanup because manual imports have no automatic
+owner marker. Uncertain remnants remain for review.
 
 ## Evidence
 
-Record recipe revision, declaration/configuration, host, VM identity, method,
-expected system, commands, exit codes and both streams. Never copy private keys,
-passwords or tokens. Record build, activation, boot and live checks separately.
-
-Keep evidence in the run directory, not user documentation.
-Runner states are `NOT_RUN`, `RUNNING`, `PASS`, `FAIL` and `BLOCKED`.
-Explain specific failures or blocks and never mark untested scenarios successful.
-If identity is uncertain or writes are partial, stop further writes and inspect
-state. Resuming does not automatically repeat passing cases.
+Record recipe revision, configuration/declaration, host and target identity,
+method, expected system, commands, exit codes and both streams without secrets.
+Record build, activation, boot and running application checks separately.
+Runner states are `NOT_RUN`, `RUNNING`, `PASS`, `FAIL` and `BLOCKED`; explain
+failures/blocks and leave untested variants unverified. Stop further writes when
+identity is uncertain or writes are partial. Resume does not repeat passing cases.

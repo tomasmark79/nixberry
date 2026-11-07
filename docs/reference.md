@@ -41,12 +41,6 @@ separately. A commit of the public recipe does not include ignored configuration
 files. Use `path:` inputs to include them without `git add`.
 Empty inventory is valid; an unknown host is an error.
 
-When updating a checkout with the previous layout, move its ignored VM `.nix`
-files from `instances/` into `machines/vm/`, and RPi `.nix` files from
-`management/rpi/targets/` into `machines/rpi/`. Keep the new tracked loaders.
-In moved declarations, adjust relative paths: the usual RPi administrator key
-is now `../../admin.pub`. Filenames and CLI target names stay the same.
-
 ## Declared network facts
 
 Shared service configurations can read `config.nixberry.network` on VM and RPi
@@ -282,7 +276,8 @@ with manifests are protected. Usage outside the inspected scope cannot be ruled 
 
 The [swap module](../modules/system/swap.nix) uses zram with `zstd`,
 capped at 2 GiB and at RAM size, priority 100.
-Fallback `/swapfile` is 8 GiB at priority 10.
+Fallback disk swap is 8 GiB at priority 10: `/swapfile` on ext4,
+or `/swap/swapfile` in the separate Btrfs swap subvolume.
 
 Check on the server:
 

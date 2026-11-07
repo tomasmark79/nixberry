@@ -116,7 +116,38 @@ VM subdirectory and refuses drive roots, redirected paths and foreign content.
 Nix runs on the manager, not the remote host. Remote SSH requires a verified
 host key and forwarding when guest access uses a jump host.
 
-<a id="prime-ssh"></a>
+## Deploy a new VM
+
+After preparing `hosts.local.nix`, create and review a local declaration:
+
+```sh
+nixberry new-libvirt-vm vm-demo-libvirt --host local-libvirt
+nixberry show vm-demo-libvirt
+nixberry plan vm-demo-libvirt
+nixberry reproduce vm-demo-libvirt --apply
+nixberry verify vm-demo-libvirt
+```
+
+Use `new-hyperv-vm`, `new-proxmox-vm`, `new-virtualbox-vm` or `new-vmware-vm`
+for the other backends. Defaults are 4 CPUs, 4 GiB RAM and a 32 GiB disk.
+Without `--host`, a sole matching host is selected; use `--dry-run` to preview
+without writing a declaration. Preserve identity when managing the same VM.
+
+| Method | `create TARGET --apply` | `install TARGET --apply` |
+| --- | --- | --- |
+| `image` (default) | Create a powered-off VM with a prebuilt disk. | Start and verify the installed system from disk. |
+| `iso` | Create a blank disk and boot the installation ISO. | Install, shut down gracefully, detach ISO, then verify disk boot. |
+
+`reproduce` and `provision` combine both steps. `deploymentMethod` stores the
+default; `--method image|iso` overrides one operation. Use the same method for
+separate `create`/`install` calls. Without `--apply`, operations only plan.
+Encrypted VMs use [prepared LUKS images](security.md), with no encrypted ISO path.
+
+Creation refuses an existing VM; ISO installation also refuses partitions or
+disk signatures. After failure, inspect `status`, `probe` and storage before
+retrying. NixBerry does not take over or reinstall an existing VM. To hand off
+media without host access, use [offline export](offline.md).
+
 <a id="direct-ssh"></a>
 
 ## Manage a server without its hypervisor

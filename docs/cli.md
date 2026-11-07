@@ -33,73 +33,6 @@ Preparation accepts `--json`; unlocking is interactive. Neither command accepts
 
 ## Inventory and management
 
-`snapshot TARGET`, `snapshots TARGET`, `snapshot-remove TARGET --snapshot ID`
-and `snapshot-resume TARGET` use the selected configuration's application
-catalogue. Creation, removal and writer recovery require `--apply`; otherwise
-they show a plan without contacting the source. Inventory reads a verified
-running source unless `--dry-run` is selected. These commands require a Linux
-controller and a running installed system with the expected generation and
-policy. Local snapshot IDs have 32 hexadecimal characters.
-
-`backup TARGET --apply` dispatches to an enabled target-level provider,
-or otherwise to `nixberry.backup.restic` in the selected NixOS configuration.
-Restic capture requires separately provisioned source credentials and a staged
-recovery archive. `backup-stage TARGET` prepares a reviewable selected recipe;
-`--apply` verifies the source and transfers/binds it under the capture lock.
-The controller checks that the selected archive reproduces the expected system
-and policy without changing locks or importing derivation results. NixBerry
-updates refresh the archive automatically after verified activation; updates
-through other tools and rollbacks require explicit staging before backup.
-`--ssh` can supply access to an offline
-VM for source capture, staging and maintenance.
-
-`backup-prune TARGET` uses configuration-owned `restic.keepLast` when no enabled
-provider is declared. Its default reads the actual plan from the verified
-source and repository; `--dry-run` contacts neither. `--apply` revalidates the
-generation and current machine identity under the capture lock, authenticates
-metadata and verifies the newest retained payload and sealed recipe before
-deleting explicit old receipt/payload IDs. Duplicate receipts share a retention
-group; other machines and incomplete captures remain untouched.
-
-`backup-check TARGET` uses configured `restic.maxAgeSeconds` for the current
-source machine. Restic checks are read-only and reject `--apply`. They authenticate
-metadata and the selected sealed recipe, with full payload verification remaining
-separate. Status is `ok`, `stale`, `missing` or `future`; return code is `0` for
-healthy and `1` otherwise. Source check service/timer failures provide systemd
-status and journal diagnostics without desktop notifications.
-
-`backups`, `verify-backup`, `backup-check` and `recover-source` accept an explicit
-private `--backup-access FILE` for Restic storage reads without contacting the source
-or requiring its declaration. Independent `backup-check` also requires
-`--max-age-seconds N` (1–31536000); it works after source loss and uses the newest
-authenticated capture for the preserved source identity. Source recovery writes
-only with `--apply` into a new `--output` directory; it never evaluates recovered code. Without an access
-context, inventory, verification and source recovery use an enabled provider.
-`backup-schedule` and `backup-monitor` require that provider policy. Provider
-`backup-check --apply` retains its protected history and desktop notifications;
-provider scheduling and monitoring exports remain controller user units.
-Restic guest inventory and verification remain available.
-
-Prepared destinations can enable `nixberry.backup.restore.prepare` in their
-selected configuration. The installed `nixberry-restore-target status --json`
-inspects held writers and application paths without changing data or services.
-`restore TARGET --from SOURCE --backup-access FILE --snapshot RECEIPT_ID --apply`
-publishes authenticated application data into a distinct prepared destination;
-without `--apply` it only plans. Enabled source backup, prune and check jobs/timers
-are held until restoration completes. Independent reads and restore use Restic
-`--no-lock`; the storage operator must coordinate them with pruning because
-read-only SFTP access provides no reader lease. See the destination preparation
-section in the [backup guide](backups.md#prepared-restore-destinations).
-See [backup commands and write boundaries](backups.md).
-
-`backup-schedule TARGET --output NEW_DIRECTORY --dry-run` previews systemd user
-units for the controller running NixBerry. It requires `backup.enable = true`
-and `backup.schedule` in that target's declaration. Without `--dry-run`, it
-writes the unit files locally; it does not install or enable them.
-It does not configure a timer on the target. If the server already schedules
-its own backups, for example through NixOS Restic, edit that configuration
-instead of adding a second capture scheduler.
-
 | Command | Result |
 | --- | --- |
 | `list` | Local targets, configurations and management capabilities. |
@@ -115,6 +48,39 @@ Without a target, `status`, `doctor` and `cleanup` cover the whole inventory.
 `list`, `show` and read-only probes do not need system or media builds.
 `verify` evaluates the expected system. The tools themselves may be built
 on first use.
+
+## Snapshots and backups
+
+| Command | Result |
+| --- | --- |
+| `snapshot TARGET`, `snapshots TARGET` | Plan/create a local Btrfs capture, or read recorded local captures. |
+| `snapshot-remove TARGET --snapshot ID` | Plan removal of a local capture. |
+| `snapshot-resume TARGET` | Plan interrupted writer recovery. |
+| `backup TARGET` | Plan capture through an enabled provider, otherwise configuration-owned Restic. |
+| `backup-stage TARGET` | Prepare a selected recovery recipe; applying verifies/transfers/binds it, or delegates to a provider. |
+| `backups TARGET`, `verify-backup TARGET --snapshot ID` | List completed backups or fully authenticate one. Restic storage reads require `--backup-access`; installed guest tools are also available. |
+| `backup-prune TARGET` | Read an actual retention plan; `--dry-run` reads local policy only. |
+| `backup-check TARGET` | Check freshness; Restic is read-only, providers can record history/notify with `--apply`. |
+| `recover-source TARGET --snapshot ID --output DIR` | Plan recovery of the authenticated recipe into a new directory. |
+| `restore TARGET --from SOURCE --snapshot ID` | Plan application restoration into a distinct prepared destination. |
+| `backup-schedule TARGET --output DIR`, `backup-monitor TARGET --output DIR` | Export provider controller user units into a new directory; install/enable nothing. |
+
+Creation, removal, staging, source recovery and data restoration require
+`--apply` for execution. Restic source commands need Linux, verified root SSH,
+the expected running generation and installed policy. Local captures use
+32-character IDs; Restic restore points use full 64-character receipt IDs.
+
+`--backup-access FILE` selects independent Restic inventory, verification,
+freshness, source recovery or prepared destination restore. Storage reads need
+neither the source machine nor its declaration; independent freshness additionally
+requires `--max-age-seconds N`. Provider reads use their declared source policy.
+`--dry-run` skips storage/provider execution. Timer exports write locally by
+default, without `--apply`; `--dry-run` previews them.
+
+The [backup guide](backups.md) owns configuration, credential setup, schedules,
+retention, writer recovery and destination requirements. Inventory and freshness
+are not full payload verification; verification is not an application restore
+test. Restoration neither installs a machine nor activates recovered code.
 
 ## Updates
 

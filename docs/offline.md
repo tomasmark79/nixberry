@@ -124,53 +124,27 @@ inspect state first. Writing again to a partially installed disk is not allowed.
 Managed VMs perform these steps automatically through
 `nixberry reproduce TARGET --method iso --apply`, including host checks.
 
-<a id="proxmox-vm103"></a>
-
-## Proxmox VM103 handoff example: vm-demo-proxmox
-
-No Proxmox access or generated `.conf` is needed. The operator creates the VM
-and receives a system disk. Create the example declaration:
+## Proxmox handoff example
 
 ```sh
 nixberry new-proxmox-vm vm-demo-proxmox --offline
 ```
 
-Set `spec.vmid = 103` and networking in `machines/vm/vm-demo-proxmox.nix`.
-Replace VMID and addresses with values assigned to your VM, then:
+Set the operator-assigned VMID, resources and network in the declaration, then:
 
 ```sh
-nixberry show vm-demo-proxmox
-nixberry export vm-demo-proxmox --method image --output ~/vm-demo-proxmox-vm103
+nixberry export vm-demo-proxmox --output ~/vm-demo-proxmox-disk
 ```
 
-| Parameter | Example |
-| --- | --- |
-| VMID | `103` |
-| CPU / RAM / disk | 4 CPUs / 4 GiB / 32 GiB |
-| Guest hostname | `vm-demo-proxmox` |
-| IP | `10.0.1.19/24` |
-| Gateway and DNS | `10.0.1.1` |
+Follow the generated `PROXMOX.txt`: import a QCOW2 copy, use UEFI/OVMF with
+Secure Boot disabled, enable QEMU Guest Agent and attach the correct bridge.
+The operator provides storage, VLANs/firewall and an available VMID.
 
-The operator configures UEFI/OVMF, disabled Secure Boot, disk boot and one VirtIO
-NIC on the specified subnet. Enable QEMU Guest Agent and import a QCOW2 copy as
-`virtio0` or VirtIO SCSI `scsi0`. Follow the exported `PROXMOX.txt`;
-the target VMID and resources must be available.
-
-Partitions mount through `disk-system-root` and `disk-system-boot`, so the image
-can boot after changing `/dev/vda` to `/dev/sda`.
-Check `lsblk -o NAME,TYPE,PARTLABEL,MOUNTPOINTS` if needed; do not change controllers
-just to match a device name. A larger virtual disk does not automatically enlarge partitions.
-
-The operator may assign a VM name, MAC and UUID. The system hostname still follows
-the declaration. Legacy single-adapter images are not tied to the original MAC.
-Images declaring `spec.networkAdapters` require all declared MACs and their ordered
-attachments; follow `NETWORKS.txt` and [VM networking](vm-networking.md).
-Verify address, gateway, DNS and `systemPath` after boot.
-The operator verifies connectivity in their environment.
-
-For subsequent management, set a separate SSH endpoint in `access`.
-It does not change image IPs. The image does not configure Proxmox bridges,
-VLANs or firewalls.
+Partitions mount by labels, so the prebuilt image supports VirtIO Block
+`/dev/vda` or VirtIO SCSI `/dev/sda`. A larger disk does not enlarge partitions.
+Named adapter images require every declared MAC/attachment in `NETWORKS.txt`;
+legacy single-adapter imports can use an operator-assigned MAC. Set `access`
+for later system management; it changes neither the image network nor VM ownership.
 
 <a id="rpi"></a>
 

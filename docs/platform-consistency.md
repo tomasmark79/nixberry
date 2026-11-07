@@ -38,14 +38,9 @@ provider and explicit `restoreBackends`; see [backup scope](backups.md#platform-
 `backup-stage` and optional provisioning after `update --apply` use the same
 system-access contract on every backend and RPi. Source-owned automation belongs
 to the configuration and runs independently of the controller.
-Restic retention and freshness use the same nullable maintenance options on all
-six platforms, for both Btrfs snapshots and ext4 cold captures. Source operations
-verify the running generation, configuration and current machine identity;
-independent freshness after source loss requires `--backup-access` and an explicit
-age threshold. Read-only storage verification/restore uses `--no-lock`, so the
-storage operator must coordinate independent readers with pruning. Prepared
-restore holds enabled backup, prune and check services/timers on every platform.
-These interfaces do not establish physical RPi boot or maintenance acceptance.
+Restic retention/freshness and prepared restore share their configuration and
+identity contract across all six platforms. Independent readers use `--no-lock`
+and need storage pruning coordination; see [backup scope](backups.md#platform-scope).
 See [encrypted disks](security.md) for the security boundaries and prerequisites.
 See [VM networking](vm-networking.md) for primary management identity, attachment
 variants and the VMware address-discovery limitation.

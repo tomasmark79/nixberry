@@ -47,7 +47,7 @@ nixberry reproduce rpi5playground --local-disk /dev/disk/by-id/YOUR_SSD --erase-
 
 `--apply --erase-existing` erases that SSD after identity checks. Use its local
 whole-disk by-id path, not a `-partN` path. See [direct SSD preparation](rpi-recovery.md#prepare-an-attached-ssd-on-linux)
-for prerequisites, or use the existing [SD/USB installation path](rpi-recovery.md#1-check-the-declaration-and-prepare-sd--management-computer).
+for prerequisites, or use the existing [SD/USB installation path](rpi-recovery.md#install-from-recovery-sd).
 
 ## 3. Connect and use
 

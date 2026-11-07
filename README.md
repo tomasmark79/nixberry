@@ -4,438 +4,192 @@
   <img src="assets/NixBerryLogo.svg" alt="NixBerry logo" width="240">
 </p>
 
-<p align="center">
-  <a href="https://matrix.to/#/#nixberry:matrix.org">Matrix Channel</a>
-</p>
+NixBerry builds and manages NixOS systems on **Raspberry Pi 5**, **QEMU/KVM
+(libvirt), Hyper-V, Proxmox VE, VirtualBox and VMware Workstation**. A local
+machine declaration selects its configuration, hardware, network and resources.
+The same locked recipe supplies updates and installation media.
 
-NixBerry builds and manages NixOS servers on **QEMU/KVM (libvirt), Hyper-V,
-Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5**. One recipe
-defines the system; each machine declaration selects its configuration,
-platform, network and resources.
+## Start with a Raspberry Pi 5
 
-VMs default to a prebuilt system disk (`image`). Every VM backend also
-supports installation from ISO. Raspberry Pi supports recovery media and
-direct preparation of an attached SSD on Linux.
-
-## How NixBerry fits together
-
-![NixBerry architecture: local declarations, server configurations and platform modules compose a Nix flake; the CLI builds artifacts and manages VM backends or Raspberry Pi 5](assets/nixberry-architecture.svg)
-
-Each target selects a server configuration, which explicitly imports the common
-modules. The flake attaches its platform and builds the system and installation
-media from the same locked inputs. The CLI handles planning, inspection and
-explicit write operations through the management tools.
-
-All five VM backends support disk images and ISO installation, including offline
-preparation. Raspberry Pi 5 uses recovery SD media and an SSD instead of a
-hypervisor. See the [technical reference](docs/reference.md#configuration-boundaries)
-for source locations and the [editable diagram](docs/architecture.html).
-
-## Get started
-
-NixBerry is in active development. The [platform guide](docs/vm.md) describes
-supported environments; the [test guide](docs/test-plan.md) distinguishes
-isolated checks, builds and live deployment evidence.
-
-The management computer needs Linux x86_64, Nix with flakes enabled, and SSH.
-After cloning, enter the project root and add it to your shell's `PATH`:
+The management computer needs x86_64 Linux, Nix with flakes, and SSH. From a
+checkout, add the launcher to your shell and prepare your public administrator key:
 
 ```sh
 export PATH="$PWD:$PATH"
+test -e admin.pub || cp ~/.ssh/id_ed25519.pub admin.pub
 nixberry --help
 ```
 
-Prepare your public SSH key and host connections using the
-[host templates](examples/hosts.nix):
+Keep an existing `admin.pub` if it already contains the intended key. Never copy
+private keys into the recipe. A fresh clone has no declared machines.
 
-```sh
-cp ~/.ssh/id_ed25519.pub admin.pub
-cp examples/hosts.nix hosts.local.nix
-```
+1. Copy [examples/rpi.nix](examples/rpi.nix) to `machines/rpi/rpi-demo.nix`.
+   Replace its board serial, adapter MAC, SSD identity, addresses and capacity
+   with your own values. The filename determines the CLI target name.
+2. Follow [RPi installation and recovery](docs/rpi-recovery.md): prepare an
+   attached SSD directly on Linux, or boot recovery SD media on the RPi.
+   Direct preparation requires ARM binfmt emulation and an unencrypted target;
+   [LUKS installation](docs/security.md#raspberry-pi-5) uses recovery media.
+3. Boot from the SSD and run `nixberry verify rpi-demo`.
+   Building or writing media alone does not verify physical boot.
 
-Keep only your hosts in `hosts.local.nix` and adjust their parameters.
-Use `local-libvirt` for a first local QEMU/KVM VM.
-The hypervisor, network and storage must already exist. Offline preparation
-needs no hypervisor connection, but still needs the administrator's public key.
-A fresh clone has no declared targets.
+Disk installation requires an explicit `--apply` and verified disk identity;
+`--erase-existing` additionally permits erasing its existing contents. Installation
+recreates the system, while [application recovery](docs/backups.md) restores data
+separately. Keep a usable recovery SD and an independent backup.
 
-```sh
-nixberry list
-nixberry --help
-```
+For a first two-port router with DHCP and AdGuard Home, use the
+[playground quick start](docs/playground.md). For a gamepad console, see
+[retro gaming](docs/retrogaming.md). These are optional named configurations.
 
-A **target** is a declared server; a **host** runs its hypervisor.
-`list` shows existing targets. [hosts.nix](hosts.nix) loads your local host file.
-All `vm-demo-*` names in this guide are examples; use your own target names.
-
-English is the default regardless of your system locale. To use Czech:
-
-```sh
-NIXBERRY_LANG=cs nixberry --help
-# Or persist the choice in your shell:
-export NIXBERRY_LANG=cs
-```
-
-Use `NIXBERRY_LANG=en` for English. JSON keys, technical values and external
-tool output do not change language. Documentation is maintained in English.
-
-| Task | Guide |
-| --- | --- |
-| Check status, log in or update | [Everyday management](#management) |
-| Create and verify an encrypted backup | [Backup basics](#backups) |
-| Deploy a VM from disk or ISO | [New VM](#deployment) |
-| Hand off a system without hypervisor access | [Offline handoff](#offline) |
-| Change packages, services or declarations | [Configuration](#configuration) |
-| Recover Raspberry Pi | [SD recovery](docs/rpi-recovery.md) |
-| Try a useful Raspberry Pi router | [Playground quick start](docs/playground.md) |
-| Look up commands and options | [CLI reference](docs/cli.md) |
-| Prepare an encrypted VM disk | [LUKS and remote unlocking](docs/security.md) |
-| Review planned work | [Roadmap](docs/roadmap.md) |
-| Troubleshoot a failure | [Troubleshooting](#troubleshooting) |
-
-<a id="sprava"></a>
 <a id="management"></a>
 
 ## Everyday management
 
+Replace `rpi-demo` with your own target. The same commands manage installed VMs:
+
 ```sh
-nixberry show vm-demo-libvirt
-nixberry status vm-demo-libvirt
-nixberry ssh vm-demo-libvirt
-nixberry doctor vm-demo-libvirt
-nixberry verify vm-demo-libvirt
+nixberry list
+nixberry show rpi-demo
+nixberry status rpi-demo
+nixberry ssh rpi-demo
+nixberry doctor rpi-demo
+nixberry verify rpi-demo
 ```
 
-`show` reads the declaration and lists available operations. `status` reads
-live state, querying hosts concurrently when no target is given.
-Specify one target for a quick check. `doctor` diagnoses operational issues;
-`verify` also checks the running system against the recipe.
+`show` reads the declaration; `status` reads live state. `doctor` diagnoses
+operational problems, and `verify` also checks the system against the recipe.
+Use a specific target for a quick check; unqualified `status` queries all hosts.
 
-<a id="aktualizace"></a>
-<a id="porovnani-zmen"></a>
 <a id="updates"></a>
 
-### Update a system
+### Update
 
-Edit the recipe or declaration, then:
+Edit the selected configuration or declaration, then:
 
 ```sh
-nixberry diff vm-demo-libvirt
-nixberry update vm-demo-libvirt
-nixberry update vm-demo-libvirt --apply
-nixberry verify vm-demo-libvirt
-nixberry diffg vm-demo-libvirt
+nixberry diff rpi-demo
+nixberry update rpi-demo
+nixberry update rpi-demo --apply
+nixberry verify rpi-demo
+nixberry diffg rpi-demo
 ```
 
-- `diff` compares the running system with the current recipe and may build locally.
-  It reads package metadata over verified SSH without importing the running
-  system into the local Nix store; see [comparison metadata](docs/reference.md#comparison-transfer).
-- `update` without `--apply` shows a plan without connecting or building.
-- `update --apply` builds, transfers and activates the system. It does not resize the VM or repartition disks.
-- `diffg` compares the two highest retained server generations. After an update,
-  `diff` is usually empty; use `diffg` to inspect the generation change.
-
-The same workflow applies to VMs and RPi. Activation may restart services,
-but does not automatically reboot the machine. Update dependencies separately
-with `nix flake update --flake .` in this recipe's root; server updates use
-its current lock. See [generations and immutable snapshots](docs/reference.md#recipe).
+`update` alone shows a plan without connecting or building. `--apply` builds,
+transfers and activates the system; services may restart. It does not resize
+partitions or reboot automatically. `diff` compares the recipe with the running
+system and may build locally; `diffg` compares the two highest retained server
+generations. See [update options](docs/cli.md#updates) and
+[RPi network changes](docs/rpi-recovery.md#updating-network-declarations).
+Update dependencies separately with `nix flake update --flake .`.
 
 <a id="backups"></a>
-<a id="create-a-backup"></a>
 
-### Back up and restore application data
+### Back up and recover
 
-Restic stores encrypted application data and the selected system recipe in a
-separate repository, such as a NAS. It backs up declared paths, rather than a
-whole disk. The workflow is shared by all five VM backends and RPi after boot,
-including image/ISO installations; offline media preparation alone captures no data.
+The selected configuration declares application data, writers and encrypted
+Restic storage. Complete the [backup setup](docs/backups.md#configuration-owned-restic-uploads)
+once, then use:
 
-On Btrfs, a backup proceeds as follows:
+```sh
+nixberry backup rpi-demo
+nixberry backup rpi-demo --apply --json
+nixberry ssh rpi-demo -- nixberry-restic backups --json
+nixberry backup-check rpi-demo --json
+nixberry ssh rpi-demo -- nixberry-restic verify-backup --snapshot SNAPSHOT_ID --json
+```
 
-1. Stop the declared application writers, sockets and timers.
-2. Create read-only local snapshots of the declared Btrfs roots.
-3. Resume writers that were previously running.
-4. Restic uploads the selected data from those snapshots, encrypted, together
-   with the prepared recovery recipe.
-5. Publish a completion receipt and remove the temporary snapshots after success.
-   Failed uploads can leave snapshots for inspection.
+Use a completed backup's `snapshotId`. Freshness checks require a configured
+`maxAgeSeconds`; full verification authenticates the payload but does not test
+application restoration. Source timers can run without the management computer.
 
-Ext4 uses the same Restic tools with `cold` capture: writers stay stopped during
-reading and upload. Btrfs can also select `cold`.
+A local Btrfs snapshot is temporary state on the source disk. A completed Restic
+backup is encrypted application data and its recovery recipe on separate storage.
+Ext4 uses cold capture, keeping declared writers stopped during upload. Neither
+an exported image nor a Git commit backs up live application data.
 
-| Item | Purpose |
+Keep storage credentials, repository pins and independent recovery access outside
+the source. The [backup guide](docs/backups.md) covers scheduling, retention,
+source loss and restoration into a distinct prepared replacement. The selected
+configuration's own guide supplies its service-specific recovery procedure.
+
+<a id="configuration"></a>
+
+## Configuration and local files
+
+| Change | Location |
 | --- | --- |
-| Local Btrfs snapshot | Temporary capture on the source disk for reading during upload. |
-| Completed NAS backup | Encrypted data and recipe retained on storage; selected by its `snapshotId`. |
+| Which RPi/SSD or VM, its identity and network | `machines/rpi/NAME.nix` or `machines/vm/NAME.nix` |
+| Packages and services | The module selected by `configuration` under `configurations/` |
+| Hypervisor connections | Local `hosts.local.nix`, loaded by [hosts.nix](hosts.nix) |
+| Administrator public key | Local `admin.pub` |
 
-The selected configuration enables `nixberry.backup` and `nixberry.backup.restic`
-and declares application coverage, writers, storage and optional scheduling.
-Backups are manual unless scheduled; source timers run without the management
-computer. Complete the [initial setup](docs/backups.md#configuration-owned-restic-uploads)
-before using these commands from a Linux controller with verified root SSH access:
+Each target selects one configuration, defaulting to `default`. For an existing
+machine, edit that field and use `diff` and `update`. The
+[technical reference](docs/reference.md#named-configurations) explains custom and
+linked configurations, shared modules and platform boundaries.
 
-| Task | Command |
-| --- | --- |
-| Create a backup | `nixberry backup vm-demo-libvirt --apply --json` |
-| List completed storage backups | `nixberry ssh vm-demo-libvirt -- nixberry-restic backups --json` |
-| List local Btrfs snapshots | `nixberry snapshots vm-demo-libvirt --json` |
-| Check freshness | `nixberry backup-check vm-demo-libvirt --json` |
-| Fully verify one backup | `nixberry ssh vm-demo-libvirt -- nixberry-restic verify-backup --snapshot SNAPSHOT_ID --json` |
+**Concrete declarations, `hosts.local.nix` and `admin.pub` are ignored by Git.**
+Back them up separately and restore them after cloning. Launchers include them
+without `git add`. NixBerry has its own `flake.lock` and works independently of
+Nixon. Exported recipes can include local configuration: review them before sharing.
 
-Omit `--apply` on `backup` to review a plan. Replace `SNAPSHOT_ID` with a completed
-backup's `snapshotId`. Freshness checks require configured `restic.maxAgeSeconds`.
-The local snapshot list can be empty after successful uploads.
-
-Recovery reproduces the system configuration, then restores application data into
-a prepared replacement with its own identity. Keep the repository password and
-independent recovery access separately from the source. Verification does not
-replace an application restore test.
-
-The [backup technical reference](docs/backups.md) covers setup, recipe staging,
-scheduling, retention and restore tools. A server configuration's own recovery
-guide supplies its concrete service and replacement-machine procedure.
-
-<a id="reprodukce"></a>
 <a id="deployment"></a>
 
-## New VM
+## Virtual machines
 
-Declare an existing hypervisor, network and storage in `hosts.local.nix`,
-loaded through [hosts.nix](hosts.nix). NixBerry does not create those resources.
+Prepare an existing hypervisor, network and storage using the
+[host templates](examples/hosts.nix) and [VM guide](docs/vm.md). Then, for example:
 
 ```sh
 nixberry new-libvirt-vm vm-demo-libvirt --host local-libvirt
 nixberry show vm-demo-libvirt
-```
-
-This writes `machines/vm/vm-demo-libvirt.nix`. Review its configuration,
-network and capacity. Defaults are 4 CPUs, 4 GiB RAM and a 32 GiB disk.
-Keep the UUID and MAC when managing the same VM.
-The VM name and default guest hostname use the target name exactly as supplied,
-without adding a prefix.
-
-```sh
 nixberry plan vm-demo-libvirt
 nixberry reproduce vm-demo-libvirt --apply
 nixberry verify vm-demo-libvirt
 ```
 
-| Platform | Declaration command |
-| --- | --- |
-| QEMU/KVM (libvirt) | `new-libvirt-vm` |
-| Hyper-V | `new-hyperv-vm` |
-| Proxmox VE | `new-proxmox-vm` |
-| VirtualBox | `new-virtualbox-vm` |
-| VMware Workstation | `new-vmware-vm` |
+Review the generated declaration before deployment. Each backend has its own
+`new-*-vm` command. `image` is the default; `--method iso` selects installation
+onto a verified blank disk. [VM deployment](docs/vm.md#deploy-a-new-vm) explains
+both methods. Existing VMs are not taken over or reinstalled automatically.
 
-Without `--host`, a sole matching host is selected automatically.
-Select explicitly if several exist. `new-* --dry-run` only prints the proposal.
-A Proxmox VMID unused in local inventory may still be occupied in the cluster;
-`plan` checks that live.
+For a hypervisor managed by someone else, create a declaration with `--offline`
+and [export a disk or ISO bundle](docs/offline.md). Direct SSH manages its installed
+system, without granting hypervisor control. RPi uses physical recovery, with no
+VM method selection or reset operation.
 
-<a id="metody"></a>
-<a id="methods"></a>
-
-### Disk or ISO
-
-| Method | `create TARGET --apply` | `install TARGET --apply` |
-| --- | --- | --- |
-| `image` — default | Creates a powered-off VM with a prebuilt system disk. | Starts it and verifies the system from disk. |
-| `iso` | Creates a blank disk and boots the installation ISO. | Installs, shuts down gracefully, detaches ISO and verifies boot from disk. |
-
-`reproduce --apply` and `provision --apply` combine both steps.
-`deploymentMethod` stores the default; `--method image|iso` overrides it once:
-
-```sh
-nixberry new-proxmox-vm vm-demo-proxmox --host HOST --method iso
-nixberry plan vm-demo-proxmox
-nixberry reproduce vm-demo-proxmox --apply
-```
-
-Use the same method for separate `create` and `install` operations.
-Deployment refuses existing targets; the ISO installer also refuses disks
-with partitions or signatures. After a failure, inspect `status` and `probe`
-before deciding how to continue. See [deployment and reset](docs/vm.md).
-
-<a id="offline"></a>
-
-## Offline handoff
-
-When a colleague manages the hypervisor, prepare a declaration without a host:
-
-```sh
-nixberry new-proxmox-vm vm-demo-proxmox-offline --offline
-```
-
-Set capacity and network in the declaration. DHCP is the default; for an
-assigned static address:
-
-```nix
-network = {
-  mode = "static";
-  address = "10.0.1.19/24";
-  gateway = "10.0.1.1";
-  dns = [ "10.0.1.1" ];
-};
-```
-
-Static addresses use IPv4 CIDR notation with a prefix from 0 to 32 and an IPv4
-gateway. DNS entries must be IPv4 or IPv6 literals.
-
-For multiple named adapters and separate LAN addressing, see
-[VM networking](docs/vm-networking.md). The first adapter remains the management
-interface; additional interfaces have no addresses until configured.
-
-These addresses are examples. The hypervisor operator provides the bridge,
-VLAN, firewall and connection to the correct subnet. Export a disk or ISO:
-
-```sh
-nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-disk
-nixberry export vm-demo-proxmox-offline --method iso --output ~/vm-demo-proxmox-iso
-```
-
-The destination must be new and outside the recipe. The bundle contains media,
-a manifest, the recipe with local declarations, checksums and operator instructions.
-Building may require internet; completed media includes the target system.
-**Export is not a backup of server data or secrets.** Review included local
-configuration before sharing a bundle.
-
-After import, manage the server through `access` in its declaration or a one-time endpoint:
-
-```sh
-nixberry doctor vm-demo-proxmox-offline --ssh root@10.0.1.19:22
-nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply
-```
-
-SSH access does not grant hypervisor management.
-See [disk, ISO and Proxmox handoff](docs/offline.md).
-
-<a id="obnova-rpi"></a>
-
-## Raspberry Pi 5
-
-New to NixBerry? The [playground quick start](docs/playground.md) turns an RPi5
-with two Ethernet interfaces into an independent NAT router with DHCP and
-AdGuard Home DNS filtering. Copy one target example and edit its hardware and
-network values; it does not include the author's production services.
-
-RPi declarations live in `machines/rpi/`. Everyday management uses
-the same `status`, `ssh`, `diff`, `update` and `verify` commands.
-A full recovery uses SD media:
-
-```sh
-nixberry export rpi-demo --output ~/rpi-demo-sd
-```
-
-Follow [RPi recovery](docs/rpi-recovery.md). Booting the recovery medium alone
-erases nothing. Alternatively, [prepare the SSD directly on Linux](docs/rpi-recovery.md#prepare-an-attached-ssd-on-linux)
-without booting the RPi. Both paths require explicit execution and verified disk
-identity; direct preparation cannot verify the disconnected board's identity.
-VM `--method` selection and hypervisor reset do not apply.
-
-<a id="konfigurace"></a>
-<a id="configuration"></a>
-
-## A real-world setup 
-
-<p align="left">
-  <img src="assets/broucek-setup.jpg" alt="Brouček, the author's Raspberry Pi 5 setup, with an external SSD and an e-paper status display" width="60%">
-  </br>
-  Photo · live metrics · Powered by Raspberry Pi
-</p>
-
-## Configuration and local declarations
-
-For everyday administration, start with `machines/` (which device) and
-`configurations/` (what it runs). Each machine has one declaration, named after
-its CLI target; it selects a configuration through `configuration`.
-
-```text
-machines/rpi/     Physical Raspberry Pi declarations: board, SSD and network
-machines/vm/      Virtual machine declarations: host, network and capacity
-configurations/  Packages and services selected by each machine
-examples/        Starting points for new machines and hypervisor connections
-modules/         Reusable system and service settings
-platforms/       Platform-specific boot, disks, drivers and guest support
-management/      Implementation of NixBerry commands and deployment tools
-```
-
-| Setting | Location |
-| --- | --- |
-| Hypervisor connections and resources | Local `hosts.local.nix`, loaded by [hosts.nix](hosts.nix) |
-| A VM's identity, network and capacity | `machines/vm/NAME.nix` |
-| RPi, SSD and network | [machines/rpi/](machines/rpi/default.nix) |
-| Packages and services | [configurations/](configurations/default.nix) |
-| Shared system base | [modules/common.nix](modules/common.nix) and `modules/` |
-| Boot, disks, drivers and guest support | `platforms/` |
-| Administrator public key | Local `admin.pub` |
-
-Each target selects one `configuration`, defaulting to `default`.
-Use `--configuration` when creating a declaration:
-
-```sh
-nixberry new-libvirt-vm vm-demo-nixoncpp --configuration nixoncpp
-```
-
-For an existing machine, edit its declaration and continue with `diff` and `update`.
-See [custom configurations, applications and builds](docs/reference.md).
-For a gamepad-operated Raspberry Pi or VM, select `retrogaming`; see the
-[retro gaming console guide](docs/retrogaming.md).
-
-**Concrete VM and RPi declarations, `hosts.local.nix` and `admin.pub` are not tracked in Git.**
-They work without `git add`; back them up separately. Declaration directories
-only track their loader and ignore rules. Restore or create local data after cloning.
-NixBerry maintains its own `flake.lock`.
-
-<a id="potize"></a>
 <a id="troubleshooting"></a>
 
-## Troubleshooting
+## Troubleshooting and command help
 
 | Situation | Next step |
 | --- | --- |
-| Inventory takes too long | Use `status TARGET` rather than querying all hosts. |
-| VM is running but the server does not respond | `doctor TARGET`, `probe TARGET` and the hypervisor console. |
-| Creation reports an existing VM | Inspect state; `install` may be the next step for its method. |
-| `diff` is empty after an update | Use `diffg TARGET`. |
-| SSH interrupted an update | Check server `journalctl -u nixberry-update`, then run `verify`. |
-| Assess disk usage | `cleanup TARGET` previews findings without deleting. |
-| Remove a managed VM | [Protected reset](docs/vm.md#reset): review the plan and set `allowReset = true;`. |
-| libvirt storage uses directory symlinks | Reset shows resolved disk/NVRAM paths; `--apply` requires interactive `[y/N]` confirmation. Links replacing the files themselves remain unsupported. See [protected reset](docs/vm.md#reset). |
-| libvirt reset reports `qemu-img` permission denied | The local account needs read access to verify the QCOW2. Reset stops without changing permissions or elevating privileges. |
-| Hypervisor reports nearly full RAM | Check cache, `MemAvailable` and memory pressure; [details](docs/reference.md#memory). |
+| Server does not respond | `doctor TARGET`; inspect the physical or hypervisor console. |
+| SSH was interrupted during update | Inspect `journalctl -u nixberry-update` on the server, then run `verify`. |
+| SSH host key changed | Independently verify the fingerprint; old keys are not removed automatically. |
+| Need to inspect disk use | `cleanup TARGET` previews findings without deleting. |
+| Need to remove a managed VM | Follow [protected reset](docs/vm.md#reset). |
 
 Disconnect a stuck interactive SSH session with **Enter, `~`, `.`**.
-Independently verify a changed SSH host key; old keys are not removed automatically.
-See [SSH and guest agents](docs/vm.md#direct-ssh).
+Use `nixberry --help` and the [CLI reference](docs/cli.md) for commands and write
+boundaries. English is the default; `NIXBERRY_LANG=cs` selects Czech without
+changing commands, JSON keys or external-tool output.
 
-## Shell and detailed guides
+Load Bash completion with `source ./completion.bash`. Launcher and completion use
+exported `NIXBERRY_RECIPE`, otherwise their project directory. Invalid explicit
+paths fail without switching recipes.
 
-Bash completes commands, targets, hosts, configurations and options.
-Load it in your current shell from the recipe root:
-
-```sh
-source ./completion.bash
-```
-
-The launcher and completion honor exported `NIXBERRY_RECIPE`; otherwise they
-use the project directory. Invalid explicit paths fail without switching copies.
-NixBerry works independently of Nixon.
-
-| Guide | Contents |
+| Detailed guide | Purpose |
 | --- | --- |
-| [CLI](docs/cli.md) | Commands, options and write modes. |
-| [Backup technical reference](docs/backups.md) | Initial setup, capture/Restic options, provider interface and restore contracts; start with [backup basics](#backups). |
-| [VM platforms](docs/vm.md) | Hosts, direct SSH, guest agents and reset. |
-| [Offline handoff](docs/offline.md) | Disk import, ISO installation and Proxmox handoff. |
-| [RPi recovery](docs/rpi-recovery.md) | SD preparation and SSD recovery. |
-| [Technical reference](docs/reference.md) | Modules, configurations, applications and Nix outputs. |
-| [Testing](docs/test-plan.md) | Isolated checks and live test matrix. |
-| [Platform consistency](docs/platform-consistency.md) | Shared contracts and review rules. |
-| [Messages](docs/messages.md) | Languages, streams, colors and translation maintenance. |
-| [Proxmox lab](docs/proxmox-lab.md) | Nested host for integration testing. |
+| [RPi recovery](docs/rpi-recovery.md) | Direct SSD preparation, SD installation and physical networking. |
+| [Backups](docs/backups.md) | Application coverage, storage, schedules and independent recovery. |
+| [VMs](docs/vm.md) · [VM networking](docs/vm-networking.md) | Hosts, deployment, adapters, SSH and removal. |
+| [Offline bundles](docs/offline.md) · [Encryption](docs/security.md) | Handoff and manual LUKS unlock. |
+| [Technical reference](docs/reference.md) | Configuration ownership, Nix outputs and system details. |
+| [Testing](docs/test-plan.md) · [Platform contract](docs/platform-consistency.md) | Checks, supported variants and evidence boundaries. |
+| [Messages](docs/messages.md) | Translation and output conventions for contributors. |
 
-## License
-
-Author: Tomáš Mark. NixBerry source code is available under the [MIT license](LICENSE).
+Author: Tomáš Mark. Source: [MIT license](LICENSE).
 Dependencies and external tools retain their own licenses.
+[Matrix channel](https://matrix.to/#/#nixberry:matrix.org).

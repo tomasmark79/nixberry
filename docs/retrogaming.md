@@ -1,5 +1,7 @@
 # Retro gaming console
 
+[Main guide](../README.md) · [RPi installation](rpi-recovery.md)
+
 The `retrogaming` configuration starts Pegasus in a local graphical session and
 launches games through RetroArch or standalone PPSSPP. It uses the same NixBerry
 configuration selection, updates and exports as other configurations.
@@ -95,12 +97,6 @@ synthesizer. It does not require a hardware or frontend MIDI output. Existing
 DOSBox Pure preferences are preserved: if they still select `Frontend MIDI
 driver`, change the core's `Audio > MIDI Output` option to `GeneralUser-GS.sf2`.
 
-The packaged DOSBox Pure core aligns its executable cache to the Linux host's
-page size. This preserves dynamic CPU recompilation on both 4 KiB VM kernels
-and the Raspberry Pi's 16 KiB kernel; the DOS guest still uses 4 KiB pages.
-The CPU core can remain on `auto`, which selects the interpreter for real-mode
-games and the dynamic recompiler for protected-mode games.
-
 ## BIOS, saves and settings
 
 | Path under `/var/lib/retrogaming/` | Contents |
@@ -186,29 +182,8 @@ N64, Dreamcast and PSP are included for experimentation; speed and compatibility
 depend on each game, renderer and output resolution. This selection does not
 claim PS2, GameCube or Wii support.
 
-Run the launch-target check with:
-
-```sh
-nix build 'path:.#checks.x86_64-linux.retrogaming' --no-link
-```
-
-It checks the desktop account policy, installed launcher paths, writable settings
-creation and Pegasus's discovery and collection membership of the bundled games
-and a dummy game in an
-isolated virtual display. Evaluating a
-system confirms configuration consistency; building confirms artifacts can be
-realized. Neither proves a physical RPi boot, accelerated rendering, HDMI audio,
-controller operation or a game's performance. Test these after deployment,
-including save persistence, returning to Pegasus, and a clean reboot.
-
-The separate CPU regression check executes an original DOS COM program with
-dynamic recompilation, rather than stopping at the executable-selection menu:
-
-```sh
-nix build 'path:.#checks.x86_64-linux.dosbox-pure' --no-link
-nix build 'path:.#checks.aarch64-linux.dosbox-pure' --no-link
-```
-
-Its output records the builder's host page size. Run the ARM check natively on
-a 16 KiB Raspberry Pi kernel to exercise that page-size boundary; an emulated
-ARM build on a 4 KiB host does not prove it.
+The [test guide](test-plan.md#disposable-integration-checks) covers virtual-display
+launch checks and DOSBox CPU/page-size regressions. Evaluation/builds do not
+prove physical RPi boot, accelerated graphics, HDMI audio, controller behavior
+or game performance. After deployment, test those on the intended hardware,
+including save persistence, return to Pegasus and a clean reboot.

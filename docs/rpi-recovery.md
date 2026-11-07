@@ -2,17 +2,52 @@
 
 [← Main guide](../README.md) · [Offline bundle](offline.md)
 
-This procedure restores an SSD from a full SD image. Booting the card alone
-erases nothing. Steps distinguish the management computer from the RPi.
-For an SSD attached to a Linux workstation, use
-[direct SSD preparation](#prepare-an-attached-ssd-on-linux) instead.
+Declare the board and SSD once, then choose direct SSD preparation or recovery
+SD installation. Both recreate the system; application data needs a separate
+[backup restore](backups.md). Booting recovery media alone erases nothing.
+
+## Declare the RPi and SSD
+
+From the recipe root:
+
+```sh
+cp -i examples/rpi.nix machines/rpi/rpi-demo.nix
+test -e admin.pub || cp ~/.ssh/id_ed25519.pub admin.pub
+```
+
+Replace every fictional identifier with your actual RPi, SSD and network values.
+Keep an existing administrator key if it is correct; never copy a private key.
+
+The filename without `.nix` determines the CLI target, for example
+`nixberry show rpi-demo`. `hostName` determines the system hostname.
+When changing it, preserve `bootLabel` and `rootLabel` for existing partitions;
+otherwise they default from `hostName`. ext4 limits `rootLabel` to 16 characters.
+The same 16-character limit is retained when selecting `rootFilesystem = "btrfs";`.
+Ext4 remains the default. Btrfs uses separate root, snapshot and swap subvolumes;
+see [filesystem selection](cli.md). Changing the declared format requires a
+separately reviewed installation and does not authorize erasing an existing SSD.
+Normal `update` does not rename partitions. Inspect them with
+`nixberry ssh rpi-demo -- lsblk -o NAME,FSTYPE,LABEL,PARTLABEL,MOUNTPOINTS`.
+
+| Field | Example; replace with actual values |
+| --- | --- |
+| RPi serial | `0000000000000000` |
+| LAN MAC | `02:00:00:00:00:20` |
+| SSD system address | `192.168.50.20/24` |
+| SSD serial | `EXAMPLE_SERIAL` |
+| SSD by-id | `/dev/disk/by-id/ata-EXAMPLE_SERIAL` |
+
+For the original flat declaration, `installerAddress` and `gateway` require IPv4
+addresses. The persistent `address` requires IPv4 CIDR notation with a prefix
+from 0 to 32; `dns` must contain at least one IPv4 or IPv6 address literal.
+
+Another RPi or SSD needs its own declaration and newly built media.
+Firmware must permit USB boot; this tool does not configure EEPROM.
 
 ## Prepare an attached SSD on Linux
 
-This alternative installs the declared ARM system and RPi boot files directly
-onto an SSD attached to the management computer. It needs no installation
-medium, intermediate disk image, SSH connection or running RPi. The existing
-SD/USB recovery procedure below remains available.
+This installs the ARM system and RPi boot files onto an SSD attached to the
+management computer, without recovery media or a running RPi.
 
 Use an unencrypted RPi target declaration. LUKS targets must use recovery media;
 local installation refuses them rather than changing their security policy.
@@ -46,12 +81,10 @@ configuration. Disk and installation tools come from the pinned recipe.
    Even planning may ask for sudo to inspect signatures and mount namespaces.
    Nix may build or download the selected system and tools on the workstation.
 
-The installer verifies the serial, capacity, writable physical disk, partitions,
-mounts, swap, holders and partition-label collisions. It rechecks identity under
-a disk lock and tests ARM execution before any erasure. Installation mounts live
-in a private namespace. It copies the system closure, registers the installed
-generation and uses the pinned native RPi boot generator; target services are
-not started on the workstation. Success includes syncing and unmounting the SSD.
+The installer checks the disk serial/capacity, physical writable disk, partitions,
+mounts, swap, holders and label collisions. It rechecks under a disk lock and
+tests ARM execution before erasure. Installation uses private mounts, starts no
+target services, and syncs/unmounts before reporting success.
 
 The layout follows `rootGiB` from the declaration, with a 512 MiB boot partition;
 remaining SSD space is left unused. Set `rootGiB` for the actual disk capacity
@@ -70,39 +103,7 @@ If installation fails after partitioning, the SSD is incomplete. Correct the
 reported problem and repeat the reviewed plan with `--erase-existing`; do not
 boot the partial installation. The source server remains independent.
 
-## 1. Check the declaration and prepare SD — management computer
-
-Copy the [RPi template](../examples/rpi.nix) into
-`machines/rpi/rpi-demo.nix`. Replace its fictional identifiers with
-the actual RPi and SSD values, and prepare your own `admin.pub`.
-
-The filename without `.nix` determines the CLI target, for example
-`nixberry show rpi-demo`. `hostName` determines the system hostname.
-When changing it, preserve `bootLabel` and `rootLabel` for existing partitions;
-otherwise they default from `hostName`. ext4 limits `rootLabel` to 16 characters.
-The same 16-character limit is retained when selecting `rootFilesystem = "btrfs";`.
-Ext4 remains the default. Btrfs uses separate root, snapshot and swap subvolumes;
-see [filesystem selection](cli.md). Changing the declared format requires a
-separately reviewed installation and does not authorize erasing an existing SSD.
-Normal `update` does not rename partitions. Inspect them with
-`nixberry ssh rpi-demo -- lsblk -o NAME,FSTYPE,LABEL,PARTLABEL,MOUNTPOINTS`.
-
-| Field | Example; replace with actual values |
-| --- | --- |
-| RPi serial | `0000000000000000` |
-| LAN MAC | `02:00:00:00:00:20` |
-| SSD system address | `192.168.50.20/24` |
-| SSD serial | `EXAMPLE_SERIAL` |
-| SSD by-id | `/dev/disk/by-id/ata-EXAMPLE_SERIAL` |
-
-For the original flat declaration, `installerAddress` and `gateway` require IPv4
-addresses. The persistent `address` requires IPv4 CIDR notation with a prefix
-from 0 to 32; `dns` must contain at least one IPv4 or IPv6 address literal.
-
-Another RPi or SSD needs its own declaration and newly built media.
-Firmware must permit USB boot; this tool does not configure EEPROM.
-
-### Named physical interfaces
+## Named physical interfaces
 
 For a board with multiple Ethernet adapters, replace the flat `address`,
 `gateway`, `dns`, `lanMac` and `reserveMac` fields with one `network` declaration:
@@ -153,35 +154,21 @@ not activate the desired installed LAN/WAN addresses, gateway or DNS settings.
 Read the actual recovery DHCP address and use `installerAddress` or `--address`
 for that installation session.
 
-The installed management address, recovery connection and early-boot SSH address
-can have different roles. For a WAN-managed gateway that recovers and unlocks
-over its LAN adapter, change the example's selectors and add the security fields:
-
-```nix
-network.primary = "wan0";
-network.recoveryInterface = "lan0";
-security.interface = "lan0";
-security.address = "10.123.0.59/24";
-```
-
-The installed system keeps LAN `10.123.0.1/24` and WAN `10.234.0.20/24`. SD/RAM
-recovery uses LAN DHCP. Installed initrd enables only LAN `10.123.0.59/24`, so it
-can wait for manual unlock while another gateway still owns the future installed
-LAN address. Reserve the early-boot address so no other device uses it.
-Complete the gateway handover before unlocking: stage2 activates the declared
-installed addresses after the encrypted root opens.
-`security.address` is optional and must share the selected adapter's IPv4 subnet
-and prefix; it changes neither installed addressing nor recovery DHCP. Without
-it, initrd uses that adapter's installed address. Without `security.interface`,
-initrd selects the primary adapter. See [physical encryption](security.md#raspberry-pi-5).
-The protected installation/router-address checks remain in force; declaring a
-future gateway address does not authorize installing over the existing router.
-Installed-system management accepts the explicitly declared gateway address and
-checks the board serial and adapter identity over SSH port 22.
+Installed management, recovery DHCP and early-boot unlock can use different
+interfaces/addresses. [RPi encryption](security.md#raspberry-pi-5) describes
+`security.interface` and `security.address`. Reserve a separate unlock address
+when the future installed LAN gateway is still occupied. Complete that gateway
+handover before unlocking, because stage2 activates the installed addresses.
+These selectors never authorize installation over an existing router or bypass
+board/network identity checks.
 
 Shared services can read the platform-independent
 [declared network facts](reference.md#declared-network-facts). Those facts are
 outputs, while hardware identities and addressing stay in this target file.
+
+## Install from recovery SD
+
+### 1. Export and write SD — management computer
 
 Export from the project root:
 
@@ -198,7 +185,7 @@ unmount its partitions and write the **entire uncompressed image**. Complete
 before safely removing the card. Preserve the previous working installer SD.
 A fixed example such as `/dev/sda` is not safe device identification.
 
-## 2. Boot SD and restore SSD — RPi
+### 2. Boot SD and restore SSD — RPi
 
 Power off the RPi, insert SD and boot. If firmware prefers SSD, leave SSD
 disconnected during boot and connect it inside the installation environment.
@@ -217,7 +204,7 @@ SSD** and installs from the local store without internet.
 capacity, manifest and mounted partitions. A mounted system SSD cannot be
 overwritten; `--erase-existing` does not bypass this protection.
 
-### Alternative: control the same recovery over SSH
+#### Alternative: control the same recovery over SSH
 
 Read the SD environment's current DHCP address and substitute `SD_IP`:
 
@@ -229,7 +216,7 @@ nixberry reproduce rpi-demo --address SD_IP --erase-existing --apply
 This uses the same checks and installer. The SD address need not equal the
 future SSD system address.
 
-## 3. Finish by booting from SSD
+### 3. Finish by booting from SSD
 
 The installer does not reboot automatically. Run `sudo poweroff` on the RPi,
 remove SD after shutdown and power on with SSD connected.

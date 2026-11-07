@@ -117,15 +117,12 @@ Update the host separately using its Proxmox administration procedure, with owne
 test VMs gracefully stopped. After reboot, verify actual kernel, KVM, storage
 and both deployment methods again.
 
-`create.py` refuses existing VM, UUID, network, disks or private state.
-It is not a reset tool and never removes partial results automatically.
-After interruption, inspect exact state first; an existing disk is never permission
-to overwrite it. If the old VM and disks were removed, retain metadata and private
-state outside default locations. Remove a remaining network only after checking
-UUID, subnet and absence of VM references. Official ISO may be reused after its
-checksum passes. Verify a new VM through libvirt and private known hosts before
-replacing a key; back up the old entry. Assistant `Error:` stderr is treated as
-failure even when it returns zero.
+`create.py` refuses existing VM, UUID, network, disks or private state. After
+interruption, inspect exact state; it is not a reset tool and never deletes
+partial results. Verify ownership and absence of references before removing any
+lab resource. Preserve old private state/known-host keys for investigation and
+independently verify replacement identities. Assistant `Error:` stderr is treated
+as failure even if its exit code is zero.
 
 ### Capture a kernel panic
 
