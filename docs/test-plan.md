@@ -245,6 +245,10 @@ with its own SSH key and no source declaration, to list, verify and recover seal
 source code. Test read-only SFTP credentials with repository locking disabled.
 `test_restic_access.py` covers private contexts, wrong identity/permissions,
 no-contact plans, bounded metadata, write-operation refusal and safe new output.
+Storage warning tests cover default warnings and an explicit `warnNoPqKex`
+exception in both capture modes, the SFTP probe, Restic transport and independent
+restore credential transfer. Policy evaluation checks the unchanged default SSH
+fields and the optional exception across all six platforms and both filesystems.
 It proves neither application publication into a replacement machine nor a
 physical RPi install/boot. Real NAS accounts and host keys remain operator data.
 

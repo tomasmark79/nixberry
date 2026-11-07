@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -402,6 +403,46 @@ else:
                          'ForwardAgent=no', 'IdentityAgent=none', '/var/lib/backup/known_hosts'):
             self.assertIn(expected, option)
 
+    def test_storage_pq_warning_exception_applies_to_probe_and_restic_only_when_selected(self):
+        for method in ('cold', 'snapshot'):
+            for warn in (None, True, False):
+                value = copy.deepcopy(self.policy)
+                value.update(captureMethod=method, repository='sftp:backup@nas.example:/backup', ssh={
+                    'port': 7922, 'identityFile': str(self.password), 'knownHostsFile': str(self.password)})
+                if warn is not None:
+                    value['ssh']['warnNoPqKex'] = warn
+                with self.subTest(method=method, warn=warn):
+                    try:
+                        restic_backup.policy(value)
+                    except ValueError as failure:
+                        self.fail('Explicit storage warning policy was refused: ' + str(failure))
+                    reader = restic_backup.Restic(value)
+                    transport = shlex.split(next(arg for arg in reader.command()
+                        if arg.startswith('sftp.command=')).removeprefix('sftp.command='))
+                    with patch('restic_backup.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '', '')) as execute:
+                        reader.transport()
+                    probe = execute.call_args.args[0]
+                    for command in (probe, transport):
+                        self.assertEqual('WarnWeakCrypto=no-pq-kex' in command, warn is False)
+                        self.assertEqual('IgnoreUnknown=WarnWeakCrypto' in command, warn is False)
+                        for option in ('StrictHostKeyChecking=yes', 'IdentitiesOnly=yes', 'IdentityAgent=none',
+                                       'ForwardAgent=no', 'BatchMode=yes'):
+                            self.assertIn(option, command)
+                        self.assertFalse(any(arg.startswith(('KexAlgorithms=', 'LogLevel=', 'WarnWeakCrypto=no'))
+                                             and arg != 'WarnWeakCrypto=no-pq-kex' for arg in command))
+                    parsed = subprocess.run(['ssh', '-G', *transport[1:]], text=True, capture_output=True, check=True)
+                    configured = dict(line.split(' ', 1) for line in parsed.stdout.splitlines())
+                    self.assertIn(configured['warnweakcrypto'], ('no', 'no-pq-kex') if warn is False else ('yes',))
+
+    def test_storage_warning_policy_rejects_non_booleans_and_unknown_ssh_options(self):
+        for change in ({'warnNoPqKex': 0}, {'warnNoPqKex': 'false'}, {'warnNoPqKex': None},
+                       {'StrictHostKeyChecking': 'no'}):
+            value = copy.deepcopy(self.policy)
+            value.update(repository='sftp:backup@nas.example:/backup', ssh={
+                'port': 7922, 'identityFile': str(self.password), 'knownHostsFile': str(self.password), **change})
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                restic_backup.policy(value)
+
 
 class ResticPolicySystemTests(unittest.TestCase):
     def test_configuration_owns_policy_for_all_platforms_and_both_filesystems(self):
@@ -450,6 +491,16 @@ class ResticPolicySystemTests(unittest.TestCase):
                 self.assertEqual(value['capture']['applications']['web'], {'paths': ['/var/lib/web'], 'stopUnits': []}, name)
                 self.assertEqual(value['repository'], 'sftp:backup@storage.example:/backup', name)
                 self.assertEqual(value['ssh']['port'], 7922, name)
+                self.assertEqual(set(value['ssh']), {'port', 'identityFile', 'knownHostsFile'}, name)
+            exception = ('let f=builtins.getFlake ' + nix('path:' + str(root))
+                + '; in builtins.mapAttrs (_: system: (system.extendModules { modules = [ '
+                + '{ nixberry.backup.restic.ssh.warnNoPqKex = false; } ]; })'
+                + '.config.system.build.nixberryBackupPolicy.ssh) f.nixberrySystems')
+            result = subprocess.run(['nix', 'eval', '--json', '--impure', '--no-write-lock-file', '--expr', exception],
+                                    capture_output=True, text=True, timeout=240)
+            self.assertEqual(result.returncode, 0, result.stderr[-5000:])
+            for name, ssh in json.loads(result.stdout).items():
+                self.assertEqual(ssh, {**values[name]['ssh'], 'warnNoPqKex': False}, name)
             from capture_controller import projection
             for name in ('vm-demo-libvirt-btrfs', 'rpi-demo-ext4'):
                 selected = projection(str(root), name)

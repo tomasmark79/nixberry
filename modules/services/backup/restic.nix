@@ -22,8 +22,17 @@ let
       recoveryFile
       runtimeDirectory
       timeoutSeconds
-      ssh
       ;
+    ssh =
+      if r.ssh == null then
+        null
+      else
+        {
+          inherit (r.ssh) port identityFile knownHostsFile;
+        }
+        // lib.optionalAttrs (!r.ssh.warnNoPqKex) {
+          warnNoPqKex = false;
+        };
   };
   maintenancePolicy = {
     version = 1;
@@ -146,6 +155,11 @@ in
             };
             identityFile = mkOption { type = types.str; };
             knownHostsFile = mkOption { type = types.str; };
+            warnNoPqKex = mkOption {
+              type = types.bool;
+              default = true;
+              description = "Warn when storage SSH lacks post-quantum key exchange; false silences only this warning for this repository.";
+            };
           };
         }
       );

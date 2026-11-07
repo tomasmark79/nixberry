@@ -80,12 +80,22 @@ def storage_policy(value):
             raise ValueError(_("Restic requires an absolute local repository or an explicitly pinned SFTP repository."))
         snapshots.absolute(repository.split(':', 2)[2])
         ssh = value['ssh']
-        if (not isinstance(ssh, dict) or set(ssh) != {'port', 'identityFile', 'knownHostsFile'}
+        if (not isinstance(ssh, dict) or set(ssh) not in (
+                {'port', 'identityFile', 'knownHostsFile'},
+                {'port', 'identityFile', 'knownHostsFile', 'warnNoPqKex'})
+                or type(ssh.get('warnNoPqKex', True)) is not bool
                 or type(ssh['port']) is not int or not 1 <= ssh['port'] <= 65535):
             raise ValueError(_("SFTP backups require an explicit SSH key, host-key file and port."))
         runtime_path(ssh['identityFile'])
         runtime_path(ssh['knownHostsFile'])
     return value
+
+
+def ssh_warning_options(ssh):
+    if ssh.get('warnNoPqKex', True):
+        return []
+    # Older clients do not emit this warning and may not recognize its option.
+    return ['-o', 'IgnoreUnknown=WarnWeakCrypto', '-o', 'WarnWeakCrypto=no-pq-kex']
 
 
 def private_file(path, *, private=True, limit=128 * 1024 * 1024, owner_uid=None):
@@ -129,7 +139,8 @@ class Restic:
                          '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'IdentitiesOnly=yes',
                          '-o', 'IdentityAgent=none', '-o', 'ForwardAgent=no', '-o', 'GlobalKnownHostsFile=/dev/null',
                          '-o', 'UserKnownHostsFile=' + ssh['knownHostsFile'], '-o', 'ConnectTimeout=10',
-                         '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3', '-s', user_host, 'sftp']
+                         '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3',
+                         *ssh_warning_options(ssh), '-s', user_host, 'sftp']
             command += ['--option', 'sftp.command=' + shlex.join(transport)]
         return command
 
@@ -218,7 +229,8 @@ class Restic:
         command = ['sftp', '-b', '-', '-F', '/dev/null', '-P', str(ssh['port']), '-i', ssh['identityFile'],
                    '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'IdentitiesOnly=yes',
                    '-o', 'IdentityAgent=none', '-o', 'ForwardAgent=no', '-o', 'GlobalKnownHostsFile=/dev/null',
-                   '-o', 'UserKnownHostsFile=' + ssh['knownHostsFile'], '-o', 'ConnectTimeout=10', host]
+                   '-o', 'UserKnownHostsFile=' + ssh['knownHostsFile'], '-o', 'ConnectTimeout=10',
+                   *ssh_warning_options(ssh), host]
         try:
             result = subprocess.run(command, input='pwd\n', text=True, capture_output=True,
                                     timeout=min(30, max(0.01, self.deadline - time.monotonic())))

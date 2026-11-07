@@ -159,3 +159,21 @@ class ResticRestoreTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             with restore_access.receive(b'x' * (restore_access.LIMIT + 1), 'vm-demo-lost-source'):
                 pass
+
+    def test_storage_warning_exception_survives_independent_access_and_restore_transfer(self):
+        self.context.update(repository='sftp:backup@nas.example:/backup', ssh={
+            'port': 7922, 'identityFile': str(self.password), 'knownHostsFile': str(self.password),
+            'warnNoPqKex': False})
+        bundle = restore_access.pack(self.context)
+        self.assertIs(json.loads(bundle)['context']['ssh'].get('warnNoPqKex'), False)
+        original = restore_access.snapshots.secure_directory
+        parent = self.root / 'received'
+        parent.mkdir(mode=0o700)
+        def secure(path, **kwargs):
+            return parent if str(path) == '/run/nixberry-restore-access' else original(path, **kwargs)
+        with patch('snapshots.OWNER_UID', os.getuid()), patch('restore_access.snapshots.secure_directory', side_effect=secure), \
+                patch('restic_backup.require_tmpfs'):
+            with restore_access.receive(bundle, 'vm-demo-lost-source') as value:
+                self.assertIs(value['ssh']['warnNoPqKex'], False)
+                self.assertIn('WarnWeakCrypto=no-pq-kex', ' '.join(restic_access.restic_backup.Restic(value).command()))
+        self.assertEqual(list(parent.iterdir()), [])

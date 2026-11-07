@@ -191,6 +191,16 @@ ownership and no untrusted write access. Passwords, SSH private keys and the
 recovery archive require private permissions such as `0600`. The host-key and
 repository identity files may be publicly readable but not writable by others.
 Keep `recoveryFile` on private local storage; Restic encrypts its uploaded copy.
+
+Storage SSH warns by default if the server lacks post-quantum key exchange. For
+an explicitly accepted storage endpoint, set
+`nixberry.backup.restic.ssh.warnNoPqKex = false;` to suppress only that advisory
+on this repository's SFTP probe and Restic connections. Other diagnostics remain
+visible. This selects `WarnWeakCrypto=no-pq-kex`; it does not change the key
+exchange algorithms, encryption or strict host-key verification. Older clients
+which do not recognize `WarnWeakCrypto` ignore that option. Prefer upgrading the
+storage server when possible.
+
 The controller creates the sealed recipe archive and binds it to the expected
 running system generation and current backup policy:
 
@@ -578,6 +588,11 @@ needed. Any available NixBerry checkout can supply the controller. These
 operations require Linux; all five VM backends and RPi use the same storage
 contract. Inventory operation lists are candidates and do not evaluate Restic
 enablement or inspect access contexts.
+
+An independent access context may include `"warnNoPqKex": false` in its `ssh`
+object for the same storage-specific advisory exception. Omitting the field
+keeps warnings enabled. The setting also accompanies credentials transferred to
+a prepared restore destination; it does not affect management SSH connections.
 
 ### Restore applications into a prepared destination
 

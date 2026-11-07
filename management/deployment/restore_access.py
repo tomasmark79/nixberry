@@ -23,7 +23,8 @@ def pack(value):
     files = {name: base64.b64encode(restic_backup.private_file(path, owner_uid=os.geteuid(),
              private=name != 'knownHosts', limit=1024 * 1024)).decode() for name, path in names.items()}
     context = {key: value[key] for key in ('target', 'sourceId', 'repository', 'repositoryId', 'timeoutSeconds')}
-    context.update(version=1, ssh=None if value['ssh'] is None else {'port': value['ssh']['port']})
+    context.update(version=1, ssh=None if value['ssh'] is None else {
+        key: value['ssh'][key] for key in ('port', 'warnNoPqKex') if key in value['ssh']})
     contents = json.dumps({'version': 1, 'context': context, 'files': files}).encode()
     if len(contents) > LIMIT:
         raise ValueError(_("Restore access transfer exceeds its bounded credential size."))
@@ -59,7 +60,9 @@ def receive(contents, source):
     value = dict(request['context'])
     ssh = value['ssh']
     names = {'password'} if ssh is None else {'password', 'identity', 'knownHosts'}
-    if set(request['files']) != names or ssh is not None and (not isinstance(ssh, dict) or set(ssh) != {'port'}):
+    if set(request['files']) != names or ssh is not None and (
+            not isinstance(ssh, dict) or set(ssh) not in ({'port'}, {'port', 'warnNoPqKex'})
+            or type(ssh.get('warnNoPqKex', True)) is not bool):
         raise ValueError(_("Invalid Restic restore access transfer."))
     files = {}
     for name, encoded in request['files'].items():
