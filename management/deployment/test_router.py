@@ -6,7 +6,7 @@ import subprocess
 import unittest
 
 
-class PlaygroundNetworkTests(unittest.TestCase):
+class RouterNetworkTests(unittest.TestCase):
     def test_lan_and_wan_must_not_overlap(self):
         recipe = Path(__file__).resolve().parents[2]
         for address, expected in [("192.168.79.2/24", True), ("192.168.79.2/16", False),

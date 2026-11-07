@@ -1,8 +1,8 @@
-# RPi playground: a useful first router
+# RPi router: DHCP and AdGuard Home
 
 NAT, DHCP, DNS ad blocking and AdGuard Home administration, without mail,
 web hosting or production application data. Each RPi has its own declaration;
-`configurations/playground.nix` selects the shared router module.
+`configurations/router.nix` selects the shared router module.
 
 ## 1. Copy and edit
 
@@ -11,7 +11,7 @@ Run from the NixBerry checkout on the management computer. No hypervisor is need
 ```sh
 export PATH="$PWD:$PATH"
 export NIXBERRY_RECIPE="$PWD"
-cp -i examples/rpi-playground.nix machines/rpi/rpi5playground.nix
+cp -i examples/rpi-router.nix machines/rpi/rpi-demo-router.nix
 test -e admin.pub || cp ~/.ssh/id_ed25519.pub admin.pub
 ```
 
@@ -32,7 +32,7 @@ Keep an existing `admin.pub` if it already contains your administrator key.
 
 The sample uses onboard Ethernet as **LAN `192.168.192.1/24`**, and USB Ethernet
 as **WAN `192.168.79.2/24`**, gateway `192.168.79.1`. Management uses `wan0`.
-LAN DHCP automatically uses `.100`–`.200`, with the playground as gateway and
+LAN DHCP automatically uses `.100`–`.200`, with the router as gateway and
 DNS server. LAN and WAN must be different subnets. WAN currently uses static
 IPv4; choose an upstream address outside its DHCP pool or reserve it there.
 
@@ -41,8 +41,8 @@ IPv4; choose an upstream address outside its DHCP pool or reserve it there.
 On an x86_64 Linux workstation with ARM binfmt enabled, attach the intended SSD:
 
 ```sh
-nixberry plan rpi5playground --local-disk /dev/disk/by-id/YOUR_SSD --erase-existing
-nixberry reproduce rpi5playground --local-disk /dev/disk/by-id/YOUR_SSD --erase-existing --apply
+nixberry plan rpi-demo-router --local-disk /dev/disk/by-id/YOUR_SSD --erase-existing
+nixberry reproduce rpi-demo-router --local-disk /dev/disk/by-id/YOUR_SSD --erase-existing --apply
 ```
 
 `--apply --erase-existing` erases that SSD after identity checks. Use its local
@@ -53,12 +53,12 @@ for prerequisites, or use the existing [SD/USB installation path](rpi-recovery.m
 
 Attach the completed SSD to the RPi. Connect **USB/WAN to the existing home
 network** and **onboard/LAN to a test client or separate switch**. Never connect
-the playground LAN to the existing home LAN: it runs its own DHCP server.
+the router LAN to the existing home LAN: it runs its own DHCP server.
 Boot the RPi, then from the upstream network:
 
 ```sh
-nixberry verify rpi5playground
-nixberry ssh rpi5playground -- cat /var/lib/AdGuardHome/initial-admin-password
+nixberry verify rpi-demo-router
+nixberry ssh rpi-demo-router -- cat /var/lib/AdGuardHome/initial-admin-password
 ```
 
 On a downstream client using automatic addressing, open
@@ -76,9 +76,9 @@ the retry briefly restarts AdGuard once, and leaves an existing filter alone.
 Edit addresses/MACs in the target declaration, then:
 
 ```sh
-nixberry diff rpi5playground
-nixberry update rpi5playground --apply
-nixberry verify rpi5playground
+nixberry diff rpi-demo-router
+nixberry update rpi-demo-router --apply
+nixberry verify rpi-demo-router
 ```
 
 Nix owns the network, DHCP range, upstream DNS and default filter list. AdGuard's

@@ -79,7 +79,7 @@ checks relevant to the change:
 | `restore-preparation` | Writer/socket/timer and backup-job holds across boot/reboot, policy/machine-bound completion and preservation of other unit conditions. |
 | `restore-publication` | Real filesystem ownership, timestamps/xattrs, overlay whiteouts, device refusal, tmpfs and bind-mount publication. |
 | `restic-restore` | UEFI source, encrypted backup, source shutdown/declaration loss, read-only SFTP recovery, interrupted restore/reboot/retry and HTTP/SQLite application checks; unchanged destination identity. |
-| `playground` | Declared router behavior with isolated upstream/downstream clients. |
+| `router` | Declared router behavior with isolated upstream/downstream clients. |
 | `retrogaming` | Player policy, launcher paths, writable settings and Pegasus collection discovery in a virtual display. |
 | `dosbox-pure` | Execution of a small original DOS program with dynamic recompilation. Also available for `aarch64-linux`. |
 

@@ -44,7 +44,7 @@ in
         && addresses.ipv4WithPrefix wan.address
         && !overlaps
         && wan.dns != [ ];
-      message = "The playground router needs static lan0 ending in .1/24 and wan0 on a different subnet with a gateway and DNS servers.";
+      message = "The router needs static lan0 ending in .1/24 and wan0 on a different subnet with a gateway and DNS servers.";
     }
   ];
 
@@ -93,7 +93,7 @@ in
       dhcp = {
         enabled = true;
         interface_name = "lan0";
-        local_domain_name = "playground.home.arpa";
+        local_domain_name = "router.home.arpa";
         dhcpv4 = {
           gateway_ip = lanIP;
           subnet_mask = "255.255.255.0";
@@ -134,14 +134,14 @@ in
 
   # A fresh RPi can boot with an old clock: HTTPS filter downloads then fail.
   # Keep DHCP/DNS independent of NTP; retry once after the first successful sync.
-  systemd.paths.playground-adguard-bootstrap = {
+  systemd.paths.router-adguard-bootstrap = {
     wantedBy = [ "multi-user.target" ];
     pathConfig = {
       PathExists = "/run/systemd/timesync/synchronized";
-      Unit = "playground-adguard-bootstrap.service";
+      Unit = "router-adguard-bootstrap.service";
     };
   };
-  systemd.services.playground-adguard-bootstrap = {
+  systemd.services.router-adguard-bootstrap = {
     description = "Retry the initial AdGuard filter download after clock synchronization";
     after = [ "adguardhome.service" ];
     serviceConfig = {

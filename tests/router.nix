@@ -1,12 +1,12 @@
 # Isolated clients prove DHCP, DNS filtering, NAT and WAN/LAN separation.
 { pkgs, emcx }:
 pkgs.testers.runNixOSTest {
-  name = "playground-router";
+  name = "router-test";
   node.pkgsReadOnly = false;
   node.specialArgs = { inherit emcx; };
   nodes = {
     router = { lib, ... }: {
-      imports = [ ../configurations/playground.nix ];
+      imports = [ ../configurations/router.nix ];
       nixberry.network = {
         primaryInterface = "wan0";
         networkdUnits = {
@@ -135,19 +135,19 @@ pkgs.testers.runNixOSTest {
     client.succeed("ip route | grep 'default via 192.168.192.1'")
     client.wait_until_succeeds("dig @192.168.192.1 example.test +short | grep -x 203.0.113.1")
     client.succeed("dig @192.168.192.1 ads.example.test +short | grep -x 0.0.0.0")
-    router.succeed("systemctl is-active playground-adguard-bootstrap.path")
+    router.succeed("systemctl is-active router-adguard-bootstrap.path")
     router.wait_until_succeeds("journalctl -u adguardhome -b --no-pager | grep 'updating filter.*err='", timeout=30)
     router.succeed("test ! -s /var/lib/AdGuardHome/data/filters/1.txt")
     client.succeed("dig @192.168.192.1 downloaded-ad.example.test +short | grep -x 203.0.113.1")
     upstream.succeed("touch /run/filter-ready")
     router.succeed("mkdir -p /run/systemd/timesync; touch /run/systemd/timesync/synchronized")
-    router.wait_for_unit("playground-adguard-bootstrap.service", timeout=30)
+    router.wait_for_unit("router-adguard-bootstrap.service", timeout=30)
     client.wait_until_succeeds("dig @192.168.192.1 downloaded-ad.example.test +short | grep -x 0.0.0.0", timeout=30)
     router.succeed("test -s /var/lib/AdGuardHome/data/filters/1.txt")
     pid = router.succeed("systemctl show adguardhome -p MainPID --value")
     router.succeed("touch /run/systemd/timesync/synchronized")
     assert router.succeed("systemctl show adguardhome -p MainPID --value") == pid
-    router.succeed("systemctl restart playground-adguard-bootstrap.service")
+    router.succeed("systemctl restart router-adguard-bootstrap.service")
     assert router.succeed("systemctl show adguardhome -p MainPID --value") == pid
     assert client.succeed("curl -fsS --max-time 10 http://203.0.113.1/").strip() == "192.168.79.2"
     page = client.succeed("curl -fsSL --max-time 10 http://192.168.192.1:3000/")

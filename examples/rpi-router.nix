@@ -1,11 +1,11 @@
 # Board/SSD example published with its owner's permission; MACs are fictional.
 # Replace the board/SSD identities and interface MACs for YOUR hardware.
 {
-  configuration = "playground";
-  hostName = "playground";
+  configuration = "router";
+  hostName = "rpi-demo-router";
   hardwareSerial = "131f2412d4d5bd06";
-  bootLabel = "playground-boot";
-  rootLabel = "playground-root";
+  bootLabel = "router-boot";
+  rootLabel = "router-root";
   diskDevice = "/dev/disk/by-id/ata-Patriot_Burst_A32D0711017000104638";
   diskSerial = "A32D0711017000104638";
   rootGiB = 256;

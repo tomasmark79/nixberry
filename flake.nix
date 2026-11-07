@@ -132,7 +132,7 @@
       nixberryDeployment = deployment;
       # Unified verify/export outputs never select a first or fixed instance.
       nixberrySystems = rpiSystems // vmSystems;
-      checks.x86_64-linux.playground = import ./tests/playground.nix {
+      checks.x86_64-linux.router = import ./tests/router.nix {
         pkgs = vmPkgs;
         inherit emcx;
       };

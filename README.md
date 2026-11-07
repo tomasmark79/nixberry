@@ -39,7 +39,7 @@ recreates the system, while [application recovery](docs/backups.md) restores dat
 separately. Keep a usable recovery SD and an independent backup.
 
 For a first two-port router with DHCP and AdGuard Home, use the
-[playground quick start](docs/playground.md). For a gamepad console, see
+[router quick start](docs/router.md). For a gamepad console, see
 [retro gaming](docs/retrogaming.md). These are optional named configurations.
 
 <a id="management"></a>
