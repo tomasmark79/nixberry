@@ -1,4 +1,4 @@
-"""Restore a preserved native source into a distinct declared, verified target."""
+"""Restore a preserved Restic source into a distinct declared, verified target."""
 import json
 import os
 from pathlib import Path
@@ -9,8 +9,8 @@ import tempfile
 from urllib.parse import quote
 
 from messages import _, forward_stderr
-import native_access
-import native_restic
+import restic_access
+import restic_backup
 import restore_access
 from runtime import capabilities, status
 from updater import connection, freeze_recipe, preflight, system_path
@@ -25,7 +25,7 @@ def projection(recipe, name):
         '--apply', expression], stdin=subprocess.DEVNULL, capture_output=True, text=True)
     forward_stderr(result.stderr)
     if result.returncode:
-        raise RuntimeError(_("Could not evaluate the prepared native restore target."))
+        raise RuntimeError(_("Could not evaluate the prepared Restic restore target."))
     return json.loads(result.stdout)
 
 
@@ -45,12 +45,12 @@ def remote(command, script, timeout, *, contents=None):
 
 def run(recipe, target, name, source, access, snapshot, *, apply=False, dry_run=False):
     if sys.platform != 'linux':
-        raise RuntimeError(_("Native restoration controller operations currently require Linux."))
-    if not source or source == name or not isinstance(snapshot, str) or not native_restic.ID.fullmatch(snapshot):
-        raise ValueError(_("Native restore requires a distinct source name and a full Restic receipt ID."))
+        raise RuntimeError(_("Restic restoration controller operations currently require Linux."))
+    if not source or source == name or not isinstance(snapshot, str) or not restic_backup.ID.fullmatch(snapshot):
+        raise ValueError(_("Restic restore requires a distinct source name and a full Restic receipt ID."))
     if not capabilities(target)['system']:
-        raise ValueError(_("Native restoration requires a declared target with verified live system access."))
-    context = native_access.load(access, source)
+        raise ValueError(_("Restic restoration requires a declared target with verified live system access."))
+    context = restic_access.load(access, source)
     with tempfile.TemporaryDirectory(prefix='nixberry-restore-') as directory:
         frozen = freeze_recipe(recipe, name, target, directory)
         selected = projection(frozen, name)
@@ -75,7 +75,7 @@ def run(recipe, target, name, source, access, snapshot, *, apply=False, dry_run=
         identity = installed.get('identity') if isinstance(installed, dict) else None
         if (not isinstance(installed, dict) or not isinstance(identity, dict) or identity.get('systemPath') != expected
                 or installed.get('restore') != selected['restore'] or installed.get('capture') != selected['capture']
-                or not isinstance(identity.get('machineId'), str) or not native_restic.snapshots.ID.fullmatch(identity['machineId'])):
+                or not isinstance(identity.get('machineId'), str) or not restic_backup.snapshots.ID.fullmatch(identity['machineId'])):
             raise RuntimeError(_("The installed destination policies or identity differ from the selected restore configuration."))
         # Read secrets only after the target generation/policies/identity pass.
         contents = restore_access.pack(context)
@@ -93,5 +93,5 @@ def run(recipe, target, name, source, access, snapshot, *, apply=False, dry_run=
         if (not isinstance(report, dict) or report.get('applied') is not True or report.get('state') != 'recorded-restored'
                 or report.get('machineId') != identity['machineId'] or report.get('systemPath') != expected
                 or report.get('sourceId') != context['sourceId'] or report.get('snapshotId') != snapshot):
-            raise RuntimeError(_("The destination did not confirm this exact native restoration."))
+            raise RuntimeError(_("The destination did not confirm this exact Restic restoration."))
         return {'target': name, 'source': source, **report}

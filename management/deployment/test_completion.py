@@ -28,8 +28,8 @@ class CompletionTests(unittest.TestCase):
         self.assertNotIn('--apply', self.complete('backups', 'kozlonix', '--'))
         self.assertIn('--backup-access', self.complete('backups', 'kozlonix', '--'))
         self.assertIn('--backup-access', self.complete('recover-source', 'kozlonix', '--'))
-        self.assertEqual(self.complete('verify-backup', 'kozlonix', '--backup-access', '/private/native.json', '--snapshot', 'b'), [])
-        self.assertEqual(self.complete('verify-backup', 'kozlonix', '--backup-access=/private/native.json', '--snapshot', 'b'), [])
+        self.assertEqual(self.complete('verify-backup', 'kozlonix', '--backup-access', '/private/restic.json', '--snapshot', 'b'), [])
+        self.assertEqual(self.complete('verify-backup', 'kozlonix', '--backup-access=/private/restic.json', '--snapshot', 'b'), [])
         self.assertIn('--output', self.complete('backup-schedule', 'kozlonix', '--'))
         self.assertIn('--apply', self.complete('backup-check', 'kozlonix', '--'))
         self.assertIn('--apply', self.complete('backup-stage', 'kozlonix', '--'))
@@ -85,7 +85,7 @@ if ((${#COMPREPLY[@]})); then printf '%s\\n' "${COMPREPLY[@]}"; fi
         self.assertEqual(result.stderr, "")
         return result.stdout.splitlines()
 
-    def test_native_snapshot_commands_complete_without_remote_inventory_or_legacy_ids(self):
+    def test_snapshot_commands_complete_without_remote_inventory_or_provider_ids(self):
         for action in ('snapshot', 'snapshots', 'snapshot-remove', 'snapshot-resume', 'backup'):
             self.assertEqual(self.complete(action, 'koz'), ['kozlonix'])
         self.assertIn('--apply', self.complete('snapshot', 'kozlonix', '--'))

@@ -202,7 +202,7 @@ class RecoveryProjectionTests(unittest.TestCase):
     def test_imported_linked_role_reproduces_after_source_checkout_is_removed(self):
         import shutil
         import subprocess
-        from native_controller import prepare_archive, projection
+        from capture_controller import prepare_archive, projection
         from recipe_source import materialized_recipe
         from scaffold import new_vm
         from test_support import copy_test_recipe
@@ -256,7 +256,7 @@ class RecoveryProjectionTests(unittest.TestCase):
 
     def test_selected_recipe_reproduces_its_configuration_without_other_targets(self):
         import subprocess
-        from native_controller import projection
+        from capture_controller import projection
         from recovery_recipe import selected_recipe
         from scaffold import new_vm
         from test_support import copy_test_recipe

@@ -10,13 +10,13 @@ let
       fileset = pkgs.lib.fileset.unions [
         ./cli.py
         ./cli_args.py
-        ./native_controller.py
-        ./native_access.py
-        ./native_restore.py
+        ./capture_controller.py
+        ./restic_access.py
+        ./restic_restore.py
         ./restore_access.py
         ./backup_identity.py
-        ./native_restic.py
-        ./native_health.py
+        ./restic_backup.py
+        ./restic_health.py
         ./snapshots.py
         ./unit_names.py
         ./protected-units.json

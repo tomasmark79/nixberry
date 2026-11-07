@@ -1,4 +1,4 @@
-"""Native Restic backup keeps encrypted data and successful publication distinct."""
+"""Restic backup keeps encrypted data and successful publication distinct."""
 import copy
 import hashlib
 import json
@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import native_restic
+import restic_backup
 import snapshots
 from test_snapshots import Host, settings
 from check_inventory import nix
@@ -25,18 +25,18 @@ class PayloadMappingTests(unittest.TestCase):
                  {'source': '/live/app/database/log', 'payload': '/snapshots/log'},
                  {'source': '/live/app/cache', 'payload': '/snapshots/parent/app/cache'},
                  {'source': '/live/application', 'payload': '/snapshots/parent/application'}]
-        self.assertEqual(native_restic.hidden_payload_paths(paths),
+        self.assertEqual(restic_backup.hidden_payload_paths(paths),
                          ['/snapshots/database/log', '/snapshots/parent/app/database',
                           '/snapshots/parent/app/database/log'])
 
     def test_cold_and_same_root_child_paths_do_not_exclude_live_data(self):
         cold = [{'source': source, 'payload': source} for source in ('/app', '/app/data', '/app/data/nested')]
         same_root = [{'source': source, 'payload': '/snapshot' + source} for source in ('/app', '/app/data')]
-        self.assertEqual(native_restic.hidden_payload_paths(cold), [])
-        self.assertEqual(native_restic.hidden_payload_paths(same_root), [])
+        self.assertEqual(restic_backup.hidden_payload_paths(cold), [])
+        self.assertEqual(restic_backup.hidden_payload_paths(same_root), [])
 
 
-class NativeResticTests(unittest.TestCase):
+class ResticBackupTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -64,15 +64,15 @@ class NativeResticTests(unittest.TestCase):
         self.recovery.write_bytes(self.staged_archive())
         Path(str(self.recovery) + '.json').write_text(json.dumps({
             'version': 1, 'sourceId': self.policy['sourceId'], 'systemPath': self.system,
-            'policySha256': hashlib.sha256(native_restic.encode(self.policy).encode()).hexdigest(),
+            'policySha256': hashlib.sha256(restic_backup.encode(self.policy).encode()).hexdigest(),
             'archiveSha256': hashlib.sha256(self.recovery.read_bytes()).hexdigest()}))
         Path(str(self.recovery) + '.json').chmod(0o600)
         self.host = Host()
         patches = [patch('snapshots.OWNER_UID', os.getuid()),
-                   patch('native_restic.running_system', return_value=self.system),
+                   patch('restic_backup.running_system', return_value=self.system),
                    patch('snapshots.machine_id', return_value='1' * 32),
                    patch('snapshots.run', self.host),
-                   patch('native_restic.require_tmpfs'),
+                   patch('restic_backup.require_tmpfs'),
                    patch('snapshots.cold_identity', return_value={'source': 'test-only'})]
         for item in patches:
             item.start()
@@ -101,27 +101,27 @@ class NativeResticTests(unittest.TestCase):
                 if arguments[-1] == str(self.recovery):
                     return self.recovery.read_bytes()
             raise AssertionError(arguments)
-        self.runner = patch.object(native_restic.Restic, 'run', restic)
+        self.runner = patch.object(restic_backup.Restic, 'run', restic)
         self.runner.start()
         self.addCleanup(self.runner.stop)
 
     def test_restic_metadata_commands_do_not_inherit_the_callers_terminal_input(self):
         self.runner.stop()
-        with patch('native_restic.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '{}', '')) as execute:
-            native_restic.Restic(self.policy).run(['cat', 'config'])
+        with patch('restic_backup.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '{}', '')) as execute:
+            restic_backup.Restic(self.policy).run(['cat', 'config'])
             self.assertEqual(execute.call_args.kwargs['stdin'], subprocess.DEVNULL)
             self.assertTrue(execute.call_args.kwargs['start_new_session'])
 
     def test_plan_does_not_create_state_or_stop_writers(self):
         with patch('backup_identity.collect', side_effect=AssertionError('dry-run account lookup')):
-            result = native_restic.backup(self.policy)
+            result = restic_backup.backup(self.policy)
         self.assertFalse(result['applied'])
         self.assertFalse((self.root / 'state').exists())
         self.assertFalse((self.root / 'runtime').exists())
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
     def test_cold_backup_stops_writers_until_payload_and_publishes_after_recovery(self):
-        result = native_restic.backup(self.policy, apply=True)
+        result = restic_backup.backup(self.policy, apply=True)
         self.assertEqual(result['snapshotId'], self.receipt_id)
         receipt = json.loads(self.saved['receipt'])
         self.assertEqual(receipt['payloadId'], self.data_id)
@@ -134,20 +134,20 @@ class NativeResticTests(unittest.TestCase):
     def test_wrong_repository_identity_never_stops_writers(self):
         self.repository_id.write_text('f' * 64)
         with self.assertRaisesRegex(RuntimeError, 'repository'):
-            native_restic.backup(self.policy, apply=True)
+            restic_backup.backup(self.policy, apply=True)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
     def test_writer_recovery_failure_never_publishes_a_completion_receipt(self):
         self.host.fail_start = True
         with self.assertRaises(RuntimeError):
-            native_restic.backup(self.policy, apply=True)
+            restic_backup.backup(self.policy, apply=True)
         self.assertFalse(any('--stdin' in call for call in self.calls))
         self.assertTrue((self.root / 'state/pending.json').exists())
 
     def test_payload_failure_recovers_writers_without_publishing_completion(self):
-        with patch('native_restic.payload', side_effect=RuntimeError('simulated transport failure')):
+        with patch('restic_backup.payload', side_effect=RuntimeError('simulated transport failure')):
             with self.assertRaises(RuntimeError):
-                native_restic.backup(self.policy, apply=True)
+                restic_backup.backup(self.policy, apply=True)
         self.assertEqual(self.host.units['web.service'], 'active')
         self.assertFalse((self.root / 'state/pending.json').exists())
         self.assertFalse(any('--stdin' in call for call in self.calls))
@@ -155,13 +155,13 @@ class NativeResticTests(unittest.TestCase):
     def test_snapshot_lease_blocks_removal_until_encrypted_upload_finishes(self):
         self.policy['captureMethod'] = 'snapshot'
         contents = self.staged_archive()
-        native_restic.stage(self.policy, self.system, archive=contents,
+        restic_backup.stage(self.policy, self.system, archive=contents,
                             expected_sha256=hashlib.sha256(contents).hexdigest(), apply=True)
         topology = {'roots': {'system': {**self.capture['roots']['system'],
             'filesystemUuid': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
             'subvolumeUuid': '11111111-1111-1111-1111-111111111111'}},
             'paths': [{'source': str(self.data), 'root': 'system', 'relative': str(self.data.relative_to('/'))}]}
-        original_payload = native_restic.payload
+        original_payload = restic_backup.payload
         def payload(*args, **kwargs):
             capture = args[-1]
             with self.assertRaisesRegex(RuntimeError, 'lock'):
@@ -172,17 +172,17 @@ class NativeResticTests(unittest.TestCase):
                                                            'filesystemPath': '/snapshot'}), \
                 patch('snapshots.mounted_snapshot', return_value=False), \
                 patch('snapshots.mountpoints', return_value=[]), \
-                patch('native_restic.payload', payload):
-            result = native_restic.backup(self.policy, apply=True)
+                patch('restic_backup.payload', payload):
+            result = restic_backup.backup(self.policy, apply=True)
         self.assertEqual(result['state'], 'recorded-captured')
         self.assertEqual(snapshots.inventory(self.capture)['snapshots'], [])
         with patch('snapshots.machine_id', return_value='2' * 32):
-            native_restic.validate_manifest(json.loads(self.saved['receipt']), json.loads(self.saved['manifest']))
+            restic_backup.validate_manifest(json.loads(self.saved['receipt']), json.loads(self.saved['manifest']))
 
     def test_account_lookup_failure_aborts_before_writer_shutdown(self):
         with patch('backup_identity.collect', side_effect=ValueError('account lookup failed')):
             with self.assertRaisesRegex(ValueError, 'account lookup'):
-                native_restic.backup(self.policy, apply=True)
+                restic_backup.backup(self.policy, apply=True)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
         self.assertFalse(self.saved)
 
@@ -194,25 +194,25 @@ class NativeResticTests(unittest.TestCase):
             self.assertEqual(self.host.units['web.service'], 'active')
             return evidence
         with patch('backup_identity.collect', side_effect=collect):
-            result = native_restic.backup(self.policy, apply=True)
+            result = restic_backup.backup(self.policy, apply=True)
         record = json.loads(self.saved['receipt'])
         manifest = json.loads(self.saved['manifest'])
         self.assertIn('identity', manifest)
         self.assertEqual(manifest['identity'], evidence)
         self.assertNotIn('identity', record)
         self.assertNotIn('identity', result)
-        native_restic.validate_manifest(record, manifest)
+        restic_backup.validate_manifest(record, manifest)
         # Old captures remain readable, but cannot acquire invented identity evidence.
-        legacy = {key: value for key, value in manifest.items() if key != 'identity'}
-        legacy['format'] = 'nixberry-restic-v1'
-        native_restic.validate_manifest({**record, 'format': 'nixberry-restic-v1'}, legacy)
-        for changed in (legacy, {**manifest, 'identity': {**evidence, 'architecture': 'unknown'}},
+        version1 = {key: value for key, value in manifest.items() if key != 'identity'}
+        version1['format'] = 'nixberry-restic-v1'
+        restic_backup.validate_manifest({**record, 'format': 'nixberry-restic-v1'}, version1)
+        for changed in (version1, {**manifest, 'identity': {**evidence, 'architecture': 'unknown'}},
                         {**manifest, 'format': 'nixberry-restic-v1'}):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
-                native_restic.validate_manifest(record, changed)
+                restic_backup.validate_manifest(record, changed)
 
     def test_receipt_reader_accepts_both_versions_and_checks_their_authenticated_evidence(self):
-        native_restic.backup(self.policy, apply=True)
+        restic_backup.backup(self.policy, apply=True)
         original_record = json.loads(self.saved['receipt'])
         original_manifest = json.loads(self.saved['manifest'])
         for version in ('nixberry-restic-v1', 'nixberry-restic-v2'):
@@ -233,53 +233,53 @@ class NativeResticTests(unittest.TestCase):
                 if arguments == ['dump', self.data_id, record['manifestPath']]:
                     return contents
                 raise AssertionError(arguments)
-            with self.subTest(version=version), patch.object(native_restic.Restic, 'run', run):
-                _, _, loaded = native_restic.receipt(self.policy, self.receipt_id)
+            with self.subTest(version=version), patch.object(restic_backup.Restic, 'run', run):
+                _, _, loaded = restic_backup.receipt(self.policy, self.receipt_id)
                 self.assertEqual(loaded, manifest)
 
     def test_authenticated_manifest_rejects_changed_logical_paths_and_recovery_binding(self):
-        native_restic.backup(self.policy, apply=True)
+        restic_backup.backup(self.policy, apply=True)
         receipt = json.loads(self.saved['receipt'])
         manifest = json.loads(self.saved['manifest'])
-        native_restic.validate_manifest(receipt, manifest)
+        restic_backup.validate_manifest(receipt, manifest)
         for change in ({'format': 'unknown'}, {'paths': [{'source': '/etc/passwd', 'payload': '/unrelated'}]},
                        {'recovery': {'path': '/../escape', 'sha256': 'f' * 64}}, {'captureMethod': 'snapshot'}):
             with self.subTest(change=change), self.assertRaises(ValueError):
-                native_restic.validate_manifest(receipt, {**manifest, **change})
+                restic_backup.validate_manifest(receipt, {**manifest, **change})
 
     def test_sftp_probe_fails_promptly_before_any_writer_stop(self):
         self.policy.update(repository='sftp:backup@nas.example:/backup', ssh={
             'port': 7922, 'identityFile': str(self.password), 'knownHostsFile': str(self.password)})
-        with patch('native_restic.subprocess.run', return_value=subprocess.CompletedProcess([], 255, '', '')) as execute:
+        with patch('restic_backup.subprocess.run', return_value=subprocess.CompletedProcess([], 255, '', '')) as execute:
             with self.assertRaisesRegex(RuntimeError, 'SFTP'):
-                native_restic.backup(self.policy, apply=True)
+                restic_backup.backup(self.policy, apply=True)
             self.assertEqual(execute.call_args.args[0][0], 'sftp')
             self.assertLessEqual(execute.call_args.kwargs['timeout'], 30)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
     def test_stale_recovery_archive_binding_refuses_capture_before_shutdown(self):
-        with patch('native_restic.running_system', return_value='/nix/store/' + 'e' * 32 + '-nixos-system-new'):
+        with patch('restic_backup.running_system', return_value='/nix/store/' + 'e' * 32 + '-nixos-system-new'):
             with self.assertRaisesRegex(RuntimeError, 'recovery'):
-                native_restic.backup(self.policy, apply=True)
+                restic_backup.backup(self.policy, apply=True)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
     def test_generation_change_before_capture_lock_is_rechecked_before_writer_shutdown(self):
         new = '/nix/store/' + 'e' * 32 + '-nixos-system-new'
-        with patch('native_restic.running_system', side_effect=[self.system, new]):
+        with patch('restic_backup.running_system', side_effect=[self.system, new]):
             with self.assertRaisesRegex(RuntimeError, 'recovery'):
-                native_restic.backup(self.policy, apply=True)
+                restic_backup.backup(self.policy, apply=True)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
     def test_recovery_staging_plans_and_refuses_wrong_running_generation(self):
         metadata = Path(str(self.recovery) + '.json')
         metadata.unlink()
-        plan = native_restic.stage(self.policy, self.system)
+        plan = restic_backup.stage(self.policy, self.system)
         self.assertFalse(plan['applied'])
         self.assertFalse(metadata.exists())
         with self.assertRaises(RuntimeError):
-            native_restic.stage(self.policy, '/nix/store/' + 'e' * 32 + '-nixos-system-wrong', apply=True)
+            restic_backup.stage(self.policy, '/nix/store/' + 'e' * 32 + '-nixos-system-wrong', apply=True)
         self.assertFalse(metadata.exists())
-        native_restic.stage(self.policy, self.system, apply=True)
+        restic_backup.stage(self.policy, self.system, apply=True)
         self.assertEqual(json.loads(metadata.read_text())['systemPath'], self.system)
 
     def staged_archive(self):
@@ -291,7 +291,7 @@ class NativeResticTests(unittest.TestCase):
         filename = self.root / 'received.tar'
         recovery_recipe.pack(tree, {'format': recovery_recipe.FORMAT, 'sourceId': self.policy['sourceId'],
             'target': 'vm-demo-server', 'systemPath': self.system,
-            'policySha256': hashlib.sha256(native_restic.encode(self.policy).encode()).hexdigest()}, filename)
+            'policySha256': hashlib.sha256(restic_backup.encode(self.policy).encode()).hexdigest()}, filename)
         contents = filename.read_bytes()
         filename.unlink()
         return contents
@@ -299,22 +299,22 @@ class NativeResticTests(unittest.TestCase):
     def test_existing_unstructured_archive_cannot_be_rebound_as_recovery_code(self):
         self.recovery.write_bytes(b'not a sealed recipe archive')
         with self.assertRaises(ValueError):
-            native_restic.stage(self.policy, self.system, apply=True)
+            restic_backup.stage(self.policy, self.system, apply=True)
 
     def test_received_archive_is_bound_atomically_only_after_hash_and_generation_checks(self):
         contents = self.staged_archive()
         checksum = hashlib.sha256(contents).hexdigest()
         before = self.recovery.read_bytes()
         with self.assertRaises(ValueError):
-            native_restic.stage(self.policy, self.system, archive=contents, expected_sha256='0' * 64, apply=True)
+            restic_backup.stage(self.policy, self.system, archive=contents, expected_sha256='0' * 64, apply=True)
         self.assertEqual(self.recovery.read_bytes(), before)
         with snapshots.lock(self.capture), self.assertRaisesRegex(RuntimeError, 'lock'):
-            native_restic.stage(self.policy, self.system, archive=contents, expected_sha256=checksum, apply=True)
+            restic_backup.stage(self.policy, self.system, archive=contents, expected_sha256=checksum, apply=True)
         self.assertEqual(self.recovery.read_bytes(), before)
-        report = native_restic.stage(self.policy, self.system, archive=contents, expected_sha256=checksum, apply=True)
+        report = restic_backup.stage(self.policy, self.system, archive=contents, expected_sha256=checksum, apply=True)
         self.assertTrue(report['applied'])
         self.assertEqual(self.recovery.read_bytes(), contents)
-        self.assertEqual(native_restic.recovery(self.policy)['archiveSha256'], checksum)
+        self.assertEqual(restic_backup.recovery(self.policy)['archiveSha256'], checksum)
         self.assertFalse(any(c[:2] == ['systemctl', 'stop'] for c in self.host.commands))
 
     def test_received_archive_with_a_valid_hash_but_foreign_policy_cannot_replace_configuration(self):
@@ -324,19 +324,19 @@ class NativeResticTests(unittest.TestCase):
         different = copy.deepcopy(self.policy)
         different['sourceId'] = 'vm-demo-other'
         with self.assertRaises(ValueError):
-            native_restic.stage(different, self.system, archive=contents, expected_sha256=checksum, apply=True)
+            restic_backup.stage(different, self.system, archive=contents, expected_sha256=checksum, apply=True)
         self.assertEqual(self.recovery.read_bytes(), before)
 
     def test_unsafe_password_permissions_and_storage_paths_fail_closed(self):
         self.password.chmod(0o644)
         with self.assertRaises(ValueError):
-            native_restic.backup(self.policy, apply=True)
+            restic_backup.backup(self.policy, apply=True)
         self.password.chmod(0o600)
         for field, value in [('passwordFile', '/nix/store/plaintext-password'),
                              ('repository', str(self.data / 'recursive-backup')),
                              ('sourceId', 'invalid,tag'), ('timeoutSeconds', True)]:
             with self.subTest(field=field), self.assertRaises(ValueError):
-                native_restic.policy({**self.policy, field: value})
+                restic_backup.policy({**self.policy, field: value})
 
     def test_sftp_credentials_stay_outside_application_data(self):
         for method in ('cold', 'snapshot'):
@@ -347,7 +347,7 @@ class NativeResticTests(unittest.TestCase):
                     'knownHostsFile': str(self.root / 'known_hosts')})
                 value['ssh'][key] = str(self.data / key)
                 with self.subTest(method=method, key=key), self.assertRaises(ValueError):
-                    native_restic.policy(value)
+                    restic_backup.policy(value)
 
     def test_local_repository_aliases_cannot_hide_application_data_overlap(self):
         repository = self.data / 'repository'
@@ -358,52 +358,52 @@ class NativeResticTests(unittest.TestCase):
                 alias.symlink_to(destination, target_is_directory=True)
                 value = {**self.policy, 'captureMethod': method, 'repository': str(alias)}
                 with self.subTest(method=method, destination=str(destination)), self.assertRaises(ValueError):
-                    native_restic.policy(value)
+                    restic_backup.policy(value)
                 alias.unlink()
         storage = self.root / 'storage'
         storage.mkdir()
         alias.symlink_to(storage, target_is_directory=True)
-        native_restic.policy({**self.policy, 'repository': str(alias)})
+        restic_backup.policy({**self.policy, 'repository': str(alias)})
 
     def test_private_file_rejects_fifo_without_waiting_for_a_writer(self):
         fifo = self.root / 'password-fifo'
         os.mkfifo(fifo, 0o600)
         script = '''import os, sys
 sys.path.insert(0, sys.argv[1])
-import native_restic
+import restic_backup
 try:
-    native_restic.private_file(sys.argv[2], owner_uid=os.getuid())
+    restic_backup.private_file(sys.argv[2], owner_uid=os.getuid())
 except ValueError:
     pass
 else:
     raise SystemExit('FIFO runtime file was accepted')
 '''
         try:
-            result = subprocess.run([sys.executable, '-c', script, str(Path(native_restic.__file__).parent), str(fifo)],
+            result = subprocess.run([sys.executable, '-c', script, str(Path(restic_backup.__file__).parent), str(fifo)],
                                     capture_output=True, text=True, timeout=3)
         except subprocess.TimeoutExpired:
             self.fail('Runtime file inspection blocked on a FIFO')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(native_restic.private_file(self.password), b'test-only')
+        self.assertEqual(restic_backup.private_file(self.password), b'test-only')
 
     def test_sftp_requires_explicit_private_identity_and_pinned_host_file(self):
         with self.assertRaises(ValueError):
-            native_restic.policy({**self.policy, 'repository': 'sftp:backup@nas.example:/backup'})
+            restic_backup.policy({**self.policy, 'repository': 'sftp:backup@nas.example:/backup'})
         value = copy.deepcopy(self.policy)
         value.update(repository='sftp:backup@nas.example:/backup', ssh={
             'port': 7922, 'identityFile': '/var/lib/backup/ssh-key',
             'knownHostsFile': '/var/lib/backup/known_hosts'})
-        value = native_restic.policy(value)
+        value = restic_backup.policy(value)
         with self.assertRaises(ValueError):
-            native_restic.policy({**value, 'repository': 'sftp:backup@nas.example:/backup/../other'})
-        command = native_restic.Restic(value).command()
+            restic_backup.policy({**value, 'repository': 'sftp:backup@nas.example:/backup/../other'})
+        command = restic_backup.Restic(value).command()
         option = next(item for item in command if item.startswith('sftp.command='))
         for expected in ('StrictHostKeyChecking=yes', 'BatchMode=yes', 'IdentitiesOnly=yes',
                          'ForwardAgent=no', 'IdentityAgent=none', '/var/lib/backup/known_hosts'):
             self.assertIn(expected, option)
 
 
-class NativePolicySystemTests(unittest.TestCase):
+class ResticPolicySystemTests(unittest.TestCase):
     def test_configuration_owns_policy_for_all_platforms_and_both_filesystems(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / 'recipe'
@@ -450,7 +450,7 @@ class NativePolicySystemTests(unittest.TestCase):
                 self.assertEqual(value['capture']['applications']['web'], {'paths': ['/var/lib/web'], 'stopUnits': []}, name)
                 self.assertEqual(value['repository'], 'sftp:backup@storage.example:/backup', name)
                 self.assertEqual(value['ssh']['port'], 7922, name)
-            from native_controller import projection
+            from capture_controller import projection
             for name in ('vm-demo-libvirt-btrfs', 'rpi-demo-ext4'):
                 selected = projection(str(root), name)
                 self.assertTrue(selected['enabled'])
@@ -464,11 +464,11 @@ class RecoveryInputTests(unittest.TestCase):
         read_descriptor, write_descriptor = os.pipe()
         self.addCleanup(os.close, write_descriptor)
         with os.fdopen(read_descriptor, 'rb') as stream, self.assertRaises(TimeoutError):
-            native_restic.read_archive(stream, timeout=0.02)
+            restic_backup.read_archive(stream, timeout=0.02)
 
     def test_transfer_size_is_bounded_before_archive_parsing(self):
         read_descriptor, write_descriptor = os.pipe()
         os.write(write_descriptor, b'x' * 33)
         os.close(write_descriptor)
         with os.fdopen(read_descriptor, 'rb') as stream, patch('recovery_recipe.MAX_ARCHIVE', 32), self.assertRaises(ValueError):
-            native_restic.read_archive(stream)
+            restic_backup.read_archive(stream)

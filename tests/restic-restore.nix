@@ -30,7 +30,7 @@ let
       inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
       outputs = { nixpkgs, ... }: let
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        test = import ./tests/native-restore.nix { inherit pkgs; };
+        test = import ./tests/restic-restore.nix { inherit pkgs; };
       in {
         nixberrySystems = {
           vm-demo-source.config = test.config.nodes.source;
@@ -124,7 +124,7 @@ let
   );
 in
 pkgs.testers.runNixOSTest {
-  name = "nixberry-native-restore";
+  name = "nixberry-restic-restore";
   nodes = {
     source = { ... }: {
       imports = [ (common false) ];

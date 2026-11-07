@@ -43,7 +43,7 @@ def policy(value):
             or not re.fullmatch(r'[A-Za-z0-9:_.-]{1,128}', value['sourceId'])
             or value['captureMethod'] not in ('snapshot', 'cold')
             or type(value['timeoutSeconds']) is not int or not 1 <= value['timeoutSeconds'] <= 86400):
-        raise ValueError(_("Invalid native Restic backup policy."))
+        raise ValueError(_("Invalid Restic backup policy."))
     snapshots.policy(value['capture'])
     for key in ('passwordFile', 'repositoryIdFile', 'recoveryFile', 'runtimeDirectory'):
         runtime_path(value[key])
@@ -65,7 +65,7 @@ def policy(value):
 def storage_policy(value):
     if (not isinstance(value['sourceId'], str) or not re.fullmatch(r'[A-Za-z0-9:_.-]{1,128}', value['sourceId'])
             or type(value['timeoutSeconds']) is not int or not 1 <= value['timeoutSeconds'] <= 86400):
-        raise ValueError(_("Invalid native Restic backup policy."))
+        raise ValueError(_("Invalid Restic backup policy."))
     for key in ('passwordFile', 'runtimeDirectory'):
         runtime_path(value[key])
     repository = value['repository']
@@ -479,18 +479,18 @@ def inventory_reader(restic):
     restic.repository()
     rows = json.loads(restic.run(['snapshots', '--tag', RECEIPT + ',source:' + settings['sourceId']]))
     if not isinstance(rows, list):
-        raise ValueError(_("Invalid native Restic backup inventory."))
+        raise ValueError(_("Invalid Restic backup inventory."))
     result = []
     for row in rows:
         if (not isinstance(row, dict) or not isinstance(row.get('id'), str) or not ID.fullmatch(row['id'])
                 or not tagged(row, settings['sourceId']) or not isinstance(row.get('time'), str)):
-            raise ValueError(_("Invalid native Restic backup inventory."))
+            raise ValueError(_("Invalid Restic backup inventory."))
         try:
             created = datetime.fromisoformat(row['time'].replace('Z', '+00:00'))
         except ValueError:
-            raise ValueError(_("Invalid native Restic backup inventory.")) from None
+            raise ValueError(_("Invalid Restic backup inventory.")) from None
         if created.utcoffset() is None:
-            raise ValueError(_("Invalid native Restic backup inventory."))
+            raise ValueError(_("Invalid Restic backup inventory."))
         result.append({'snapshotId': row['id'], 'createdAt': int(created.timestamp()), 'state': 'recorded-captured'})
     return {'snapshots': result}
 
@@ -551,7 +551,7 @@ def receipt(value, identifier):
 def receipt_reader(restic, identifier):
     settings = restic.settings
     if not isinstance(identifier, str) or not ID.fullmatch(identifier):
-        raise ValueError(_("Select a full Restic snapshot ID from the native backup inventory."))
+        raise ValueError(_("Select a full Restic snapshot ID from the Restic backup inventory."))
     restic.repository()
     records = json.loads(restic.run(['snapshots', identifier]))
     if (not isinstance(records, list) or len(records) != 1 or not isinstance(records[0], dict)
@@ -565,7 +565,7 @@ def receipt_reader(restic, identifier):
             or not ID.fullmatch(record['manifestSha256']) or type(record['createdAt']) is not int
             or record['createdAt'] < 0 or not isinstance(record['attemptId'], str)
             or not snapshots.ID.fullmatch(record['attemptId'])):
-        raise ValueError(_("Invalid native Restic completion receipt."))
+        raise ValueError(_("Invalid Restic completion receipt."))
     snapshots.absolute(record['manifestPath'])
     contents = restic.run(['dump', record['payloadId'], record['manifestPath']])
     if hashlib.sha256(contents.encode()).hexdigest() != record['manifestSha256']:
@@ -607,32 +607,32 @@ def main(argv=None):
                                          'backup-prune', 'backup-check'])
     parser.add_argument('--config', default='/etc/nixberry/backup.json', help=_("Configuration-owned Restic policy file"))
     parser.add_argument('--maintenance', default='/etc/nixberry/maintenance.json', help=_("Configuration-owned backup maintenance policy file"))
-    parser.add_argument('--snapshot', help=_("Full native Restic completion snapshot ID"))
+    parser.add_argument('--snapshot', help=_("Full Restic completion snapshot ID"))
     parser.add_argument('--system', help=_("Expected running NixOS generation for recovery staging or retention"))
     parser.add_argument('--receive-sha256', help=_("Receive a sealed recipe archive from standard input with this SHA256 identity"))
     parser.add_argument('--json', action='store_true', help=_("Print technical backup metadata as JSON"))
     parser.add_argument('--statistics', action='store_true',
                         help=_("Include completed restore-point count and latest logical backup size"))
     modes = parser.add_mutually_exclusive_group()
-    modes.add_argument('--apply', action='store_true', help=_("Apply native application backup"))
+    modes.add_argument('--apply', action='store_true', help=_("Apply Restic application backup"))
     modes.add_argument('--dry-run', action='store_true', help=_("Inspect backup readiness without stopping writers"))
     args = parser.parse_args(argv)
     if args.statistics and args.action != 'backup-check':
-        parser.error(_("--statistics only applies to native backup freshness checks."))
+        parser.error(_("--statistics only applies to Restic backup freshness checks."))
     if os.geteuid() != 0:
-        raise RuntimeError(_("Native backup operations require root and protected runtime credentials."))
+        raise RuntimeError(_("Restic backup operations require root and protected runtime credentials."))
     if args.apply and args.action not in ('backup-init', 'backup-stage', 'backup', 'backup-prune'):
-        parser.error(_("--apply only applies to native backup capture, staging, retention or repository initialization."))
+        parser.error(_("--apply only applies to Restic backup capture, staging, retention or repository initialization."))
     if args.snapshot is not None and args.action != 'verify-backup':
-        parser.error(_("--snapshot only applies to native backup verification."))
+        parser.error(_("--snapshot only applies to Restic backup verification."))
     if args.dry_run and args.action not in ('backup-init', 'backup-stage', 'backup', 'backup-prune', 'backup-check'):
-        parser.error(_("--dry-run only applies to native backup capture, staging, maintenance or repository initialization."))
+        parser.error(_("--dry-run only applies to Restic backup capture, staging, maintenance or repository initialization."))
     if args.system is not None and args.action not in ('backup-stage', 'backup-prune'):
-        parser.error(_("--system only applies to recovery archive staging or native retention."))
+        parser.error(_("--system only applies to recovery archive staging or Restic retention."))
     if args.receive_sha256 is not None and args.action != 'backup-stage':
         parser.error(_("--receive-sha256 only applies to recovery archive staging."))
     def interrupted(signum, frame):
-        raise InterruptedError(_("Native backup was interrupted; checking writer recovery."))
+        raise InterruptedError(_("Restic backup was interrupted; checking writer recovery."))
     for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
         signal.signal(signum, interrupted)
     expected_system = args.system or (running_system() if args.action == 'backup-prune' else None)
@@ -649,14 +649,14 @@ def main(argv=None):
     elif args.action == 'backups':
         result = inventory(settings)
     elif args.action in ('backup-check', 'backup-prune'):
-        import native_maintenance
-        maintenance = native_maintenance.policy(json.loads(Path(args.maintenance).read_text()))
+        import restic_maintenance
+        maintenance = restic_maintenance.policy(json.loads(Path(args.maintenance).read_text()))
         if args.dry_run:
             result = {'action': args.action, 'maintenance': maintenance, 'applied': False, 'readiness': 'not-checked'}
         elif args.action == 'backup-check':
-            result = native_maintenance.check(settings, maintenance, include_statistics=args.statistics)
+            result = restic_maintenance.check(settings, maintenance, include_statistics=args.statistics)
         else:
-            result = native_maintenance.prune(settings, maintenance, expected_system, apply=args.apply)
+            result = restic_maintenance.prune(settings, maintenance, expected_system, apply=args.apply)
     else:
         result = verify(settings, args.snapshot)
     print(json.dumps(result, sort_keys=True))

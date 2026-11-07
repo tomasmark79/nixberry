@@ -3329,17 +3329,11 @@ msgstr "Příkaz snapshotu překročil svůj časový limit."
 msgid "Capture writers and activation units must be services, sockets or timers outside networking and management."
 msgstr "Zapisující a aktivační jednotky musejí být služby, sockety nebo časovače mimo síť a správu stroje."
 
-msgid "--apply only applies to native backup capture or repository initialization."
-msgstr "--apply platí pouze pro zachycení nativní zálohy nebo inicializaci repozitáře."
+msgid "--snapshot only applies to Restic backup verification."
+msgstr "--snapshot platí pouze pro ověření zálohy Restic."
 
-msgid "--dry-run only applies to native backup capture or repository initialization."
-msgstr "--dry-run platí pouze pro zachycení nativní zálohy nebo inicializaci repozitáře."
-
-msgid "--snapshot only applies to native backup verification."
-msgstr "--snapshot platí pouze pro ověření nativní zálohy."
-
-msgid "Apply native application backup"
-msgstr "Provést nativní zálohu aplikací"
+msgid "Apply Restic application backup"
+msgstr "Provést zálohu Restic aplikací"
 
 msgid "Back up configuration-owned application data directly into an encrypted Restic repository."
 msgstr "Zálohování dat aplikací spravovaných konfigurací přímo do šifrovaného repozitáře Restic."
@@ -3356,29 +3350,29 @@ msgstr "Soubor pravidel Resticu spravovaný konfigurací"
 msgid "Declare mounted application data as an explicit backup path."
 msgstr "Deklarujte připojená data aplikací jako výslovnou zálohovanou cestu."
 
-msgid "Full native Restic completion snapshot ID"
-msgstr "Úplné ID snapshotu dokončení nativní zálohy Restic"
+msgid "Full Restic completion snapshot ID"
+msgstr "Úplné ID snapshotu dokončení zálohy Restic"
 
 msgid "Inspect backup readiness without stopping writers"
 msgstr "Zkontrolovat připravenost zálohování bez odstavení zapisujících služeb"
 
-msgid "Invalid native Restic backup inventory."
-msgstr "Neplatný inventář nativních záloh Restic."
+msgid "Invalid Restic backup inventory."
+msgstr "Neplatný inventář záloh Restic."
 
-msgid "Invalid native Restic backup policy."
-msgstr "Neplatná pravidla nativního zálohování Restic."
+msgid "Invalid Restic backup policy."
+msgstr "Neplatná pravidla zálohování Restic."
 
-msgid "Invalid native Restic completion receipt."
-msgstr "Neplatný záznam dokončení nativní zálohy Restic."
+msgid "Invalid Restic completion receipt."
+msgstr "Neplatný záznam dokončení zálohy Restic."
 
 msgid "Local Restic repositories do not accept SFTP settings."
 msgstr "Místní repozitáře Restic nepřijímají nastavení SFTP."
 
-msgid "Native backup operations require root and protected runtime credentials."
-msgstr "Operace nativního zálohování vyžadují uživatele root a chráněné provozní přihlašovací údaje."
+msgid "Restic backup operations require root and protected runtime credentials."
+msgstr "Operace zálohování Restic vyžadují uživatele root a chráněné provozní přihlašovací údaje."
 
-msgid "Native backup was interrupted; checking writer recovery."
-msgstr "Nativní zálohování bylo přerušeno; kontroluje se obnovení zapisujících služeb."
+msgid "Restic backup was interrupted; checking writer recovery."
+msgstr "Zálohování Restic bylo přerušeno; kontroluje se obnovení zapisujících služeb."
 
 msgid "Print technical backup metadata as JSON"
 msgstr "Vypsat technická metadata zálohy jako JSON"
@@ -3410,8 +3404,8 @@ msgstr "Dočasná data Resticu musejí používat provozní adresář na tmpfs."
 msgid "SFTP backups require an explicit SSH key, host-key file and port."
 msgstr "Zálohování přes SFTP vyžaduje výslovný SSH klíč, soubor klíčů serveru a port."
 
-msgid "Select a full Restic snapshot ID from the native backup inventory."
-msgstr "Vyberte úplné ID snapshotu Restic z inventáře nativních záloh."
+msgid "Select a full Restic snapshot ID from the Restic backup inventory."
+msgstr "Vyberte úplné ID snapshotu Restic z inventáře záloh Restic."
 
 msgid "Storage SFTP readiness check exceeded its time limit."
 msgstr "Kontrola připravenosti úložiště SFTP překročila svůj časový limit."
@@ -3440,12 +3434,6 @@ msgstr "Odeslaná konfigurace pro obnovu neodpovídá zachycení."
 msgid "Conflicting logical application paths in the captured backup."
 msgstr "Konfliktní logické cesty aplikací v zachycené záloze."
 
-msgid "--apply only applies to native backup capture, staging or repository initialization."
-msgstr "--apply platí pouze pro zachycení nativní zálohy, přípravu konfigurace pro obnovu nebo inicializaci repozitáře."
-
-msgid "--dry-run only applies to native backup capture, staging or repository initialization."
-msgstr "--dry-run platí pouze pro zachycení nativní zálohy, přípravu konfigurace pro obnovu nebo inicializaci repozitáře."
-
 msgid "--system only applies to recovery archive staging."
 msgstr "--system platí pouze pro přípravu archivu obnovy."
 
@@ -3470,14 +3458,11 @@ msgstr "Připravená konfigurace pro obnovu je zastaralá nebo neodpovídá těm
 msgid "Recovery configuration is missing; provision the recipe archive and run backup-stage."
 msgstr "Konfigurace pro obnovu chybí; připravte archiv receptu a spusťte backup-stage."
 
-msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review source-owned backup provisioning; --apply refreshes runtime access and recovery code.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nLegacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
-msgstr "\nMístní snapshoty spravované konfigurací:\n  snapshot TARGET        Plán místního zachycení; --apply krátce zastaví deklarované zapisující služby a zachytí kořeny Btrfs.\n  snapshots TARGET       Na ověřeném běžícím zdroji přečte evidované místní snapshoty.\n  snapshot-remove TARGET Smaže --snapshot ID pouze s --apply; jinak ukáže plán.\n  snapshot-resume TARGET Pouze s --apply zopakuje obnovení zapisujících služeb po přerušení.\n  Nativní záloha používá zvolenou konfiguraci NixOS, pokud není deklarován původní poskytovatel.\n  Zachycení vyžaduje shodu běžící generace a pravidel se zvoleným receptem.\n  Pouze řídicí stanice Linux; list/show/doplňování nevyhodnocují systémy NixOS.\n\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek na řídicím počítači s --output DIR; nezapíná je.\n  backup-check TARGET    Kontrola stáří záloh a historie běhů; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled přípravy záloh na zdroji; --apply obnoví provozní přístup a kód pro obnovu.\n\nPlánování na řídicím počítači:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Vyžaduje backup.enable = true a backup.schedule v deklaraci cíle.\n  Bez --dry-run zapíše soubory uživatelské služby a časovače na tento počítač, ne na TARGET.\n  Jednotky neinstaluje ani nezapíná a nemění časovač spravovaný serverem.\n  Pokud server už zálohuje pravidelně (například přes Restic), uprav časování\n  v jeho konfiguraci NixOS; ponech pouze jeden plánovač pořizování záloh.\n\nPravidla původního poskytovatele jsou v deklaraci cíle; nativní pravidla patří do jeho konfigurace NixOS.\nKlíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
-
 msgid "--snapshot only applies to verify-backup, restore, recover-source and snapshot-remove."
 msgstr "--snapshot platí pouze pro verify-backup, restore, recover-source a snapshot-remove."
 
-msgid "Direct SSH supports system management, local snapshots and native backup capture."
-msgstr "Přímé SSH podporuje správu systému, místní snapshoty a pořizování nativních záloh."
+msgid "Direct SSH supports system management, local snapshots and Restic backup capture."
+msgstr "Přímé SSH podporuje správu systému, místní snapshoty a pořizování záloh Restic."
 
 msgid "Enable nixberry.backup in the selected NixOS configuration first."
 msgstr "Nejprve zapněte nixberry.backup ve zvolené konfiguraci NixOS."
@@ -3488,20 +3473,20 @@ msgstr "Nejprve zapněte nixberry.backup.restic ve zvolené konfiguraci NixOS."
 msgid "Encrypted backup ID, or local capture ID for snapshot-remove"
 msgstr "ID šifrované zálohy nebo místního snapshotu pro snapshot-remove"
 
-msgid "Native capture controller operations currently require Linux."
-msgstr "Ovládání nativních snapshotů a záloh z řídicí stanice nyní vyžaduje Linux."
+msgid "Source capture controller operations currently require Linux."
+msgstr "Ovládání snapshotů a záloh na zdroji z řídicí stanice nyní vyžaduje Linux."
 
-msgid "Native capture requires a declared target with verified live system access."
-msgstr "Nativní zachycení vyžaduje deklarovaný cíl s ověřeným přístupem k běžícímu systému."
+msgid "Source capture requires a declared target with verified live system access."
+msgstr "Zachycení dat na zdroji vyžaduje deklarovaný cíl s ověřeným přístupem k běžícímu systému."
 
 msgid "The installed capture policy differs from the selected configuration."
 msgstr "Nainstalovaná pravidla zachycení se liší od zvolené konfigurace."
 
-msgid "The running system differs from this recipe; update it before native capture."
-msgstr "Běžící systém se liší od tohoto receptu; před nativním zachycením jej aktualizujte."
+msgid "The running system differs from this recipe; update it before source capture."
+msgstr "Běžící systém se liší od tohoto receptu; před zachycením dat na zdroji jej aktualizujte."
 
-msgid "The source did not confirm the requested native capture operation."
-msgstr "Zdroj nepotvrdil požadovanou operaci nativního zachycení."
+msgid "The source did not confirm the requested capture operation."
+msgstr "Zdroj nepotvrdil požadovanou operaci zachycení dat."
 
 msgid "The source operation failed; inspect its diagnostics and retained capture state."
 msgstr "Operace na zdroji selhala; zkontrolujte její diagnostiku a zachovaný stav zachycení."
@@ -3509,17 +3494,17 @@ msgstr "Operace na zdroji selhala; zkontrolujte její diagnostiku a zachovaný s
 msgid "The source operation timed out; inspect writer recovery before retrying."
 msgstr "Operace na zdroji překročila časový limit; před opakováním zkontrolujte obnovení zapisujících služeb."
 
-msgid "Unsupported native source backup operation."
-msgstr "Nepodporovaná operace nativního zálohování na zdroji."
+msgid "Unsupported source capture or Restic backup operation."
+msgstr "Nepodporovaná operace zachycení dat na zdroji nebo zálohování Restic."
 
 msgid "snapshot-remove requires a full local capture ID from snapshots TARGET."
 msgstr "snapshot-remove vyžaduje úplné ID místního snapshotu ze snapshots TARGET."
 
-msgid "Could not evaluate the selected native backup configuration."
-msgstr "Zvolenou konfiguraci nativních záloh se nepodařilo vyhodnotit."
+msgid "Could not evaluate the selected Restic backup configuration."
+msgstr "Zvolenou konfiguraci záloh Restic se nepodařilo vyhodnotit."
 
-msgid "Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."
-msgstr "Jednorázové přímé SSH pro zálohu vyžaduje nativní zachycení spravované konfigurací; původním poskytovatelům zůstává deklarovaný přístup."
+msgid "Direct SSH backup overrides require configuration-owned capture; providers retain their declared access."
+msgstr "Jednorázové přímé SSH pro zálohu vyžaduje zachycení dat spravované konfigurací; poskytovatelům zůstává deklarovaný přístup."
 
 msgid "--receive-sha256 only applies to recovery archive staging."
 msgstr "--receive-sha256 platí pouze pro přípravu archivu konfigurace pro obnovu."
@@ -3578,9 +3563,6 @@ msgstr "Nebezpečná cesta v archivu receptu pro obnovu."
 msgid "Recovery requires portable pinned flake inputs."
 msgstr "Obnova vyžaduje přenositelné připnuté vstupy flake."
 
-msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check backup freshness and run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nLegacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
-msgstr "\nMístní snapshoty spravované konfigurací:\n  snapshot TARGET        Plán místního zachycení; --apply krátce zastaví deklarované zapisující služby a zachytí kořeny Btrfs.\n  snapshots TARGET       Na ověřeném běžícím zdroji přečte evidované místní snapshoty.\n  snapshot-remove TARGET Smaže --snapshot ID pouze s --apply; jinak ukáže plán.\n  snapshot-resume TARGET Pouze s --apply zopakuje obnovení zapisujících služeb po přerušení.\n  Nativní záloha používá zvolenou konfiguraci NixOS, pokud není deklarován původní poskytovatel.\n  Zachycení vyžaduje shodu běžící generace a pravidel se zvoleným receptem.\n  Pouze řídicí stanice Linux; list/show/doplňování nevyhodnocují systémy NixOS.\n\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek na řídicím počítači s --output DIR; nezapíná je.\n  backup-check TARGET    Kontrola stáří záloh a historie běhů; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled zvoleného kódu pro obnovu; --apply jej připraví nebo předá povolenému původnímu poskytovateli.\n\nPlánování na řídicím počítači:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Vyžaduje backup.enable = true a backup.schedule v deklaraci cíle.\n  Bez --dry-run zapíše soubory uživatelské služby a časovače na tento počítač, ne na TARGET.\n  Jednotky neinstaluje ani nezapíná a nemění časovač spravovaný serverem.\n  Pokud server už zálohuje pravidelně (například přes Restic), uprav časování\n  v jeho konfiguraci NixOS; ponech pouze jeden plánovač pořizování záloh.\n\nPravidla původního poskytovatele jsou v deklaraci cíle; nativní pravidla patří do jeho konfigurace NixOS.\nKlíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
-
 msgid "Activate a system generation while excluding configuration-owned captures."
 msgstr "Aktivujte generaci systému se zámky proti souběžnému zálohování."
 
@@ -3611,8 +3593,8 @@ msgstr "Běžící systém se před aktivací aktualizace změnil."
 msgid "The system or capture policies changed before update activation."
 msgstr "Systém nebo konfigurace zálohování se před aktivací aktualizace změnily."
 
-msgid "The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next native backup; no reboot was performed."
-msgstr "Aktualizace systému byla ověřena, ale příprava receptu pro obnovu selhala: {error}. Před další nativní zálohou spusťte {command}; restart nebyl proveden."
+msgid "The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next Restic backup; no reboot was performed."
+msgstr "Aktualizace systému byla ověřena, ale příprava receptu pro obnovu selhala: {error}. Před další zálohou Restic spusťte {command}; restart nebyl proveden."
 
 msgid "The update helper did not return a valid store path."
 msgstr "Pomocný nástroj aktualizace nevrátil platnou cestu v Nix store."
@@ -3623,8 +3605,8 @@ msgstr "Aktivace aktualizace vyžaduje explicitní cesty generací systému NixO
 msgid "Activation refuses active captures or pending writer recovery in either generation."
 msgstr "Aktivace odmítne probíhající zálohování nebo čekající obnovu služeb v kterékoli generaci."
 
-msgid "Native Restic configurations prepare recovery code before activation and stage it after verification."
-msgstr "Konfigurace s nativním Resticem připraví kód pro obnovu před aktivací a uloží jej po ověření."
+msgid "Restic configurations prepare recovery code before activation and stage it after verification."
+msgstr "Konfigurace s Resticem připraví kód pro obnovu před aktivací a uloží jej po ověření."
 
 msgid "The running system changed before snapshot capture."
 msgstr "Běžící systém se před vytvořením snapshotu změnil."
@@ -3644,20 +3626,17 @@ msgstr "Konfliktní cesty souborů a adresářů v archivu receptu pro obnovu."
 msgid "Independent inventory and verification are read-only and do not accept --apply."
 msgstr "Nezávislý výpis a ověření jsou pouze pro čtení a nepřijímají --apply."
 
-msgid "Invalid native backup access context or source identity."
-msgstr "Neplatný kontext přístupu k nativním zálohám nebo identita zdroje."
+msgid "Invalid Restic backup access context or source identity."
+msgstr "Neplatný kontext přístupu k zálohám Restic nebo identita zdroje."
 
 msgid "Keep backup access contexts and runtime credentials outside the recipe."
 msgstr "Kontexty přístupu k zálohám a provozní přihlašovací údaje uchovávejte mimo recept."
 
-msgid "Native backup access currently requires Linux."
-msgstr "Přístup k nativním zálohám nyní vyžaduje Linux."
+msgid "Restic backup access currently requires Linux."
+msgstr "Přístup k zálohám Restic nyní vyžaduje Linux."
 
-msgid "Native storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."
-msgstr "Čtení nativního úložiště vyžaduje --backup-access PRIVATE_CONTEXT_FILE; zdroj není kontaktován."
-
-msgid "Private native storage access context for inventory, verification and source recovery"
-msgstr "Soukromý kontext přístupu k nativnímu úložišti pro výpis, ověření a obnovu zdrojového kódu"
+msgid "Restic storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."
+msgstr "Čtení úložiště Restic vyžaduje --backup-access PRIVATE_CONTEXT_FILE; zdroj není kontaktován."
 
 msgid "Recovery requires a new output directory; existing data is never overwritten."
 msgstr "Obnova vyžaduje nový výstupní adresář; existující data se nepřepisují."
@@ -3671,17 +3650,14 @@ msgstr "Obnova zdrojového kódu vyžaduje --output NEW_DIRECTORY; ostatní čte
 msgid "The sealed recovery recipe does not match this source and capture."
 msgstr "Zapečetěný recept pro obnovu neodpovídá tomuto zdroji a zachycené záloze."
 
-msgid "This operation does not support independent native backup access."
-msgstr "Tato operace nepodporuje nezávislý přístup k nativním zálohám."
+msgid "This operation does not support independent Restic backup access."
+msgstr "Tato operace nepodporuje nezávislý přístup k zálohám Restic."
 
 msgid "Independent backup access permits only repository identity, inventory and payload reads."
 msgstr "Nezávislý přístup k zálohám povoluje pouze čtení identity repozitáře, výpisu a dat."
 
 msgid "State directories require private permissions and the expected owner."
 msgstr "Adresáře se stavem vyžadují soukromá oprávnění a očekávaného vlastníka."
-
-msgid "Native storage reads accept --backup-access PRIVATE_CONTEXT_FILE for backups, verify-backup and recover-source, even without a source declaration."
-msgstr "Nativní čtení úložiště přijímá --backup-access PRIVATE_CONTEXT_FILE pro backups, verify-backup a recover-source i bez deklarace zdroje."
 
 msgid "Target name, preserved source name for --backup-access, or a new name for new-*"
 msgstr "Název cíle, uchovaný název zdroje pro --backup-access nebo nový název pro new-*"
@@ -3776,14 +3752,14 @@ msgstr "Nedokončená obnova aplikací brání aktivaci aktualizace."
 msgid "Application restoration must not replace operating-system identity or restore state."
 msgstr "Obnova aplikací nesmí nahradit identitu operačního systému ani stav obnovy."
 
-msgid "Backup source name for restoration into a distinct target; native access also supports preserved sources"
-msgstr "Název zdroje zálohy pro obnovu do jiného cíle; nativní přístup podporuje i uchované zdroje"
+msgid "Backup source name for restoration into a distinct target; Restic access also supports preserved sources"
+msgstr "Název zdroje zálohy pro obnovu do jiného cíle; přístup k zálohám Restic podporuje i uchované zdroje"
 
 msgid "Cannot identify the destination filesystem layout."
 msgstr "Nelze určit rozložení cílových souborových systémů."
 
-msgid "Could not evaluate the prepared native restore target."
-msgstr "Nepodařilo se vyhodnotit připravený cíl nativní obnovy."
+msgid "Could not evaluate the prepared Restic restore target."
+msgstr "Nepodařilo se vyhodnotit připravený cíl obnovy Restic."
 
 msgid "Destination application paths must not traverse symbolic links."
 msgstr "Cílové cesty aplikací nesmí procházet symbolickými odkazy."
@@ -3806,8 +3782,8 @@ msgstr "Adresářová struktura cíle chybí ve vybrané záloze aplikací."
 msgid "Destination writers must remain held until application restoration completes."
 msgstr "Zapisující jednotky cíle musí zůstat blokované do dokončení obnovy aplikací."
 
-msgid "Direct SSH restoration overrides require independent native storage access."
-msgstr "Přepsání přístupu SSH při obnově vyžaduje nezávislý nativní přístup k úložišti."
+msgid "Direct SSH restoration overrides require independent Restic storage access."
+msgstr "Přepsání přístupu SSH při obnově vyžaduje nezávislý přístup k úložišti Restic."
 
 msgid "Enable nixberry.backup.restore.prepare in the destination configuration first."
 msgstr "Nejprve zapněte nixberry.backup.restore.prepare v cílové konfiguraci."
@@ -3824,26 +3800,26 @@ msgstr "Zkontrolovat obnovu bez zveřejnění dat aplikací"
 msgid "Installed capture and restore application catalogues differ."
 msgstr "Nainstalované katalogy aplikací pro zachycení a obnovu se liší."
 
-msgid "Invalid native restore access transfer."
-msgstr "Neplatný přenos přístupu pro nativní obnovu."
+msgid "Invalid Restic restore access transfer."
+msgstr "Neplatný přenos přístupu pro obnovu Restic."
 
 msgid "Invalid private restore transaction directory."
 msgstr "Neplatný soukromý adresář transakce obnovy."
 
-msgid "Native restoration controller operations currently require Linux."
-msgstr "Operace řadiče nativní obnovy nyní vyžadují Linux."
+msgid "Restic restoration controller operations currently require Linux."
+msgstr "Operace řadiče obnovy Restic nyní vyžadují Linux."
 
-msgid "Native restoration does not accept export or installation options."
-msgstr "Nativní obnova nepřijímá volby exportu ani instalace."
+msgid "Restic restoration does not accept export or installation options."
+msgstr "Obnova Restic nepřijímá volby exportu ani instalace."
 
-msgid "Native restoration requires a declared target with verified live system access."
-msgstr "Nativní obnova vyžaduje deklarovaný cíl s ověřeným přístupem k běžícímu systému."
+msgid "Restic restoration requires a declared target with verified live system access."
+msgstr "Obnova Restic vyžaduje deklarovaný cíl s ověřeným přístupem k běžícímu systému."
 
-msgid "Native restore requires a distinct source name and a full Restic receipt ID."
-msgstr "Nativní obnova vyžaduje odlišný název zdroje a úplné ID potvrzení Resticu."
+msgid "Restic restore requires a distinct source name and a full Restic receipt ID."
+msgstr "Obnova Restic vyžaduje odlišný název zdroje a úplné ID potvrzení Resticu."
 
-msgid "Native storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration."
-msgstr "Nativní čtení úložiště a obnova přijímají --backup-access PRIVATE_CONTEXT_FILE i bez původní deklarace zdroje."
+msgid "Restic storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration."
+msgstr "Čtení úložiště Restic a obnova přijímají --backup-access PRIVATE_CONTEXT_FILE i bez původní deklarace zdroje."
 
 msgid "No unpublished restore transaction exists to abort."
 msgstr "Neexistuje nezveřejněná transakce obnovy, kterou lze zrušit."
@@ -3851,14 +3827,14 @@ msgstr "Neexistuje nezveřejněná transakce obnovy, kterou lze zrušit."
 msgid "Only an unpublished staging transaction can be aborted; partial application data is never deleted."
 msgstr "Lze zrušit pouze nezveřejněnou pracovní transakci; částečná data aplikací se nikdy nemažou."
 
-msgid "Preserved native backup source name"
-msgstr "Uchovaný název zdroje nativní zálohy"
+msgid "Preserved Restic backup source name"
+msgstr "Uchovaný název zdroje zálohy Restic"
 
-msgid "Private native restore storage access context on this destination"
-msgstr "Soukromý kontext přístupu k úložišti nativní obnovy na tomto cíli"
+msgid "Private Restic restore storage access context on this destination"
+msgstr "Soukromý kontext přístupu k úložišti obnovy Restic na tomto cíli"
 
-msgid "Private native storage access context for inventory, verification, source recovery or destination restore"
-msgstr "Soukromý kontext přístupu k nativnímu úložišti pro výpis, ověření, získání zdroje nebo obnovu cíle"
+msgid "Private Restic storage access context for inventory, verification, source recovery or destination restore"
+msgstr "Soukromý kontext přístupu k úložišti Restic pro výpis, ověření, získání zdroje nebo obnovu cíle"
 
 msgid "Receive bounded restore credentials through SSH standard input"
 msgstr "Přijmout omezený přenos přihlašovacích údajů obnovy přes standardní vstup SSH"
@@ -3893,8 +3869,8 @@ msgstr "Obnovená data aplikací se změnila před dokončením obnovy."
 msgid "Restored application data differs or contains unexpected files; no completion was written."
 msgstr "Obnovená data aplikací se liší nebo obsahují neočekávané soubory; dokončení nebylo zapsáno."
 
-msgid "The destination did not confirm this exact native restoration."
-msgstr "Cíl nepotvrdil tuto přesnou nativní obnovu."
+msgid "The destination did not confirm this exact Restic restoration."
+msgstr "Cíl nepotvrdil tuto přesnou obnovu Restic."
 
 msgid "The destination filesystem layout changed during restoration."
 msgstr "Rozložení cílových souborových systémů se během obnovy změnilo."
@@ -3929,20 +3905,20 @@ msgstr "Nepodporovaný speciální soubor při obnově aplikací."
 msgid "Applied restoration requires the managed nixberry-restore system service."
 msgstr "Provedení obnovy vyžaduje spravovanou systémovou službu nixberry-restore."
 
-msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check native freshness; independent access requires --max-age-seconds N.\n                         Legacy providers also check run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nLegacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
-msgstr "\nMístní snapshoty spravované konfigurací:\n  snapshot TARGET        Plán místního zachycení; --apply krátce zastaví deklarované zapisující služby a zachytí kořeny Btrfs.\n  snapshots TARGET       Na ověřeném běžícím zdroji přečte evidované místní snapshoty.\n  snapshot-remove TARGET Smaže --snapshot ID pouze s --apply; jinak ukáže plán.\n  snapshot-resume TARGET Pouze s --apply zopakuje obnovení zapisujících služeb po přerušení.\n  Nativní záloha používá zvolenou konfiguraci NixOS, pokud není deklarován původní poskytovatel.\n  Zachycení vyžaduje shodu běžící generace a pravidel se zvoleným receptem.\n  Pouze řídicí stanice Linux; list/show/doplňování nevyhodnocují systémy NixOS.\n\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek na řídicím počítači s --output DIR; nezapíná je.\n  backup-check TARGET    Kontrola stáří nativních záloh; nezávislý přístup vyžaduje --max-age-seconds N.\n                         Původní poskytovatelé kontrolují i historii; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled zvoleného kódu pro obnovu; --apply jej připraví nebo předá povolenému původnímu poskytovateli.\n\nPlánování na řídicím počítači:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Vyžaduje backup.enable = true a backup.schedule v deklaraci cíle.\n  Bez --dry-run zapíše soubory uživatelské služby a časovače na tento počítač, ne na TARGET.\n  Jednotky neinstaluje ani nezapíná a nemění časovač spravovaný serverem.\n  Pokud server už zálohuje pravidelně (například přes Restic), uprav časování\n  v jeho konfiguraci NixOS; ponech pouze jeden plánovač pořizování záloh.\n\nPravidla původního poskytovatele jsou v deklaraci cíle; nativní pravidla patří do jeho konfigurace NixOS.\nKlíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
+msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Restic backup capture uses the selected NixOS configuration when no provider is declared.\n  Restic supports ext4 cold capture and Btrfs snapshot or cold capture.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check Restic freshness; independent access requires --max-age-seconds N.\n                         Providers also check run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled provider.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nProvider policy lives in the target declaration; Restic policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
+msgstr "\nMístní snapshoty spravované konfigurací:\n  snapshot TARGET        Plán místního zachycení; --apply krátce zastaví deklarované zapisující služby a zachytí kořeny Btrfs.\n  snapshots TARGET       Na ověřeném běžícím zdroji přečte evidované místní snapshoty.\n  snapshot-remove TARGET Smaže --snapshot ID pouze s --apply; jinak ukáže plán.\n  snapshot-resume TARGET Pouze s --apply zopakuje obnovení zapisujících služeb po přerušení.\n  Záloha Restic používá zvolenou konfiguraci NixOS, pokud není deklarován poskytovatel.\n  Restic podporuje cold zachycení na ext4 a snapshot nebo cold zachycení na Btrfs.\n  Zachycení vyžaduje shodu běžící generace a pravidel se zvoleným receptem.\n  Pouze řídicí stanice Linux; list/show/doplňování nevyhodnocují systémy NixOS.\n\nPříkazy šifrovaných záloh:\n  backup TARGET          Náhled koordinované zálohy; --apply vytvoří šifrovanou zálohu.\n  backups TARGET         Seznam záznamů záloh bez připojení ke zdroji.\n  verify-backup TARGET   Úplné ověření --snapshot ID bez připojení ke zdroji.\n  restore TARGET         Plán obnovy dat s --from SOURCE --snapshot ID; --apply data zpřístupní.\n  recover-source TARGET  Obnova konfigurace s --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Náhled keepLast pro každou identitu stroje; --apply odstraní ověřené staré kopie.\n  backup-schedule TARGET Export uživatelských jednotek na řídicím počítači s --output DIR; nezapíná je.\n  backup-check TARGET    Kontrola stáří záloh Restic; nezávislý přístup vyžaduje --max-age-seconds N.\n                         Poskytovatelé kontrolují i historii; --apply uloží stav a oznámí změnu.\n  backup-monitor TARGET  Export jednotek pouze pro dohled s --output DIR; nezapíná je.\n  backup-stage TARGET    Náhled zvoleného kódu pro obnovu; --apply jej připraví nebo předá povolenému poskytovateli.\n\nPlánování na řídicím počítači:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Vyžaduje backup.enable = true a backup.schedule v deklaraci cíle.\n  Bez --dry-run zapíše soubory uživatelské služby a časovače na tento počítač, ne na TARGET.\n  Jednotky neinstaluje ani nezapíná a nemění časovač spravovaný serverem.\n  Pokud server už zálohuje pravidelně (například přes Restic), uprav časování\n  v jeho konfiguraci NixOS; ponech pouze jeden plánovač pořizování záloh.\n\nPravidla poskytovatele jsou v deklaraci cíle; pravidla Restic patří do jeho konfigurace NixOS.\nKlíče zůstávají v provozních souborech mimo Git a Nix store.\nObnova nevytváří VM, neaktivuje konfiguraci ani nerestartuje. Viz docs/backups.md.\n"
 
-msgid "--apply only applies to native backup capture, staging, retention or repository initialization."
-msgstr "--apply se vztahuje pouze na pořizování, přípravu a promazávání nativních záloh nebo inicializaci repozitáře."
+msgid "--apply only applies to Restic backup capture, staging, retention or repository initialization."
+msgstr "--apply se vztahuje pouze na pořizování, přípravu a promazávání záloh Restic nebo inicializaci repozitáře."
 
-msgid "--dry-run only applies to native backup capture, staging, maintenance or repository initialization."
-msgstr "--dry-run se vztahuje pouze na pořizování, přípravu a údržbu nativních záloh nebo inicializaci repozitáře."
+msgid "--dry-run only applies to Restic backup capture, staging, maintenance or repository initialization."
+msgstr "--dry-run se vztahuje pouze na pořizování, přípravu a údržbu záloh Restic nebo inicializaci repozitáře."
 
 msgid "--max-age-seconds requires backup-check with independent --backup-access."
 msgstr "--max-age-seconds vyžaduje backup-check s nezávislým --backup-access."
 
-msgid "--system only applies to recovery archive staging or native retention."
-msgstr "--system se vztahuje pouze na přípravu archivu pro obnovu nebo promazávání nativních záloh."
+msgid "--system only applies to recovery archive staging or Restic retention."
+msgstr "--system se vztahuje pouze na přípravu archivu pro obnovu nebo promazávání záloh Restic."
 
 msgid "An age limit is supported only for independent backup freshness checks."
 msgstr "Mezní stáří lze zadat pouze při nezávislé kontrole stáří záloh."
@@ -3959,23 +3935,23 @@ msgstr "Kontrola stáří záloh vyžaduje přístup k repozitáři pouze pro č
 msgid "Backup freshness requires a valid expected source machine identity."
 msgstr "Kontrola stáří záloh vyžaduje platnou očekávanou identitu zdrojového stroje."
 
-msgid "Completion receipts disagree about their shared native payload."
-msgstr "Potvrzení dokončených záloh se neshodují na společných nativních datech."
+msgid "Completion receipts disagree about their shared Restic payload."
+msgstr "Potvrzení dokončených záloh se neshodují na společných datech Restic."
 
 msgid "Configuration-owned backup maintenance policy file"
 msgstr "Soubor pravidel údržby záloh spravovaný konfigurací"
 
-msgid "Configure nixberry.backup.restic.keepLast before pruning native backups."
-msgstr "Před promazáváním nativních záloh nastavte nixberry.backup.restic.keepLast."
+msgid "Configure nixberry.backup.restic.keepLast before pruning Restic backups."
+msgstr "Před promazáváním záloh Restic nastavte nixberry.backup.restic.keepLast."
 
-msgid "Configure nixberry.backup.restic.maxAgeSeconds before checking native backup freshness."
-msgstr "Před kontrolou stáří nativních záloh nastavte nixberry.backup.restic.maxAgeSeconds."
+msgid "Configure nixberry.backup.restic.maxAgeSeconds before checking Restic backup freshness."
+msgstr "Před kontrolou stáří záloh Restic nastavte nixberry.backup.restic.maxAgeSeconds."
 
 msgid "Expected running NixOS generation for recovery staging or retention"
 msgstr "Očekávaná spuštěná generace NixOS pro přípravu obnovy nebo promazávání záloh"
 
-msgid "Future capture timestamps prevent native retention."
-msgstr "Zálohy s časem v budoucnosti brání promazávání nativních záloh."
+msgid "Future capture timestamps prevent Restic retention."
+msgstr "Zálohy s časem v budoucnosti brání promazávání záloh Restic."
 
 msgid "Independent backup inventory and freshness checks do not accept a snapshot ID."
 msgstr "Nezávislý výpis záloh a kontrola jejich stáří nepřijímají ID snapshotu."
@@ -3983,41 +3959,41 @@ msgstr "Nezávislý výpis záloh a kontrola jejich stáří nepřijímají ID s
 msgid "Independent backup reads do not accept --apply."
 msgstr "Nezávislé čtení záloh nepřijímá --apply."
 
-msgid "Interrupted capture needs writer recovery before native retention."
+msgid "Interrupted capture needs writer recovery before Restic retention."
 msgstr "Přerušené pořizování zálohy vyžaduje před promazáváním obnovení zapisujících služeb."
 
-msgid "Invalid native backup maintenance policy."
-msgstr "Neplatná pravidla údržby nativních záloh."
+msgid "Invalid Restic backup maintenance policy."
+msgstr "Neplatná pravidla údržby záloh Restic."
 
-msgid "Maximum capture age for an independent native backup freshness check"
-msgstr "Nejvyšší stáří zálohy pro nezávislou kontrolu stáří nativních záloh"
+msgid "Maximum capture age for an independent Restic backup freshness check"
+msgstr "Nejvyšší stáří zálohy pro nezávislou kontrolu stáří záloh Restic"
 
-msgid "Native backup inventory changed during retention; no snapshots were deleted."
-msgstr "Seznam nativních záloh se během promazávání změnil; žádné snapshoty nebyly odstraněny."
+msgid "Restic backup inventory changed during retention; no snapshots were deleted."
+msgstr "Seznam záloh Restic se během promazávání změnil; žádné snapshoty nebyly odstraněny."
 
-msgid "Native retention requires an explicit keepLast between 1 and 100000."
-msgstr "Promazávání nativních záloh vyžaduje výslovné keepLast od 1 do 100000."
+msgid "Restic retention requires an explicit keepLast between 1 and 100000."
+msgstr "Promazávání záloh Restic vyžaduje výslovné keepLast od 1 do 100000."
 
-msgid "Native retention requires the current source machine identity."
-msgstr "Promazávání nativních záloh vyžaduje aktuální identitu zdrojového stroje."
+msgid "Restic retention requires the current source machine identity."
+msgstr "Promazávání záloh Restic vyžaduje aktuální identitu zdrojového stroje."
 
 msgid "The installed maintenance policy differs from the selected configuration."
 msgstr "Nainstalovaná pravidla údržby se liší od vybrané konfigurace."
 
-msgid "The source did not return valid native operation metadata."
-msgstr "Zdroj nevrátil platná metadata nativní operace."
+msgid "The source did not return valid source operation metadata."
+msgstr "Zdroj nevrátil platná metadata operace na zdroji."
 
 msgid "The source freshness status does not match its reported outcome."
 msgstr "Stav stáří záloh zdroje neodpovídá oznámenému výsledku."
 
-msgid "The source generation or machine identity changed; native retention was refused."
-msgstr "Generace nebo identita zdrojového stroje se změnila; promazávání nativních záloh bylo odmítnuto."
+msgid "The source generation or machine identity changed; Restic retention was refused."
+msgstr "Generace nebo identita zdrojového stroje se změnila; promazávání záloh Restic bylo odmítnuto."
 
-msgid "Invalid native backup statistics."
-msgstr "Neplatné statistiky nativních záloh."
+msgid "Invalid Restic backup statistics."
+msgstr "Neplatné statistiky záloh Restic."
 
 msgid "Include completed restore-point count and latest logical backup size"
 msgstr "Zahrnout počet dokončených bodů obnovy a logickou velikost poslední zálohy"
 
-msgid "--statistics only applies to native backup freshness checks."
-msgstr "--statistics lze použít pouze pro kontrolu stáří nativních záloh."
+msgid "--statistics only applies to Restic backup freshness checks."
+msgstr "--statistics lze použít pouze pro kontrolu stáří záloh Restic."

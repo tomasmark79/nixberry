@@ -160,10 +160,10 @@ def main(argv=None):
     parser.add_argument('--system', help=_("Expected running NixOS system generation"))
     parser.add_argument('--json', action='store_true', help=_("Print destination readiness as technical JSON"))
     parser.add_argument('--machine-id', help=_("Explicit verified destination machine ID"))
-    parser.add_argument('--source', help=_("Preserved native backup source name"))
-    parser.add_argument('--snapshot', help=_("Full native Restic completion snapshot ID"))
+    parser.add_argument('--source', help=_("Preserved Restic backup source name"))
+    parser.add_argument('--snapshot', help=_("Full Restic completion snapshot ID"))
     access = parser.add_mutually_exclusive_group()
-    access.add_argument('--backup-access', help=_("Private native restore storage access context on this destination"))
+    access.add_argument('--backup-access', help=_("Private Restic restore storage access context on this destination"))
     access.add_argument('--access-stdin', action='store_true', help=_("Receive bounded restore credentials through SSH standard input"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument('--apply', action='store_true', help=_("Restore application data and start configured destination writers"))
@@ -183,8 +183,8 @@ def main(argv=None):
     else:
         if args.apply and args.action == 'restore':
             require_managed()
-        import native_access
-        import native_restic
+        import restic_access
+        import restic_backup
         import restore_access
         import restore_apply
         if args.action == 'restore' and (not all((args.system, args.machine_id, args.source, args.snapshot)) or not (args.backup_access or args.access_stdin)):
@@ -205,9 +205,9 @@ def main(argv=None):
             if args.access_stdin:
                 context = stack.enter_context(restore_access.receive(restore_access.read(sys.stdin.buffer), args.source))
             else:
-                context = native_access.load(args.backup_access, args.source)
-                native_access.runtime(context)
-            reader = native_restic.Restic(context, owner_uid=0, repository_id=context['repositoryId'], read_only=True)
+                context = restic_access.load(args.backup_access, args.source)
+                restic_access.runtime(context)
+            reader = restic_backup.Restic(context, owner_uid=0, repository_id=context['repositoryId'], read_only=True)
             result = restore_apply.restore(value, capture, reader, args.snapshot, args.system, args.machine_id, apply=args.apply)
     print(json.dumps(result, sort_keys=True))
 

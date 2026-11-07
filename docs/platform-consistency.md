@@ -17,9 +17,9 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 | Ordered named VM adapters | yes | yes | yes | yes | yes | physical target bindings |
 | System and recipe export | yes | yes | yes | yes | yes | yes |
 | System management over SSH | yes | yes | yes | yes | yes | yes |
-| Native source snapshot/backup capture (Linux controller) | yes | yes | yes | yes | yes | yes |
-| Native source retention and freshness checks | yes | yes | yes | yes | yes | yes |
-| Independent native storage reads and prepared restore (Linux controller) | yes | yes | yes | yes | yes | yes |
+| Local Btrfs snapshots and Restic backup capture (Linux controller) | yes | yes | yes | yes | yes | yes |
+| Restic source retention and freshness checks | yes | yes | yes | yes | yes | yes |
+| Independent Restic storage reads and prepared restore (Linux controller) | yes | yes | yes | yes | yes | yes |
 | Backup policy/provider interface (Linux controller) | yes | yes | yes | yes | yes | yes |
 | Online `probe/create/install/provision/reset` | yes | yes | yes | yes | yes | own probe/recovery |
 | Default `allowReset = false;` | yes | yes | yes | yes | yes | not applicable |
@@ -30,15 +30,15 @@ Hypervisor-specific differences are in the [platform guide](vm.md).
 | Confidential launch and attested key delivery | rejected | rejected | rejected | rejected | rejected | not applicable |
 
 This describes implemented interfaces, not proof of every live combination.
-Native capture uses configuration-owned paths, writers and storage; Btrfs provides
-local snapshots and direct cold capture preserves ext4 backup support. The common
+Shared capture uses configuration-owned paths, writers and storage; Btrfs provides
+local snapshots and direct cold capture supports both ext4 and Btrfs. The common
 controller verifies the running generation and policy. Candidate operation lists
-do not evaluate NixOS systems. Legacy provider restore support depends on the
+do not evaluate NixOS systems. Provider restore support depends on the
 provider and explicit `restoreBackends`; see [backup scope](backups.md#platform-scope).
 `backup-stage` and optional provisioning after `update --apply` use the same
 system-access contract on every backend and RPi. Source-owned automation belongs
 to the configuration and runs independently of the controller.
-Native retention and freshness use the same nullable maintenance options on all
+Restic retention and freshness use the same nullable maintenance options on all
 six platforms, for both Btrfs snapshots and ext4 cold captures. Source operations
 verify the running generation, configuration and current machine identity;
 independent freshness after source loss requires `--backup-access` and an explicit

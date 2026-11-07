@@ -11,7 +11,7 @@ from scaffold import new_vm
 from test_support import copy_test_recipe
 
 
-class NativeMaintenancePolicyTests(unittest.TestCase):
+class ResticMaintenancePolicyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         temporary = tempfile.TemporaryDirectory(prefix="nixberry-maintenance-policy-")

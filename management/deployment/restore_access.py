@@ -1,4 +1,4 @@
-"""Transfer bounded native restore credentials through SSH stdin into private tmpfs."""
+"""Transfer bounded Restic restore credentials through SSH stdin into private tmpfs."""
 import base64
 import contextlib
 import json
@@ -9,8 +9,8 @@ import tempfile
 import time
 
 from messages import _
-import native_access
-import native_restic
+import restic_access
+import restic_backup
 import snapshots
 
 LIMIT = 5 * 1024 * 1024
@@ -20,7 +20,7 @@ def pack(value):
     names = {'password': value['passwordFile']}
     if value['ssh'] is not None:
         names.update(identity=value['ssh']['identityFile'], knownHosts=value['ssh']['knownHostsFile'])
-    files = {name: base64.b64encode(native_restic.private_file(path, owner_uid=os.geteuid(),
+    files = {name: base64.b64encode(restic_backup.private_file(path, owner_uid=os.geteuid(),
              private=name != 'knownHosts', limit=1024 * 1024)).decode() for name, path in names.items()}
     context = {key: value[key] for key in ('target', 'sourceId', 'repository', 'repositoryId', 'timeoutSeconds')}
     context.update(version=1, ssh=None if value['ssh'] is None else {'port': value['ssh']['port']})
@@ -55,21 +55,21 @@ def receive(contents, source):
             or not isinstance(request['context'], dict) or set(request['context']) != {
                 'version', 'target', 'sourceId', 'repository', 'repositoryId', 'timeoutSeconds', 'ssh'}
             or not isinstance(request['files'], dict)):
-        raise ValueError(_("Invalid native restore access transfer."))
+        raise ValueError(_("Invalid Restic restore access transfer."))
     value = dict(request['context'])
     ssh = value['ssh']
     names = {'password'} if ssh is None else {'password', 'identity', 'knownHosts'}
     if set(request['files']) != names or ssh is not None and (not isinstance(ssh, dict) or set(ssh) != {'port'}):
-        raise ValueError(_("Invalid native restore access transfer."))
+        raise ValueError(_("Invalid Restic restore access transfer."))
     files = {}
     for name, encoded in request['files'].items():
         if not isinstance(encoded, str):
-            raise ValueError(_("Invalid native restore access transfer."))
+            raise ValueError(_("Invalid Restic restore access transfer."))
         files[name] = base64.b64decode(encoded, validate=True)
         if len(files[name]) > 1024 * 1024:
             raise ValueError(_("Restore access transfer exceeds its bounded credential size."))
     parent = snapshots.secure_directory('/run/nixberry-restore-access', create=True)
-    native_restic.require_tmpfs(parent)
+    restic_backup.require_tmpfs(parent)
     with tempfile.TemporaryDirectory(prefix='request-', dir=parent) as temporary:
         directory = Path(temporary)
         for name, data in files.items():
@@ -82,6 +82,6 @@ def receive(contents, source):
         context = directory / 'access.json'
         context.write_text(json.dumps(value))
         context.chmod(0o600)
-        value = native_access.load(context, source)
-        native_access.runtime(value)
+        value = restic_access.load(context, source)
+        restic_access.runtime(value)
         yield value

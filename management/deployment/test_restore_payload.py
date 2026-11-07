@@ -1,4 +1,4 @@
-"""Native restoration retains application metadata inside private staging."""
+"""Restic restoration retains application metadata inside private staging."""
 import os
 from pathlib import Path
 import struct
@@ -34,7 +34,7 @@ class OwnershipTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             restore_payload.ownership(evidence(), evidence([('new-user', 1000)]))('uid', 1000)
 
-    def test_refuses_architecture_mismatch_and_legacy_missing_evidence(self):
+    def test_refuses_architecture_mismatch_and_v1_missing_evidence(self):
         for target in ({**evidence(), 'architecture': 'aarch64-linux'}, None):
             with self.subTest(target=target), self.assertRaises(ValueError):
                 restore_payload.ownership(evidence(), target)
@@ -79,7 +79,7 @@ class StageTests(unittest.TestCase):
     def setUp(self):
         from unittest.mock import patch
         from types import SimpleNamespace
-        import native_restic
+        import restic_backup
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
@@ -98,15 +98,15 @@ class StageTests(unittest.TestCase):
         root_user = patch('restore_payload.os.geteuid', return_value=0)
         root_user.start()
         self.addCleanup(root_user.stop)
-        for item in (patch.object(native_restic, 'receipt_reader', return_value=(self.reader, self.receipt, self.manifest)),
-                     patch.object(native_restic, 'recipe_reader', return_value=None)):
+        for item in (patch.object(restic_backup, 'receipt_reader', return_value=(self.reader, self.receipt, self.manifest)),
+                     patch.object(restic_backup, 'recipe_reader', return_value=None)):
             item.start()
             self.addCleanup(item.stop)
 
     def test_nonroot_restore_is_rejected_before_any_storage_access(self):
         from unittest.mock import patch
         with patch('restore_payload.os.geteuid', return_value=1000), \
-                patch('native_restic.receipt_reader', side_effect=AssertionError('storage access before root check')):
+                patch('restic_backup.receipt_reader', side_effect=AssertionError('storage access before root check')):
             with self.assertRaises(ValueError):
                 restore_payload.stage(self.reader, 'd' * 64, self.destination, self.identity)
         self.assertFalse(self.destination.exists())
@@ -152,8 +152,8 @@ class StageTests(unittest.TestCase):
 class RestoreCommandTests(unittest.TestCase):
     def test_empty_selection_cannot_restore_the_entire_payload(self):
         from unittest.mock import patch
-        import native_restic
-        reader = native_restic.Restic({'timeoutSeconds': 1}, read_only=True)
+        import restic_backup
+        reader = restic_backup.Restic({'timeoutSeconds': 1}, read_only=True)
         with patch.object(reader, '_execute', side_effect=AssertionError('must fail before execution')):
             with self.assertRaises(ValueError):
                 reader.restore('a' * 64, '/private/staging', [])
@@ -161,12 +161,12 @@ class RestoreCommandTests(unittest.TestCase):
     def test_restore_uses_only_literal_selection_verification_and_readonly_storage(self):
         from unittest.mock import patch
         import subprocess
-        import native_restic
-        reader = native_restic.Restic({'timeoutSeconds': 1, 'repository': '/repo',
+        import restic_backup
+        reader = restic_backup.Restic({'timeoutSeconds': 1, 'repository': '/repo',
             'passwordFile': '/password', 'runtimeDirectory': '/run/private', 'ssh': None}, read_only=True)
         paths = [{'source': '/app', 'payload': '/snapshots/app[1]'},
                  {'source': '/app/database', 'payload': '/snapshots/db'}]
-        with patch('native_restic.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '', '')) as execute:
+        with patch('restic_backup.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '', '')) as execute:
             reader.restore('a' * 64, '/private/staging', paths)
         command = execute.call_args.args[0]
         self.assertIn('--no-lock', command)

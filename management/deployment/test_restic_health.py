@@ -12,12 +12,12 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import native_restic
+import restic_backup
 import recovery_recipe
-import native_health
+import restic_health
 
 
-class NativeHealthTests(unittest.TestCase):
+class ResticHealthTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -28,7 +28,7 @@ class NativeHealthTests(unittest.TestCase):
         self.settings = {'sourceId': 'libvirt:vm-demo-source', 'target': 'vm-demo-source',
                          'repository': str(self.root / 'repository'), 'passwordFile': str(password),
                          'runtimeDirectory': str(self.root / 'runtime'), 'timeoutSeconds': 120, 'ssh': None}
-        self.reader = native_restic.Restic(self.settings, owner_uid=os.geteuid(),
+        self.reader = restic_backup.Restic(self.settings, owner_uid=os.geteuid(),
                                           repository_id='a' * 64, read_only=True)
         self.calls = []
         self.entries = {}
@@ -47,7 +47,7 @@ class NativeHealthTests(unittest.TestCase):
         self.runner = runner
 
     def check(self, **kwargs):
-        return native_health.check(self.reader, max_age_seconds=kwargs.pop('max_age_seconds', 3600),
+        return restic_health.check(self.reader, max_age_seconds=kwargs.pop('max_age_seconds', 3600),
                                    now=kwargs.pop('now', 10000), **kwargs)
 
     def add_capture(self, created=9900, *, machine='1' * 32, header_time=None, version=None):
@@ -58,21 +58,21 @@ class NativeHealthTests(unittest.TestCase):
             'sourceId': self.settings['sourceId'], 'target': self.settings['target'],
             'systemPath': self.system, 'policySha256': 'e' * 64}, archive)
         archive_bytes = archive.read_bytes()
-        manifest = {'format': version or native_restic.FORMAT, 'sourceId': self.settings['sourceId'],
+        manifest = {'format': version or restic_backup.FORMAT, 'sourceId': self.settings['sourceId'],
                     'machineId': machine, 'attemptId': format(number, '032x'), 'createdAt': created,
                     'captureMethod': 'cold', 'paths': [{'source': '/srv/app', 'payload': '/srv/app'}],
                     'capture': None, 'recovery': {'path': '/run/nixberry/recovery.tar',
                         'sha256': hashlib.sha256(archive_bytes).hexdigest(),
                         'systemPath': self.system, 'policySha256': 'e' * 64}}
-        if manifest['format'] == native_restic.FORMAT:
+        if manifest['format'] == restic_backup.FORMAT:
             manifest['identity'] = {'architecture': 'x86_64-linux', 'users': [], 'groups': []}
         receipt = {'format': manifest['format'], 'sourceId': self.settings['sourceId'],
                    'attemptId': manifest['attemptId'], 'createdAt': created, 'payloadId': payload,
                    'manifestPath': '/run/nixberry/manifest.json',
-                   'manifestSha256': hashlib.sha256(native_restic.encode(manifest).encode()).hexdigest()}
+                   'manifestSha256': hashlib.sha256(restic_backup.encode(manifest).encode()).hexdigest()}
         header = {'id': identifier, 'time': datetime.fromtimestamp(
             created if header_time is None else header_time, timezone.utc).isoformat(),
-            'tags': [native_restic.RECEIPT, 'source:' + self.settings['sourceId']]}
+            'tags': [restic_backup.RECEIPT, 'source:' + self.settings['sourceId']]}
         self.entries[identifier] = {'receipt': receipt, 'manifest': manifest,
                                     'archive': archive_bytes, 'header': header}
         self.headers.append(header)
@@ -85,7 +85,7 @@ class NativeHealthTests(unittest.TestCase):
             return json.dumps(self.statistics)
         if arguments == ['cat', 'config']:
             return json.dumps({'id': self.repository_id})
-        if arguments == ['snapshots', '--tag', native_restic.RECEIPT + ',source:' + self.settings['sourceId']]:
+        if arguments == ['snapshots', '--tag', restic_backup.RECEIPT + ',source:' + self.settings['sourceId']]:
             return json.dumps(self.headers)
         if arguments[0] == 'snapshots':
             return json.dumps([self.entries[arguments[1]]['header']])
@@ -93,9 +93,9 @@ class NativeHealthTests(unittest.TestCase):
             for identifier, entry in self.entries.items():
                 receipt = entry['receipt']
                 if arguments == ['dump', identifier, '/nixberry-receipt.json']:
-                    return native_restic.encode(receipt)
+                    return restic_backup.encode(receipt)
                 if arguments == ['dump', receipt['payloadId'], receipt['manifestPath']]:
-                    return native_restic.encode(entry['manifest'])
+                    return restic_backup.encode(entry['manifest'])
                 if arguments == ['dump', receipt['payloadId'], entry['manifest']['recovery']['path']]:
                     self.assertTrue(kwargs['binary'])
                     self.assertEqual(kwargs['max_output'], recovery_recipe.MAX_ARCHIVE)
@@ -105,7 +105,7 @@ class NativeHealthTests(unittest.TestCase):
     def resign(self, identifier):
         entry = self.entries[identifier]
         entry['receipt']['manifestSha256'] = hashlib.sha256(
-            native_restic.encode(entry['manifest']).encode()).hexdigest()
+            restic_backup.encode(entry['manifest']).encode()).hexdigest()
 
     def test_missing_has_no_invented_capture_or_age_and_checks_repository_pin(self):
         self.assertEqual(self.check(), {'status': 'missing', 'sourceId': self.settings['sourceId'],
@@ -205,7 +205,7 @@ class NativeHealthTests(unittest.TestCase):
         self.assertEqual(self.check()['status'], 'future')
 
     def test_both_manifest_versions_remain_readable(self):
-        for version in native_restic.FORMATS:
+        for version in restic_backup.FORMATS:
             with self.subTest(version=version):
                 self.entries.clear()
                 self.headers.clear()
@@ -246,11 +246,11 @@ class NativeHealthTests(unittest.TestCase):
             path.chmod(0o600)
         self.settings.update(repository='sftp:reader@backup.invalid:/repository',
             ssh={'port': 2222, 'identityFile': str(identity), 'knownHostsFile': str(known_hosts)})
-        with patch('native_restic.subprocess.run', return_value=subprocess.CompletedProcess([], 255, '', '')), \
+        with patch('restic_backup.subprocess.run', return_value=subprocess.CompletedProcess([], 255, '', '')), \
                 self.assertRaisesRegex(RuntimeError, 'SFTP trust or authentication'):
             self.check()
         self.assertEqual(self.calls, [])
-        with patch('native_restic.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '/', '')) as execute:
+        with patch('restic_backup.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '/', '')) as execute:
             self.assertEqual(self.check()['status'], 'missing')
         command = execute.call_args.args[0]
         self.assertIn('StrictHostKeyChecking=yes', command)
@@ -264,15 +264,15 @@ class NativeHealthTests(unittest.TestCase):
         script = ('import sys; sys.stdout.write(\'{"id":"' + self.repository_id
                   + '"}\' if sys.argv[1] == "cat" else "x" * (16 * 1024 * 1024 + 1))')
         with patch.object(self.reader, 'command', return_value=[sys.executable, '-c', script]), \
-                patch('native_restic.require_tmpfs'), patch('sys.stderr', new_callable=io.StringIO), \
+                patch('restic_backup.require_tmpfs'), patch('sys.stderr', new_callable=io.StringIO), \
                 self.assertRaises(RuntimeError):
             self.check()
         self.assertEqual(list((self.root / 'runtime').iterdir()), [])
 
     def test_default_clock_uses_current_time_and_invalid_overrides_fail_before_reads(self):
         self.add_capture(9900)
-        with patch('native_health.time.time', return_value=10000.25):
-            self.assertEqual(native_health.check(self.reader, max_age_seconds=3600)['ageSeconds'], 100)
+        with patch('restic_health.time.time', return_value=10000.25):
+            self.assertEqual(restic_health.check(self.reader, max_age_seconds=3600)['ageSeconds'], 100)
         self.calls.clear()
         for value in (True, '10000', float('nan'), float('inf'), float('-inf'), -1):
             with self.subTest(value=value), self.assertRaises(ValueError):

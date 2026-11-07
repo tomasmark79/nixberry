@@ -116,7 +116,7 @@ let
     profiles.${target.backend}.system.extendModules {
       specialArgs.nixberryTargetIdentity = "${target.backend}:${
         target.spec.uuid or target.spec.ownerId
-          or (throw "Native VM backups require a declared UUID or ownerId.")
+          or (throw "Restic VM backups require a declared UUID or ownerId.")
       }";
       modules = [
         configurations.modules.${target.configuration}

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-import native_maintenance
+import restic_maintenance
 
 
 class MaintenanceTests(unittest.TestCase):
@@ -20,15 +20,15 @@ class MaintenanceTests(unittest.TestCase):
         self.writer = Mock()
         self.events = []
         self.writer.run.side_effect = lambda args, **kwargs: self.events.append(('write', args))
-        patches = [patch('native_maintenance.native_restic.policy', side_effect=lambda value: value),
-                   patch('native_maintenance.native_restic.running_system', return_value=self.system),
-                   patch('native_maintenance.snapshots.machine_id', return_value='a' * 32),
-                   patch('native_maintenance.snapshots.pending', return_value=False),
-                   patch('native_maintenance.snapshots.lock', side_effect=self.lock),
-                   patch('native_maintenance.reader', return_value=self.reader),
-                   patch('native_maintenance.native_retention.plan', side_effect=lambda *a, **k: dict(self.selection)),
-                   patch('native_maintenance.native_restic.verify_reader', side_effect=lambda *a: self.events.append(('verify', a[1]))),
-                   patch('native_maintenance.native_restic.Restic', return_value=self.writer)]
+        patches = [patch('restic_maintenance.restic_backup.policy', side_effect=lambda value: value),
+                   patch('restic_maintenance.restic_backup.running_system', return_value=self.system),
+                   patch('restic_maintenance.snapshots.machine_id', return_value='a' * 32),
+                   patch('restic_maintenance.snapshots.pending', return_value=False),
+                   patch('restic_maintenance.snapshots.lock', side_effect=self.lock),
+                   patch('restic_maintenance.reader', return_value=self.reader),
+                   patch('restic_maintenance.restic_retention.plan', side_effect=lambda *a, **k: dict(self.selection)),
+                   patch('restic_maintenance.restic_backup.verify_reader', side_effect=lambda *a: self.events.append(('verify', a[1]))),
+                   patch('restic_maintenance.restic_backup.Restic', return_value=self.writer)]
         for item in patches:
             item.start()
             self.addCleanup(item.stop)
@@ -40,14 +40,14 @@ class MaintenanceTests(unittest.TestCase):
         self.events.append(('unlock', None))
 
     def test_preview_is_read_only_without_a_capture_lease_or_full_payload_scan(self):
-        result = native_maintenance.prune(self.settings, self.policy, self.system)
+        result = restic_maintenance.prune(self.settings, self.policy, self.system)
         self.assertFalse(result['applied'])
         self.assertEqual(result['remove'], ['c' * 64])
         self.assertEqual(self.events, [])
         self.writer.run.assert_not_called()
 
     def test_apply_verifies_the_retained_capture_before_explicit_paired_deletion(self):
-        result = native_maintenance.prune(self.settings, self.policy, self.system, apply=True)
+        result = restic_maintenance.prune(self.settings, self.policy, self.system, apply=True)
         self.assertTrue(result['applied'])
         self.assertEqual(result['verifiedSnapshotId'], 'b' * 64)
         self.assertEqual(self.events, [('lock', None), ('verify', 'b' * 64),
@@ -56,24 +56,24 @@ class MaintenanceTests(unittest.TestCase):
         self.writer.repository.assert_called_once_with()
 
     def test_failed_verification_pending_capture_or_changed_selection_never_delete(self):
-        with patch('native_maintenance.native_restic.verify_reader', side_effect=ValueError('corrupt')):
+        with patch('restic_maintenance.restic_backup.verify_reader', side_effect=ValueError('corrupt')):
             with self.assertRaisesRegex(ValueError, 'corrupt'):
-                native_maintenance.prune(self.settings, self.policy, self.system, apply=True)
-        with patch('native_maintenance.snapshots.pending', return_value=True):
+                restic_maintenance.prune(self.settings, self.policy, self.system, apply=True)
+        with patch('restic_maintenance.snapshots.pending', return_value=True):
             with self.assertRaises(RuntimeError):
-                native_maintenance.prune(self.settings, self.policy, self.system, apply=True)
+                restic_maintenance.prune(self.settings, self.policy, self.system, apply=True)
         changed = {**self.selection, 'remove': ['e' * 64]}
-        with patch('native_maintenance.native_retention.plan', side_effect=[self.selection, changed]):
+        with patch('restic_maintenance.restic_retention.plan', side_effect=[self.selection, changed]):
             with self.assertRaises(RuntimeError):
-                native_maintenance.prune(self.settings, self.policy, self.system, apply=True)
+                restic_maintenance.prune(self.settings, self.policy, self.system, apply=True)
         self.writer.run.assert_not_called()
 
     def test_generation_and_machine_are_rechecked_within_the_lease(self):
-        for probe in ('native_maintenance.native_restic.running_system', 'native_maintenance.snapshots.machine_id'):
+        for probe in ('restic_maintenance.restic_backup.running_system', 'restic_maintenance.snapshots.machine_id'):
             initial = self.system if 'running_system' in probe else 'a' * 32
             with self.subTest(probe=probe), patch(probe, side_effect=[initial, 'changed']):
                 with self.assertRaises(RuntimeError):
-                    native_maintenance.prune(self.settings, self.policy, self.system, apply=True)
+                    restic_maintenance.prune(self.settings, self.policy, self.system, apply=True)
         self.writer.run.assert_not_called()
 
     def test_disabled_or_malformed_maintenance_has_no_implicit_deletion_default(self):
@@ -81,12 +81,12 @@ class MaintenanceTests(unittest.TestCase):
                       {**self.policy, 'keepLast': 0}, {**self.policy, 'keepLast': True},
                       {**self.policy, 'maxAgeSeconds': 31536001}, {**self.policy, 'unknown': 1}):
             with self.subTest(value=value), self.assertRaises(ValueError):
-                native_maintenance.prune(self.settings, value, self.system, apply=True)
+                restic_maintenance.prune(self.settings, value, self.system, apply=True)
         self.writer.run.assert_not_called()
 
     def test_health_uses_read_only_metadata_and_current_machine_without_capture_lock(self):
-        with patch('native_maintenance.native_health.check', return_value={'status': 'missing'}) as check:
-            result = native_maintenance.check(self.settings, self.policy)
+        with patch('restic_maintenance.restic_health.check', return_value={'status': 'missing'}) as check:
+            result = restic_maintenance.check(self.settings, self.policy)
             check.assert_called_once_with(self.reader, max_age_seconds=3600,
                                           expected_machine_id='a' * 32, include_statistics=False)
         self.assertEqual(result, {'status': 'missing'})

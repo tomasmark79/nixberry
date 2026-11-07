@@ -2,16 +2,31 @@
 
 [Main guide](../README.md) · [CLI](cli.md) · [Platform contract](platform-consistency.md)
 
-Native backup and application restoration use shared NixBerry tools. Each
+Restic backup and application restoration use shared NixBerry tools. Each
 configuration declares its application paths, writer units and storage settings;
 it does not implement its own backup or restore program. The selected recipe is
 preserved with the backup so recovery can reproduce its source configuration
 without the original checkout or device.
 
-Optional legacy controller providers retain a separate format contract. Their
+Optional controller providers retain a separate format contract. Their
 policy belongs to a target declaration in `machines/vm/` or `machines/rpi/`, and
 the configuration supplies the provider implementation. NixBerry dispatches
 these providers through one controller interface for every backend.
+
+Filesystem, capture method and backup implementation are separate choices:
+
+| Choice | Supported values and meaning |
+|---|---|
+| Root filesystem (`rootFilesystem`) | `ext4` or `btrfs`; owned by the target declaration and disk layout. |
+| Capture method (`nixberry.backup.captureMethod`) | `snapshot` captures read-only Btrfs subvolumes; `cold` reads ext4 or Btrfs application paths while declared writers remain stopped. |
+| Backup implementation | Shared NixBerry Restic tools configured through `nixberry.backup`, or a configuration-supplied provider selected by the target's `backup.provider`. |
+
+Restic supports both filesystems. A Btrfs root defaults to `snapshot`, and an
+ext4 root defaults to `cold`; Btrfs can also explicitly select `cold`. Local
+snapshot commands require Btrfs regardless of the upload method. Shared Restic
+application restoration uses the same publication procedure on ext4 and Btrfs
+destinations; it restores application files, not a filesystem image or boot disk.
+Provider formats and restore capabilities belong to each provider.
 
 ## Configuration-owned local snapshots
 
@@ -60,7 +75,7 @@ The guest tool is shared by all five VM backends and RPi, independently of
 image or ISO installation. It requires a running, unlocked source; exported
 offline media cannot capture a stopped source's application data.
 
-The shared controller also exposes local capture and native backup creation:
+The shared controller also exposes local capture and Restic backup creation:
 
 ```sh
 nixberry snapshot vm-demo-server --json
@@ -87,19 +102,19 @@ writer shutdown. Local capture IDs contain 32 hexadecimal characters and belong
 to that source; they are distinct from Restic completion IDs.
 
 `list`, `show`, completion and exported operation lists advertise candidate source
-operations based on system access without evaluating NixOS. Each native action
+operations based on system access without evaluating NixOS. Each source action
 checks enablement in the selected configuration when invoked. Completion never
-queries remote snapshot inventories or offers legacy backup IDs for local
+queries remote snapshot inventories or offers provider backup IDs for local
 snapshot removal. Offline bundles carry the configuration and shared tools;
 they do not capture application data from stopped systems.
 
-A target with an explicit enabled legacy backup provider retains that provider
+A target with an explicitly enabled backup provider uses that provider
 for `backup`, `backup-stage`, `backup-prune` and `backup-check`; otherwise these
-commands use `nixberry.backup.restic`. Provision native storage credentials and initialize the
+commands use `nixberry.backup.restic`. Provision Restic storage credentials and initialize the
 repository through the guest tools described below, then use the controller to
-prepare and transfer recovery code. Independent native inventory, verification
+prepare and transfer recovery code. Independent Restic inventory, verification
 and recovery of configuration use `--backup-access` as described below.
-Controller timer exports and legacy monitoring require that provider.
+Controller timer exports and provider monitoring require that provider.
 
 Capture verifies Btrfs source identity, free space, storage placement, mount
 coverage and nested subvolumes before stopping writers. Only services active
@@ -119,7 +134,7 @@ directories are rejected; final symbolic-link targets must be included as
 explicit application data paths. Capture state and snapshot storage must stay
 outside those data paths. An empty `stopUnits` explicitly permits live reads.
 
-For native uploads, a separately captured child root supplies that logical
+For Restic uploads, a separately captured child root supplies that logical
 subtree. Its hidden view in ancestor snapshots is excluded, including stale
 files underneath bind mounts. Exclusion paths match names literally, including
 glob characters and backslashes. Nested paths captured from the same root and
@@ -214,7 +229,7 @@ frozen recipe used to build the system, before transferring or activating it.
 After verified activation, it transfers and binds that prepared archive. A recipe
 which cannot reproduce the built system prevents activation. Staging failure
 after verified activation is reported as a partial update with a retry command;
-native captures continue to refuse the stale archive. Updates through other
+Restic backups continue to refuse the stale archive. Updates through other
 tools and rollbacks require explicit `backup-stage --apply` before capture.
 Staging reads a verified archive without evaluating or activating its contents
 on the source. The same source-side lock protects snapshot capture, cold capture
@@ -278,7 +293,7 @@ for inventory, verification and recovery of the configuration, but lack this
 architecture and ownership evidence. The receipt is published only after upload,
 manifest/configuration readback and writer recovery succeed. Incomplete payloads
 remain in the repository without being listed as completed backups and are not
-candidates for native retention. Successful snapshot-mode capture/upload then
+candidates for Restic retention. Successful snapshot-mode capture/upload then
 removes its temporary local snapshot. A failed upload retains it for inspection.
 
 The public `snapshotId` is the full 64-character Restic completion receipt ID;
@@ -300,7 +315,7 @@ interface. Capture requires a running, unlocked source; verification reads the
 repository independently. Hypervisor boot, ARM hardware and application recovery
 need their own validation.
 
-### Native maintenance policy
+### Restic maintenance policy
 
 The selected configuration also owns optional retention and freshness settings:
 
@@ -315,7 +330,7 @@ nixberry.backup.restic = {
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `keepLast` | `null` | Retain 1–100000 distinct completed payloads for the current source machine; `null` disables native pruning. |
+| `keepLast` | `null` | Retain 1–100000 distinct completed payloads for the current source machine; `null` disables Restic pruning. |
 | `maxAgeSeconds` | `null` | Maximum authenticated capture age, 1–31536000 seconds; `null` disables source freshness checks. |
 | `pruneSchedule` | `null` | Optional systemd calendar; requires `keepLast`. |
 | `checkSchedule` | `null` | Optional systemd calendar; requires `maxAgeSeconds`. |
@@ -335,7 +350,7 @@ running. Pruning is ordered after backup and capture recovery; freshness checks
 are ordered after backup. Prepared restore destinations hold enabled maintenance
 services and timers until restoration completes.
 
-### Native retention
+### Restic retention
 
 ```sh
 nixberry backup-prune vm-demo-server --dry-run --json
@@ -365,7 +380,7 @@ On the source, the equivalent commands are
 `/etc/nixberry/backup.json` and `--maintenance` from
 `/etc/nixberry/maintenance.json` by default.
 
-### Native freshness checks
+### Restic freshness checks
 
 ```sh
 nixberry backup-check vm-demo-server --json
@@ -374,7 +389,7 @@ nixberry backup-check vm-demo-source --backup-access /private/access.json --max-
 
 The source-owned check uses configured `maxAgeSeconds` and the current source
 machine identity. Its service runs `nixberry-restic backup-check --json`; an
-unhealthy result fails the systemd unit and is available in its journal. Native
+unhealthy result fails the systemd unit and is available in its journal. Restic
 checks send no desktop notifications and do not accept `--apply`.
 
 Independent `--backup-access` checks require an explicit `--max-age-seconds`
@@ -468,7 +483,7 @@ without writer shutdown must declare `restoreUnits` explicitly; `[]` declares
 that there are no managed destination writers. Include activating sockets and
 timers. Reserved SSH, networking and management unit names and prefixes are
 rejected. DNS application services can be held on a destination even when they must remain live during
-source capture. Source-owned native backup services/timers and enabled native
+source capture. Source-owned Restic backup services/timers and enabled Restic
 prune/check services/timers are held as well.
 The management network and storage access must work independently of held
 application services.
@@ -497,10 +512,10 @@ contains destination paths and writers, without restoring system accounts,
 machine identity or SSH keys.
 
 The `status` operation inspects the destination without publishing data or
-starting services. Native data publication uses
+starting services. Restic data publication uses
 [`restore --backup-access`](#restore-applications-into-a-prepared-destination).
 
-## Independent native storage access
+## Independent Restic storage access
 
 Keep a private access context, repository password and authorized SSH credentials
 on the recovery workstation, outside every NixBerry recipe and the Nix store.
@@ -554,19 +569,19 @@ nixberry recover-source vm-demo-source --backup-access /private/access.json --sn
 nixberry recover-source vm-demo-source --backup-access /private/access.json --snapshot RECEIPT_ID --output /home/operator/recovered-source --apply
 ```
 
-`RECEIPT_ID` is a complete 64-character native Restic receipt ID from inventory.
-The context explicitly selects native storage reads, including when a legacy
+`RECEIPT_ID` is a complete 64-character Restic receipt ID from inventory.
+The context explicitly selects Restic storage reads, including when a
 provider exists. Shared management file aliases are materialized as regular
 source files; external or directory aliases remain refused. The selected recipe
 must still reproduce the original source generation and policy exactly. No source connection, NixOS evaluation or source declaration is
 needed. Any available NixBerry checkout can supply the controller. These
 operations require Linux; all five VM backends and RPi use the same storage
-contract. Inventory operation lists are candidates and do not evaluate native
+contract. Inventory operation lists are candidates and do not evaluate Restic
 enablement or inspect access contexts.
 
 ### Restore applications into a prepared destination
 
-Native restoration uses a distinct installed destination with the same source
+Restic restoration uses a distinct installed destination with the same source
 architecture (`aarch64-linux` or `x86_64-linux`). Declare its own hostname, network
 and hardware or VM identity. Select the required service configuration and enable
 `nixberry.backup.restore.prepare = true` before installing or updating that target.
@@ -586,13 +601,13 @@ nixberry restore vm-demo-destination --from vm-demo-source --backup-access /priv
 
 The access context still names `vm-demo-source`, including when that declaration
 and the original machine no longer exist. Explicit `--backup-access` selects this
-native path; ordinary legacy-provider restoration retains its existing contract.
+Restic path; ordinary provider restoration retains its existing contract.
 The default plan evaluates the destination recipe without contacting either
 machine or storage. Applying checks the installed generation, declared identity
 and exact policies before transferring bounded credentials through SSH stdin into
 private destination tmpfs. Storage host and repository pins and read-only SFTP
 access remain effective. A local repository path must also be available on the
-destination. Native controller restoration currently requires Linux and uses the
+destination. Restic controller restoration currently requires Linux and uses the
 same path for all five VM backends and Raspberry Pi; it does not install disks or
 convert filesystems.
 
@@ -622,7 +637,7 @@ report write. After that phase begins, the verified stage is reused. Writers
 remain held; checksums, metadata and regular-file hardlink
 relationships are verified and synced before durable completion. Unexpected
 additional destination files are retained and prevent completion. No account,
-SSH, boot or other operating-system identity paths can be replaced. Native
+SSH, boot or other operating-system identity paths can be replaced. Restic
 application restoration requires version 2 capture evidence; version 1 remains
 available for inventory, verification and configuration recovery.
 
@@ -656,13 +671,13 @@ identity before writing. The result contains `recovery.json` and `recipe/`.
 Existing output is refused. An interrupted extraction retains a partial
 directory with `INCOMPLETE`; inspect it and choose a new output for a retry.
 Recovered code is never evaluated or activated. Source recovery alone does not
-restore application data; native publication into a replacement is separate.
+restore application data; Restic publication into a replacement is separate.
 `--dry-run` skips storage access for inventory, verification, freshness and source
 recovery.
 
-## Commands and write boundaries
+## Provider commands and write boundaries
 
-This section describes the legacy provider interface. Native capture and recipe
+This section describes the provider interface. Shared capture and recipe
 staging, maintenance and independent storage reads use the commands above.
 
 ```sh
@@ -704,10 +719,10 @@ An unsupported variant must fail without selecting a weaker fallback. Restoring
 a cold filesystem between architectures requires an application-specific migration
 format rather than treating the filesystem as portable.
 
-## Retention and user timer bundles
+## Provider retention and user timer bundles
 
-This section applies to enabled target-level legacy providers. Configuration-owned
-Restic uses [native retention](#native-retention) and its source system timers.
+This section applies to enabled target-level providers. Configuration-owned
+Restic uses [Restic retention](#restic-retention) and its source system timers.
 
 ```sh
 nixberry backup-prune vm-demo-server --json
@@ -723,7 +738,7 @@ separately for each source machine identity.
 
 Choose where backups are scheduled: `backup-schedule` prepares user units on
 the controller running NixBerry. A server-owned scheduler, such as a NixOS
-Restic timer, is configured on the server instead (see [source-owned automation](#source-owned-automation)).
+Restic timer, is configured on the server instead (see [provider automation on the source](#provider-automation-on-the-source)).
 Keep one capture scheduler; this command does not inspect or change a server's timer.
 
 For controller scheduling, enable `backup.enable` and set `backup.schedule` in
@@ -748,10 +763,10 @@ source unlock and a separate recovery copy of the age identity must be arranged
 before relying on scheduled operation. Monitoring or automatic timer activation
 is not performed by bundle export.
 
-## Source-owned automation
+## Provider automation on the source
 
-The following provisioning interface applies to target-declared legacy providers.
-Native Restic jobs use the shared module and recipe staging described above.
+The following provisioning interface applies to target-declared providers.
+Restic jobs use the shared module and recipe staging described above.
 
 A configuration may install its own system service and timer to push encrypted
 backups directly to remote storage. This runs inside the NixOS source, on either
@@ -781,11 +796,11 @@ readbacks. Use `verify-backup` with the operator identity for full archive and
 application validation. Providers must bind data and recovery configuration
 inside authenticated encrypted contents before accepting a remote recovery copy.
 
-## Freshness monitoring and notifications
+## Provider freshness monitoring and notifications
 
-This section describes legacy provider monitoring. Native freshness uses the
-[source-owned or independent check](#native-freshness-checks) above, without the
-legacy report history or desktop notification path.
+This section describes provider monitoring. Restic freshness uses the
+[source-owned or independent check](#restic-freshness-checks) above, without the
+provider report history or desktop notification path.
 
 The controller can check repository metadata without contacting the source or
 reading its decryption identity. Enable a separate monitoring policy:
@@ -825,7 +840,7 @@ is still bounded by `maxRunMinutes`. Reports distinguish producer/transport
 checks from authenticated readback. Applied CLI captures
 atomically record start, successful/failed finish, duration, process identity and
 the last successful run time. Interrupted owners/PID reuse and overdue running
-captures are alarms. Legacy captures remain usable without invented run history.
+captures are alarms. Previously recorded captures remain usable without invented run history.
 Repository contention during a known live capture defers inventory inspection;
 a cached stale backup still alarms, and runtime limits bound deferral. A deferred
 report is `running`, not a fresh integrity proof.
@@ -874,18 +889,18 @@ capture verification, publication and running restore evidence.
 
 The declaration, CLI, completion and exported metadata are shared across QEMU/KVM
 (libvirt), Hyper-V, Proxmox VE, VirtualBox, VMware Workstation and Raspberry Pi 5.
-Image and ISO installations use the same post-boot interface. Native retention
+Image and ISO installations use the same post-boot interface. Restic retention
 and source freshness use the same configuration, generation checks and guest
 tools on all six target types, for Btrfs and ext4 captures. They require a running,
 unlocked source; offline VM declarations need `access` or a one-time `--ssh`
-override. Independent native storage reads and restore credentials survive source
+override. Independent Restic storage reads and restore credentials survive source
 loss through `--backup-access`; destination restoration still needs live access
 to the prepared replacement.
 
-Legacy source provisioning and the optional update hook share that interface
+Provider source provisioning and the optional update hook share that interface
 across all six target types; the provider must explicitly implement them.
-Legacy offline declarations retain local list/verify/recovery/retention commands;
-capture/restore additionally require declared live `access`. Legacy backup commands
+Provider offline declarations retain local list/verify/recovery/retention commands;
+capture/restore additionally require declared live `access`. Provider backup commands
 do not accept one-time `--ssh` overrides. Declare stable access and host trust for
 automated operations.
 RPi is a physical target and gains no VM lifecycle operations.

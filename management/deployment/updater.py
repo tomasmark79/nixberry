@@ -57,8 +57,8 @@ def build_update_tool(recipe, name, directory):
 
 
 def prepare_recovery(frozen, name, target, directory, system):
-    # Import at invocation time: the native controller shares our SSH guards.
-    from native_controller import projection, prepare_archive
+    # Import at invocation time: the capture controller shares our SSH guards.
+    from capture_controller import projection, prepare_archive
     settings = projection(frozen, name)
     if not settings['enabled'] or settings['restic'] is None:
         return None
@@ -69,7 +69,7 @@ def prepare_recovery(frozen, name, target, directory, system):
 
 
 def refresh_recovery(target, name, prepared):
-    from native_controller import execute
+    from capture_controller import execute
     return execute(target, name, 'backup-stage', prepared['settings'], apply=True, archive=prepared['archive'])
 
 
@@ -124,7 +124,7 @@ def update(recipe, name, target, *, apply=False):
     if not apply:
         info(_("Plan: verify the running installation → build → transfer over SSH → activate → verify."))
         info(_("Activation refuses active captures or pending writer recovery in either generation."))
-        info(_("Native Restic configurations prepare recovery code before activation and stage it after verification."))
+        info(_("Restic configurations prepare recovery code before activation and stage it after verification."))
         direct = direct_connection(target)
         if direct:
             info(_("Direct SSH to VM: {endpoint}; verifying the SSH key and declared hostname."),
@@ -191,7 +191,7 @@ def update(recipe, name, target, *, apply=False):
             except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as error:
                 action = 'update' if target.get('backup', {}).get('enable') else 'backup-stage'
                 raise RuntimeError(
-                    _("The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next native backup; no reboot was performed.").format(
+                    _("The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next Restic backup; no reboot was performed.").format(
                         error=error, command=f"nixberry {action} {name}{host_option} --apply")) from error
     success(_("Verified: {name}, {hostname}, system on {root}."),
             name=name, hostname=result["hostname"], root=result["root"])

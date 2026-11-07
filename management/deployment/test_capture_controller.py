@@ -11,13 +11,13 @@ from unittest.mock import patch
 from cli import main, operations
 
 
-class NativeDispatchTests(unittest.TestCase):
+class CaptureDispatchTests(unittest.TestCase):
     def target(self, backend='rpi'):
         return {'backend': backend, 'host': 'rpi-demo', 'configuration': 'server', 'commands': {},
                 'spec': {'hostName': 'rpi-demo', 'hardwareSerial': '0000000000000001'},
                 'capabilities': {'build': True, 'export': True, 'system': True, 'hypervisor': False}}
 
-    def test_native_capture_is_available_without_a_duplicate_target_backup_catalogue(self):
+    def test_shared_capture_is_available_without_a_duplicate_target_backup_catalogue(self):
         for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware', 'rpi'):
             with self.subTest(backend=backend):
                 available = operations(self.target(backend))
@@ -34,7 +34,7 @@ class NativeDispatchTests(unittest.TestCase):
                 calls.append((recipe, action, name, kwargs))
                 return {'action': action, 'target': name, 'applied': False, 'readiness': 'not-checked'}
             with patch.dict(os.environ, {'NIXBERRY_DEPLOYMENT': str(registry), 'NIXBERRY_RECIPE': directory}), \
-                    patch.dict(main.__globals__, {'run_native': run}), \
+                    patch.dict(main.__globals__, {'run_capture': run}), \
                     patch('subprocess.run', side_effect=AssertionError('Dispatch must not invoke deployment tools')), \
                     contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
                 try:
@@ -46,7 +46,7 @@ class NativeDispatchTests(unittest.TestCase):
             self.assertFalse(calls[0][3]['apply'])
             self.assertEqual(errors.getvalue(), '')
 
-    def test_new_ssh_override_does_not_expand_legacy_provider_authority(self):
+    def test_new_ssh_override_does_not_expand_provider_authority(self):
         from test_backups import settings
         target = self.target('libvirt')
         target.update(offline=True, backup=settings())
@@ -69,13 +69,13 @@ class NativeDispatchTests(unittest.TestCase):
             self.assertEqual(calls, [])
 
 
-class NativeSourceTests(unittest.TestCase):
+class CaptureSourceTests(unittest.TestCase):
     def setUp(self):
         import importlib.util
-        spec = importlib.util.find_spec('native_controller')
-        self.assertIsNotNone(spec, 'Shared native source dispatch is not implemented')
-        import native_controller
-        self.controller = native_controller
+        spec = importlib.util.find_spec('capture_controller')
+        self.assertIsNotNone(spec, 'Shared Restic source dispatch is not implemented')
+        import capture_controller
+        self.controller = capture_controller
         self.system = '/nix/store/' + 'd' * 32 + '-nixos-system-rpi-demo'
         self.capture = {'version': 1, 'applications': {'web': {'paths': ['/var/lib/web'], 'stopUnits': ['web.service']}},
                         'roots': {'system': {'path': '/', 'snapshotDirectory': '/.snapshots/nixberry'}},
@@ -83,33 +83,33 @@ class NativeSourceTests(unittest.TestCase):
         self.policy = {'enabled': True, 'captureMethod': 'snapshot', 'capture': self.capture,
                        'restic': {'timeoutSeconds': 600}, 'systemPath': self.system,
                        'maintenance': {'version': 1, 'keepLast': 2, 'maxAgeSeconds': 3600}}
-        self.target = NativeDispatchTests().target()
-        self.patches = [patch('native_controller.freeze_recipe', return_value='/frozen'),
-                        patch('native_controller.projection', return_value=self.policy)]
+        self.target = CaptureDispatchTests().target()
+        self.patches = [patch('capture_controller.freeze_recipe', return_value='/frozen'),
+                        patch('capture_controller.projection', return_value=self.policy)]
         for item in self.patches:
             item.start()
             self.addCleanup(item.stop)
 
-    def test_native_stage_plan_prepares_reviewable_archive_without_source_access(self):
-        from native_controller import run
-        with patch('native_controller.prepare_archive', create=True, return_value=(b'test archive', {'files': {'flake.nix': 'a'*64}})), \
-                patch('native_controller.status', side_effect=AssertionError('Stage plan must not contact source')):
+    def test_restic_stage_plan_prepares_reviewable_archive_without_source_access(self):
+        from capture_controller import run
+        with patch('capture_controller.prepare_archive', create=True, return_value=(b'test archive', {'files': {'flake.nix': 'a'*64}})), \
+                patch('capture_controller.status', side_effect=AssertionError('Stage plan must not contact source')):
             result = run('/recipe', self.target, 'backup-stage', 'rpi-demo')
         self.assertFalse(result['applied'])
         self.assertEqual(result['archiveFiles'], ['flake.nix'])
         self.assertEqual(result['archiveBytes'], 12)
 
     def test_default_plan_never_contacts_source_or_stops_writers(self):
-        with patch('native_controller.status', side_effect=AssertionError('Plan must not contact the source')):
+        with patch('capture_controller.status', side_effect=AssertionError('Plan must not contact the source')):
             result = self.controller.run('/recipe', self.target, 'snapshot', 'rpi-demo')
         self.assertFalse(result['applied'])
         self.assertEqual(result['readiness'], 'not-checked')
         self.assertEqual(result['policy']['applications']['web']['stopUnits'], ['web.service'])
 
     def test_wrong_running_generation_cannot_invoke_capture(self):
-        with patch('native_controller.status', return_value={'state': 'running'}), \
-                patch('native_controller.preflight', return_value='/nix/store/' + 'e' * 32 + '-nixos-system-other'), \
-                patch('native_controller.subprocess.run', side_effect=AssertionError('No remote command after mismatch')):
+        with patch('capture_controller.status', return_value={'state': 'running'}), \
+                patch('capture_controller.preflight', return_value='/nix/store/' + 'e' * 32 + '-nixos-system-other'), \
+                patch('capture_controller.subprocess.run', side_effect=AssertionError('No remote command after mismatch')):
             with self.assertRaisesRegex(RuntimeError, 'running system'):
                 self.controller.run('/recipe', self.target, 'snapshot', 'rpi-demo', apply=True)
 
@@ -124,10 +124,10 @@ class NativeSourceTests(unittest.TestCase):
             self.assertIn('--system ' + self.system, command[-1])
             self.assertIn(self.system, command[-1])
             return subprocess.CompletedProcess(command, 0, json.dumps({'applied': True, 'snapshotId': 'a' * 32, 'state': 'ready'}), '')
-        with patch('native_controller.status', return_value={'state': 'running'}), \
-                patch('native_controller.preflight', return_value=self.system), \
-                patch('native_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
-                patch('native_controller.subprocess.run', side_effect=remote):
+        with patch('capture_controller.status', return_value={'state': 'running'}), \
+                patch('capture_controller.preflight', return_value=self.system), \
+                patch('capture_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
+                patch('capture_controller.subprocess.run', side_effect=remote):
             result = self.controller.run('/recipe', self.target, 'snapshot', 'rpi-demo', apply=True)
         self.assertTrue(result['applied'])
         self.assertEqual(result['snapshotId'], 'a' * 32)
@@ -150,11 +150,11 @@ class NativeSourceTests(unittest.TestCase):
             self.assertEqual(kwargs['input'], contents)
             self.assertFalse(kwargs['text'])
             return subprocess.CompletedProcess(command, 0, b'{"applied":true}', b'')
-        with patch('native_controller.prepare_archive', return_value=(contents, {'files': {}})), \
-                patch('native_controller.status', return_value={'state':'running'}), \
-                patch('native_controller.preflight', return_value=self.system), \
-                patch('native_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
-                patch('native_controller.subprocess.run', side_effect=execute):
+        with patch('capture_controller.prepare_archive', return_value=(contents, {'files': {}})), \
+                patch('capture_controller.status', return_value={'state':'running'}), \
+                patch('capture_controller.preflight', return_value=self.system), \
+                patch('capture_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
+                patch('capture_controller.subprocess.run', side_effect=execute):
             result = self.controller.run('/recipe', self.target, 'backup-stage', 'rpi-demo', apply=True)
         self.assertTrue(result['applied'])
         self.assertEqual(len(calls), 2)
@@ -165,10 +165,10 @@ class NativeSourceTests(unittest.TestCase):
         def remote(command, **kwargs):
             calls.append(command)
             return subprocess.CompletedProcess(command, 0, '{}', '')
-        with patch('native_controller.status', return_value={'state': 'running'}), \
-                patch('native_controller.preflight', return_value=self.system), \
-                patch('native_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
-                patch('native_controller.subprocess.run', side_effect=remote):
+        with patch('capture_controller.status', return_value={'state': 'running'}), \
+                patch('capture_controller.preflight', return_value=self.system), \
+                patch('capture_controller.connection', return_value=['ssh', '--', 'root@rpi-demo']), \
+                patch('capture_controller.subprocess.run', side_effect=remote):
             with self.assertRaisesRegex(RuntimeError, 'policy'):
                 self.controller.run('/recipe', self.target, 'snapshot-resume', 'rpi-demo', apply=True)
         self.assertEqual(len(calls), 1)
@@ -179,7 +179,7 @@ class NativeSourceTests(unittest.TestCase):
             with self.subTest(action=action, args=args), self.assertRaises(ValueError):
                 self.controller.run('/recipe', self.target, action, 'rpi-demo', **args)
 
-    def test_native_maintenance_checks_both_installed_policies_and_allows_unhealthy_json(self):
+    def test_restic_maintenance_checks_both_installed_policies_and_allows_unhealthy_json(self):
         import subprocess
         for action in ('backup-prune', 'backup-check'):
             calls = []
@@ -194,10 +194,10 @@ class NativeSourceTests(unittest.TestCase):
                 self.assertNotIn('--apply', script)
                 result = {'status': 'stale'} if action == 'backup-check' else {'applied': False, 'remove': []}
                 return subprocess.CompletedProcess(command, int(action == 'backup-check'), json.dumps(result), '')
-            with self.subTest(action=action), patch('native_controller.status', return_value={'state': 'running'}), \
-                    patch('native_controller.preflight', return_value=self.system), \
-                    patch('native_controller.connection', return_value=['ssh', '--', 'root@vm-demo-source']), \
-                    patch('native_controller.subprocess.run', side_effect=execute):
+            with self.subTest(action=action), patch('capture_controller.status', return_value={'state': 'running'}), \
+                    patch('capture_controller.preflight', return_value=self.system), \
+                    patch('capture_controller.connection', return_value=['ssh', '--', 'root@vm-demo-source']), \
+                    patch('capture_controller.subprocess.run', side_effect=execute):
                 result = self.controller.run('/recipe', self.target, action, 'rpi-demo')
             self.assertEqual(len(calls), 3)
             self.assertEqual(result['target'], 'rpi-demo')
@@ -205,24 +205,24 @@ class NativeSourceTests(unittest.TestCase):
     def test_health_exit_code_and_report_must_agree(self):
         import subprocess
         for code, payload in ((1, {'status': 'ok'}), (0, {'status': 'missing'}), (1, {}), (1, None)):
-            with self.subTest(code=code, payload=payload), patch('native_controller.subprocess.run',
+            with self.subTest(code=code, payload=payload), patch('capture_controller.subprocess.run',
                     return_value=subprocess.CompletedProcess([], code, json.dumps(payload), '')):
                 with self.assertRaises(RuntimeError):
                     self.controller.remote(['ssh', 'host'], 'check', 30, health=True)
 
 
-class NativeProjectionErrors(unittest.TestCase):
+class CaptureProjectionErrors(unittest.TestCase):
     def test_nix_failure_forwards_diagnostics_and_does_not_return_a_policy(self):
         import subprocess
-        from native_controller import projection
+        from capture_controller import projection
         errors = io.StringIO()
-        with patch('native_controller.subprocess.run', return_value=subprocess.CompletedProcess([], 1, 'null', 'Nix fixture failure\n')), \
+        with patch('capture_controller.subprocess.run', return_value=subprocess.CompletedProcess([], 1, 'null', 'Nix fixture failure\n')), \
                 contextlib.redirect_stderr(errors), self.assertRaises(RuntimeError):
             projection('/fixture', 'vm-demo-source')
         self.assertEqual(errors.getvalue(), 'Nix fixture failure\n')
 
     def test_projection_refuses_untracked_absolute_file_reads(self):
-        from native_controller import projection
+        from capture_controller import projection
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / 'recipe'
             root.mkdir()
@@ -233,7 +233,7 @@ class NativeProjectionErrors(unittest.TestCase):
                 projection(str(root), 'test')
 
     def test_projection_cannot_resolve_missing_lock_entries(self):
-        from native_controller import projection
+        from capture_controller import projection
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / 'recipe'
             root.mkdir()
@@ -245,11 +245,11 @@ class NativeProjectionErrors(unittest.TestCase):
                 projection(str(root), 'test')
 
 
-class NativeTransportTests(unittest.TestCase):
+class CaptureTransportTests(unittest.TestCase):
     def test_binary_transfer_forces_no_tty_and_preserves_archive_bytes(self):
         import hashlib
         import sys
-        from native_controller import remote
+        from capture_controller import remote
         contents = b'\x00\x03\r\nsealed recipe bytes\xff'
         with tempfile.TemporaryDirectory() as directory:
             command = Path(directory) / 'ssh-fixture'

@@ -4,7 +4,7 @@ import math
 import time
 
 from messages import _
-import native_restic
+import restic_backup
 import snapshots
 
 MAX_AGE_SECONDS = 31536000
@@ -37,9 +37,9 @@ def check(reader, *, max_age_seconds, now=None, expected_machine_id=None, includ
               'maxAgeSeconds': max_age_seconds, 'machineId': None}
     selected = None
     payloads = set()
-    for item in native_restic.inventory_reader(reader)['snapshots']:
+    for item in restic_backup.inventory_reader(reader)['snapshots']:
         identifier = item['snapshotId']
-        authenticated_reader, receipt, manifest = native_restic.receipt_reader(reader, identifier)
+        authenticated_reader, receipt, manifest = restic_backup.receipt_reader(reader, identifier)
         if expected_machine_id is not None and manifest['machineId'] != expected_machine_id:
             continue
         payloads.add(receipt['payloadId'])
@@ -53,7 +53,7 @@ def check(reader, *, max_age_seconds, now=None, expected_machine_id=None, includ
         return result
 
     key, authenticated_reader, receipt, manifest = selected
-    native_restic.recipe_reader(authenticated_reader, receipt, manifest)
+    restic_backup.recipe_reader(authenticated_reader, receipt, manifest)
     created = receipt['createdAt']
     age = int(max(0, now - created))
     status = ('future' if created > now + CLOCK_SKEW_SECONDS
@@ -66,6 +66,6 @@ def check(reader, *, max_age_seconds, now=None, expected_machine_id=None, includ
         if (not isinstance(statistics, dict) or type(statistics.get('total_size')) is not int
                 or statistics['total_size'] < 0 or type(statistics.get('snapshots_count')) is not int
                 or statistics['snapshots_count'] != 1):
-            raise ValueError(_("Invalid native backup statistics."))
+            raise ValueError(_("Invalid Restic backup statistics."))
         result['statistics'] = {'restorePoints': len(payloads), 'latestLogicalBytes': statistics['total_size']}
     return result

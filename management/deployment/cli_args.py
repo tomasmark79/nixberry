@@ -124,7 +124,8 @@ Configuration-owned local snapshots:
   snapshots TARGET       Read recorded local captures on the verified running source.
   snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.
   snapshot-resume TARGET Retry interrupted writer recovery only with --apply.
-  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.
+  Restic backup capture uses the selected NixOS configuration when no provider is declared.
+  Restic supports ext4 cold capture and Btrfs snapshot or cold capture.
   Source capture requires the running generation and policy to match the selected recipe.
   Linux controllers only; list/show/completion do not evaluate NixOS systems.
 
@@ -136,10 +137,10 @@ Encrypted backup commands:
   recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.
   backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.
   backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.
-  backup-check TARGET    Check native freshness; independent access requires --max-age-seconds N.
-                         Legacy providers also check run history; --apply records and notifies.
+  backup-check TARGET    Check Restic freshness; independent access requires --max-age-seconds N.
+                         Providers also check run history; --apply records and notifies.
   backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.
-  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.
+  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled provider.
 
 Controller-side scheduling:
   nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run
@@ -149,7 +150,7 @@ Controller-side scheduling:
   If the server already runs scheduled backups (for example Restic), manage that
   schedule in its NixOS configuration; keep one capture scheduler.
 
-Legacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.
+Provider policy lives in the target declaration; Restic policy belongs to its NixOS configuration.
 Keys remain runtime files outside Git and the Nix store.
 Restore does not create a VM, activate configuration or reboot. See docs/backups.md.
 """
@@ -188,7 +189,7 @@ def create_parser():
         epilog=_(HELP_COMMANDS)
         + _(BACKUP_HELP)
         + '\n'
-        + _("Native storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration.")
+        + _("Restic storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration.")
         + "\n"
         + _(
             "Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."
@@ -293,10 +294,10 @@ def create_parser():
     parser.add_argument(
         "--from",
         dest="backup_source",
-        help=_("Backup source name for restoration into a distinct target; native access also supports preserved sources"),
+        help=_("Backup source name for restoration into a distinct target; Restic access also supports preserved sources"),
     )
-    parser.add_argument('--backup-access', help=_("Private native storage access context for inventory, verification, source recovery or destination restore"))
-    parser.add_argument('--max-age-seconds', type=int, help=_("Maximum capture age for an independent native backup freshness check"))
+    parser.add_argument('--backup-access', help=_("Private Restic storage access context for inventory, verification, source recovery or destination restore"))
+    parser.add_argument('--max-age-seconds', type=int, help=_("Maximum capture age for an independent Restic backup freshness check"))
     parser.add_argument(
         "--address", help=_("Early-boot unlock address or current RPi recovery address")
     )

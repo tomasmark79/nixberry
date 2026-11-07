@@ -13,12 +13,12 @@ let
         ./restore_payload.py
         ./restore_apply.py
         ./restore_access.py
-        ./native_access.py
+        ./restic_access.py
         ./backup_identity.py
-        ./native_restic.py
-        ./native_health.py
-        ./native_retention.py
-        ./native_maintenance.py
+        ./restic_backup.py
+        ./restic_health.py
+        ./restic_retention.py
+        ./restic_maintenance.py
         ./recovery_recipe.py
         ./update_guard.py
         ./messages.py
@@ -52,7 +52,7 @@ in
     pkgs.coreutils
   ];
   update = entry "nixberry-update-guard" "update_guard.py" [ pkgs.nix ];
-  restic = entry "nixberry-restic" "native_restic.py" [
+  restic = entry "nixberry-restic" "restic_backup.py" [
     pkgs.restic
     pkgs.openssh
   ];

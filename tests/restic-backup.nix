@@ -64,7 +64,7 @@ let
   };
 in
 pkgs.testers.runNixOSTest {
-  name = "nixberry-native-restic";
+  name = "nixberry-restic-backup";
   nodes = {
     btrfs = source true;
     cold = source false;
@@ -151,7 +151,7 @@ pkgs.testers.runNixOSTest {
         assert healthy["maxAgeSeconds"] == 3600 and 0 <= healthy["ageSeconds"] <= 3600
         node.succeed("systemctl start nixberry-backup-check.service; test $(systemctl show nixberry-backup-check.service -p Result --value) = success")
         if node == btrfs:
-            probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r,p,m=native_restic.receipt(v," + repr(report["snapshotId"]) + "); paths={x['source']:x['payload'] for x in m['paths']}; rows=[json.loads(x) for x in r.run(['ls',p['payloadId'],'--json']).splitlines()]; print(json.dumps({'paths':[x['path'] for x in rows if x.get('struct_type')=='node'], 'parent':paths['/data/live/web'], 'child':r.run(['dump',p['payloadId'],paths[" + repr(nested) + "]+'/current']), 'sibling':r.run(['dump',p['payloadId'],paths['/data/live/web']+'/database1Q-otherraw name'])}))"
+            probe = "import json,pathlib,restic_backup; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r,p,m=restic_backup.receipt(v," + repr(report["snapshotId"]) + "); paths={x['source']:x['payload'] for x in m['paths']}; rows=[json.loads(x) for x in r.run(['ls',p['payloadId'],'--json']).splitlines()]; print(json.dumps({'paths':[x['path'] for x in rows if x.get('struct_type')=='node'], 'parent':paths['/data/live/web'], 'child':r.run(['dump',p['payloadId'],paths[" + repr(nested) + "]+'/current']), 'sibling':r.run(['dump',p['payloadId'],paths['/data/live/web']+'/database1Q-otherraw name'])}))"
             tree = json.loads(node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(probe)))
             assert tree["child"] == "live-child"
             assert tree["sibling"] == "keep-sibling"
@@ -175,14 +175,14 @@ pkgs.testers.runNixOSTest {
         listed_before = json.loads(node.succeed("nixberry-restic backups --json"))["snapshots"]
         assert len(listed_before) == 3
         # Inspect authenticated receipt times and actual repository snapshot IDs.
-        catalogue_probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r=native_restic.Restic(v,read_only=True); rows=[(row['snapshotId'],native_restic.receipt_reader(r,row['snapshotId'])[1]) for row in native_restic.inventory_reader(r)['snapshots']]; print(json.dumps([{'snapshotId':i,'payloadId':p['payloadId'],'createdAt':p['createdAt']} for i,p in rows]))"
+        catalogue_probe = "import json,pathlib,restic_backup; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r=restic_backup.Restic(v,read_only=True); rows=[(row['snapshotId'],restic_backup.receipt_reader(r,row['snapshotId'])[1]) for row in restic_backup.inventory_reader(r)['snapshots']]; print(json.dumps([{'snapshotId':i,'payloadId':p['payloadId'],'createdAt':p['createdAt']} for i,p in rows]))"
         captures = json.loads(node.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(catalogue_probe)))
         ordered = sorted(captures, key=lambda row: (row["createdAt"], row["payloadId"]), reverse=True)
         assert ordered[-1]["snapshotId"] == report["snapshotId"]
         kept_receipts = {row["snapshotId"] for row in ordered[:2]}
         kept_payloads = {row["payloadId"] for row in ordered[:2]}
         removed_receipt, removed_payload = ordered[-1]["snapshotId"], ordered[-1]["payloadId"]
-        repository_probe = "import json,pathlib,native_restic; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r=native_restic.Restic(v,read_only=True); r.repository(); print(r.run(['snapshots']))"
+        repository_probe = "import json,pathlib,restic_backup; v=json.loads(pathlib.Path('/etc/nixberry/backup.json').read_text()); r=restic_backup.Restic(v,read_only=True); r.repository(); print(r.run(['snapshots']))"
         repository_command = "env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(repository_probe)
         repository_before = {row["id"]: row for row in json.loads(node.succeed(repository_command))}
         assert set(repository_before) == {row["snapshotId"] for row in captures} | {row["payloadId"] for row in captures}
@@ -227,7 +227,7 @@ pkgs.testers.runNixOSTest {
         node.shutdown()
         verified = json.loads(storage.succeed("nixberry-restic --config /run/recovery-policy.json verify-backup --snapshot " + report["snapshotId"] + " --json"))
         assert verified["state"] == "recorded-verified"
-        identity_probe = "import json,native_restic; v=json.load(open('/run/recovery-policy.json')); _,_,m=native_restic.receipt(v," + repr(report["snapshotId"]) + "); print(json.dumps({'format':m['format'],'identity':m['identity']}))"
+        identity_probe = "import json,restic_backup; v=json.load(open('/run/recovery-policy.json')); _,_,m=restic_backup.receipt(v," + repr(report["snapshotId"]) + "); print(json.dumps({'format':m['format'],'identity':m['identity']}))"
         metadata = json.loads(storage.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(identity_probe)))
         assert metadata["format"] == "nixberry-restic-v2"
         assert metadata["identity"]["architecture"] == "x86_64-linux"
@@ -235,8 +235,8 @@ pkgs.testers.runNixOSTest {
         assert {"name": "root", "gid": 0} in metadata["identity"]["groups"]
         assert all(set(row) == {"name", "uid", "gid"} for row in metadata["identity"]["users"])
 
-        # Restore through native Restic into private staging after source loss.
-        stage_probe = "import json,pathlib,backup_identity,native_restic,restore_payload; v=json.load(open('/run/recovery-policy.json')); v['ssh']['identityFile']='/run/restore-readonly-key'; r=native_restic.Restic(v,read_only=True); out=restore_payload.stage(r," + repr(report["snapshotId"]) + ",'/var/lib/restored-" + node.name + "',backup_identity.collect()); print(json.dumps(out))"
+        # Restore through Restic into private staging after source loss.
+        stage_probe = "import json,pathlib,backup_identity,restic_backup,restore_payload; v=json.load(open('/run/recovery-policy.json')); v['ssh']['identityFile']='/run/restore-readonly-key'; r=restic_backup.Restic(v,read_only=True); out=restore_payload.stage(r," + repr(report["snapshotId"]) + ",'/var/lib/restored-" + node.name + "',backup_identity.collect()); print(json.dumps(out))"
         staged = json.loads(storage.succeed("env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(stage_probe)))
         assert staged["state"] == "staged-verified"
         # A name collision used only by the ACL must reject the private stage.
@@ -270,15 +270,15 @@ pkgs.testers.runNixOSTest {
         # Exercise the helper through actual non-root SFTP reads after source loss.
         # Guard the command boundary to prove freshness never streams all app data.
         independent_probe = (
-            "import json,native_access\n"
+            "import json,restic_access\n"
             "calls=[]\n"
-            "original=native_access.native_restic.Restic.run\n"
+            "original=restic_access.restic_backup.Restic.run\n"
             "def read(self,arguments,**kwargs):\n"
             "    assert arguments[0] != 'dump' or arguments[-1] != '/', 'Freshness streamed application payload'\n"
             "    calls.append(arguments)\n"
             "    return original(self,arguments,**kwargs)\n"
-            "native_access.native_restic.Restic.run=read\n"
-            "health=native_access.run('/home/recovery/access.json','vm-demo-guest','backup-check',max_age_seconds=3600)\n"
+            "restic_access.restic_backup.Restic.run=read\n"
+            "health=restic_access.run('/home/recovery/access.json','vm-demo-guest','backup-check',max_age_seconds=3600)\n"
             "print(json.dumps({'health':health,'calls':calls}))\n"
         )
         independent = json.loads(storage.succeed("runuser -u recovery -- env PYTHONPATH=${tools.source} ${pkgs.python3}/bin/python3 -c " + shlex.quote(independent_probe)))

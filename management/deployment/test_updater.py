@@ -286,7 +286,7 @@ class UpdateChecks(unittest.TestCase):
                     updater.update(self.recipe, 'test', RPI, apply=True)
                 fixtures['refresh_recovery'].assert_not_called()
 
-    def test_every_platform_and_vm_method_uses_the_guard_and_refreshes_native_recipe(self):
+    def test_every_platform_and_vm_method_uses_the_guard_and_refreshes_restic_recipe(self):
         fixtures, runner = self.dependencies()
         fixtures['prepare_recovery'].return_value = {'archive': b'sealed'}
         for backend in ('rpi', 'libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware'):
@@ -303,7 +303,7 @@ class UpdateChecks(unittest.TestCase):
                     self.assertIn('--setenv=NIXBERRY_LANG=cs', activation)
                     fixtures['refresh_recovery'].assert_called_once_with(target, 'test', {'archive': b'sealed'})
 
-    def test_legacy_provider_retry_command_still_reaches_native_update_staging(self):
+    def test_provider_retry_command_still_reaches_restic_update_staging(self):
         fixtures, _ = self.dependencies()
         fixtures['prepare_recovery'].return_value = {'archive': b'sealed'}
         fixtures['refresh_recovery'].side_effect = RuntimeError('lost SSH')
@@ -384,18 +384,18 @@ class UpdateChecks(unittest.TestCase):
         with patch.object(updater, "read", return_value="unknown"), self.assertRaises(RuntimeError):
             updater.reboot_required(["ssh", "host"])
 
-class NativeRecoveryUpdateChecks(unittest.TestCase):
-    def test_disabled_native_restic_does_not_prepare_or_transfer_an_archive(self):
+class ResticRecoveryUpdateChecks(unittest.TestCase):
+    def test_disabled_restic_backup_does_not_prepare_or_transfer_an_archive(self):
         for settings in ({'enabled': False}, {'enabled': True, 'restic': None}):
-            with self.subTest(settings=settings), patch('native_controller.projection', return_value=settings), \
-                    patch('native_controller.prepare_archive') as archive:
+            with self.subTest(settings=settings), patch('capture_controller.projection', return_value=settings), \
+                    patch('capture_controller.prepare_archive') as archive:
                 self.assertIsNone(updater.prepare_recovery('/frozen', 'test', RPI, '/tmp/stage', NEW))
                 archive.assert_not_called()
 
-    def test_native_archive_is_prepared_for_exact_built_generation(self):
+    def test_restic_archive_is_prepared_for_exact_built_generation(self):
         settings = {'enabled': True, 'restic': {}, 'systemPath': NEW}
-        with patch('native_controller.projection', return_value=settings), \
-                patch('native_controller.prepare_archive', return_value=(b'sealed', {})) as archive:
+        with patch('capture_controller.projection', return_value=settings), \
+                patch('capture_controller.prepare_archive', return_value=(b'sealed', {})) as archive:
             self.assertEqual(updater.prepare_recovery('/frozen', 'test', RPI, '/tmp/stage', NEW),
                              {'settings': settings, 'archive': b'sealed'})
             archive.assert_called_once_with('/frozen', 'test', RPI, settings, '/tmp/stage')
@@ -405,8 +405,8 @@ class NativeRecoveryUpdateChecks(unittest.TestCase):
 
     def test_refresh_uses_prepared_bytes_and_policy_without_freezing_the_checkout_again(self):
         prepared = {'settings': {'systemPath': NEW}, 'archive': b'exact prepared bytes'}
-        with patch('native_controller.freeze_recipe', side_effect=AssertionError('must retain original frozen source')), \
-                patch('native_controller.execute', return_value={'applied': True}) as execute:
+        with patch('capture_controller.freeze_recipe', side_effect=AssertionError('must retain original frozen source')), \
+                patch('capture_controller.execute', return_value={'applied': True}) as execute:
             self.assertEqual(updater.refresh_recovery(RPI, 'test', prepared), {'applied': True})
         execute.assert_called_once_with(RPI, 'test', 'backup-stage', prepared['settings'], apply=True, archive=prepared['archive'])
 

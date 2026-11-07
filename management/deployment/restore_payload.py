@@ -7,7 +7,7 @@ import struct
 
 import backup_identity
 from messages import _
-import native_restic
+import restic_backup
 import snapshots
 
 
@@ -86,11 +86,11 @@ def stage(reader, identifier, destination, target_identity):
     if os.geteuid() != 0:
         raise ValueError(_("Application payload restoration requires root to preserve ownership and metadata."))
     # Completion receipts authenticate both the logical mapping and evidence.
-    reader, receipt, manifest = native_restic.receipt_reader(reader, identifier)
-    if manifest['format'] != native_restic.FORMAT:
+    reader, receipt, manifest = restic_backup.receipt_reader(reader, identifier)
+    if manifest['format'] != restic_backup.FORMAT:
         raise ValueError(_("Application restoration requires source architecture and ownership evidence."))
     check = ownership(manifest['identity'], target_identity)
-    native_restic.recipe_reader(reader, receipt, manifest)
+    restic_backup.recipe_reader(reader, receipt, manifest)
     destination = Path(destination)
     snapshots.absolute(str(destination))
     snapshots.secure_directory(destination.parent, private=False, owner_uid=reader.owner_uid)

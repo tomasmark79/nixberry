@@ -270,7 +270,7 @@ def restore(value, capture, reader, identifier, expected_system, expected_machin
         raise ValueError(_("Application payload restoration requires root to preserve ownership and metadata."))
     value = restore_target.policy(value)
     capture = snapshots.policy(capture)
-    if (not isinstance(identifier, str) or not restore_payload.native_restic.ID.fullmatch(identifier)
+    if (not isinstance(identifier, str) or not restore_payload.restic_backup.ID.fullmatch(identifier)
             or snapshots.running_system() != expected_system or snapshots.machine_id() != expected_machine):
         raise ValueError(_("The destination machine or generation differs from the explicit restore target."))
     paths = roots(value)

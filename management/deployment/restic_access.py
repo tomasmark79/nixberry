@@ -1,12 +1,12 @@
-"""Read native encrypted backups using independent, private storage access."""
+"""Read Restic encrypted backups using independent, private storage access."""
 import json
 import os
 from pathlib import Path
 import sys
 
 from messages import _
-import native_health
-import native_restic
+import restic_health
+import restic_backup
 import recovery_recipe
 import snapshots
 
@@ -15,16 +15,16 @@ ACTIONS = ('backups', 'backup-check', 'verify-backup', 'recover-source')
 
 def load(path, target):
     path = Path(path).expanduser().absolute()
-    native_restic.runtime_path(str(path))
-    value = json.loads(native_restic.private_file(path, owner_uid=os.geteuid(), limit=1024 * 1024))
+    restic_backup.runtime_path(str(path))
+    value = json.loads(restic_backup.private_file(path, owner_uid=os.geteuid(), limit=1024 * 1024))
     required = {'version', 'target', 'sourceId', 'repository', 'repositoryId', 'passwordFile',
                 'ssh', 'runtimeDirectory', 'timeoutSeconds'}
     if (not isinstance(value, dict) or set(value) != required or type(value['version']) is not int
             or value['version'] != 1 or value['target'] != target
             or not isinstance(target, str) or not recovery_recipe.NAME.fullmatch(target)
-            or not isinstance(value['repositoryId'], str) or not native_restic.ID.fullmatch(value['repositoryId'])):
-        raise ValueError(_("Invalid native backup access context or source identity."))
-    native_restic.storage_policy(value)
+            or not isinstance(value['repositoryId'], str) or not restic_backup.ID.fullmatch(value['repositoryId'])):
+        raise ValueError(_("Invalid Restic backup access context or source identity."))
+    restic_backup.storage_policy(value)
     paths = [str(path), value['passwordFile'], value['runtimeDirectory']]
     if value['ssh'] is not None:
         paths += [value['ssh']['identityFile'], value['ssh']['knownHostsFile']]
@@ -36,12 +36,12 @@ def load(path, target):
 
 def runtime(value):
     directory = snapshots.secure_directory(value['runtimeDirectory'], create=True, owner_uid=os.geteuid())
-    native_restic.require_tmpfs(directory)
+    restic_backup.require_tmpfs(directory)
 
 
 def output_path(value):
     destination = Path(os.path.abspath(Path(value).expanduser()))
-    native_restic.runtime_path(str(destination))
+    restic_backup.runtime_path(str(destination))
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(_("Recovery requires a new output directory; existing data is never overwritten."))
     snapshots.secure_directory(destination.parent, private=False, owner_uid=os.geteuid())
@@ -53,20 +53,20 @@ def output_path(value):
 
 def run(path, target, action, *, snapshot=None, output=None, apply=False, dry_run=False, max_age_seconds=None):
     if sys.platform != 'linux':
-        raise RuntimeError(_("Native backup access currently requires Linux."))
+        raise RuntimeError(_("Restic backup access currently requires Linux."))
     if action not in ACTIONS:
-        raise ValueError(_("This operation does not support independent native backup access."))
+        raise ValueError(_("This operation does not support independent Restic backup access."))
     if apply and action != 'recover-source':
         raise ValueError(_("Independent backup reads do not accept --apply."))
     if action == 'backup-check':
-        if type(max_age_seconds) is not int or not 1 <= max_age_seconds <= native_health.MAX_AGE_SECONDS:
+        if type(max_age_seconds) is not int or not 1 <= max_age_seconds <= restic_health.MAX_AGE_SECONDS:
             raise ValueError(_("Backup freshness requires a positive age limit of at most one year in seconds."))
     elif max_age_seconds is not None:
         raise ValueError(_("An age limit is supported only for independent backup freshness checks."))
     if action in ('backups', 'backup-check'):
         if snapshot is not None:
             raise ValueError(_("Independent backup inventory and freshness checks do not accept a snapshot ID."))
-    elif not isinstance(snapshot, str) or not native_restic.ID.fullmatch(snapshot):
+    elif not isinstance(snapshot, str) or not restic_backup.ID.fullmatch(snapshot):
         raise ValueError(_("Select a full Restic receipt ID for verification or source recovery."))
     if (action == 'recover-source') != (output is not None):
         raise ValueError(_("Source recovery requires --output NEW_DIRECTORY; other storage reads do not accept it."))
@@ -80,15 +80,15 @@ def run(path, target, action, *, snapshot=None, output=None, apply=False, dry_ru
             result['maxAgeSeconds'] = max_age_seconds
         return result
     runtime(value)
-    reader = native_restic.Restic(value, owner_uid=os.geteuid(), repository_id=value['repositoryId'], read_only=True)
+    reader = restic_backup.Restic(value, owner_uid=os.geteuid(), repository_id=value['repositoryId'], read_only=True)
     if action == 'backups':
-        return native_restic.inventory_reader(reader)
+        return restic_backup.inventory_reader(reader)
     if action == 'backup-check':
-        return native_health.check(reader, max_age_seconds=max_age_seconds)
+        return restic_health.check(reader, max_age_seconds=max_age_seconds)
     if action == 'verify-backup':
-        return native_restic.verify_reader(reader, snapshot)
-    reader, receipt, manifest = native_restic.receipt_reader(reader, snapshot)
-    archive, record = native_restic.recipe_reader(reader, receipt, manifest)
+        return restic_backup.verify_reader(reader, snapshot)
+    reader, receipt, manifest = restic_backup.receipt_reader(reader, snapshot)
+    archive, record = restic_backup.recipe_reader(reader, receipt, manifest)
     recovery_recipe.unpack(archive, destination)
     return {'target': target, 'sourceId': value['sourceId'], 'snapshotId': snapshot,
             'systemPath': record['systemPath'], 'destination': str(destination),

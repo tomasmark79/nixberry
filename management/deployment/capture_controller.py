@@ -36,7 +36,7 @@ def projection(recipe, name):
                             stdin=subprocess.DEVNULL, text=True, capture_output=True)
     forward_stderr(result.stderr)
     if result.returncode:
-        raise RuntimeError(_("Could not evaluate the selected native backup configuration."))
+        raise RuntimeError(_("Could not evaluate the selected Restic backup configuration."))
     return json.loads(result.stdout)
 
 
@@ -46,7 +46,7 @@ def configuration_sources(frozen, name):
         result = subprocess.run(['nix', *arguments], stdin=subprocess.DEVNULL, text=True, capture_output=True)
         forward_stderr(result.stderr)
         if result.returncode:
-            raise RuntimeError(_("Could not evaluate the selected native backup configuration."))
+            raise RuntimeError(_("Could not evaluate the selected Restic backup configuration."))
         return json.loads(result.stdout)
 
     metadata = evaluate(['flake', 'metadata', '--json', '--no-update-lock-file', recipe_uri(frozen)])
@@ -76,7 +76,7 @@ def remote(command, script, timeout, *, input=None, health=False):
     try:
         report = json.loads(result.stdout)
     except (ValueError, TypeError):
-        raise RuntimeError(_("The source did not return valid native operation metadata.")) from None
+        raise RuntimeError(_("The source did not return valid source operation metadata.")) from None
     if health and (not isinstance(report, dict) or report.get('status') not in ('ok', 'stale', 'missing', 'future')
                    or result.returncode != int(report['status'] != 'ok')):
         raise RuntimeError(_("The source freshness status does not match its reported outcome."))
@@ -104,16 +104,16 @@ def prepare_archive(frozen, name, target, settings, directory):
 
 def run(recipe, target, action, name, *, snapshot=None, apply=False, dry_run=False):
     if action not in (*ACTIONS, *RESTIC_ACTIONS):
-        raise ValueError(_("Unsupported native source backup operation."))
+        raise ValueError(_("Unsupported source capture or Restic backup operation."))
     if (action == 'snapshot-remove' and not re.fullmatch('[0-9a-f]{32}', snapshot or '')
             or action != 'snapshot-remove' and snapshot is not None):
         raise ValueError(_("snapshot-remove requires a full local capture ID from snapshots TARGET."))
     if action in ('snapshots', 'backup-check') and apply:
         raise ValueError(_("This operation does not accept --apply."))
     if sys.platform != 'linux':
-        raise RuntimeError(_("Native capture controller operations currently require Linux."))
+        raise RuntimeError(_("Source capture controller operations currently require Linux."))
     if not re.fullmatch('[a-zA-Z0-9][a-zA-Z0-9_-]*', name) or not capabilities(target)['system']:
-        raise ValueError(_("Native capture requires a declared target with verified live system access."))
+        raise ValueError(_("Source capture requires a declared target with verified live system access."))
     with tempfile.TemporaryDirectory(prefix='nixberry-capture-') as directory:
         frozen = freeze_recipe(recipe, name, target, directory)
         settings = projection(frozen, name)
@@ -140,7 +140,7 @@ def execute(target, name, action, settings, *, snapshot=None, apply=False, archi
     policy = settings['restic'] if action in RESTIC_ACTIONS else settings['capture']
     live = status(target)
     if preflight(target, live) != expected:
-        raise RuntimeError(_("The running system differs from this recipe; update it before native capture."))
+        raise RuntimeError(_("The running system differs from this recipe; update it before source capture."))
     command = connection(target, live)
     guard = ('set -eu; export PATH=/run/current-system/sw/bin:/run/wrappers/bin; '
              + 'test "$(readlink -f /run/current-system)" = ' + shlex.quote(expected) + '; ')
@@ -168,5 +168,5 @@ def execute(target, name, action, settings, *, snapshot=None, apply=False, archi
     result = remote(command, guard + 'exec env NIXBERRY_LANG=' + language + ' ' + shlex.join(arguments), timeout,
                     input=archive, health=action == 'backup-check')
     if not isinstance(result, dict) or (apply and result.get('applied') is not True):
-        raise RuntimeError(_("The source did not confirm the requested native capture operation."))
+        raise RuntimeError(_("The source did not confirm the requested capture operation."))
     return {'target': name, **result}

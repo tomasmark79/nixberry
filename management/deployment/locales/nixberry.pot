@@ -6,8 +6,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: deployment/cli_args.py:189
-msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Native backup capture uses the selected NixOS configuration when no legacy provider is declared.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check native freshness; independent access requires --max-age-seconds N.\n                         Legacy providers also check run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled legacy provider.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nLegacy provider policy lives in the target declaration; native policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
+#: deployment/cli_args.py:190
+msgid "\nConfiguration-owned local snapshots:\n  snapshot TARGET        Plan local capture; --apply briefly stops declared writers and captures Btrfs roots.\n  snapshots TARGET       Read recorded local captures on the verified running source.\n  snapshot-remove TARGET Remove --snapshot ID only with --apply; otherwise show a plan.\n  snapshot-resume TARGET Retry interrupted writer recovery only with --apply.\n  Restic backup capture uses the selected NixOS configuration when no provider is declared.\n  Restic supports ext4 cold capture and Btrfs snapshot or cold capture.\n  Source capture requires the running generation and policy to match the selected recipe.\n  Linux controllers only; list/show/completion do not evaluate NixOS systems.\n\nEncrypted backup commands:\n  backup TARGET          Review coordinated capture; --apply creates an encrypted backup.\n  backups TARGET         List recorded snapshots without contacting the source.\n  verify-backup TARGET   Fully authenticate --snapshot ID without contacting the source.\n  restore TARGET         Plan data recovery with --from SOURCE --snapshot ID; --apply publishes data.\n  recover-source TARGET  Recover configuration with --snapshot ID --output DIR --apply.\n  backup-prune TARGET    Preview keepLast per machine identity; --apply removes verified old copies.\n  backup-schedule TARGET Export controller-side user units with --output DIR; never enables them.\n  backup-check TARGET    Check Restic freshness; independent access requires --max-age-seconds N.\n                         Providers also check run history; --apply records and notifies.\n  backup-monitor TARGET  Export monitoring-only user units with --output DIR; never enables them.\n  backup-stage TARGET    Review selected recovery code; --apply stages it or delegates to an enabled provider.\n\nController-side scheduling:\n  nixberry backup-schedule TARGET --output NEW_DIRECTORY --dry-run\n  Requires backup.enable = true and backup.schedule in the target declaration.\n  Without --dry-run, writes user service/timer files on this controller, not on TARGET.\n  It does not install or enable units and does not change a server-owned timer.\n  If the server already runs scheduled backups (for example Restic), manage that\n  schedule in its NixOS configuration; keep one capture scheduler.\n\nProvider policy lives in the target declaration; Restic policy belongs to its NixOS configuration.\nKeys remain runtime files outside Git and the Nix store.\nRestore does not create a VM, activate configuration or reboot. See docs/backups.md.\n"
 msgstr ""
 
 #: deployment/cli.py:69
@@ -40,8 +40,8 @@ msgstr ""
 msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
 msgstr ""
 
-#: deployment/native_restic.py:625
-msgid "--apply only applies to native backup capture, staging, retention or repository initialization."
+#: deployment/restic_backup.py:625
+msgid "--apply only applies to Restic backup capture, staging, retention or repository initialization."
 msgstr ""
 
 #: deployment/cli.py:249
@@ -56,8 +56,8 @@ msgstr ""
 msgid "--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."
 msgstr ""
 
-#: deployment/native_restic.py:629
-msgid "--dry-run only applies to native backup capture, staging, maintenance or repository initialization."
+#: deployment/restic_backup.py:629
+msgid "--dry-run only applies to Restic backup capture, staging, maintenance or repository initialization."
 msgstr ""
 
 #: rpi/install.py:101
@@ -108,7 +108,7 @@ msgstr ""
 msgid "--output applies to export, prepare-image, recover-source, backup-schedule and backup-monitor."
 msgstr ""
 
-#: deployment/native_restic.py:633
+#: deployment/restic_backup.py:633
 msgid "--receive-sha256 only applies to recovery archive staging."
 msgstr ""
 
@@ -116,8 +116,8 @@ msgstr ""
 msgid "--security only applies to new-*-vm; edit security in existing declarations."
 msgstr ""
 
-#: deployment/native_restic.py:627
-msgid "--snapshot only applies to native backup verification."
+#: deployment/restic_backup.py:627
+msgid "--snapshot only applies to Restic backup verification."
 msgstr ""
 
 #: deployment/snapshots.py:604
@@ -132,12 +132,12 @@ msgstr ""
 msgid "--ssh applies to server management and cannot be combined with --host or new-*."
 msgstr ""
 
-#: deployment/native_restic.py:621
-msgid "--statistics only applies to native backup freshness checks."
+#: deployment/restic_backup.py:621
+msgid "--statistics only applies to Restic backup freshness checks."
 msgstr ""
 
-#: deployment/native_restic.py:631
-msgid "--system only applies to recovery archive staging or native retention."
+#: deployment/restic_backup.py:631
+msgid "--system only applies to recovery archive staging or Restic retention."
 msgstr ""
 
 #: deployment/snapshots.py:606
@@ -317,7 +317,7 @@ msgstr ""
 msgid "Ambiguous option {option}. Choices: {choices}"
 msgstr ""
 
-#: deployment/native_access.py:65
+#: deployment/restic_access.py:65
 msgid "An age limit is supported only for independent backup freshness checks."
 msgstr ""
 
@@ -393,12 +393,12 @@ msgstr ""
 msgid "Applied restoration requires the managed nixberry-restore system service."
 msgstr ""
 
-#: deployment/cli_args.py:331
-msgid "Apply changes for update and deployment/recovery operations"
+#: deployment/restic_backup.py:617
+msgid "Apply Restic application backup"
 msgstr ""
 
-#: deployment/native_restic.py:617
-msgid "Apply native application backup"
+#: deployment/cli_args.py:332
+msgid "Apply changes for update and deployment/recovery operations"
 msgstr ""
 
 #: deployment/snapshots.py:596
@@ -431,7 +431,7 @@ msgstr ""
 msgid "Available memory: {available:.1f} %"
 msgstr ""
 
-#: deployment/native_restic.py:605
+#: deployment/restic_backup.py:605
 msgid "Back up configuration-owned application data directly into an encrypted Restic repository."
 msgstr ""
 
@@ -439,19 +439,19 @@ msgstr ""
 msgid "Backup controller operations currently require Linux."
 msgstr ""
 
-#: deployment/native_health.py:33
+#: deployment/restic_health.py:33
 msgid "Backup freshness requires a finite nonnegative current timestamp."
 msgstr ""
 
-#: deployment/native_access.py:63 deployment/native_health.py:24
+#: deployment/restic_access.py:63 deployment/restic_health.py:24
 msgid "Backup freshness requires a positive age limit of at most one year in seconds."
 msgstr ""
 
-#: deployment/native_health.py:29
+#: deployment/restic_health.py:29
 msgid "Backup freshness requires a read-only repository reader."
 msgstr ""
 
-#: deployment/native_health.py:27
+#: deployment/restic_health.py:27
 msgid "Backup freshness requires a valid expected source machine identity."
 msgstr ""
 
@@ -493,11 +493,11 @@ msgstr ""
 msgid "Backup schedule target names require lowercase letters, digits and hyphens, starting with a letter."
 msgstr ""
 
-#: deployment/cli_args.py:296
-msgid "Backup source name for restoration into a distinct target; native access also supports preserved sources"
+#: deployment/cli_args.py:297
+msgid "Backup source name for restoration into a distinct target; Restic access also supports preserved sources"
 msgstr ""
 
-#: deployment/native_restic.py:61
+#: deployment/restic_backup.py:61
 msgid "Backup storage, runtime files and credentials must stay outside application data paths."
 msgstr ""
 
@@ -543,7 +543,7 @@ msgstr ""
 msgid "CI recipe copy: {path}."
 msgstr ""
 
-#: deployment/cli_args.py:211
+#: deployment/cli_args.py:212
 msgid "COMMAND"
 msgstr ""
 
@@ -713,7 +713,7 @@ msgstr ""
 msgid "Choose a new target name: 1–40 lowercase letters, digits and hyphens, starting with a letter."
 msgstr ""
 
-#: deployment/native_access.py:50
+#: deployment/restic_access.py:50
 msgid "Choose a recovery output directory outside the recipe."
 msgstr ""
 
@@ -730,7 +730,7 @@ msgstr ""
 msgid "Cold capture requires ext4 or Btrfs application data."
 msgstr ""
 
-#: deployment/cli_args.py:212
+#: deployment/cli_args.py:213
 msgid "Command from the list below (default: list)"
 msgstr ""
 
@@ -752,8 +752,8 @@ msgstr ""
 msgid "Compile Czech gettext and shell catalogues; --check verifies generated shell content."
 msgstr ""
 
-#: deployment/native_retention.py:25
-msgid "Completion receipts disagree about their shared native payload."
+#: deployment/restic_retention.py:25
+msgid "Completion receipts disagree about their shared Restic payload."
 msgstr ""
 
 #: deployment/exporter.py:167
@@ -776,11 +776,11 @@ msgstr ""
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
-#: deployment/native_restic.py:608
+#: deployment/restic_backup.py:608
 msgid "Configuration-owned Restic policy file"
 msgstr ""
 
-#: deployment/native_restic.py:609
+#: deployment/restic_backup.py:609
 msgid "Configuration-owned backup maintenance policy file"
 msgstr ""
 
@@ -797,12 +797,12 @@ msgstr ""
 msgid "Configuration: {configuration}"
 msgstr ""
 
-#: deployment/native_maintenance.py:38
-msgid "Configure nixberry.backup.restic.keepLast before pruning native backups."
+#: deployment/restic_maintenance.py:38
+msgid "Configure nixberry.backup.restic.keepLast before pruning Restic backups."
 msgstr ""
 
-#: deployment/native_maintenance.py:29
-msgid "Configure nixberry.backup.restic.maxAgeSeconds before checking native backup freshness."
+#: deployment/restic_maintenance.py:29
+msgid "Configure nixberry.backup.restic.maxAgeSeconds before checking Restic backup freshness."
 msgstr ""
 
 #: proxmox/lab/configure.sh:18
@@ -813,7 +813,7 @@ msgstr ""
 msgid "Conflicting file and directory paths in recovery recipe archive."
 msgstr ""
 
-#: deployment/native_restic.py:404 deployment/native_restic.py:531
+#: deployment/restic_backup.py:404 deployment/restic_backup.py:531
 msgid "Conflicting logical application paths in the captured backup."
 msgstr ""
 
@@ -857,12 +857,12 @@ msgstr ""
 msgid "Could not determine whether a reboot is needed."
 msgstr ""
 
-#: deployment/native_restore.py:28
-msgid "Could not evaluate the prepared native restore target."
+#: deployment/restic_restore.py:28
+msgid "Could not evaluate the prepared Restic restore target."
 msgstr ""
 
-#: deployment/native_controller.py:39 deployment/native_controller.py:49
-msgid "Could not evaluate the selected native backup configuration."
+#: deployment/capture_controller.py:39 deployment/capture_controller.py:49
+msgid "Could not evaluate the selected Restic backup configuration."
 msgstr ""
 
 #: deployment/backup_watch.py:320
@@ -960,11 +960,11 @@ msgstr ""
 msgid "Destination filesystems cannot preserve a source hardlink group."
 msgstr ""
 
-#: deployment/native_restore.py:42
+#: deployment/restic_restore.py:42
 msgid "Destination restoration failed; inspect its diagnostics and retained transaction."
 msgstr ""
 
-#: deployment/native_restore.py:39
+#: deployment/restic_restore.py:39
 msgid "Destination restoration timed out; retry the same request to recover its transaction."
 msgstr ""
 
@@ -1005,7 +1005,7 @@ msgid "Direct SSD installation currently supports unencrypted RPi targets only; 
 msgstr ""
 
 #: deployment/cli.py:229
-msgid "Direct SSH backup overrides require native configuration-owned capture; legacy providers retain their declared access."
+msgid "Direct SSH backup overrides require configuration-owned capture; providers retain their declared access."
 msgstr ""
 
 #: deployment/cli.py:225
@@ -1013,11 +1013,11 @@ msgid "Direct SSH requires an offline VM declaration without hypervisor manageme
 msgstr ""
 
 #: deployment/cli.py:227
-msgid "Direct SSH restoration overrides require independent native storage access."
+msgid "Direct SSH restoration overrides require independent Restic storage access."
 msgstr ""
 
 #: deployment/cli.py:222
-msgid "Direct SSH supports system management, local snapshots and native backup capture."
+msgid "Direct SSH supports system management, local snapshots and Restic backup capture."
 msgstr ""
 
 #: deployment/updater.py:130
@@ -1145,7 +1145,7 @@ msgstr ""
 msgid "Early-boot SSH must use a different port from ordinary SSH (22)."
 msgstr ""
 
-#: deployment/cli_args.py:301
+#: deployment/cli_args.py:302
 msgid "Early-boot unlock address or current RPi recovery address"
 msgstr ""
 
@@ -1163,15 +1163,15 @@ msgstr ""
 msgid "Enable backup in the source target declaration first."
 msgstr ""
 
-#: deployment/native_controller.py:121
+#: deployment/capture_controller.py:121
 msgid "Enable nixberry.backup in the selected NixOS configuration first."
 msgstr ""
 
-#: deployment/native_controller.py:123
+#: deployment/capture_controller.py:123
 msgid "Enable nixberry.backup.restic in the selected NixOS configuration first."
 msgstr ""
 
-#: deployment/native_restore.py:58
+#: deployment/restic_restore.py:58
 msgid "Enable nixberry.backup.restore.prepare in the destination configuration first."
 msgstr ""
 
@@ -1187,15 +1187,15 @@ msgstr ""
 msgid "Encrypted RPi installation requires --initrd-key-file and a trusted security.initrdHostKey pin."
 msgstr ""
 
-#: deployment/cli_args.py:201
+#: deployment/cli_args.py:202
 msgid "Encrypted Raspberry Pi:\n  Set security.mode = luks in the physical target declaration.\n  Pin security.initrdHostKey and security.recoveryHostKey from trusted media preparation.\n  reproduce uses recovery media and --initrd-key-file; prompts for the LUKS passphrase.\n  unlock TARGET [--address IP] opens the pinned early-boot identity.\n  Named networks use security.interface or network.primary; legacy targets require --address.\n  prepare-image applies only to VM disks. See docs/security.md."
 msgstr ""
 
-#: deployment/cli_args.py:199
+#: deployment/cli_args.py:200
 msgid "Encrypted VMs:\n  new-*-vm NAME --security luks creates a declaration for encrypted image delivery.\n  prepare-image TARGET prepares the disk outside the Nix store; prompts for a passphrase.\n  unlock TARGET --address IP connects to the pinned initrd SSH identity.\n  Set security.imageDirectory to a private directory outside the recipe.\n  Encrypted ISO installation and confidential launch are currently unavailable.\n  Confidential requests fail closed; no fallback to ordinary VMs is allowed."
 msgstr ""
 
-#: deployment/cli_args.py:291
+#: deployment/cli_args.py:292
 msgid "Encrypted backup ID, or local capture ID for snapshot-remove"
 msgstr ""
 
@@ -1207,7 +1207,7 @@ msgstr ""
 msgid "Encrypted image prepared. Keep the passphrase separately; verify a complete locked boot and remote unlock before relying on it."
 msgstr ""
 
-#: deployment/cli_args.py:188
+#: deployment/cli_args.py:189
 msgid "Everyday management:\n  list                         Local target inventory and available management capabilities.\n  show TARGET                  Target declaration, capacity, network and available operations.\n  status [TARGET]              Live status; hosts are queried concurrently and rows appear as ready.\n  ssh TARGET [-- COMMAND ...]  Log in or run a command on the server.\n  verify TARGET                Check the running system against the recipe, disk and services.\n  doctor [TARGET]              Diagnose one or all targets.\n  probe TARGET                 Detailed platform discovery for troubleshooting.\n\nUpdates and comparisons:\n  update TARGET                Update plan; --apply builds and activates the system.\n  diff TARGET                  Running system against the current recipe BEFORE an update.\n  diffg TARGET                 The two highest retained server generations.\n                               diff builds locally; diffg runs on the server.\n\nNew VM declarations (write a local file, do not create a VM):\n  new-libvirt-vm NAME          VM declaration for QEMU/KVM (libvirt).\n  new-hyperv-vm NAME           VM declaration for Hyper-V.\n  new-proxmox-vm NAME          Proxmox VE VM declaration with editable networking.\n  new-virtualbox-vm NAME       VM declaration for VirtualBox.\n  new-vmware-vm NAME           VM declaration for VMware Workstation.\n                               --host selects a host; a sole matching host is selected automatically.\n                               --offline prepares any backend without a hypervisor.\n                               --configuration NAME selects a server configuration; default is default.\n                               --dry-run does not write the file. new-* names without -vm are aliases.\n\nDeployment, recovery and offline transfer (subject to platform capabilities):\n  plan TARGET                  Read-only VM creation or RPi recovery plan.\n  reproduce TARGET             Complete deployment/recovery; execution requires --apply.\n  create TARGET                Create a VM; execution requires --apply.\n  install TARGET               Complete the selected deployment method; requires --apply.\n  provision TARGET             Create and install; execution requires --apply.\n  reset TARGET                 Remove an authorized VM on any of the five backends.\n                               Requires allowReset = true in the instance; without --apply, verifies only.\n  export TARGET --output DIR   Offline bundle with disk or ISO and recipe in a new directory.\n  cleanup [TARGET]             Preview cleanup candidates; deletes nothing.\n                               --artifact-root DIR adds image inspection.\n\nUsage and modes:\n  Without a command, list is shown. TARGET is a declaration name, not an IP address.\n  show TARGET lists the operations available for a particular target.\n  update/create/install/provision/reproduce/reset only plan without --apply.\n  new-* and export normally write locally; --dry-run shows a plan without writing.\n  diff/diffg may read the server and diff builds the recipe; --dry-run only shows the plan.\n  --ssh root@HOST:PORT overrides SSH access to an offline VM of any backend.\n  --method image is the default for all VMs: import a prebuilt disk and verify boot.\n  --method iso installs to a blank disk, detaches the ISO and verifies system boot.\n  Set deploymentMethod in a declaration for a persistent default; --method overrides it.\n  Applies to new-*, show, plan, create, install, provision, reproduce and export.\n  --offline prepares without a hypervisor, independently of the method. RPi uses SD.\n  diff shows pending changes. After an update it is usually empty; use diffg.\n\nExamples:\n  nixberry list\n  nixberry show vm-demo-libvirt\n  nixberry diff vm-demo-libvirt\n  nixberry update vm-demo-libvirt --apply\n  nixberry diffg vm-demo-libvirt\n  nixberry ssh vm-demo-libvirt -- uname -r\n  nixberry new-proxmox-vm vm-demo-proxmox --host HOST\n  nixberry plan vm-demo-proxmox\n  nixberry reproduce vm-demo-proxmox --apply\n  nixberry new-proxmox-vm vm-demo-proxmox-offline --offline\n  nixberry export vm-demo-proxmox-offline --output ~/vm-demo-proxmox-offline\n  nixberry update vm-demo-proxmox-offline --ssh root@10.0.1.19:22 --apply\n  nixberry plan rpi-demo --address 192.168.50.20\n\nDetailed operating guide: README.md in the NixBerry recipe root.\nComplete command and option reference: docs/cli.md.\n"
 msgstr ""
 
@@ -1220,7 +1220,7 @@ msgstr ""
 msgid "Expected exactly one ESP and one Linux partition."
 msgstr ""
 
-#: deployment/native_restic.py:611
+#: deployment/restic_backup.py:611
 msgid "Expected running NixOS generation for recovery staging or retention"
 msgstr ""
 
@@ -1245,12 +1245,12 @@ msgstr ""
 msgid "Extract a translation template from Python, Bash and PowerShell without extra dependencies."
 msgstr ""
 
-#: deployment/native_restic.py:610 deployment/restore_target.py:164
-msgid "Full native Restic completion snapshot ID"
+#: deployment/restic_backup.py:610 deployment/restore_target.py:164
+msgid "Full Restic completion snapshot ID"
 msgstr ""
 
-#: deployment/native_retention.py:22
-msgid "Future capture timestamps prevent native retention."
+#: deployment/restic_retention.py:22
+msgid "Future capture timestamps prevent Restic retention."
 msgstr ""
 
 #: deployment/check_images.py:44
@@ -1305,7 +1305,7 @@ msgstr ""
 msgid "Hypervisor"
 msgstr ""
 
-#: deployment/cli_args.py:237
+#: deployment/cli_args.py:238
 msgid "Hypervisor host for new-*; direct SSH root@HOST[:PORT] for VM management"
 msgstr ""
 
@@ -1339,7 +1339,7 @@ msgstr ""
 msgid "Image checksum does not match."
 msgstr ""
 
-#: deployment/cli_args.py:323
+#: deployment/cli_args.py:324
 msgid "Image directory for cleanup preview; repeatable, links are not followed"
 msgstr ""
 
@@ -1364,11 +1364,11 @@ msgstr ""
 msgid "Import: VMID {value1}, storage {value2}, bridge {value3}"
 msgstr ""
 
-#: deployment/cli_args.py:312
+#: deployment/cli_args.py:313
 msgid "Include SSD erasure during RPi recovery"
 msgstr ""
 
-#: deployment/native_restic.py:615
+#: deployment/restic_backup.py:615
 msgid "Include completed restore-point count and latest logical backup size"
 msgstr ""
 
@@ -1397,19 +1397,19 @@ msgstr ""
 msgid "Incomplete extraction of {name}: {value2} bytes instead of {value3}."
 msgstr ""
 
-#: deployment/native_restic.py:141
+#: deployment/restic_backup.py:141
 msgid "Independent backup access permits only repository identity, inventory and payload reads."
 msgstr ""
 
-#: deployment/native_access.py:68
+#: deployment/restic_access.py:68
 msgid "Independent backup inventory and freshness checks do not accept a snapshot ID."
 msgstr ""
 
-#: deployment/native_access.py:60
+#: deployment/restic_access.py:60
 msgid "Independent backup reads do not accept --apply."
 msgstr ""
 
-#: deployment/native_restic.py:618
+#: deployment/restic_backup.py:618
 msgid "Inspect backup readiness without stopping writers"
 msgstr ""
 
@@ -1425,7 +1425,7 @@ msgstr ""
 msgid "Inspect restoration without publishing application data"
 msgstr ""
 
-#: deployment/cli_args.py:305
+#: deployment/cli_args.py:306
 msgid "Install an RPi SSD attached to this Linux workstation; use a whole-disk /dev/disk/by-id/ path"
 msgstr ""
 
@@ -1528,12 +1528,12 @@ msgstr ""
 msgid "Interface {name}: MAC {mac}; mode {mode}; address {address}; gateway {gateway}"
 msgstr ""
 
-#: deployment/native_restic.py:300 deployment/native_restic.py:452 deployment/snapshots.py:350 deployment/snapshots.py:384 deployment/snapshots.py:394 deployment/snapshots.py:527
-msgid "Interrupted capture needs writer recovery before another snapshot."
+#: deployment/restic_maintenance.py:52
+msgid "Interrupted capture needs writer recovery before Restic retention."
 msgstr ""
 
-#: deployment/native_maintenance.py:52
-msgid "Interrupted capture needs writer recovery before native retention."
+#: deployment/restic_backup.py:300 deployment/restic_backup.py:452 deployment/snapshots.py:350 deployment/snapshots.py:384 deployment/snapshots.py:394 deployment/snapshots.py:527
+msgid "Interrupted capture needs writer recovery before another snapshot."
 msgstr ""
 
 #: deployment/update_guard.py:76
@@ -1564,6 +1564,34 @@ msgstr ""
 #: deployment/host_backends/common.py:123
 #, python-brace-format
 msgid "Invalid Proxmox resource: {key}"
+msgstr ""
+
+#: deployment/restic_access.py:26
+msgid "Invalid Restic backup access context or source identity."
+msgstr ""
+
+#: deployment/restic_backup.py:482 deployment/restic_backup.py:487 deployment/restic_backup.py:491 deployment/restic_backup.py:493
+msgid "Invalid Restic backup inventory."
+msgstr ""
+
+#: deployment/restic_maintenance.py:15
+msgid "Invalid Restic backup maintenance policy."
+msgstr ""
+
+#: deployment/restic_backup.py:46 deployment/restic_backup.py:68
+msgid "Invalid Restic backup policy."
+msgstr ""
+
+#: deployment/restic_health.py:69
+msgid "Invalid Restic backup statistics."
+msgstr ""
+
+#: deployment/restic_backup.py:568
+msgid "Invalid Restic completion receipt."
+msgstr ""
+
+#: deployment/restore_access.py:58 deployment/restore_access.py:63 deployment/restore_access.py:67
+msgid "Invalid Restic restore access transfer."
 msgstr ""
 
 #: deployment/runtime.py:54
@@ -1647,34 +1675,6 @@ msgstr ""
 msgid "Invalid ip route response."
 msgstr ""
 
-#: deployment/native_restic.py:482 deployment/native_restic.py:487 deployment/native_restic.py:491 deployment/native_restic.py:493
-msgid "Invalid native Restic backup inventory."
-msgstr ""
-
-#: deployment/native_restic.py:46 deployment/native_restic.py:68
-msgid "Invalid native Restic backup policy."
-msgstr ""
-
-#: deployment/native_restic.py:568
-msgid "Invalid native Restic completion receipt."
-msgstr ""
-
-#: deployment/native_access.py:26
-msgid "Invalid native backup access context or source identity."
-msgstr ""
-
-#: deployment/native_maintenance.py:15
-msgid "Invalid native backup maintenance policy."
-msgstr ""
-
-#: deployment/native_health.py:69
-msgid "Invalid native backup statistics."
-msgstr ""
-
-#: deployment/restore_access.py:58 deployment/restore_access.py:63 deployment/restore_access.py:67
-msgid "Invalid native restore access transfer."
-msgstr ""
-
 #: deployment/vm_network.py:47 deployment/vm_network.py:49
 msgid "Invalid network adapter attachment."
 msgstr ""
@@ -1743,7 +1743,7 @@ msgstr ""
 msgid "Keep RPi installation secrets outside the recipe and Nix store."
 msgstr ""
 
-#: deployment/native_access.py:33
+#: deployment/restic_access.py:33
 msgid "Keep backup access contexts and runtime credentials outside the recipe."
 msgstr ""
 
@@ -1785,7 +1785,7 @@ msgstr ""
 msgid "Libvirt created the disk at a different path: %s"
 msgstr ""
 
-#: deployment/cli_args.py:193
+#: deployment/cli_args.py:194
 msgid "Libvirt reset allows directory symlinks; --apply requires interactive [y/N] confirmation for their resolved paths."
 msgstr ""
 
@@ -1817,11 +1817,11 @@ msgstr ""
 msgid "Loading and unloading verified. The RPi was not rebooted."
 msgstr ""
 
-#: deployment/cli_args.py:197
+#: deployment/cli_args.py:198
 msgid "Local Raspberry Pi SSD installation:\n  plan/reproduce TARGET --local-disk /dev/disk/by-id/ID prepares an attached SSD on Linux.\n  Unencrypted targets only; requires sudo and ARM binfmt emulation on x86.\n  --apply authorizes writes; --erase-existing additionally authorizes erasing existing data.\n  No RPi connection is made. Verify physical boot and restore application state separately."
 msgstr ""
 
-#: deployment/native_restic.py:77
+#: deployment/restic_backup.py:77
 msgid "Local Restic repositories do not accept SFTP settings."
 msgstr ""
 
@@ -1842,7 +1842,7 @@ msgstr ""
 msgid "Local installation requires a real /mnt directory."
 msgstr ""
 
-#: deployment/cli_args.py:317
+#: deployment/cli_args.py:318
 msgid "Machine-readable output for inventory, diagnostics, verify and export"
 msgstr ""
 
@@ -1850,8 +1850,8 @@ msgstr ""
 msgid "Managed ISO checksum does not match."
 msgstr ""
 
-#: deployment/cli_args.py:299
-msgid "Maximum capture age for an independent native backup freshness check"
+#: deployment/cli_args.py:300
+msgid "Maximum capture age for an independent Restic backup freshness check"
 msgstr ""
 
 #: hyperv/host.ps1:138
@@ -1898,66 +1898,6 @@ msgstr ""
 msgid "Named VM network adapters\n\nCreate all adapters in the listed order and preserve their MAC addresses.\nThe first adapter provides management access and uses the top-level network settings.\nSecondary adapters use network.interfaces; omitted entries have no address or DHCP.\nPrepare attachments in the destination environment; manual import does not adopt hypervisor ownership.\nVMware address discovery is not MAC-specific; SSH verification rejects a secondary-interface endpoint.\n\n"
 msgstr ""
 
-#: deployment/updater.py:127
-msgid "Native Restic configurations prepare recovery code before activation and stage it after verification."
-msgstr ""
-
-#: deployment/native_access.py:56
-msgid "Native backup access currently requires Linux."
-msgstr ""
-
-#: deployment/native_maintenance.py:61
-msgid "Native backup inventory changed during retention; no snapshots were deleted."
-msgstr ""
-
-#: deployment/native_restic.py:623
-msgid "Native backup operations require root and protected runtime credentials."
-msgstr ""
-
-#: deployment/native_restic.py:635
-msgid "Native backup was interrupted; checking writer recovery."
-msgstr ""
-
-#: deployment/native_controller.py:114
-msgid "Native capture controller operations currently require Linux."
-msgstr ""
-
-#: deployment/native_controller.py:116
-msgid "Native capture requires a declared target with verified live system access."
-msgstr ""
-
-#: deployment/native_restore.py:48
-msgid "Native restoration controller operations currently require Linux."
-msgstr ""
-
-#: deployment/cli.py:366
-msgid "Native restoration does not accept export or installation options."
-msgstr ""
-
-#: deployment/native_restore.py:52
-msgid "Native restoration requires a declared target with verified live system access."
-msgstr ""
-
-#: deployment/cli.py:197 deployment/native_restore.py:50
-msgid "Native restore requires a distinct source name and a full Restic receipt ID."
-msgstr ""
-
-#: deployment/native_retention.py:11
-msgid "Native retention requires an explicit keepLast between 1 and 100000."
-msgstr ""
-
-#: deployment/native_retention.py:13
-msgid "Native retention requires the current source machine identity."
-msgstr ""
-
-#: deployment/cli_args.py:191
-msgid "Native storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration."
-msgstr ""
-
-#: deployment/cli.py:373
-msgid "Native storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."
-msgstr ""
-
 #: proxmox/lab/create.py:47
 msgid "Nested AMD KVM is not enabled."
 msgstr ""
@@ -1979,7 +1919,7 @@ msgstr ""
 msgid "New LUKS passphrase: "
 msgstr ""
 
-#: deployment/cli_args.py:286
+#: deployment/cli_args.py:287
 msgid "New export, source recovery or backup schedule directory; relative paths use the working directory"
 msgstr ""
 
@@ -2071,7 +2011,7 @@ msgstr ""
 msgid "Offline preparation cannot be combined with --host."
 msgstr ""
 
-#: deployment/cli_args.py:280
+#: deployment/cli_args.py:281
 msgid "One-time server SSH endpoint root@HOST[:PORT]; overrides access.host and access.port"
 msgstr ""
 
@@ -2148,7 +2088,7 @@ msgstr ""
 msgid "Payload restoration requires a new private staging directory."
 msgstr ""
 
-#: deployment/native_restic.py:146
+#: deployment/restic_backup.py:146
 msgid "Payload restoration requires a read-only reader and a full snapshot ID."
 msgstr ""
 
@@ -2208,7 +2148,7 @@ msgstr ""
 msgid "Prepare a declared RPi SSD on a Linux workstation without contacting the RPi."
 msgstr ""
 
-#: deployment/cli_args.py:244
+#: deployment/cli_args.py:245
 msgid "Prepare any VM offline without a hypervisor; cannot be combined with --host"
 msgstr ""
 
@@ -2242,7 +2182,7 @@ msgid "Preparing the offline bundle for target {target} in {path}."
 msgstr ""
 
 #: deployment/restore_target.py:163
-msgid "Preserved native backup source name"
+msgid "Preserved Restic backup source name"
 msgstr ""
 
 #: deployment/diffing.py:39
@@ -2268,7 +2208,7 @@ msgstr ""
 msgid "Print destination readiness as technical JSON"
 msgstr ""
 
-#: deployment/native_restic.py:613
+#: deployment/restic_backup.py:613
 msgid "Print technical backup metadata as JSON"
 msgstr ""
 
@@ -2277,18 +2217,18 @@ msgid "Print technical capture metadata as JSON"
 msgstr ""
 
 #: deployment/restore_target.py:166
-msgid "Private native restore storage access context on this destination"
+msgid "Private Restic restore storage access context on this destination"
 msgstr ""
 
-#: deployment/cli_args.py:298
-msgid "Private native storage access context for inventory, verification, source recovery or destination restore"
+#: deployment/cli_args.py:299
+msgid "Private Restic storage access context for inventory, verification, source recovery or destination restore"
 msgstr ""
 
 #: rpi/install.py:93 rpi/local-install.py:22
 msgid "Private runtime LUKS passphrase file; otherwise prompt securely"
 msgstr ""
 
-#: deployment/cli_args.py:269
+#: deployment/cli_args.py:270
 msgid "Private runtime SSH host key for encrypted RPi reproduction"
 msgstr ""
 
@@ -2296,7 +2236,7 @@ msgstr ""
 msgid "Private runtime SSH host key matching the trusted initrd public key"
 msgstr ""
 
-#: deployment/cli_args.py:263
+#: deployment/cli_args.py:264
 msgid "Private runtime passphrase file for image preparation or encrypted RPi reproduction; otherwise prompt securely"
 msgstr ""
 
@@ -2392,7 +2332,7 @@ msgstr ""
 msgid "Reading the image during transfer failed: {value1}"
 msgstr ""
 
-#: deployment/native_restic.py:612
+#: deployment/restic_backup.py:612
 msgid "Receive a sealed recipe archive from standard input with this SHA256 identity"
 msgstr ""
 
@@ -2408,19 +2348,19 @@ msgstr ""
 msgid "Recover pending capture writers before restoring application data."
 msgstr ""
 
-#: deployment/native_restic.py:258
+#: deployment/restic_backup.py:258
 msgid "Recovery archive transfer exceeded its time limit."
 msgstr ""
 
-#: deployment/native_restic.py:302 deployment/native_restic.py:321
+#: deployment/restic_backup.py:302 deployment/restic_backup.py:321
 msgid "Recovery configuration changed while staging; no binding was published."
 msgstr ""
 
-#: deployment/native_restic.py:331
+#: deployment/restic_backup.py:331
 msgid "Recovery configuration is missing; provision the recipe archive and run backup-stage."
 msgstr ""
 
-#: deployment/native_restic.py:248
+#: deployment/restic_backup.py:248
 msgid "Recovery configuration requires a valid running NixOS system generation."
 msgstr ""
 
@@ -2433,7 +2373,7 @@ msgstr ""
 msgid "Recovery recipe archive does not match its sealed file manifest."
 msgstr ""
 
-#: deployment/native_restic.py:264 deployment/recovery_recipe.py:103 deployment/recovery_recipe.py:151 deployment/recovery_recipe.py:162
+#: deployment/recovery_recipe.py:103 deployment/recovery_recipe.py:151 deployment/recovery_recipe.py:162 deployment/restic_backup.py:264
 msgid "Recovery recipe archive exceeds its size limit."
 msgstr ""
 
@@ -2445,7 +2385,7 @@ msgstr ""
 msgid "Recovery recipes require regular source files and directories."
 msgstr ""
 
-#: deployment/native_access.py:46
+#: deployment/restic_access.py:46
 msgid "Recovery requires a new output directory; existing data is never overwritten."
 msgstr ""
 
@@ -2457,11 +2397,11 @@ msgstr ""
 msgid "Recovery requires portable pinned flake inputs."
 msgstr ""
 
-#: deployment/native_restic.py:278
+#: deployment/restic_backup.py:278
 msgid "Recovery staging requires the explicit expected NixOS system path."
 msgstr ""
 
-#: deployment/native_restic.py:283 deployment/native_restic.py:289 deployment/native_restic.py:644
+#: deployment/restic_backup.py:283 deployment/restic_backup.py:289 deployment/restic_backup.py:644
 msgid "Recovery transfer requires a full SHA256 archive identity."
 msgstr ""
 
@@ -2519,7 +2459,7 @@ msgstr ""
 msgid "Repeated creation was incorrectly allowed."
 msgstr ""
 
-#: deployment/native_restic.py:345
+#: deployment/restic_backup.py:345
 msgid "Repository initialization requires a new repository identity file."
 msgstr ""
 
@@ -2599,31 +2539,83 @@ msgstr ""
 msgid "Resources: {value1} CPUs, {value2} MiB RAM, {value3} GiB disk"
 msgstr ""
 
-#: deployment/native_restic.py:194
+#: deployment/restic_access.py:56
+msgid "Restic backup access currently requires Linux."
+msgstr ""
+
+#: deployment/restic_maintenance.py:61
+msgid "Restic backup inventory changed during retention; no snapshots were deleted."
+msgstr ""
+
+#: deployment/restic_backup.py:623
+msgid "Restic backup operations require root and protected runtime credentials."
+msgstr ""
+
+#: deployment/restic_backup.py:635
+msgid "Restic backup was interrupted; checking writer recovery."
+msgstr ""
+
+#: deployment/restic_backup.py:194
 msgid "Restic command failed; inspect retained repository state before retrying."
 msgstr ""
 
-#: deployment/native_restic.py:237
+#: deployment/updater.py:127
+msgid "Restic configurations prepare recovery code before activation and stage it after verification."
+msgstr ""
+
+#: deployment/restic_backup.py:237
 msgid "Restic did not return one complete snapshot identity."
 msgstr ""
 
-#: deployment/native_restic.py:160 deployment/native_restic.py:191
+#: deployment/restic_backup.py:160 deployment/restic_backup.py:191
 msgid "Restic exceeded its configured time limit."
 msgstr ""
 
-#: deployment/native_restic.py:73 deployment/native_restic.py:80
+#: deployment/restic_backup.py:73 deployment/restic_backup.py:80
 msgid "Restic requires an absolute local repository or an explicitly pinned SFTP repository."
 msgstr ""
 
-#: deployment/native_restic.py:102 deployment/native_restic.py:99
+#: deployment/restic_restore.py:48
+msgid "Restic restoration controller operations currently require Linux."
+msgstr ""
+
+#: deployment/cli.py:366
+msgid "Restic restoration does not accept export or installation options."
+msgstr ""
+
+#: deployment/restic_restore.py:52
+msgid "Restic restoration requires a declared target with verified live system access."
+msgstr ""
+
+#: deployment/cli.py:197 deployment/restic_restore.py:50
+msgid "Restic restore requires a distinct source name and a full Restic receipt ID."
+msgstr ""
+
+#: deployment/restic_retention.py:11
+msgid "Restic retention requires an explicit keepLast between 1 and 100000."
+msgstr ""
+
+#: deployment/restic_retention.py:13
+msgid "Restic retention requires the current source machine identity."
+msgstr ""
+
+#: deployment/restic_backup.py:102 deployment/restic_backup.py:99
 msgid "Restic runtime files require trusted ownership, safe permissions and bounded size."
 msgstr ""
 
-#: deployment/native_restic.py:34
+#: deployment/restic_backup.py:34
 msgid "Restic runtime paths must stay outside the Nix store and device filesystems."
 msgstr ""
 
-#: deployment/native_restic.py:109
+#: deployment/cli_args.py:192
+msgid "Restic storage reads and restore accept --backup-access PRIVATE_CONTEXT_FILE, even without the original source declaration."
+msgstr ""
+
+#: deployment/cli.py:373
+msgid "Restic storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."
+msgstr ""
+
+#: deployment/restic_backup.py:109
 msgid "Restic temporary data must use a tmpfs runtime directory."
 msgstr ""
 
@@ -2699,7 +2691,7 @@ msgstr ""
 msgid "Root and boot partitions match the installation."
 msgstr ""
 
-#: deployment/cli_args.py:342
+#: deployment/cli_args.py:343
 msgid "Root filesystem for a new VM declaration; defaults to ext4"
 msgstr ""
 
@@ -2766,7 +2758,7 @@ msgstr ""
 msgid "Runtime encryption keys require an encrypted RPi target."
 msgstr ""
 
-#: deployment/native_restic.py:85
+#: deployment/restic_backup.py:85
 msgid "SFTP backups require an explicit SSH key, host-key file and port."
 msgstr ""
 
@@ -2824,12 +2816,12 @@ msgstr ""
 msgid "Select --host from the declared {backend} hosts: {hosts}. Use --offline to prepare without a hypervisor."
 msgstr ""
 
-#: deployment/native_access.py:70
+#: deployment/restic_access.py:70
 msgid "Select a full Restic receipt ID for verification or source recovery."
 msgstr ""
 
-#: deployment/native_restic.py:554
-msgid "Select a full Restic snapshot ID from the native backup inventory."
+#: deployment/restic_backup.py:554
+msgid "Select a full Restic snapshot ID from the Restic backup inventory."
 msgstr ""
 
 #: deployment/backups.py:135
@@ -2871,7 +2863,7 @@ msgstr ""
 msgid "Server address"
 msgstr ""
 
-#: deployment/cli_args.py:250
+#: deployment/cli_args.py:251
 msgid "Server configuration for new-*; defaults to default, other names from configurations/"
 msgstr ""
 
@@ -2904,7 +2896,7 @@ msgstr ""
 msgid "Show help and exit"
 msgstr ""
 
-#: deployment/cli_args.py:336
+#: deployment/cli_args.py:337
 msgid "Show the plan without writing; diff/diffg without connections or builds"
 msgstr ""
 
@@ -2976,7 +2968,15 @@ msgstr ""
 msgid "Source and destination architectures must match for application restoration."
 msgstr ""
 
-#: deployment/native_access.py:72
+#: deployment/capture_controller.py:114
+msgid "Source capture controller operations currently require Linux."
+msgstr ""
+
+#: deployment/capture_controller.py:116
+msgid "Source capture requires a declared target with verified live system access."
+msgstr ""
+
+#: deployment/restic_access.py:72
 msgid "Source recovery requires --output NEW_DIRECTORY; other storage reads do not accept it."
 msgstr ""
 
@@ -3027,11 +3027,11 @@ msgstr ""
 msgid "Status queries are not implemented for this host type."
 msgstr ""
 
-#: deployment/native_restic.py:227
+#: deployment/restic_backup.py:227
 msgid "Storage SFTP readiness check exceeded its time limit."
 msgstr ""
 
-#: deployment/native_restic.py:230
+#: deployment/restic_backup.py:230
 msgid "Storage SFTP trust or authentication failed before writer shutdown."
 msgstr ""
 
@@ -3102,7 +3102,7 @@ msgstr ""
 msgid "System verification failed after the new boot."
 msgstr ""
 
-#: deployment/cli_args.py:231
+#: deployment/cli_args.py:232
 msgid "TARGET"
 msgstr ""
 
@@ -3127,7 +3127,7 @@ msgstr ""
 msgid "Target inventory regression checks in recipe copies; no host connections or VM changes."
 msgstr ""
 
-#: deployment/cli_args.py:233
+#: deployment/cli_args.py:234
 msgid "Target name, preserved source name for --backup-access, or a new name for new-*"
 msgstr ""
 
@@ -3276,7 +3276,7 @@ msgstr ""
 msgid "The RPi network adapter does not match the declaration."
 msgstr ""
 
-#: deployment/native_restic.py:210
+#: deployment/restic_backup.py:210
 msgid "The Restic repository identity does not match its configured pin."
 msgstr ""
 
@@ -3702,8 +3702,8 @@ msgstr ""
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr ""
 
-#: deployment/native_restore.py:96
-msgid "The destination did not confirm this exact native restoration."
+#: deployment/restic_restore.py:96
+msgid "The destination did not confirm this exact Restic restoration."
 msgstr ""
 
 #: deployment/host_agent.py:56
@@ -3802,7 +3802,7 @@ msgstr ""
 msgid "The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."
 msgstr ""
 
-#: deployment/native_restic.py:517 deployment/native_restic.py:523 deployment/native_restic.py:527 deployment/native_restic.py:535 deployment/native_restic.py:539 deployment/native_restic.py:544 deployment/native_restic.py:572
+#: deployment/restic_backup.py:517 deployment/restic_backup.py:523 deployment/restic_backup.py:527 deployment/restic_backup.py:535 deployment/restic_backup.py:539 deployment/restic_backup.py:544 deployment/restic_backup.py:572
 msgid "The encrypted capture manifest does not match its completion receipt."
 msgstr ""
 
@@ -3981,15 +3981,15 @@ msgstr ""
 msgid "The installation media contains different pinned outputs."
 msgstr ""
 
-#: deployment/native_controller.py:149
+#: deployment/capture_controller.py:149
 msgid "The installed capture policy differs from the selected configuration."
 msgstr ""
 
-#: deployment/native_restore.py:79
+#: deployment/restic_restore.py:79
 msgid "The installed destination policies or identity differ from the selected restore configuration."
 msgstr ""
 
-#: deployment/native_controller.py:152
+#: deployment/capture_controller.py:152
 msgid "The installed maintenance policy differs from the selected configuration."
 msgstr ""
 
@@ -4184,7 +4184,7 @@ msgstr ""
 msgid "The pending restore belongs to a different source, destination or filesystem layout."
 msgstr ""
 
-#: deployment/native_restic.py:203 deployment/native_restic.py:362
+#: deployment/restic_backup.py:203 deployment/restic_backup.py:362
 msgid "The pinned Restic repository identity is invalid."
 msgstr ""
 
@@ -4237,11 +4237,11 @@ msgstr ""
 msgid "The private verified application stage changed during restoration."
 msgstr ""
 
-#: deployment/native_restic.py:272
+#: deployment/restic_backup.py:272
 msgid "The received recovery archive belongs to a different source, system or policy."
 msgstr ""
 
-#: deployment/native_restic.py:285
+#: deployment/restic_backup.py:285
 msgid "The received recovery archive does not match its expected SHA256 identity."
 msgstr ""
 
@@ -4273,7 +4273,7 @@ msgstr ""
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
-#: deployment/native_restore.py:66
+#: deployment/restic_restore.py:66
 msgid "The running destination differs from this recipe; prepare it before restoration."
 msgstr ""
 
@@ -4285,8 +4285,8 @@ msgstr ""
 msgid "The running system changed before update activation."
 msgstr ""
 
-#: deployment/native_controller.py:143
-msgid "The running system differs from this recipe; update it before native capture."
+#: deployment/capture_controller.py:143
+msgid "The running system differs from this recipe; update it before source capture."
 msgstr ""
 
 #: deployment/runtime.py:364
@@ -4294,7 +4294,7 @@ msgstr ""
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
 
-#: deployment/native_restic.py:280
+#: deployment/restic_backup.py:280
 msgid "The running system does not match the recovery configuration being staged."
 msgstr ""
 
@@ -4306,11 +4306,11 @@ msgstr ""
 msgid "The script contains a reserved input terminator."
 msgstr ""
 
-#: deployment/native_restic.py:600
+#: deployment/restic_backup.py:600
 msgid "The sealed recovery recipe does not match this source and capture."
 msgstr ""
 
-#: deployment/native_restic.py:559
+#: deployment/restic_backup.py:559
 msgid "The selected Restic snapshot is not a completion receipt for this source."
 msgstr ""
 
@@ -4322,35 +4322,35 @@ msgstr ""
 msgid "The selected recipe has no nixberry launcher."
 msgstr ""
 
-#: deployment/native_controller.py:95
+#: deployment/capture_controller.py:95
 msgid "The selected recovery recipe does not reproduce the expected source generation and policy."
 msgstr ""
 
-#: deployment/native_controller.py:171
-msgid "The source did not confirm the requested native capture operation."
+#: deployment/capture_controller.py:171
+msgid "The source did not confirm the requested capture operation."
 msgstr ""
 
-#: deployment/native_controller.py:79
-msgid "The source did not return valid native operation metadata."
+#: deployment/capture_controller.py:79
+msgid "The source did not return valid source operation metadata."
 msgstr ""
 
-#: deployment/native_controller.py:82
+#: deployment/capture_controller.py:82
 msgid "The source freshness status does not match its reported outcome."
 msgstr ""
 
-#: deployment/native_maintenance.py:42
-msgid "The source generation or machine identity changed; native retention was refused."
+#: deployment/restic_maintenance.py:42
+msgid "The source generation or machine identity changed; Restic retention was refused."
 msgstr ""
 
-#: deployment/native_controller.py:75
+#: deployment/capture_controller.py:75
 msgid "The source operation failed; inspect its diagnostics and retained capture state."
 msgstr ""
 
-#: deployment/native_controller.py:72
+#: deployment/capture_controller.py:72
 msgid "The source operation timed out; inspect writer recovery before retrying."
 msgstr ""
 
-#: deployment/native_restic.py:336
+#: deployment/restic_backup.py:336
 msgid "The staged recovery configuration is stale or does not match this backup policy."
 msgstr ""
 
@@ -4418,7 +4418,7 @@ msgstr ""
 
 #: deployment/updater.py:194
 #, python-brace-format
-msgid "The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next native backup; no reboot was performed."
+msgid "The system update was verified, but recovery recipe staging failed: {error}. Run {command} before the next Restic backup; no reboot was performed."
 msgstr ""
 
 #: deployment/updater.py:161
@@ -4570,11 +4570,11 @@ msgstr ""
 msgid "The upload already exists."
 msgstr ""
 
-#: deployment/native_restic.py:425
+#: deployment/restic_backup.py:425
 msgid "The uploaded backup manifest does not match the capture."
 msgstr ""
 
-#: deployment/native_restic.py:428 deployment/native_restic.py:594
+#: deployment/restic_backup.py:428 deployment/restic_backup.py:594
 msgid "The uploaded recovery configuration does not match the capture."
 msgstr ""
 
@@ -4622,12 +4622,12 @@ msgstr ""
 msgid "This lab is reserved for the local Nixon host."
 msgstr ""
 
-#: deployment/cli.py:300 deployment/cli.py:302 deployment/native_controller.py:112
+#: deployment/capture_controller.py:112 deployment/cli.py:300 deployment/cli.py:302
 msgid "This operation does not accept --apply."
 msgstr ""
 
-#: deployment/native_access.py:58
-msgid "This operation does not support independent native backup access."
+#: deployment/restic_access.py:58
+msgid "This operation does not support independent Restic backup access."
 msgstr ""
 
 #: hyperv/host.ps1:168
@@ -4691,7 +4691,7 @@ msgstr ""
 msgid "Unexpectedly large ESP."
 msgstr ""
 
-#: deployment/cli_args.py:185
+#: deployment/cli_args.py:186
 msgid "Unified management of declared RPi and VMs: operations, deployment and offline export."
 msgstr ""
 
@@ -4777,12 +4777,12 @@ msgstr ""
 msgid "Unsupported host system."
 msgstr ""
 
-#: deployment/native_controller.py:107
-msgid "Unsupported native source backup operation."
-msgstr ""
-
 #: deployment/closure_metadata.py:86
 msgid "Unsupported nvd metadata query."
+msgstr ""
+
+#: deployment/capture_controller.py:107
+msgid "Unsupported source capture or Restic backup operation."
 msgstr ""
 
 #: deployment/restore_apply.py:158
@@ -4871,7 +4871,7 @@ msgstr ""
 msgid "VM created with a prebuilt disk; it is not running yet."
 msgstr ""
 
-#: deployment/cli_args.py:274
+#: deployment/cli_args.py:275
 msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
 msgstr ""
 
@@ -4895,7 +4895,7 @@ msgstr ""
 msgid "VM powered off. Detaching the ISO and configuring boot from VHDX."
 msgstr ""
 
-#: deployment/cli_args.py:257
+#: deployment/cli_args.py:258
 msgid "VM protection for new-*; confidential requires attested key delivery and is currently unavailable"
 msgstr ""
 
@@ -5118,7 +5118,7 @@ msgstr ""
 msgid "running"
 msgstr ""
 
-#: deployment/native_controller.py:110
+#: deployment/capture_controller.py:110
 msgid "snapshot-remove requires a full local capture ID from snapshots TARGET."
 msgstr ""
 

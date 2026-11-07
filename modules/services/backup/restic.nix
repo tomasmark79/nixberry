@@ -112,7 +112,7 @@ in
     keepLast = mkOption {
       type = types.nullOr (types.ints.between 1 100000);
       default = null;
-      description = "Optional number of this source's backups to retain; null disables native pruning.";
+      description = "Optional number of this source's backups to retain; null disables Restic pruning.";
     };
     maxAgeSeconds = mkOption {
       type = types.nullOr (types.ints.between 1 31536000);
@@ -155,7 +155,7 @@ in
     assertions = [
       {
         assertion = r.repository != "" && builtins.match "/run/[a-z][a-z0-9-]*" r.runtimeDirectory != null;
-        message = "Native Restic requires a repository and a dedicated /run/NAME runtime directory.";
+        message = "Restic requires a repository and a dedicated /run/NAME runtime directory.";
       }
       {
         assertion = r.pruneSchedule == null || r.keepLast != null;

@@ -153,11 +153,11 @@ after valid completion reports a final symbolic link as present/nonempty without
 following it. Parent directory links remain refused.
 `nix build --no-link path:.#checks.x86_64-linux.restore-preparation` boots and
 reboots a disposable prepared destination. Check ordinary/template services,
-socket/timer activation and native backup jobs stay held; synthetic completion
+socket/timer activation and Restic backup jobs stay held; synthetic completion
 opens only the restore gate and preserves existing unit conditions. This is not
 application-data recovery or proof of a physical boot.
 
-`test_native_controller.py` checks no-contact plans, identity/generation and
+`test_capture_controller.py` checks no-contact plans, identity/generation and
 installed-policy refusal before capture, explicit write dispatch and preservation
 of diagnostic streams. It rejects impure file reads and missing lock entries.
 `test_recovery_recipe.py` exercises selected-source scope, unrelated private data
@@ -166,10 +166,10 @@ and RPi generation reproduction. CLI/completion contracts cover all VM backends,
 image/ISO and access variants without system evaluation for inventory. These
 checks do not prove a physical installation or every hypervisor transport.
 
-`test_restore_apply.py`, `test_native_restore.py` and `test_update_guard.py` check
+`test_restore_apply.py`, `test_restic_restore.py` and `test_update_guard.py` check
 publication, explicit target binding, private credential cleanup, retry after
 copy/marker interruption, unknown-file refusal and activation exclusion. Run
-`nix build --no-link path:.#checks.x86_64-linux.native-restore` for the integrated
+`nix build --no-link path:.#checks.x86_64-linux.restic-restore` for the integrated
 scenario: UEFI guests, a selected source recipe that reproduces the actual source
 generation, global encrypted backup, source shutdown and declaration removal,
 prepared destination restoration through a read-only SFTP key, forced interruption
@@ -178,14 +178,14 @@ Check that destination SSH keys and machine ID remain unchanged. Recover the
 sealed source recipe after source loss and evaluate its original system path.
 This proves the exercised x86_64 VM setup; it does not prove physical ARM boot,
 RPi deployment, every hypervisor transport or arbitrary application health.
-The native restore and Restic VM scenarios package an empty controller inventory
+The Restic restore and backup VM scenarios package an empty controller inventory
 and supply their own test identities. Local declarations and linked server
 configurations are not imported into these controllers.
 
-`test_native_restic.py` checks cold-capture recovery, unsuccessful publication,
+`test_restic_backup.py` checks cold-capture recovery, unsuccessful publication,
 repository/credential policy, capture leases and configuration-owned metadata for
 all six platforms and both filesystem choices, including legacy Hyper-V owner
-identities. `nix build --no-link path:.#checks.x86_64-linux.native-restic` runs
+identities. `nix build --no-link path:.#checks.x86_64-linux.restic-backup` runs
 actual Btrfs and ext4 source guests against a separate SFTP storage guest. It
 exercises explicit repository initialization, existing/received sealed archive
 staging and bad-hash refusal, read-only planning, direct and
@@ -195,7 +195,7 @@ payload authentication from the storage guest after each source is shut down.
 Inspect the authenticated manifest there for the source architecture and numeric
 account evidence, with no password, login or membership fields.
 
-For both the Btrfs and ext4 guests, the native Restic scenario inspects the
+For both the Btrfs and ext4 guests, the Restic backup scenario inspects the
 separate maintenance JSON and enabled timers, runs the source freshness service
 and executes retention through the installed helper.
 Check `missing` with exit `1` before the first capture, then `ok` with the configured
@@ -206,17 +206,17 @@ Repeat full payload authentication on retained captures. Source-loss reads on th
 storage guest include an independent freshness check with an explicit threshold.
 These x86_64 VM procedures do not prove physical RPi boot or maintenance.
 
-`test_native_retention.py` covers authenticated grouping, duplicate receipts,
-machine isolation and invalid/future metadata. `test_native_maintenance.py` checks
+`test_restic_retention.py` covers authenticated grouping, duplicate receipts,
+machine isolation and invalid/future metadata. `test_restic_maintenance.py` checks
 generation/machine revalidation, capture-lock use, pending recovery,
 retained payload verification, changed inventory and explicit deletion arguments.
-`test_native_health.py` covers authenticated timestamp selection, machine filtering,
+`test_restic_health.py` covers authenticated timestamp selection, machine filtering,
 `ok/stale/missing/future`, damaged evidence and the distinction between recipe
 authentication and full application payload verification.
-`test_native_maintenance_policy.py` evaluates nullable defaults, threshold bounds,
+`test_restic_maintenance_policy.py` evaluates nullable defaults, threshold bounds,
 schedule prerequisites, root-only services/timers and prepared restore holds on
-all six profiles. Legacy monitoring history/notifications and exported controller
-timers have their separate tests; native check jobs provide systemd failure state
+all six profiles. Provider monitoring history/notifications and exported controller
+timers have their separate tests; Restic check jobs provide systemd failure state
 without that notification path.
 
 Independent verification and restore use Restic `--no-lock` with read-only SFTP.
@@ -225,7 +225,7 @@ the source capture lock supplies no independent reader lease. Do not interpret
 an ordinary freshness check as complete payload verification or a restore test.
 
 `test_backup_identity.py` checks evidence bounds and malformed account values;
-`test_native_restic.py` checks pre-shutdown lookup failure and compatibility with
+`test_restic_backup.py` checks pre-shutdown lookup failure and compatibility with
 both manifest versions, including downgrade refusal.
 The Btrfs case includes a child subvolume bind-mounted over nonempty parent
 data. Inspect the encrypted payload to confirm that the hidden parent subtree
@@ -243,7 +243,7 @@ or application behavior after restoration.
 The storage guest also runs the packaged controller as a non-root recovery user,
 with its own SSH key and no source declaration, to list, verify and recover sealed
 source code. Test read-only SFTP credentials with repository locking disabled.
-`test_native_access.py` covers private contexts, wrong identity/permissions,
+`test_restic_access.py` covers private contexts, wrong identity/permissions,
 no-contact plans, bounded metadata, write-operation refusal and safe new output.
 It proves neither application publication into a replacement machine nor a
 physical RPi install/boot. Real NAS accounts and host keys remain operator data.
