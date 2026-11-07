@@ -684,7 +684,7 @@ msgstr ""
 msgid "Check disk formats, GPT, ext4 and UEFI files of prebuilt disks without booting them."
 msgstr ""
 
-#: deployment/runtime.py:359
+#: deployment/runtime.py:365
 #, python-brace-format
 msgid "Check failed: {check}"
 msgstr ""
@@ -2704,7 +2704,7 @@ msgstr ""
 msgid "Root filesystem for a new VM declaration; defaults to ext4"
 msgstr ""
 
-#: deployment/runtime.py:295 deployment/scaffold.py:37
+#: deployment/runtime.py:297 deployment/scaffold.py:37
 msgid "Root filesystem must be ext4 or btrfs."
 msgstr ""
 
@@ -2749,7 +2749,7 @@ msgstr ""
 msgid "Running CI check: {check}."
 msgstr ""
 
-#: deployment/runtime.py:366
+#: deployment/runtime.py:372
 #, c-format
 msgid "Running system: %s"
 msgstr ""
@@ -4298,7 +4298,7 @@ msgstr ""
 msgid "The running system differs from this recipe; update it before source capture."
 msgstr ""
 
-#: deployment/runtime.py:364
+#: deployment/runtime.py:370
 #, python-brace-format
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
@@ -4396,7 +4396,7 @@ msgstr ""
 msgid "The storage path must not contain a symbolic link."
 msgstr ""
 
-#: deployment/runtime.py:373
+#: deployment/runtime.py:379
 msgid "The system check did not return the expected result."
 msgstr ""
 

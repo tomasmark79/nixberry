@@ -228,8 +228,8 @@ nixberry verify rpi-demo
 
 See [troubleshooting](../README.md#troubleshooting) for login and new SSH keys.
 The installed system has no configured console password.
-Success includes the declared system, root on the correct SSD, active SSH and
-networkd, and no failed units.
+Success includes the declared system, root and `/boot` on the correct SSD,
+active SSH and networkd, and no failed units.
 
 ## Updating network declarations
 

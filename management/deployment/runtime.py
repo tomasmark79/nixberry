@@ -289,6 +289,8 @@ def ssh_command(target, snapshot):
 
 def installation_checks(target):
     """Distinguish an installed disk system from installation or recovery environments."""
+    from security import policy
+
     backend, spec = target["backend"], target["spec"]
     filesystem = target.get("rootFilesystem", "ext4")
     if filesystem not in ("ext4", "btrfs"):
@@ -299,7 +301,7 @@ def installation_checks(target):
         '! mountpoint -q /iso',
     ]
     if backend == "rpi":
-        from security import policy, encryption_checks
+        from security import encryption_checks
         if policy(target)["mode"] == "luks":
             checks += encryption_checks(target)
             partition = shlex.quote("/dev/disk/by-partlabel/" + spec.get("rootLabel", spec["hostName"] + "-root"))
@@ -311,7 +313,6 @@ def installation_checks(target):
     else:
         checks.append('test -d /sys/firmware/efi')
         manual = target.get("offline") and direct_connection(target)
-        from security import policy
         if policy(target)["mode"] != "none":
             from security import encryption_checks
             checks += encryption_checks(target)
@@ -322,9 +323,6 @@ def installation_checks(target):
                 '"$(readlink -e /dev/disk/by-partlabel/disk-system-root)"',
                 'test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /boot)")" = '
                 '"$(readlink -e /dev/disk/by-partlabel/disk-system-boot)"',
-                'test -n "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")"',
-                'test "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")" = '
-                '"$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /boot)")"',
             ]
         else:
             disk = "/dev/vda2" if backend in ("libvirt", "proxmox") else "/dev/sda2"
@@ -335,6 +333,14 @@ def installation_checks(target):
                 'test "$(tr A-Z a-z < /sys/class/dmi/id/product_uuid)" = ' + shlex.quote(spec["uuid"]),
                 'grep -i -x -q -- ' + shlex.quote(spec["mac"]) + ' /sys/class/net/*/address',
             ]
+    # Both mounted partitions must belong to the installed disk. LUKS checks
+    # compare the mapping's backing partition instead of its mapped device.
+    if policy(target)["mode"] == "none":
+        checks += [
+            'test -n "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")"',
+            'test "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")" = '
+            '"$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /boot)")"',
+        ]
     if backend != "rpi":
         checks += guest_checks(spec, backend)
     return checks

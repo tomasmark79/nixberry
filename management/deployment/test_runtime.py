@@ -145,6 +145,48 @@ lsblk() { case "${@: -1}" in "$ROOTDEV") echo "$ROOTPARENT";; "$BOOTDEV") echo "
                                             env={**env, **change}, capture_output=True, text=True)
                     self.assertEqual(result.returncode == 0, not change, result.stderr)
 
+    def test_unencrypted_installation_rejects_boot_from_another_disk(self):
+        fixture = r'''
+findmnt() {
+    case "$*" in
+        *'FSTYPE /boot') echo vfat;;
+        *'FSTYPE /') echo "$ROOTFS";;
+        *'SOURCE /boot') echo "$BOOTDEV";;
+        *'SOURCE /') echo "$ROOTDEV";;
+        *) return 1;;
+    esac
+}
+readlink() { printf '%s\n' "${@: -1}"; }
+lsblk() {
+    case "$*" in
+        *SERIAL*) [[ "${@: -1}" == "/dev/$ROOTDISK" ]] && echo expected-ssd;;
+        *PKNAME*)
+            case "${@: -1}" in
+                "$ROOTDEV") echo "$ROOTDISK";;
+                "$BOOTDEV") echo "$BOOTDISK";;
+                *) return 1;;
+            esac;;
+        *) return 1;;
+    esac
+}
+'''
+        for backend in ("rpi", "libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+            target = {"backend": backend, "spec": {"hostName": "pi", "diskSerial": "expected-ssd",
+                                                   "uuid": "test-uuid", "mac": "02:00:00:00:00:20"}}
+            disk = "vda" if backend in ("libvirt", "proxmox") else "sda"
+            for filesystem in ("ext4", "btrfs"):
+                checks = [line for line in runtime.installation_checks({**target, "rootFilesystem": filesystem})
+                          if "findmnt" in line or "lsblk" in line]
+                for boot_disk in (disk, "sdb", ""):
+                    with self.subTest(backend=backend, filesystem=filesystem, boot_disk=boot_disk):
+                        result = subprocess.run(["bash", "-c", fixture + " && ".join(checks)],
+                                                env={**os.environ, "ROOTFS": filesystem, "ROOTDISK": disk,
+                                                     "ROOTDEV": "/dev/" + disk + "2",
+                                                     "BOOTDEV": "/dev/" + (boot_disk or "unknown") + "1",
+                                                     "BOOTDISK": boot_disk}, capture_output=True, text=True,
+                                                timeout=5)
+                        self.assertEqual(result.returncode == 0, boot_disk == disk, result.stderr)
+
     def test_failed_remote_check_preserves_stdout_diagnostic(self):
         with patch.object(runtime.subprocess, "run", return_value=SimpleNamespace(
                 returncode=1, stdout="Kontrola neprošla: systemctl is-active --quiet systemd-networkd\n", stderr="")):
