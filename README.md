@@ -82,6 +82,7 @@ tool output do not change language. Documentation is maintained in English.
 | Task | Guide |
 | --- | --- |
 | Check status, log in or update | [Everyday management](#management) |
+| Create and verify an encrypted backup | [Backup basics](#backups) |
 | Deploy a VM from disk or ISO | [New VM](#deployment) |
 | Hand off a system without hypervisor access | [Offline handoff](#offline) |
 | Change packages, services or declarations | [Configuration](#configuration) |
@@ -138,6 +139,82 @@ The same workflow applies to VMs and RPi. Activation may restart services,
 but does not automatically reboot the machine. Update dependencies separately
 with `nix flake update --flake .` in this recipe's root; server updates use
 its current lock. See [generations and immutable snapshots](docs/reference.md#recipe).
+
+<a id="backups"></a>
+
+### Create a backup
+
+The shared Restic tools back up declared application data and a recovery copy
+of the selected recipe. This is an encrypted backup, not a full disk image.
+The same workflow applies to all five VM backends and RPi after boot, regardless
+of image or ISO installation. The controller needs Linux and verified SSH access
+to the running, unlocked server; offline preparation alone cannot capture data.
+
+In the target's selected configuration, which imports `modules/common.nix`,
+enable backups and declare the data and every service, socket or timer that can
+write it. Adapt this example to your application and separate backup storage:
+
+```nix
+nixberry.backup = {
+  enable = true;
+  applications.web = {
+    paths = [ "/var/lib/web" ];
+    stopUnits = [ "web.service" ];
+  };
+  restic = {
+    enable = true;
+    repository = "sftp:backupagent@nas.example:/NetBackup/vm-demo-libvirt";
+    passwordFile = "/var/lib/nixberry-backup/password";
+    ssh = {
+      identityFile = "/var/lib/nixberry-backup/ssh-key";
+      knownHostsFile = "/var/lib/nixberry-backup/known_hosts";
+    };
+  };
+};
+```
+
+Apply the configuration using the [update workflow](#updates). On the server,
+provision the repository password, dedicated storage SSH key and independently
+verified storage host key. Keep credentials in root-owned runtime files outside
+the Nix store, with private permissions (`0600`) and protected parent directories.
+Then, as root on the server, initialize a **new** repository once:
+
+```sh
+nixberry-restic backup-init --json
+nixberry-restic backup-init --apply --json
+```
+
+From the management computer, stage the recovery recipe and create a backup:
+
+```sh
+nixberry backup-stage vm-demo-libvirt
+nixberry backup-stage vm-demo-libvirt --apply
+nixberry backup vm-demo-libvirt
+nixberry backup vm-demo-libvirt --apply
+```
+
+Without `--apply`, these controller commands only prepare plans, without contacting
+the server. With `--apply`, backup stops the declared writers for consistency:
+Btrfs defaults to snapshots and resumes writers before upload; ext4 defaults to
+cold capture and keeps them stopped until upload and checks finish.
+
+As root on the server, list completed backups and verify the full payload using
+the returned `snapshotId`:
+
+```sh
+nixberry-restic backups --json
+nixberry-restic verify-backup --snapshot SNAPSHOT_ID --json
+```
+
+Keep the repository password and recovery access separately from the source
+machine. Local Btrfs snapshots stay on its disk and do not protect against disk
+loss. Backups remain manual unless you configure a schedule. This example uses
+shared Restic without a target-level backup provider; see the
+[backup guide](docs/backups.md#configuration-owned-restic-uploads) for storage
+setup and scheduling, [independent access](docs/backups.md#independent-restic-storage-access)
+for verification after source loss, and [application recovery](docs/backups.md#restore-applications-into-a-prepared-destination)
+for a restore rehearsal. Payload verification alone does not prove application
+recovery.
 
 <a id="reprodukce"></a>
 <a id="deployment"></a>
