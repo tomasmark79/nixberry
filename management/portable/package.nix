@@ -25,6 +25,7 @@ let
       (pkgs.lib.fileset.fileFilter (file: file.hasExt "py") ../deployment/host_backends)
       ../deployment/guest-install.sh
       ../deployment/runtime.py
+      ../deployment/ssh_options.py
       ../deployment/vm_network.py
       ../deployment/messages.py
       ../deployment/security.py

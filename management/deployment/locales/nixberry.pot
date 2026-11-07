@@ -40,7 +40,7 @@ msgstr ""
 msgid "--address and --erase-existing only apply to plan/reproduce for RPi targets."
 msgstr ""
 
-#: deployment/restic_backup.py:637
+#: deployment/restic_backup.py:638
 msgid "--apply only applies to Restic backup capture, staging, retention or repository initialization."
 msgstr ""
 
@@ -56,11 +56,11 @@ msgstr ""
 msgid "--configuration only applies to new-*-vm; edit configuration in the declaration of an existing target."
 msgstr ""
 
-#: deployment/restic_backup.py:641
+#: deployment/restic_backup.py:642
 msgid "--dry-run only applies to Restic backup capture, staging, maintenance or repository initialization."
 msgstr ""
 
-#: rpi/install.py:101
+#: rpi/install.py:102
 msgid "--erase-existing cannot be combined with --stage."
 msgstr ""
 
@@ -108,7 +108,7 @@ msgstr ""
 msgid "--output applies to export, prepare-image, recover-source, backup-schedule and backup-monitor."
 msgstr ""
 
-#: deployment/restic_backup.py:645
+#: deployment/restic_backup.py:646
 msgid "--receive-sha256 only applies to recovery archive staging."
 msgstr ""
 
@@ -116,7 +116,7 @@ msgstr ""
 msgid "--security only applies to new-*-vm; edit security in existing declarations."
 msgstr ""
 
-#: deployment/restic_backup.py:639
+#: deployment/restic_backup.py:640
 msgid "--snapshot only applies to Restic backup verification."
 msgstr ""
 
@@ -132,11 +132,11 @@ msgstr ""
 msgid "--ssh applies to server management and cannot be combined with --host or new-*."
 msgstr ""
 
-#: deployment/restic_backup.py:633
+#: deployment/restic_backup.py:634
 msgid "--statistics only applies to Restic backup freshness checks."
 msgstr ""
 
-#: deployment/restic_backup.py:643
+#: deployment/restic_backup.py:644
 msgid "--system only applies to recovery archive staging or Restic retention."
 msgstr ""
 
@@ -188,7 +188,7 @@ msgstr ""
 msgid "A disk, snapshot, backing image or recovery medium may be attached."
 msgstr ""
 
-#: rpi/install.py:78
+#: rpi/install.py:79
 msgid "A mounted disk already uses the target partition labels."
 msgstr ""
 
@@ -357,7 +357,7 @@ msgstr ""
 msgid "Another disk uses the target partition label."
 msgstr ""
 
-#: rpi/recovery-test.py:55
+#: rpi/recovery-test.py:56
 msgid "Another kernel is already loaded; it will not be overwritten."
 msgstr ""
 
@@ -393,7 +393,7 @@ msgstr ""
 msgid "Applied restoration requires the managed nixberry-restore system service."
 msgstr ""
 
-#: deployment/restic_backup.py:629
+#: deployment/restic_backup.py:630
 msgid "Apply Restic application backup"
 msgstr ""
 
@@ -431,7 +431,7 @@ msgstr ""
 msgid "Available memory: {available:.1f} %"
 msgstr ""
 
-#: deployment/restic_backup.py:617
+#: deployment/restic_backup.py:618
 msgid "Back up configuration-owned application data directly into an encrypted Restic repository."
 msgstr ""
 
@@ -497,7 +497,7 @@ msgstr ""
 msgid "Backup source name for restoration into a distinct target; Restic access also supports preserved sources"
 msgstr ""
 
-#: deployment/restic_backup.py:61
+#: deployment/restic_backup.py:62
 msgid "Backup storage, runtime files and credentials must stay outside application data paths."
 msgstr ""
 
@@ -505,11 +505,11 @@ msgstr ""
 msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
 msgstr ""
 
-#: hyperv/manage.py:197 libvirt/install.py:126
+#: hyperv/manage.py:198 libvirt/install.py:127
 msgid "Boot of the prebuilt system from disk verified."
 msgstr ""
 
-#: hyperv/manage.py:195 hyperv/manage.py:222
+#: hyperv/manage.py:196 hyperv/manage.py:223
 msgid "Boot verification from VHDX failed."
 msgstr ""
 
@@ -534,7 +534,7 @@ msgstr ""
 msgid "Bulk status requires 1–128 VM declarations."
 msgstr ""
 
-#: libvirt/install.py:51
+#: libvirt/install.py:52
 msgid "CD-ROM does not match."
 msgstr ""
 
@@ -602,7 +602,7 @@ msgstr ""
 msgid "Cannot unambiguously determine the VM BIOS UUID."
 msgstr ""
 
-#: libvirt/install.py:70
+#: libvirt/install.py:71
 msgid "Cannot unambiguously determine the VM address."
 msgstr ""
 
@@ -697,7 +697,7 @@ msgstr ""
 msgid "Checking owner, disks, snapshots and VM state before removal…"
 msgstr ""
 
-#: deployment/portable.py:135
+#: deployment/portable.py:136
 msgid "Checking target absence and host resources…"
 msgstr ""
 
@@ -760,7 +760,7 @@ msgstr ""
 msgid "Computing bundle checksums…"
 msgstr ""
 
-#: deployment/security.py:78
+#: deployment/security.py:79
 msgid "Confidential deployment is unavailable: measured launch and attestation-bound key delivery are not implemented. No VM was created and no key was released."
 msgstr ""
 
@@ -776,11 +776,11 @@ msgstr ""
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
-#: deployment/restic_backup.py:620
+#: deployment/restic_backup.py:621
 msgid "Configuration-owned Restic policy file"
 msgstr ""
 
-#: deployment/restic_backup.py:621
+#: deployment/restic_backup.py:622
 msgid "Configuration-owned backup maintenance policy file"
 msgstr ""
 
@@ -813,7 +813,7 @@ msgstr ""
 msgid "Conflicting file and directory paths in recovery recipe archive."
 msgstr ""
 
-#: deployment/restic_backup.py:416 deployment/restic_backup.py:543
+#: deployment/restic_backup.py:417 deployment/restic_backup.py:544
 msgid "Conflicting logical application paths in the captured backup."
 msgstr ""
 
@@ -889,7 +889,7 @@ msgstr ""
 msgid "Create and install a test VM in one command; without --apply, only show the plan."
 msgstr ""
 
-#: deployment/portable.py:225
+#: deployment/portable.py:226
 msgid "Create the VM first using create or reproduce."
 msgstr ""
 
@@ -901,7 +901,7 @@ msgstr ""
 msgid "Creation completed and verified: the VM is running the declared system from disk."
 msgstr ""
 
-#: deployment/portable.py:144
+#: deployment/portable.py:145
 msgid "Creation did not return a verified powered-off VM."
 msgstr ""
 
@@ -909,7 +909,7 @@ msgstr ""
 msgid "Ctrl+C interrupts a remote command. Disconnect a stuck session with Enter, then ~."
 msgstr ""
 
-#: rpi/install.py:92
+#: rpi/install.py:93
 msgid "Current DHCP address of the installation environment, overriding the declaration"
 msgstr ""
 
@@ -939,11 +939,11 @@ msgstr ""
 msgid "Dedicated nested Proxmox for adapter testing; never takes over an existing VM."
 msgstr ""
 
-#: deployment/portable.py:253
+#: deployment/portable.py:254
 msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/dispatch.py:22 deployment/host_agent.py:257 deployment/runtime.py:246 hyperv/host.ps1:44 hyperv/manage.py:95
+#: deployment/dispatch.py:22 deployment/host_agent.py:257 deployment/runtime.py:247 hyperv/host.ps1:44 hyperv/manage.py:96
 msgid "Deployment method must be iso or image."
 msgstr ""
 
@@ -992,7 +992,7 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-#: rpi/recovery-test.py:26
+#: rpi/recovery-test.py:27
 msgid "Diagnose loading the RPi recovery kernel without rebooting or writing partitions."
 msgstr ""
 
@@ -1038,7 +1038,7 @@ msgstr ""
 msgid "Disallowed SSH account."
 msgstr ""
 
-#: deployment/portable.py:42 deployment/runtime.py:281 deployment/security.py:321
+#: deployment/portable.py:43 deployment/runtime.py:281 deployment/security.py:322
 msgid "Disallowed SSH host or account."
 msgstr ""
 
@@ -1054,11 +1054,11 @@ msgstr ""
 msgid "Disallowed exported target name."
 msgstr ""
 
-#: hyperv/manage.py:38
+#: hyperv/manage.py:39
 msgid "Disallowed guest address."
 msgstr ""
 
-#: rpi/install.py:85
+#: rpi/install.py:86
 msgid "Disallowed installation address."
 msgstr ""
 
@@ -1090,11 +1090,11 @@ msgstr ""
 msgid "Disk does not match."
 msgstr ""
 
-#: libvirt/install.py:44 libvirt/reset.py:103
+#: libvirt/install.py:45 libvirt/reset.py:103
 msgid "Disk path does not match."
 msgstr ""
 
-#: rpi/disk_install.py:54 rpi/guest-install.sh:26 rpi/install.py:54
+#: rpi/disk_install.py:54 rpi/guest-install.sh:26 rpi/install.py:55
 msgid "Disk serial number does not match."
 msgstr ""
 
@@ -1107,12 +1107,12 @@ msgstr ""
 msgid "Disk: %s (%s GiB); network: %s"
 msgstr ""
 
-#: rpi/install.py:136
+#: rpi/install.py:137
 #, python-brace-format
 msgid "Disk: {value1}; serial: {value2}; root: {value3}"
 msgstr ""
 
-#: libvirt/install.py:167
+#: libvirt/install.py:168
 #, python-brace-format
 msgid "Disk: {value1}; system: {value2}"
 msgstr ""
@@ -1141,7 +1141,7 @@ msgstr ""
 msgid "Each snapshot root requires a source subvolume and a snapshot directory."
 msgstr ""
 
-#: deployment/security.py:39
+#: deployment/security.py:40
 msgid "Early-boot SSH must use a different port from ordinary SSH (22)."
 msgstr ""
 
@@ -1179,7 +1179,7 @@ msgstr ""
 msgid "Enabled backup requires a provider, private runtime paths, a public age recipient and valid scheduling/retention settings."
 msgstr ""
 
-#: deployment/security.py:80
+#: deployment/security.py:81
 msgid "Encrypted ISO installation is unavailable; use an encrypted image prepared on a trusted local machine."
 msgstr ""
 
@@ -1199,11 +1199,11 @@ msgstr ""
 msgid "Encrypted backup ID, or local capture ID for snapshot-remove"
 msgstr ""
 
-#: deployment/security.py:176
+#: deployment/security.py:177
 msgid "Encrypted image preparation requires a writable tmpfs for temporary secrets."
 msgstr ""
 
-#: deployment/security.py:264
+#: deployment/security.py:265
 msgid "Encrypted image prepared. Keep the passphrase separately; verify a complete locked boot and remote unlock before relying on it."
 msgstr ""
 
@@ -1220,7 +1220,7 @@ msgstr ""
 msgid "Expected exactly one ESP and one Linux partition."
 msgstr ""
 
-#: deployment/restic_backup.py:623
+#: deployment/restic_backup.py:624
 msgid "Expected running NixOS generation for recovery staging or retention"
 msgstr ""
 
@@ -1245,7 +1245,7 @@ msgstr ""
 msgid "Extract a translation template from Python, Bash and PowerShell without extra dependencies."
 msgstr ""
 
-#: deployment/restic_backup.py:622 deployment/restore_target.py:164
+#: deployment/restic_backup.py:623 deployment/restore_target.py:164
 msgid "Full Restic completion snapshot ID"
 msgstr ""
 
@@ -1269,19 +1269,19 @@ msgstr ""
 msgid "Guest UUID does not match."
 msgstr ""
 
-#: hyperv/manage.py:207
+#: hyperv/manage.py:208
 msgid "Guest check or installation failed."
 msgstr ""
 
-#: libvirt/install.py:187
+#: libvirt/install.py:188
 msgid "Guest check or installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: libvirt/install.py:197
+#: libvirt/install.py:198
 msgid "Guest installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: hyperv/manage.py:211
+#: hyperv/manage.py:212
 msgid "Guest shutdown failed."
 msgstr ""
 
@@ -1289,7 +1289,7 @@ msgstr ""
 msgid "Hyper-V installation completed."
 msgstr ""
 
-#: deployment/runtime.py:123
+#: deployment/runtime.py:124
 msgid "Hyper-V is unavailable."
 msgstr ""
 
@@ -1314,7 +1314,7 @@ msgstr ""
 msgid "Hypervisor: {value1}"
 msgstr ""
 
-#: libvirt/install.py:207
+#: libvirt/install.py:208
 msgid "ISO detached; waiting for SSH on the installed system."
 msgstr ""
 
@@ -1322,7 +1322,7 @@ msgstr ""
 msgid "ISO installation requires vmware-vdiskmanager next to vmrun."
 msgstr ""
 
-#: deployment/portable.py:173
+#: deployment/portable.py:174
 msgid "ISO method: install boots the installation ISO and writes the system only to a verified blank disk."
 msgstr ""
 
@@ -1347,7 +1347,7 @@ msgstr ""
 msgid "Image export is not implemented for this platform."
 msgstr ""
 
-#: hyperv/manage.py:190 libvirt/install.py:102
+#: hyperv/manage.py:191 libvirt/install.py:103
 msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
 msgstr ""
 
@@ -1368,11 +1368,11 @@ msgstr ""
 msgid "Include SSD erasure during RPi recovery"
 msgstr ""
 
-#: deployment/restic_backup.py:627
+#: deployment/restic_backup.py:628
 msgid "Include completed restore-point count and latest logical backup size"
 msgstr ""
 
-#: rpi/install.py:99
+#: rpi/install.py:100
 msgid "Include erasing unmounted partitions in the plan; only executed with --apply"
 msgstr ""
 
@@ -1384,7 +1384,7 @@ msgstr ""
 msgid "Includes running and stopped VMs and their checkpoints; foreign disks are not deletion candidates."
 msgstr ""
 
-#: rpi/install.py:24
+#: rpi/install.py:25
 msgid "Incomplete RPi check response."
 msgstr ""
 
@@ -1397,7 +1397,7 @@ msgstr ""
 msgid "Incomplete extraction of {name}: {value2} bytes instead of {value3}."
 msgstr ""
 
-#: deployment/restic_backup.py:152
+#: deployment/restic_backup.py:153
 msgid "Independent backup access permits only repository identity, inventory and payload reads."
 msgstr ""
 
@@ -1409,7 +1409,7 @@ msgstr ""
 msgid "Independent backup reads do not accept --apply."
 msgstr ""
 
-#: deployment/restic_backup.py:630
+#: deployment/restic_backup.py:631
 msgid "Inspect backup readiness without stopping writers"
 msgstr ""
 
@@ -1429,7 +1429,7 @@ msgstr ""
 msgid "Install an RPi SSD attached to this Linux workstation; use a whole-disk /dev/disk/by-id/ path"
 msgstr ""
 
-#: libvirt/install.py:140
+#: libvirt/install.py:141
 msgid "Install only into the dedicated VM; without --apply, only check the plan."
 msgstr ""
 
@@ -1445,11 +1445,11 @@ msgstr ""
 msgid "Installation VM UUID does not match."
 msgstr ""
 
-#: deployment/portable.py:211
+#: deployment/portable.py:212
 msgid "Installation VM shutdown failed; the ISO remains attached."
 msgstr ""
 
-#: hyperv/manage.py:224
+#: hyperv/manage.py:225
 msgid "Installation and boot from VHDX verified. The VM remains running."
 msgstr ""
 
@@ -1458,7 +1458,7 @@ msgstr ""
 msgid "Installation check failed: {check}"
 msgstr ""
 
-#: deployment/portable.py:214
+#: deployment/portable.py:215
 msgid "Installation completed. Detaching the ISO and booting the system from disk…"
 msgstr ""
 
@@ -1470,19 +1470,19 @@ msgstr ""
 msgid "Installation completed. The VM can be shut down gracefully and the ISO detached."
 msgstr ""
 
-#: libvirt/install.py:199
+#: libvirt/install.py:200
 msgid "Installation completed; gracefully shutting down the test VM."
 msgstr ""
 
-#: deployment/portable.py:201
+#: deployment/portable.py:202
 msgid "Installation environment check failed; the disk was not changed."
 msgstr ""
 
-#: deployment/portable.py:208
+#: deployment/portable.py:209
 msgid "Installation failed; the ISO remains attached and no automatic retry is performed."
 msgstr ""
 
-#: rpi/install.py:138
+#: rpi/install.py:139
 msgid "Installation plan verified; nothing was changed."
 msgstr ""
 
@@ -1494,7 +1494,7 @@ msgstr ""
 msgid "Installed profile does not match."
 msgstr ""
 
-#: libvirt/install.py:216
+#: libvirt/install.py:217
 #, python-brace-format
 msgid "Installed system check failed: {value1}"
 msgstr ""
@@ -1519,7 +1519,7 @@ msgstr ""
 msgid "Insufficient free space for snapshot capture."
 msgstr ""
 
-#: deployment/security.py:191
+#: deployment/security.py:192
 msgid "Interactive passphrase entry requires a terminal; use --key-file for automation."
 msgstr ""
 
@@ -1532,7 +1532,7 @@ msgstr ""
 msgid "Interrupted capture needs writer recovery before Restic retention."
 msgstr ""
 
-#: deployment/restic_backup.py:312 deployment/restic_backup.py:464 deployment/snapshots.py:350 deployment/snapshots.py:384 deployment/snapshots.py:394 deployment/snapshots.py:527
+#: deployment/restic_backup.py:313 deployment/restic_backup.py:465 deployment/snapshots.py:350 deployment/snapshots.py:384 deployment/snapshots.py:394 deployment/snapshots.py:527
 msgid "Interrupted capture needs writer recovery before another snapshot."
 msgstr ""
 
@@ -1570,7 +1570,7 @@ msgstr ""
 msgid "Invalid Restic backup access context or source identity."
 msgstr ""
 
-#: deployment/restic_backup.py:494 deployment/restic_backup.py:499 deployment/restic_backup.py:503 deployment/restic_backup.py:505
+#: deployment/restic_backup.py:495 deployment/restic_backup.py:500 deployment/restic_backup.py:504 deployment/restic_backup.py:506
 msgid "Invalid Restic backup inventory."
 msgstr ""
 
@@ -1578,7 +1578,7 @@ msgstr ""
 msgid "Invalid Restic backup maintenance policy."
 msgstr ""
 
-#: deployment/restic_backup.py:46 deployment/restic_backup.py:68
+#: deployment/restic_backup.py:47 deployment/restic_backup.py:69
 msgid "Invalid Restic backup policy."
 msgstr ""
 
@@ -1586,7 +1586,7 @@ msgstr ""
 msgid "Invalid Restic backup statistics."
 msgstr ""
 
-#: deployment/restic_backup.py:580
+#: deployment/restic_backup.py:581
 msgid "Invalid Restic completion receipt."
 msgstr ""
 
@@ -1594,15 +1594,15 @@ msgstr ""
 msgid "Invalid Restic restore access transfer."
 msgstr ""
 
-#: deployment/runtime.py:54
+#: deployment/runtime.py:55
 msgid "Invalid SSH host or port (1–65535)."
 msgstr ""
 
-#: deployment/runtime.py:64
+#: deployment/runtime.py:65
 msgid "Invalid SSH target DNS name."
 msgstr ""
 
-#: deployment/runtime.py:59
+#: deployment/runtime.py:60
 msgid "Invalid SSH target IPv4 address."
 msgstr ""
 
@@ -1663,7 +1663,7 @@ msgstr ""
 msgid "Invalid host hostname."
 msgstr ""
 
-#: deployment/runtime.py:91
+#: deployment/runtime.py:92
 msgid "Invalid hostKeyAlias for SSH key verification."
 msgstr ""
 
@@ -1759,7 +1759,7 @@ msgstr ""
 msgid "Keep private runtime credentials outside recovery recipe sources."
 msgstr ""
 
-#: deployment/security.py:214
+#: deployment/security.py:215
 msgid "Keep the runtime password file outside the recipe and Nix store."
 msgstr ""
 
@@ -1809,11 +1809,11 @@ msgstr ""
 msgid "Live status: {command}"
 msgstr ""
 
-#: rpi/recovery-test.py:30
+#: rpi/recovery-test.py:31
 msgid "Load and unload the kernel without rebooting"
 msgstr ""
 
-#: rpi/recovery-test.py:77
+#: rpi/recovery-test.py:78
 msgid "Loading and unloading verified. The RPi was not rebooted."
 msgstr ""
 
@@ -1821,7 +1821,7 @@ msgstr ""
 msgid "Local Raspberry Pi SSD installation:\n  plan/reproduce TARGET --local-disk /dev/disk/by-id/ID prepares an attached SSD on Linux.\n  Unencrypted targets only; requires sudo and ARM binfmt emulation on x86.\n  --apply authorizes writes; --erase-existing additionally authorizes erasing existing data.\n  No RPi connection is made. Verify physical boot and restore application state separately."
 msgstr ""
 
-#: deployment/restic_backup.py:77
+#: deployment/restic_backup.py:78
 msgid "Local Restic repositories do not accept SFTP settings."
 msgstr ""
 
@@ -1858,11 +1858,11 @@ msgstr ""
 msgid "Media hash does not match."
 msgstr ""
 
-#: hyperv/manage.py:149
+#: hyperv/manage.py:150
 msgid "Media transfer failed."
 msgstr ""
 
-#: rpi/recovery-test.py:60
+#: rpi/recovery-test.py:61
 #, python-brace-format
 msgid "MemAvailable={available}; conservative requirement={needed}"
 msgstr ""
@@ -1890,7 +1890,7 @@ msgstr ""
 msgid "NVRAM still exists after removal."
 msgstr ""
 
-#: rpi/install.py:91
+#: rpi/install.py:92
 msgid "Name from machines/rpi/default.nix"
 msgstr ""
 
@@ -1915,7 +1915,7 @@ msgstr ""
 msgid "Network: {value1}, gateway {value2}, DNS {value3}"
 msgstr ""
 
-#: deployment/security.py:192
+#: deployment/security.py:193
 msgid "New LUKS passphrase: "
 msgstr ""
 
@@ -1964,7 +1964,7 @@ msgstr ""
 msgid "No failed units."
 msgstr ""
 
-#: deployment/security.py:115
+#: deployment/security.py:116
 #, python-brace-format
 msgid "No prepared encrypted image metadata was found at {path}. Run {command} first; its output directory must not already exist."
 msgstr ""
@@ -1977,7 +1977,7 @@ msgstr ""
 msgid "No unpublished restore transaction exists to abort."
 msgstr ""
 
-#: rpi/recovery-test.py:58
+#: rpi/recovery-test.py:59
 msgid "Not enough free RAM for the loading check."
 msgstr ""
 
@@ -2031,7 +2031,7 @@ msgstr ""
 msgid "Only the dedicated test VM, its disk and NVRAM were removed."
 msgstr ""
 
-#: rpi/install.py:97
+#: rpi/install.py:98
 msgid "Only transfer outputs to the Nix store, without installation"
 msgstr ""
 
@@ -2072,7 +2072,7 @@ msgstr ""
 msgid "Options {option} and {other} cannot be combined."
 msgstr ""
 
-#: rpi/install.py:155
+#: rpi/install.py:156
 msgid "Outputs transferred and verified. Partitions, the active system and RPi boot state were not changed."
 msgstr ""
 
@@ -2088,11 +2088,11 @@ msgstr ""
 msgid "Payload restoration requires a new private staging directory."
 msgstr ""
 
-#: deployment/restic_backup.py:157
+#: deployment/restic_backup.py:158
 msgid "Payload restoration requires a read-only reader and a full snapshot ID."
 msgstr ""
 
-#: deployment/security.py:31
+#: deployment/security.py:32
 msgid "Physical Raspberry Pi targets support LUKS, not confidential VM launch."
 msgstr ""
 
@@ -2100,12 +2100,12 @@ msgstr ""
 msgid "Pinned installation manifest does not match."
 msgstr ""
 
-#: hyperv/manage.py:140
+#: hyperv/manage.py:141
 #, python-brace-format
 msgid "Plan verified. Method {method}; no media transfer, disk creation or VM creation."
 msgstr ""
 
-#: rpi/recovery-test.py:62
+#: rpi/recovery-test.py:63
 msgid "Plan verified. No copying, kernel loading or reboot."
 msgstr ""
 
@@ -2114,7 +2114,7 @@ msgstr ""
 msgid "Plan verified. Nothing changed. Erase SSD: {value1}"
 msgstr ""
 
-#: libvirt/install.py:189
+#: libvirt/install.py:190
 msgid "Plan verified. The disk was not changed and the VM was not shut down."
 msgstr ""
 
@@ -2156,7 +2156,7 @@ msgstr ""
 msgid "Prepare only the data disk and staging directory of an installed Proxmox lab."
 msgstr ""
 
-#: rpi/install.py:90
+#: rpi/install.py:91
 msgid "Prepare or cleanly install a selected RPi5 from pinned declarations."
 msgstr ""
 
@@ -2195,7 +2195,7 @@ msgstr ""
 msgid "Previous system: {system}"
 msgstr ""
 
-#: rpi/install.py:47
+#: rpi/install.py:48
 msgid "Primary adapter MAC address does not match."
 msgstr ""
 
@@ -2208,7 +2208,7 @@ msgstr ""
 msgid "Print destination readiness as technical JSON"
 msgstr ""
 
-#: deployment/restic_backup.py:625
+#: deployment/restic_backup.py:626
 msgid "Print technical backup metadata as JSON"
 msgstr ""
 
@@ -2224,7 +2224,7 @@ msgstr ""
 msgid "Private Restic storage access context for inventory, verification, source recovery or destination restore"
 msgstr ""
 
-#: rpi/install.py:93 rpi/local-install.py:22
+#: rpi/install.py:94 rpi/local-install.py:22
 msgid "Private runtime LUKS passphrase file; otherwise prompt securely"
 msgstr ""
 
@@ -2232,7 +2232,7 @@ msgstr ""
 msgid "Private runtime SSH host key for encrypted RPi reproduction"
 msgstr ""
 
-#: rpi/install.py:94 rpi/local-install.py:23
+#: rpi/install.py:95 rpi/local-install.py:23
 msgid "Private runtime SSH host key matching the trusted initrd public key"
 msgstr ""
 
@@ -2287,7 +2287,7 @@ msgstr ""
 msgid "RPi does not match."
 msgstr ""
 
-#: deployment/security.py:68
+#: deployment/security.py:69
 msgid "RPi host-key pins must be public Ed25519 SSH keys."
 msgstr ""
 
@@ -2295,11 +2295,11 @@ msgstr ""
 msgid "RPi installation secrets require /run on tmpfs."
 msgstr ""
 
-#: rpi/install.py:45
+#: rpi/install.py:46
 msgid "RPi serial number does not match."
 msgstr ""
 
-#: rpi/recovery-test.py:59
+#: rpi/recovery-test.py:60
 #, python-brace-format
 msgid "RPi verified: {value1}; recovery: {value2}"
 msgstr ""
@@ -2314,12 +2314,12 @@ msgstr ""
 msgid "RPi: {value1}; SSD: {value2}; serial: {value3}"
 msgstr ""
 
-#: rpi/install.py:135
+#: rpi/install.py:136
 #, python-brace-format
 msgid "RPi: {value1}; serial: {value2}; address: {address}"
 msgstr ""
 
-#: deployment/security.py:204
+#: deployment/security.py:205
 msgid "Raspberry Pi encryption uses its recovery installer, not VM image preparation."
 msgstr ""
 
@@ -2327,12 +2327,12 @@ msgstr ""
 msgid "Reading closure metadata from the running system and local recipe…"
 msgstr ""
 
-#: deployment/portable.py:98
+#: deployment/portable.py:99
 #, python-brace-format
 msgid "Reading the image during transfer failed: {value1}"
 msgstr ""
 
-#: deployment/restic_backup.py:624
+#: deployment/restic_backup.py:625
 msgid "Receive a sealed recipe archive from standard input with this SHA256 identity"
 msgstr ""
 
@@ -2348,19 +2348,19 @@ msgstr ""
 msgid "Recover pending capture writers before restoring application data."
 msgstr ""
 
-#: deployment/restic_backup.py:270
+#: deployment/restic_backup.py:271
 msgid "Recovery archive transfer exceeded its time limit."
 msgstr ""
 
-#: deployment/restic_backup.py:314 deployment/restic_backup.py:333
+#: deployment/restic_backup.py:315 deployment/restic_backup.py:334
 msgid "Recovery configuration changed while staging; no binding was published."
 msgstr ""
 
-#: deployment/restic_backup.py:343
+#: deployment/restic_backup.py:344
 msgid "Recovery configuration is missing; provision the recipe archive and run backup-stage."
 msgstr ""
 
-#: deployment/restic_backup.py:260
+#: deployment/restic_backup.py:261
 msgid "Recovery configuration requires a valid running NixOS system generation."
 msgstr ""
 
@@ -2373,7 +2373,7 @@ msgstr ""
 msgid "Recovery recipe archive does not match its sealed file manifest."
 msgstr ""
 
-#: deployment/recovery_recipe.py:103 deployment/recovery_recipe.py:151 deployment/recovery_recipe.py:162 deployment/restic_backup.py:276
+#: deployment/recovery_recipe.py:103 deployment/recovery_recipe.py:151 deployment/recovery_recipe.py:162 deployment/restic_backup.py:277
 msgid "Recovery recipe archive exceeds its size limit."
 msgstr ""
 
@@ -2397,11 +2397,11 @@ msgstr ""
 msgid "Recovery requires portable pinned flake inputs."
 msgstr ""
 
-#: deployment/restic_backup.py:290
+#: deployment/restic_backup.py:291
 msgid "Recovery staging requires the explicit expected NixOS system path."
 msgstr ""
 
-#: deployment/restic_backup.py:295 deployment/restic_backup.py:301 deployment/restic_backup.py:656
+#: deployment/restic_backup.py:296 deployment/restic_backup.py:302 deployment/restic_backup.py:657
 msgid "Recovery transfer requires a full SHA256 archive identity."
 msgstr ""
 
@@ -2451,7 +2451,7 @@ msgstr ""
 msgid "Remove this VM and only its verified files through these directory symlinks? [y/N]"
 msgstr ""
 
-#: deployment/security.py:193
+#: deployment/security.py:194
 msgid "Repeat LUKS passphrase: "
 msgstr ""
 
@@ -2459,7 +2459,7 @@ msgstr ""
 msgid "Repeated creation was incorrectly allowed."
 msgstr ""
 
-#: deployment/restic_backup.py:357
+#: deployment/restic_backup.py:358
 msgid "Repository initialization requires a new repository identity file."
 msgstr ""
 
@@ -2547,15 +2547,15 @@ msgstr ""
 msgid "Restic backup inventory changed during retention; no snapshots were deleted."
 msgstr ""
 
-#: deployment/restic_backup.py:635
+#: deployment/restic_backup.py:636
 msgid "Restic backup operations require root and protected runtime credentials."
 msgstr ""
 
-#: deployment/restic_backup.py:647
+#: deployment/restic_backup.py:648
 msgid "Restic backup was interrupted; checking writer recovery."
 msgstr ""
 
-#: deployment/restic_backup.py:205
+#: deployment/restic_backup.py:206
 msgid "Restic command failed; inspect retained repository state before retrying."
 msgstr ""
 
@@ -2563,15 +2563,15 @@ msgstr ""
 msgid "Restic configurations prepare recovery code before activation and stage it after verification."
 msgstr ""
 
-#: deployment/restic_backup.py:249
+#: deployment/restic_backup.py:250
 msgid "Restic did not return one complete snapshot identity."
 msgstr ""
 
-#: deployment/restic_backup.py:171 deployment/restic_backup.py:202
+#: deployment/restic_backup.py:172 deployment/restic_backup.py:203
 msgid "Restic exceeded its configured time limit."
 msgstr ""
 
-#: deployment/restic_backup.py:73 deployment/restic_backup.py:80
+#: deployment/restic_backup.py:74 deployment/restic_backup.py:81
 msgid "Restic requires an absolute local repository or an explicitly pinned SFTP repository."
 msgstr ""
 
@@ -2599,11 +2599,11 @@ msgstr ""
 msgid "Restic retention requires the current source machine identity."
 msgstr ""
 
-#: deployment/restic_backup.py:109 deployment/restic_backup.py:112
+#: deployment/restic_backup.py:110 deployment/restic_backup.py:113
 msgid "Restic runtime files require trusted ownership, safe permissions and bounded size."
 msgstr ""
 
-#: deployment/restic_backup.py:34
+#: deployment/restic_backup.py:35
 msgid "Restic runtime paths must stay outside the Nix store and device filesystems."
 msgstr ""
 
@@ -2615,7 +2615,7 @@ msgstr ""
 msgid "Restic storage reads require --backup-access PRIVATE_CONTEXT_FILE; the source is not contacted."
 msgstr ""
 
-#: deployment/restic_backup.py:119
+#: deployment/restic_backup.py:120
 msgid "Restic temporary data must use a tmpfs runtime directory."
 msgstr ""
 
@@ -2754,11 +2754,11 @@ msgstr ""
 msgid "Runtime LUKS and initrd SSH secrets are missing; the disk was not changed."
 msgstr ""
 
-#: deployment/cli.py:388 rpi/install.py:106 rpi/local-install.py:33
+#: deployment/cli.py:388 rpi/install.py:107 rpi/local-install.py:33
 msgid "Runtime encryption keys require an encrypted RPi target."
 msgstr ""
 
-#: deployment/restic_backup.py:88
+#: deployment/restic_backup.py:89
 msgid "SFTP backups require an explicit SSH key, host-key file and port."
 msgstr ""
 
@@ -2770,7 +2770,7 @@ msgstr ""
 msgid "SSD installation is incomplete. Do not boot it; fix the error and repeat the reviewed plan with --erase-existing."
 msgstr ""
 
-#: hyperv/manage.py:178
+#: hyperv/manage.py:179
 msgid "SSH is not available yet."
 msgstr ""
 
@@ -2778,7 +2778,7 @@ msgstr ""
 msgid "SSH must connect directly to the declared Proxmox node."
 msgstr ""
 
-#: deployment/runtime.py:61
+#: deployment/runtime.py:62
 msgid "SSH requires a specific host address."
 msgstr ""
 
@@ -2786,7 +2786,7 @@ msgstr ""
 msgid "SSH user's VirtualBox registry, including media and snapshot references. review requires checking usage outside this registry. Do not add shared disk sizes across VMs."
 msgstr ""
 
-#: hyperv/manage.py:228
+#: hyperv/manage.py:229
 msgid "Safely create and install a dedicated Hyper-V VM over Windows SSH."
 msgstr ""
 
@@ -2820,7 +2820,7 @@ msgstr ""
 msgid "Select a full Restic receipt ID for verification or source recovery."
 msgstr ""
 
-#: deployment/restic_backup.py:566
+#: deployment/restic_backup.py:567
 msgid "Select a full Restic snapshot ID from the Restic backup inventory."
 msgstr ""
 
@@ -2880,15 +2880,15 @@ msgstr ""
 msgid "Set security.imageDirectory or specify --output for prepare-image."
 msgstr ""
 
-#: deployment/security.py:107
+#: deployment/security.py:108
 msgid "Set security.imageDirectory to the prepared encrypted image directory."
 msgstr ""
 
-#: deployment/security.py:288
+#: deployment/security.py:289
 msgid "Set security.initrdHostKey to the trusted RPi boot SSH public key before unlocking."
 msgstr ""
 
-#: rpi/install.py:114
+#: rpi/install.py:115
 msgid "Set security.recoveryHostKey to the trusted recovery medium SSH public key before connecting."
 msgstr ""
 
@@ -2985,7 +2985,7 @@ msgstr ""
 msgid "Specify a new target name: {value1} NAME."
 msgstr ""
 
-#: deployment/runtime.py:51
+#: deployment/runtime.py:52
 msgid "Specify direct SSH as root@HOST[:PORT]."
 msgstr ""
 
@@ -2994,7 +2994,7 @@ msgstr ""
 msgid "Specify one of these options: {arguments}"
 msgstr ""
 
-#: deployment/cli.py:407 deployment/security.py:297
+#: deployment/cli.py:407 deployment/security.py:298
 msgid "Specify the early-boot VM IP address with unlock TARGET --address IP."
 msgstr ""
 
@@ -3023,15 +3023,15 @@ msgstr ""
 msgid "Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n"
 msgstr ""
 
-#: deployment/runtime.py:240
+#: deployment/runtime.py:241
 msgid "Status queries are not implemented for this host type."
 msgstr ""
 
-#: deployment/restic_backup.py:239
+#: deployment/restic_backup.py:240
 msgid "Storage SFTP readiness check exceeded its time limit."
 msgstr ""
 
-#: deployment/restic_backup.py:242
+#: deployment/restic_backup.py:243
 msgid "Storage SFTP trust or authentication failed before writer shutdown."
 msgstr ""
 
@@ -3043,7 +3043,7 @@ msgstr ""
 msgid "Store campaign results outside the recipe."
 msgstr ""
 
-#: deployment/security.py:217
+#: deployment/security.py:218
 msgid "Store encrypted images and secrets outside the recipe root."
 msgstr ""
 
@@ -3154,15 +3154,15 @@ msgstr ""
 msgid "The EFI bootloader is missing."
 msgstr ""
 
-#: deployment/runtime.py:131
+#: deployment/runtime.py:132
 msgid "The Hyper-V VM does not have the declared owner."
 msgstr ""
 
-#: deployment/runtime.py:140
+#: deployment/runtime.py:141
 msgid "The Hyper-V VM does not match the declared adapter and generation."
 msgstr ""
 
-#: hyperv/manage.py:250
+#: hyperv/manage.py:251
 msgid "The Hyper-V operation timed out. Check the target's status and probe before retrying."
 msgstr ""
 
@@ -3174,7 +3174,7 @@ msgstr ""
 msgid "The ISO is not attached."
 msgstr ""
 
-#: hyperv/manage.py:219
+#: hyperv/manage.py:220
 msgid "The ISO is still attached."
 msgstr ""
 
@@ -3264,19 +3264,19 @@ msgstr ""
 msgid "The Proxmox system disk was changed outside the declared creation."
 msgstr ""
 
-#: deployment/security.py:64
+#: deployment/security.py:65
 msgid "The RPi early-boot address must use the selected interface's IPv4 subnet and prefix."
 msgstr ""
 
-#: deployment/runtime.py:220
+#: deployment/runtime.py:221
 msgid "The RPi hardware does not match the declared machine."
 msgstr ""
 
-#: deployment/runtime.py:223 deployment/runtime.py:232 deployment/security.py:48 rpi/install.py:50
+#: deployment/runtime.py:224 deployment/runtime.py:233 deployment/security.py:49 rpi/install.py:51
 msgid "The RPi network adapter does not match the declaration."
 msgstr ""
 
-#: deployment/restic_backup.py:221
+#: deployment/restic_backup.py:222
 msgid "The Restic repository identity does not match its configured pin."
 msgstr ""
 
@@ -3304,7 +3304,7 @@ msgstr ""
 msgid "The VM definition and NVRAM were removed; verifying the disk before removal."
 msgstr ""
 
-#: hyperv/manage.py:214
+#: hyperv/manage.py:215
 msgid "The VM did not shut down gracefully."
 msgstr ""
 
@@ -3324,7 +3324,7 @@ msgstr ""
 msgid "The VM did not shut down; nothing will be deleted."
 msgstr ""
 
-#: deployment/portable.py:164 libvirt/install.py:203
+#: deployment/portable.py:165 libvirt/install.py:204
 msgid "The VM did not shut down; the ISO will not be detached."
 msgstr ""
 
@@ -3392,11 +3392,11 @@ msgstr ""
 msgid "The VM has media outside its own directory; total allocation is unknown."
 msgstr ""
 
-#: hyperv/manage.py:40
+#: hyperv/manage.py:41
 msgid "The VM has multiple possible IPv4 addresses."
 msgstr ""
 
-#: hyperv/manage.py:160
+#: hyperv/manage.py:161
 msgid "The VM has no IP address yet."
 msgstr ""
 
@@ -3432,15 +3432,15 @@ msgstr ""
 msgid "The VM is not powered off; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:169 libvirt/install.py:100
+#: hyperv/host.ps1:169 libvirt/install.py:101
 msgid "The VM is not ready to boot from disk."
 msgstr ""
 
-#: libvirt/install.py:156
+#: libvirt/install.py:157
 msgid "The VM is not running."
 msgstr ""
 
-#: deployment/host_backends/proxmox.py:476 deployment/host_backends/virtualbox.py:383 deployment/host_backends/vmware.py:317 hyperv/manage.py:200 libvirt/install.py:53
+#: deployment/host_backends/proxmox.py:476 deployment/host_backends/virtualbox.py:383 deployment/host_backends/vmware.py:317 hyperv/manage.py:201 libvirt/install.py:54
 msgid "The VM is not using the expected ISO."
 msgstr ""
 
@@ -3448,15 +3448,15 @@ msgstr ""
 msgid "The VM must be shut down gracefully."
 msgstr ""
 
-#: libvirt/install.py:43
+#: libvirt/install.py:44
 msgid "The VM must have exactly one target disk."
 msgstr ""
 
-#: deployment/runtime.py:128
+#: deployment/runtime.py:129
 msgid "The VM name is ambiguous."
 msgstr ""
 
-#: deployment/runtime.py:165 libvirt/install.py:54 libvirt/reset.py:99
+#: deployment/runtime.py:166 libvirt/install.py:55 libvirt/reset.py:99
 msgid "The VM network adapter does not match the declaration."
 msgstr ""
 
@@ -3472,7 +3472,7 @@ msgstr ""
 msgid "The VM path contains a reparse point."
 msgstr ""
 
-#: deployment/portable.py:149
+#: deployment/portable.py:150
 msgid "The VM was created with a prebuilt system disk; it has not been started yet."
 msgstr ""
 
@@ -3484,12 +3484,12 @@ msgstr ""
 msgid "The VM was removed, but its volume remains; keeping records for manual inspection."
 msgstr ""
 
-#: deployment/portable.py:249
+#: deployment/portable.py:250
 #, python-brace-format
 msgid "The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}"
 msgstr ""
 
-#: libvirt/install.py:136
+#: libvirt/install.py:137
 #, python-brace-format
 msgid "The VM was started, but system verification failed: {error}"
 msgstr ""
@@ -3526,11 +3526,11 @@ msgstr ""
 msgid "The VirtualBox VM name or UUID is already in use."
 msgstr ""
 
-#: deployment/runtime.py:121
+#: deployment/runtime.py:122
 msgid "The Windows host does not match the declaration."
 msgstr ""
 
-#: hyperv/manage.py:116
+#: hyperv/manage.py:117
 msgid "The Windows operation failed."
 msgstr ""
 
@@ -3542,7 +3542,7 @@ msgstr ""
 msgid "The active and default systems match."
 msgstr ""
 
-#: rpi/recovery-test.py:53
+#: rpi/recovery-test.py:54
 msgid "The active system is not the expected pinned system."
 msgstr ""
 
@@ -3550,7 +3550,7 @@ msgstr ""
 msgid "The actual image has a different format, capacity, backing image or internal snapshot; refusing reset."
 msgstr ""
 
-#: deployment/portable.py:106
+#: deployment/portable.py:107
 msgid "The adapter failed."
 msgstr ""
 
@@ -3602,7 +3602,7 @@ msgstr ""
 msgid "The build did not return exactly one image."
 msgstr ""
 
-#: deployment/portable.py:129
+#: deployment/portable.py:130
 #, python-brace-format
 msgid "The build result is missing the expected image: {value1}"
 msgstr ""
@@ -3612,7 +3612,7 @@ msgstr ""
 msgid "The built installation ISO is missing: %s"
 msgstr ""
 
-#: deployment/portable.py:124
+#: deployment/portable.py:125
 #, python-brace-format
 msgid "The built installation ISO is missing: {path}"
 msgstr ""
@@ -3678,7 +3678,7 @@ msgstr ""
 msgid "The declaration already exists; refusing to overwrite it."
 msgstr ""
 
-#: deployment/runtime.py:208
+#: deployment/runtime.py:209
 msgid "The declared IPv4 address is not enabled on the RPi."
 msgstr ""
 
@@ -3698,7 +3698,7 @@ msgstr ""
 msgid "The default mode only verifies the plan. --apply creates a VM using the selected image or iso method."
 msgstr ""
 
-#: deployment/security.py:137
+#: deployment/security.py:138
 msgid "The deployment media path does not match the verified encrypted image."
 msgstr ""
 
@@ -3722,7 +3722,7 @@ msgstr ""
 msgid "The destination machine or generation differs from the explicit restore target."
 msgstr ""
 
-#: deployment/runtime.py:194
+#: deployment/runtime.py:195
 msgid "The direct SSH target does not match the declared VM architecture and hostname."
 msgstr ""
 
@@ -3754,7 +3754,7 @@ msgstr ""
 msgid "The disk has a backing image or unverified origin; refusing reset."
 msgstr ""
 
-#: rpi/disk_install.py:61 rpi/guest-install.sh:31 rpi/install.py:69
+#: rpi/disk_install.py:61 rpi/guest-install.sh:31 rpi/install.py:70
 msgid "The disk has child devices other than regular partitions."
 msgstr ""
 
@@ -3774,7 +3774,7 @@ msgstr ""
 msgid "The disk is used by another VM or snapshot; refusing reset."
 msgstr ""
 
-#: rpi/disk_install.py:48 rpi/install.py:42
+#: rpi/disk_install.py:48 rpi/install.py:43
 msgid "The disk listing is not a tree; partitions cannot be assigned safely."
 msgstr ""
 
@@ -3798,23 +3798,23 @@ msgstr ""
 msgid "The effective writer conditions do not contain the required restore guard."
 msgstr ""
 
-#: deployment/security.py:345
+#: deployment/security.py:346
 msgid "The encrypted VM's boot is not verified. If it is waiting for a passphrase, run unlock TARGET --address IP in a terminal, then repeat install --apply."
 msgstr ""
 
-#: deployment/restic_backup.py:529 deployment/restic_backup.py:535 deployment/restic_backup.py:539 deployment/restic_backup.py:547 deployment/restic_backup.py:551 deployment/restic_backup.py:556 deployment/restic_backup.py:584
+#: deployment/restic_backup.py:530 deployment/restic_backup.py:536 deployment/restic_backup.py:540 deployment/restic_backup.py:548 deployment/restic_backup.py:552 deployment/restic_backup.py:557 deployment/restic_backup.py:585
 msgid "The encrypted capture manifest does not match its completion receipt."
 msgstr ""
 
-#: deployment/security.py:126
+#: deployment/security.py:127
 msgid "The encrypted image checksum does not match; refusing deployment."
 msgstr ""
 
-#: deployment/security.py:110
+#: deployment/security.py:111
 msgid "The encrypted image directory must be an absolute regular directory."
 msgstr ""
 
-#: deployment/security.py:123
+#: deployment/security.py:124
 msgid "The encrypted image does not match this declaration and system; prepare a new image."
 msgstr ""
 
@@ -3854,7 +3854,7 @@ msgstr ""
 msgid "The generated MAC conflicts with an existing one; run the command again."
 msgstr ""
 
-#: libvirt/install.py:68
+#: libvirt/install.py:69
 msgid "The guest address is outside the expected network."
 msgstr ""
 
@@ -3866,11 +3866,11 @@ msgstr ""
 msgid "The guest did not boot through UEFI."
 msgstr ""
 
-#: rpi/guest-install.sh:23 rpi/install.py:43
+#: rpi/guest-install.sh:23 rpi/install.py:44
 msgid "The guest is not ARM64."
 msgstr ""
 
-#: rpi/install.py:44
+#: rpi/install.py:45
 msgid "The guest is not a Raspberry Pi 5."
 msgstr ""
 
@@ -3882,7 +3882,7 @@ msgstr ""
 msgid "The guest is not running the prepared installation environment."
 msgstr ""
 
-#: rpi/install.py:59
+#: rpi/install.py:60
 msgid "The guest is not running the prepared installation environment. Only --stage is available."
 msgstr ""
 
@@ -3906,12 +3906,12 @@ msgstr ""
 msgid "The handoff target already exists; import is not allowed."
 msgstr ""
 
-#: deployment/portable.py:104
+#: deployment/portable.py:105
 #, python-brace-format
 msgid "The host adapter did not return JSON: {value1}"
 msgstr ""
 
-#: deployment/runtime.py:21
+#: deployment/runtime.py:22
 msgid "The host did not respond."
 msgstr ""
 
@@ -3939,7 +3939,7 @@ msgstr ""
 msgid "The image SHA256 is missing."
 msgstr ""
 
-#: hyperv/host.ps1:170 libvirt/install.py:49
+#: hyperv/host.ps1:170 libvirt/install.py:50
 msgid "The image method must not have an installation ISO attached."
 msgstr ""
 
@@ -3956,7 +3956,7 @@ msgstr ""
 msgid "The installation ISO is not attached."
 msgstr ""
 
-#: deployment/portable.py:193
+#: deployment/portable.py:194
 msgid "The installation ISO is unreachable; leaving the VM unchanged."
 msgstr ""
 
@@ -3973,11 +3973,11 @@ msgstr ""
 msgid "The installation environment is not ready: {value1}"
 msgstr ""
 
-#: rpi/install.py:64
+#: rpi/install.py:65
 msgid "The installation media contains a different RPi encryption policy or SSH identity."
 msgstr ""
 
-#: rpi/install.py:61
+#: rpi/install.py:62
 msgid "The installation media contains different pinned outputs."
 msgstr ""
 
@@ -4002,15 +4002,15 @@ msgstr ""
 msgid "The installer is running. The password is in {path}; verify the installation result separately."
 msgstr ""
 
-#: deployment/portable.py:278
+#: deployment/portable.py:279
 msgid "The iso method creates a new VM with a blank disk; install verifies the installation environment, writes the system and detaches the ISO."
 msgstr ""
 
-#: rpi/recovery-test.py:73
+#: rpi/recovery-test.py:74
 msgid "The kernel is not loaded."
 msgstr ""
 
-#: rpi/recovery-test.py:76
+#: rpi/recovery-test.py:77
 msgid "The kernel was not unloaded."
 msgstr ""
 
@@ -4035,7 +4035,7 @@ msgstr ""
 msgid "The lab subnet overlaps an existing route."
 msgstr ""
 
-#: deployment/runtime.py:159
+#: deployment/runtime.py:160
 msgid "The libvirt VM identity does not match the declaration."
 msgstr ""
 
@@ -4043,7 +4043,7 @@ msgstr ""
 msgid "The libvirt VM identity does not match the dedicated Proxmox lab."
 msgstr ""
 
-#: deployment/runtime.py:163
+#: deployment/runtime.py:164
 msgid "The libvirt VM is missing the declared owner marker."
 msgstr ""
 
@@ -4067,7 +4067,7 @@ msgstr ""
 msgid "The local installation worker requires root."
 msgstr ""
 
-#: deployment/portable.py:36
+#: deployment/portable.py:37
 msgid "The local manager currently supports Linux; use SSH for Windows."
 msgstr ""
 
@@ -4103,7 +4103,7 @@ msgstr ""
 msgid "The media hash is missing."
 msgstr ""
 
-#: hyperv/manage.py:97
+#: hyperv/manage.py:98
 msgid "The media path for the selected deployment method is missing."
 msgstr ""
 
@@ -4119,7 +4119,7 @@ msgstr ""
 msgid "The mounted RPi root is not the expected encrypted mapping."
 msgstr ""
 
-#: libvirt/install.py:59
+#: libvirt/install.py:60
 msgid "The network has no NAT."
 msgstr ""
 
@@ -4135,7 +4135,7 @@ msgstr ""
 msgid "The official ISO checksum does not match."
 msgstr ""
 
-#: deployment/portable.py:53
+#: deployment/portable.py:54
 msgid "The offline target has no connected host; use show or export."
 msgstr ""
 
@@ -4164,7 +4164,7 @@ msgstr ""
 msgid "The output directory already exists; export will not overwrite it."
 msgstr ""
 
-#: deployment/security.py:209
+#: deployment/security.py:210
 msgid "The output directory already exists; refusing to overwrite it."
 msgstr ""
 
@@ -4172,11 +4172,11 @@ msgstr ""
 msgid "The owner marker must not be a link."
 msgstr ""
 
-#: deployment/security.py:194
+#: deployment/security.py:195
 msgid "The passphrases do not match."
 msgstr ""
 
-#: deployment/security.py:186
+#: deployment/security.py:187
 msgid "The password file must be a private regular file owned by the current user."
 msgstr ""
 
@@ -4184,7 +4184,7 @@ msgstr ""
 msgid "The pending restore belongs to a different source, destination or filesystem layout."
 msgstr ""
 
-#: deployment/restic_backup.py:214 deployment/restic_backup.py:374
+#: deployment/restic_backup.py:215 deployment/restic_backup.py:375
 msgid "The pinned Restic repository identity is invalid."
 msgstr ""
 
@@ -4192,7 +4192,7 @@ msgstr ""
 msgid "The plan changed hypervisor state."
 msgstr ""
 
-#: rpi/disk_install.py:238 rpi/install.py:140
+#: rpi/disk_install.py:238 rpi/install.py:141
 msgid "The plan includes erasing existing partitions; this only happens with --apply."
 msgstr ""
 
@@ -4237,11 +4237,11 @@ msgstr ""
 msgid "The private verified application stage changed during restoration."
 msgstr ""
 
-#: deployment/restic_backup.py:284
+#: deployment/restic_backup.py:285
 msgid "The received recovery archive belongs to a different source, system or policy."
 msgstr ""
 
-#: deployment/restic_backup.py:297
+#: deployment/restic_backup.py:298
 msgid "The received recovery archive does not match its expected SHA256 identity."
 msgstr ""
 
@@ -4294,7 +4294,7 @@ msgstr ""
 msgid "The running system does not match the recipe.\nExpected system: {system}"
 msgstr ""
 
-#: deployment/restic_backup.py:292
+#: deployment/restic_backup.py:293
 msgid "The running system does not match the recovery configuration being staged."
 msgstr ""
 
@@ -4306,11 +4306,11 @@ msgstr ""
 msgid "The script contains a reserved input terminator."
 msgstr ""
 
-#: deployment/restic_backup.py:612
+#: deployment/restic_backup.py:613
 msgid "The sealed recovery recipe does not match this source and capture."
 msgstr ""
 
-#: deployment/restic_backup.py:571
+#: deployment/restic_backup.py:572
 msgid "The selected Restic snapshot is not a completion receipt for this source."
 msgstr ""
 
@@ -4350,7 +4350,7 @@ msgstr ""
 msgid "The source operation timed out; inspect writer recovery before retrying."
 msgstr ""
 
-#: deployment/restic_backup.py:348
+#: deployment/restic_backup.py:349
 msgid "The staged recovery configuration is stale or does not match this backup policy."
 msgstr ""
 
@@ -4437,7 +4437,7 @@ msgstr ""
 msgid "The target disk already exists. It will not be overwritten."
 msgstr ""
 
-#: rpi/install.py:71
+#: rpi/install.py:72
 msgid "The target disk already has partitions or child devices."
 msgstr ""
 
@@ -4445,7 +4445,7 @@ msgstr ""
 msgid "The target disk contains data; review the plan with --erase-existing."
 msgstr ""
 
-#: rpi/install.py:72
+#: rpi/install.py:73
 msgid "The target disk contains signatures."
 msgstr ""
 
@@ -4453,11 +4453,11 @@ msgstr ""
 msgid "The target disk is mounted, used as swap, or held by another device or mount namespace."
 msgstr ""
 
-#: rpi/install.py:66
+#: rpi/install.py:67
 msgid "The target disk is mounted."
 msgstr ""
 
-#: libvirt/install.py:45 libvirt/reset.py:104
+#: libvirt/install.py:46 libvirt/reset.py:104
 msgid "The target disk is not vda."
 msgstr ""
 
@@ -4465,7 +4465,7 @@ msgstr ""
 msgid "The target disk is read-only."
 msgstr ""
 
-#: rpi/disk_install.py:55 rpi/install.py:55
+#: rpi/disk_install.py:55 rpi/install.py:56
 msgid "The target disk is too small."
 msgstr ""
 
@@ -4485,7 +4485,7 @@ msgstr ""
 msgid "The target is not absent after cleanup."
 msgstr ""
 
-#: rpi/disk_install.py:51 rpi/disk_install.py:97 rpi/install.py:52
+#: rpi/disk_install.py:51 rpi/disk_install.py:97 rpi/install.py:53
 msgid "The target is not an unambiguous physical disk."
 msgstr ""
 
@@ -4494,7 +4494,7 @@ msgstr ""
 msgid "The target is not running: {value1}"
 msgstr ""
 
-#: deployment/runtime.py:252
+#: deployment/runtime.py:253
 msgid "The target is not running; login is unavailable."
 msgstr ""
 
@@ -4542,15 +4542,15 @@ msgstr ""
 msgid "The transfer exceeded the declared length."
 msgstr ""
 
-#: deployment/security.py:37
+#: deployment/security.py:38
 msgid "The unlock SSH port must be between 1 and 65535."
 msgstr ""
 
-#: deployment/security.py:302
+#: deployment/security.py:303
 msgid "The unlock address must identify the guest, not the hypervisor or management router."
 msgstr ""
 
-#: deployment/security.py:34
+#: deployment/security.py:35
 msgid "The unlock policy does not match the VM security mode."
 msgstr ""
 
@@ -4570,11 +4570,11 @@ msgstr ""
 msgid "The upload already exists."
 msgstr ""
 
-#: deployment/restic_backup.py:437
+#: deployment/restic_backup.py:438
 msgid "The uploaded backup manifest does not match the capture."
 msgstr ""
 
-#: deployment/restic_backup.py:440 deployment/restic_backup.py:606
+#: deployment/restic_backup.py:441 deployment/restic_backup.py:607
 msgid "The uploaded recovery configuration does not match the capture."
 msgstr ""
 
@@ -4606,7 +4606,7 @@ msgstr ""
 msgid "There is not enough storage space for the image and declared VM capacity."
 msgstr ""
 
-#: deployment/runtime.py:151
+#: deployment/runtime.py:152
 msgid "This adapter only supports local libvirt."
 msgstr ""
 
@@ -4642,7 +4642,7 @@ msgstr ""
 msgid "This target is not included on the installation SD."
 msgstr ""
 
-#: hyperv/manage.py:184
+#: hyperv/manage.py:185
 #, python-brace-format
 msgid "Timed out waiting for the guest: {last_message}"
 msgstr ""
@@ -4652,7 +4652,7 @@ msgstr ""
 msgid "Tracked path escapes the isolated recipe: {path}."
 msgstr ""
 
-#: deployment/portable.py:140
+#: deployment/portable.py:141
 #, python-brace-format
 msgid "Transferring and verifying installation media; method {method}…"
 msgstr ""
@@ -4662,7 +4662,7 @@ msgstr ""
 msgid "Transferring the system to {host}…"
 msgstr ""
 
-#: hyperv/manage.py:146
+#: hyperv/manage.py:147
 #, python-brace-format
 msgid "Transferring {bytes} media bytes to Windows; SHA256={sha256}"
 msgstr ""
@@ -4695,7 +4695,7 @@ msgstr ""
 msgid "Unified management of declared RPi and VMs: operations, deployment and offline export."
 msgstr ""
 
-#: rpi/recovery-test.py:34
+#: rpi/recovery-test.py:35
 msgid "Unknown RPi recovery target."
 msgstr ""
 
@@ -4703,7 +4703,7 @@ msgstr ""
 msgid "Unknown RPi security mode."
 msgstr ""
 
-#: rpi/install.py:103
+#: rpi/install.py:104
 msgid "Unknown RPi target."
 msgstr ""
 
@@ -4711,7 +4711,7 @@ msgstr ""
 msgid "Unknown VBoxManage list vms output."
 msgstr ""
 
-#: deployment/security.py:29
+#: deployment/security.py:30
 msgid "Unknown VM security mode."
 msgstr ""
 
@@ -4744,7 +4744,7 @@ msgstr ""
 msgid "Unknown volume list line: {line}"
 msgstr ""
 
-#: deployment/security.py:346
+#: deployment/security.py:347
 msgid "Unlocking the encrypted VM through its pinned early-boot SSH identity…"
 msgstr ""
 
@@ -4826,11 +4826,11 @@ msgstr ""
 msgid "Usage: nixberry-vm-create [--dry-run|--apply]"
 msgstr ""
 
-#: deployment/security.py:196
+#: deployment/security.py:197
 msgid "Use a single-line LUKS passphrase of 16 to 4096 bytes."
 msgstr ""
 
-#: deployment/security.py:300
+#: deployment/security.py:301
 msgid "Use an IPv4 or unscoped IPv6 guest address."
 msgstr ""
 
@@ -4850,16 +4850,16 @@ msgstr ""
 msgid "VM ID does not match."
 msgstr ""
 
-#: hyperv/guest-install.sh:15 libvirt/install.py:41 libvirt/reset.py:98
+#: hyperv/guest-install.sh:15 libvirt/install.py:42 libvirt/reset.py:98
 msgid "VM UUID does not match."
 msgstr ""
 
-#: hyperv/manage.py:153
+#: hyperv/manage.py:154
 #, python-brace-format
 msgid "VM created and booted from ISO: {value1}"
 msgstr ""
 
-#: deployment/portable.py:147
+#: deployment/portable.py:148
 msgid "VM created and booted from the installation ISO."
 msgstr ""
 
@@ -4867,7 +4867,7 @@ msgstr ""
 msgid "VM created with a prebuilt disk; install will start and verify it."
 msgstr ""
 
-#: hyperv/manage.py:155
+#: hyperv/manage.py:156
 msgid "VM created with a prebuilt disk; it is not running yet."
 msgstr ""
 
@@ -4875,7 +4875,7 @@ msgstr ""
 msgid "VM deployment method: ISO installation or prebuilt disk import; overrides deploymentMethod in the declaration"
 msgstr ""
 
-#: libvirt/install.py:40 libvirt/reset.py:97
+#: libvirt/install.py:41 libvirt/reset.py:97
 msgid "VM name does not match."
 msgstr ""
 
@@ -4891,7 +4891,7 @@ msgstr ""
 msgid "VM ownership record does not match."
 msgstr ""
 
-#: hyperv/manage.py:216
+#: hyperv/manage.py:217
 msgid "VM powered off. Detaching the ISO and configuring boot from VHDX."
 msgstr ""
 
@@ -4899,7 +4899,7 @@ msgstr ""
 msgid "VM protection for new-*; confidential requires attested key delivery and is currently unavailable"
 msgstr ""
 
-#: deployment/security.py:26
+#: deployment/security.py:27
 msgid "VM security contains unsupported fields; keep secrets outside declarations."
 msgstr ""
 
@@ -4907,7 +4907,7 @@ msgstr ""
 msgid "VM system network: DHCP.\n"
 msgstr ""
 
-#: hyperv/manage.py:176
+#: hyperv/manage.py:177
 #, python-brace-format
 msgid "VM {value1}; IP {address}; SSH available."
 msgstr ""
@@ -4917,7 +4917,7 @@ msgstr ""
 msgid "VM: {value1}"
 msgstr ""
 
-#: libvirt/install.py:166
+#: libvirt/install.py:167
 #, python-brace-format
 msgid "VM: {value1}; UUID: {value2}; IP: {address}"
 msgstr ""
@@ -4947,7 +4947,7 @@ msgstr ""
 msgid "Verified: Hyper-V UUID, UEFI, manifest and blank disk."
 msgstr ""
 
-#: libvirt/install.py:218
+#: libvirt/install.py:219
 msgid "Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."
 msgstr ""
 
@@ -4988,15 +4988,15 @@ msgstr ""
 msgid "Volume size does not match."
 msgstr ""
 
-#: deployment/portable.py:231
+#: deployment/portable.py:232
 msgid "Waiting for the guest agent, SSH and verified boot from disk…"
 msgstr ""
 
-#: deployment/portable.py:184
+#: deployment/portable.py:185
 msgid "Waiting for the installation ISO, guest agent and SSH…"
 msgstr ""
 
-#: deployment/portable.py:212
+#: deployment/portable.py:213
 msgid "Waiting for the installation VM to shut down gracefully; the ISO remains attached."
 msgstr ""
 
@@ -5018,7 +5018,7 @@ msgstr ""
 msgid "Windows host does not match."
 msgstr ""
 
-#: deployment/portable.py:282
+#: deployment/portable.py:283
 msgid "With --apply, a prebuilt disk is imported; no existing VM is formatted. install starts and verifies the prebuilt system."
 msgstr ""
 
@@ -5034,15 +5034,15 @@ msgstr ""
 msgid "absent"
 msgstr ""
 
-#: deployment/runtime.py:78
+#: deployment/runtime.py:79
 msgid "access only accepts host, port, user, knownHostsFile and hostKeyAlias."
 msgstr ""
 
-#: deployment/runtime.py:81
+#: deployment/runtime.py:82
 msgid "access requires a host, an integer port and the root account."
 msgstr ""
 
-#: deployment/runtime.py:99
+#: deployment/runtime.py:100
 msgid "access supports offline VMs without hypervisor management."
 msgstr ""
 
@@ -5070,7 +5070,7 @@ msgstr ""
 msgid "error"
 msgstr ""
 
-#: deployment/runtime.py:86
+#: deployment/runtime.py:87
 msgid "knownHostsFile must be an absolute path without control characters."
 msgstr ""
 
@@ -5094,15 +5094,15 @@ msgstr ""
 msgid "no"
 msgstr ""
 
-#: deployment/security.py:206
+#: deployment/security.py:207
 msgid "prepare-image requires security.mode = luks."
 msgstr ""
 
-#: deployment/portable.py:266
+#: deployment/portable.py:267
 msgid "probe is read-only."
 msgstr ""
 
-#: deployment/portable.py:45
+#: deployment/portable.py:46
 msgid "pythonCommand must be a command name available in the host PATH."
 msgstr ""
 
@@ -5130,7 +5130,7 @@ msgstr ""
 msgid "stopped"
 msgstr ""
 
-#: deployment/portable.py:39
+#: deployment/portable.py:40
 msgid "transport must be local or ssh."
 msgstr ""
 
@@ -5142,7 +5142,7 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
-#: deployment/security.py:283
+#: deployment/security.py:284
 msgid "unlock requires security.mode = luks."
 msgstr ""
 

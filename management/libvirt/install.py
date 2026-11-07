@@ -2,6 +2,7 @@
 "Install only into the dedicated VM; without --apply, only check the plan."
 
 from messages import _, ArgumentParser, info, success, shell_script, forward_stderr, error as report_error
+from ssh_options import known_hosts_option
 
 import argparse
 import ipaddress
@@ -117,7 +118,7 @@ def image_install(manifest, apply):
                                              virsh("net-dumpxml", manifest["network"]), manifest["mac"])
                 result = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                     "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=3",
-                    "-o", "StrictHostKeyChecking=accept-new", "-o", "UserKnownHostsFile=" + directory + "/known_hosts",
+                    "-o", "StrictHostKeyChecking=accept-new", "-o", known_hosts_option(Path(directory) / "known_hosts"),
                     "root@" + address, installed_check(manifest)], text=True, capture_output=True, timeout=30)
                 if result.returncode == 0:
                     forward_stderr(result.stderr)
@@ -174,7 +175,7 @@ def main():
             return subprocess.run(
                 ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                  "-o", "StrictHostKeyChecking=accept-new",
-                 "-o", f"UserKnownHostsFile={state}/{phase}.known_hosts",
+                 "-o", known_hosts_option(Path(state) / (phase + ".known_hosts")),
                  f"root@{address}", command],
                 input=input_text, text=True, capture_output=capture, check=False
             )

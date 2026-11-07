@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 
 from messages import _, info
+from ssh_options import known_hosts_option
 
 
 FORMATS = {"libvirt": "qcow2", "proxmox": "qcow2", "hyperv": "vhdx",
@@ -305,7 +306,7 @@ def unlock(target, address=None, *, dry_run=False):
         known = Path(directory) / "known_hosts"
         known.write_text(alias + " " + metadata["initrdHostKey"] + "\n")
         command = ["ssh", "-t", "-p", str(security["port"]),
-            "-o", "StrictHostKeyChecking=yes", "-o", "UserKnownHostsFile=" + str(known),
+            "-o", "StrictHostKeyChecking=yes", "-o", known_hosts_option(known),
             "-o", "GlobalKnownHostsFile=/dev/null", "-o", "HostKeyAlias=" + alias,
             "-o", "KnownHostsCommand=none", "-o", "VerifyHostKeyDNS=no",
             "-o", "HostKeyAlgorithms=ssh-ed25519", "-o", "UpdateHostKeys=no",

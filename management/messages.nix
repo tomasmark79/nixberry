@@ -6,6 +6,7 @@ import ./with-locales.nix {
     root = ./deployment;
     fileset = pkgs.lib.fileset.unions [
       ./deployment/messages.py
+      ./deployment/ssh_options.py
       ./deployment/messages.sh
       ./deployment/shell_runner.py
       ./deployment/security.py

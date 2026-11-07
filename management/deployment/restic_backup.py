@@ -20,6 +20,7 @@ import uuid
 from messages import _, ArgumentParser, error, forward_stderr
 import snapshots
 import recovery_recipe
+from ssh_options import known_hosts_option
 
 ID = re.compile(r'[0-9a-f]{64}')
 FORMAT = 'nixberry-restic-v2'
@@ -138,7 +139,7 @@ class Restic:
             transport = ['ssh', '-F', '/dev/null', '-p', str(ssh['port']), '-i', ssh['identityFile'],
                          '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'IdentitiesOnly=yes',
                          '-o', 'IdentityAgent=none', '-o', 'ForwardAgent=no', '-o', 'GlobalKnownHostsFile=/dev/null',
-                         '-o', 'UserKnownHostsFile=' + ssh['knownHostsFile'], '-o', 'ConnectTimeout=10',
+                         '-o', known_hosts_option(ssh['knownHostsFile']), '-o', 'ConnectTimeout=10',
                          '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3',
                          *ssh_warning_options(ssh), '-s', user_host, 'sftp']
             command += ['--option', 'sftp.command=' + shlex.join(transport)]
@@ -229,7 +230,7 @@ class Restic:
         command = ['sftp', '-b', '-', '-F', '/dev/null', '-P', str(ssh['port']), '-i', ssh['identityFile'],
                    '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'IdentitiesOnly=yes',
                    '-o', 'IdentityAgent=none', '-o', 'ForwardAgent=no', '-o', 'GlobalKnownHostsFile=/dev/null',
-                   '-o', 'UserKnownHostsFile=' + ssh['knownHostsFile'], '-o', 'ConnectTimeout=10',
+                   '-o', known_hosts_option(ssh['knownHostsFile']), '-o', 'ConnectTimeout=10',
                    *ssh_warning_options(ssh), host]
         try:
             result = subprocess.run(command, input='pwd\n', text=True, capture_output=True,

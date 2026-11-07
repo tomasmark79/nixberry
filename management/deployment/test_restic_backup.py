@@ -37,6 +37,41 @@ class PayloadMappingTests(unittest.TestCase):
         self.assertEqual(restic_backup.hidden_payload_paths(same_root), [])
 
 
+class SftpPathTests(unittest.TestCase):
+    def test_backup_and_readiness_probe_preserve_literal_host_key_paths(self):
+        execute = subprocess.run
+        for path in ('/tmp/known hosts', '/tmp/known"hosts', '/tmp/known\\hosts', '/tmp/known%h'):
+            with self.subTest(path=path):
+                settings = {'repository': 'sftp:backup@nas.example:/backup', 'passwordFile': '/tmp/password',
+                            'timeoutSeconds': 30, 'ssh': {'port': 7922, 'identityFile': '/tmp/key',
+                                                        'knownHostsFile': path}}
+                restic = restic_backup.Restic(settings)
+
+                def check_options(command):
+                    options = command[command.index('-o'):-1]
+                    result = execute(['ssh', '-F', '/dev/null', '-G', *options, 'nas.example'],
+                                     capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    actual = next((line.removeprefix('userknownhostsfile ')
+                                   for line in result.stdout.splitlines()
+                                   if line.startswith('userknownhostsfile ')), None)
+                    self.assertEqual(actual, path)
+                    self.assertIn('stricthostkeychecking true', result.stdout.splitlines())
+
+                command = restic.command()
+                transport = next(item.removeprefix('sftp.command=') for item in command
+                                 if item.startswith('sftp.command='))
+                # Remove the subsystem invocation to inspect the actual SSH options.
+                check_options(shlex.split(transport)[:-3] + ['nas.example'])
+
+                def probe(command, **kwargs):
+                    check_options(command)
+                    return subprocess.CompletedProcess(command, 0, '', '')
+
+                with patch('restic_backup.subprocess.run', side_effect=probe):
+                    restic.transport()
+
+
 class ResticBackupTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()

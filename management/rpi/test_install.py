@@ -2,9 +2,16 @@
 """Ochrany cíle RPi a systémového disku před instalačním zápisem."""
 
 from copy import deepcopy
+from contextlib import nullcontext
+import json
+import os
 from pathlib import Path
 import runpy
+import subprocess
+import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 API = runpy.run_path(str(Path(__file__).with_name("install.py")))
 TARGET = {
@@ -24,6 +31,45 @@ SNAPSHOT = {
 
 
 class RpiChecks(unittest.TestCase):
+    def test_recovery_ssh_preserves_literal_temporary_host_key_path(self):
+        execute = subprocess.run
+
+        class ProbeInspected(Exception):
+            pass
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            state = root / 'recovery "quoted" %h'
+            state.mkdir()
+            probe = root / 'probe.sh'
+            probe.write_text('exit 0\n')
+            declarations = root / 'targets.json'
+            for encrypted in (False, True):
+                with self.subTest(encrypted=encrypted):
+                    target = {**TARGET, 'installerAddress': '192.168.50.20', 'diskDevice': '/dev/sda',
+                              'security': {'mode': 'luks' if encrypted else 'none',
+                                           'recoveryHostKey': 'ssh-ed25519 TESTKEY'}}
+                    declarations.write_text(json.dumps({'test': target}))
+
+                    def inspect(command, **kwargs):
+                        result = execute(['ssh', '-F', '/dev/null', '-G', *command[1:-1]],
+                                         text=True, capture_output=True)
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        actual = next((line.removeprefix('userknownhostsfile ')
+                                       for line in result.stdout.splitlines()
+                                       if line.startswith('userknownhostsfile ')), None)
+                        self.assertEqual(actual, str(state / 'known_hosts'))
+                        strict = 'true' if encrypted else 'accept-new'
+                        self.assertIn('stricthostkeychecking ' + strict, result.stdout.splitlines())
+                        raise ProbeInspected
+
+                    with patch.dict(os.environ, {'NIXBERRY_RPI_TARGETS': str(declarations),
+                                                 'NIXBERRY_RPI_PROBE': str(probe)}), \
+                            patch.object(sys, 'argv', ['install.py', '--target', 'test', '--dry-run']), \
+                            patch('tempfile.TemporaryDirectory', return_value=nullcontext(str(state))), \
+                            patch('subprocess.run', side_effect=inspect), self.assertRaises(ProbeInspected):
+                        API['main']()
+
     def test_encrypted_policy_and_host_keys_must_match_the_prepared_medium(self):
         target, snapshot = deepcopy(TARGET), deepcopy(SNAPSHOT)
         target["security"] = {"mode": "luks", "initrdHostKey": "ssh-ed25519 EXPECTED"}

@@ -10,6 +10,7 @@ import shlex
 import subprocess
 import xml.etree.ElementTree as ET
 from vm_network import adapters as network_adapters, libvirt_matches, guest_checks
+from ssh_options import known_hosts_option
 
 
 def read(command):
@@ -258,8 +259,7 @@ def ssh_command(target, snapshot):
         command += ["-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
                     "-p", str(direct["port"])]
         if direct.get("knownHostsFile"):
-            quoted = '"' + direct["knownHostsFile"].replace('\\', '\\\\').replace('"', '\\"') + '"'
-            command += ["-o", "UserKnownHostsFile=" + quoted]
+            command += ["-o", known_hosts_option(direct["knownHostsFile"])]
         if direct.get("hostKeyAlias"):
             command += ["-o", "HostKeyAlias=" + direct["hostKeyAlias"]]
         return command + ["--", direct["user"] + "@" + direct["host"]]
@@ -268,7 +268,7 @@ def ssh_command(target, snapshot):
         raise RuntimeError(_("The target does not have exactly one usable IPv4 address. Details: probe TARGET."))
     if target["backend"] in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
         from portable import known_hosts
-        command += ["-o", "UserKnownHostsFile=" + str(known_hosts(target["spec"])),
+        command += ["-o", known_hosts_option(known_hosts(target["spec"])),
                     "-o", "StrictHostKeyChecking=" + ("accept-new" if target.get("_acceptNewGuestKey") else "yes")]
         if target["backend"] == "hyperv":
             identity = target["spec"].get("uuid", target["spec"]["ownerId"])

@@ -2,6 +2,7 @@
 "Diagnose loading the RPi recovery kernel without rebooting or writing partitions."
 
 from messages import _, ArgumentParser, info, success, error as report_error
+from ssh_options import known_hosts_option
 
 import argparse
 import json
@@ -38,7 +39,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="nixberry-recovery-ssh-") as state:
         options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                    "-o", "StrictHostKeyChecking=accept-new",
-                   "-o", f"UserKnownHostsFile={state}/known_hosts"]
+                   "-o", known_hosts_option(Path(state) / "known_hosts")]
 
         def ssh(command, *, input_text=None, check=True):
             return subprocess.run(["ssh", *options, "root@" + address, command],

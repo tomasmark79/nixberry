@@ -26,6 +26,7 @@ let
         ./dispatch.py
         ./discovery.py
         ./runtime.py
+        ./ssh_options.py
         ./vm_network.py
         ./scaffold.py
         ./security.py

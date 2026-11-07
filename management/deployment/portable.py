@@ -19,6 +19,7 @@ import time
 
 from host_agent import validate, image_name
 from vm_network import guest_checks
+from ssh_options import known_hosts_option
 
 
 BACKENDS = ("proxmox", "virtualbox", "vmware")
@@ -179,7 +180,7 @@ def install_iso(target, manifest, *, apply):
             if checks:
                 command = "set -eu; " + "; ".join(checks) + "; " + command
             args = ssh_command({**target, "_acceptNewGuestKey": True}, snapshot)
-            args[1:1] = ["-o", "BatchMode=yes", "-o", "UserKnownHostsFile=" + directory + "/known_hosts"]
+            args[1:1] = ["-o", "BatchMode=yes", "-o", known_hosts_option(Path(directory) / "known_hosts")]
             return subprocess.run(args + [command], input=input_text, text=True, capture_output=capture, timeout=timeout, check=False)
         info(_("Waiting for the installation ISO, guest agent and SSH…"))
         deadline = time.monotonic() + 300

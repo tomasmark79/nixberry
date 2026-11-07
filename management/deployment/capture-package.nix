@@ -16,6 +16,7 @@ let
         ./restic_access.py
         ./backup_identity.py
         ./restic_backup.py
+        ./ssh_options.py
         ./restic_health.py
         ./restic_retention.py
         ./restic_maintenance.py

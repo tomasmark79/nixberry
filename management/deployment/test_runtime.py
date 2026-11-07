@@ -36,6 +36,29 @@ RPI_OUTPUT = ('aarch64\n0000000000000000\nnixberry\n'
 
 
 class RuntimeChecks(unittest.TestCase):
+    def test_guest_ssh_preserves_literal_host_key_paths(self):
+        for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+            for directory in ("/tmp/state with spaces", '/tmp/state"quoted',
+                              "/tmp/state\\backslash", "/tmp/state%h"):
+                for offline in (False, True):
+                    with self.subTest(backend=backend, directory=directory, offline=offline):
+                        target = {"backend": backend, "offline": offline,
+                                  "spec": {"uuid": "test-id", "ownerId": "test-owner",
+                                           "sshHost": "192.168.50.10", "sshUser": "operator"}}
+                        expected = directory + "/nixberry/portable/test-id/known_hosts"
+                        if offline:
+                            target["access"] = {"host": "guest.example", "knownHostsFile": expected}
+                        with patch.dict(os.environ, {"XDG_STATE_HOME": directory}):
+                            command = runtime.ssh_command(target, {"state": "running", "addresses": ["10.0.0.2"]})
+                        result = subprocess.run([command[0], "-F", "/dev/null", "-G", *command[1:]],
+                                                text=True, capture_output=True)
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        actual = next((line.removeprefix("userknownhostsfile ")
+                                       for line in result.stdout.splitlines()
+                                       if line.startswith("userknownhostsfile ")), None)
+                        self.assertEqual(actual, expected)
+                        self.assertIn("stricthostkeychecking true", result.stdout.splitlines())
+
     def test_ssh_warning_does_not_hide_failed_remote_check_on_stdout(self):
         result = SimpleNamespace(returncode=1, stderr="SSH warning\n", stdout="Kontrola neprošla: UUID\n")
         with patch.object(runtime.subprocess, "run", return_value=result), self.assertRaises(RuntimeError) as error:

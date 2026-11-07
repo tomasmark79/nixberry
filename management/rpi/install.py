@@ -2,6 +2,7 @@
 "Prepare or cleanly install a selected RPi5 from pinned declarations."
 
 from messages import _, ArgumentParser, info, success, warning, shell_script, forward_stderr, error as report_error
+from ssh_options import known_hosts_option
 
 import argparse
 from contextlib import nullcontext
@@ -108,7 +109,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="nixberry-rpi-ssh-") as state:
         options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                    "-o", "StrictHostKeyChecking=accept-new",
-                   "-o", f"UserKnownHostsFile={state}/known_hosts"]
+                   "-o", known_hosts_option(Path(state) / "known_hosts")]
         if encrypted:
             key = target["security"].get("recoveryHostKey")
             require(key, _("Set security.recoveryHostKey to the trusted recovery medium SSH public key before connecting."))
@@ -116,7 +117,7 @@ def main():
             Path(state, "known_hosts").write_text(alias + " " + key + "\n")
             options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                        "-o", "StrictHostKeyChecking=yes", "-o", "HostKeyAlias=" + alias,
-                       "-o", f"UserKnownHostsFile={state}/known_hosts", "-o", "GlobalKnownHostsFile=/dev/null",
+                       "-o", known_hosts_option(Path(state) / "known_hosts"), "-o", "GlobalKnownHostsFile=/dev/null",
                        "-o", "KnownHostsCommand=none", "-o", "VerifyHostKeyDNS=no", "-o", "UpdateHostKeys=no",
                        "-o", "HostKeyAlgorithms=ssh-ed25519", "-o", "ControlMaster=no", "-o", "ControlPath=none",
                        "-o", "ForwardAgent=no", "-o", "ForwardX11=no", "-o", "ClearAllForwardings=yes"]

@@ -3,6 +3,7 @@
 
 from messages import _, ArgumentParser, info, success, localized_script, shell_script, forward_stderr, error as report_error
 from vm_network import guest_checks
+from ssh_options import known_hosts_option
 
 import argparse
 import base64
@@ -123,7 +124,7 @@ class Manager:
             command = "set -eu; " + "; ".join(checks) + "; " + command
         known_hosts = self.state / ("installed-hosts" if installed else "installer-hosts")
         options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                   "-o", "StrictHostKeyChecking=accept-new", "-o", "UserKnownHostsFile=" + str(known_hosts),
+                   "-o", "StrictHostKeyChecking=accept-new", "-o", known_hosts_option(known_hosts),
                    "-J", self.host]
         if installed:
             options += ["-o", "HostKeyAlias=nixberry-" + self.key_identity()]
