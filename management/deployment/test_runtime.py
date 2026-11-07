@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import sys
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
@@ -36,6 +37,33 @@ RPI_OUTPUT = ('aarch64\n0000000000000000\nnixberry\n'
 
 
 class RuntimeChecks(unittest.TestCase):
+    def test_ssh_key_policy_overrides_permissive_client_defaults(self):
+        snapshot = {"state": "running", "addresses": ["192.168.50.20"]}
+        with patch.object(runtime, "read", return_value=RPI_OUTPUT) as read:
+            runtime.status(RPI)
+        commands = [("rpi probe", read.call_args.args[0], "true"),
+                    ("rpi session", runtime.ssh_command(RPI, snapshot), "true")]
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"XDG_STATE_HOME": directory}):
+            for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+                target = {"backend": backend, "spec": {
+                    "uuid": "test-id", "ownerId": "test-owner", "sshHost": "192.168.50.10", "sshUser": "operator"}}
+                direct = {"backend": backend, "offline": True, "spec": {},
+                          "access": {"host": "203.0.113.20", "port": 22, "user": "root"}}
+                for mode, value, expected in (
+                        ("managed", target, "true"), ("direct", direct, "true"),
+                        ("bootstrap", {**target, "_acceptNewGuestKey": True}, "accept-new")):
+                    commands.append((backend + " " + mode, runtime.ssh_command(value, snapshot), expected))
+            config = Path(directory) / "ssh_config"
+            config.write_text("Host *\n  StrictHostKeyChecking no\n")
+            for name, command, expected in commands:
+                with self.subTest(connection=name):
+                    result = subprocess.run([command[0], "-F", str(config), "-G", *command[1:]],
+                                            capture_output=True, text=True, timeout=5)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    actual = next((line.split()[1] for line in result.stdout.splitlines()
+                                   if line.startswith("stricthostkeychecking ")), None)
+                    self.assertEqual(actual, expected)
+
     def test_guest_ssh_preserves_literal_host_key_paths(self):
         for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
             for directory in ("/tmp/state with spaces", '/tmp/state"quoted',

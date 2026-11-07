@@ -42,6 +42,16 @@ For the original flat declaration, `installerAddress` and `gateway` require IPv4
 addresses. The persistent `address` requires IPv4 CIDR notation with a prefix
 from 0 to 32; `dns` must contain at least one IPv4 or IPv6 address literal.
 
+Management of the installed RPi system and SSH installation currently accept
+only RFC1918 IPv4 endpoints (`10.0.0.0/8`, `172.16.0.0/12`,
+`192.168.0.0/16`). For named networks, this limits the management primary,
+not other static interfaces. SSH installation also rejects `192.168.79.1`;
+use the recovery environment's DHCP address instead.
+
+For an installed RPi, management sets `StrictHostKeyChecking=yes`, even if
+your SSH configuration disables it. Verify fingerprints independently before
+enrolling new host keys.
+
 Another RPi or SSD needs its own declaration and newly built media.
 Firmware must permit USB boot; this tool does not configure EEPROM.
 

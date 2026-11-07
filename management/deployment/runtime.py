@@ -215,7 +215,7 @@ def status(target):
             "tr -d '\\000' < /proc/device-tree/serial-number; printf '\\n'; "
             "hostname; " + link_probe + "; findmnt -n --nofsroot -o SOURCE /"
         )
-        output = read(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+        output = read(["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=5",
                        "-p", "22", "--", "root@" + candidates[0], script]).splitlines()
         if len(output) != 5 or output[0] != "aarch64" or output[1] != spec["hardwareSerial"]:
             raise RuntimeError(_("The RPi hardware does not match the declared machine."))
@@ -283,7 +283,7 @@ def ssh_command(target, snapshot):
         if candidates[0] == spec["sshHost"]:
             raise RuntimeError(_("The guest address must differ from the Windows host address."))
     if target["backend"] == "rpi":
-        command += ["-p", "22"]
+        command += ["-o", "StrictHostKeyChecking=yes", "-p", "22"]
     return command + ["--", "root@" + candidates[0]]
 
 
