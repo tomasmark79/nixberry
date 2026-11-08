@@ -152,7 +152,7 @@ msgstr ""
 msgid "A Hyper-V VM must have its own ownerId in nixberry-hyperv-UUID format."
 msgstr ""
 
-#: hyperv/reset.ps1:114
+#: hyperv/reset.ps1:135
 msgid "A VM with the same name is present again after removal; keeping the directory."
 msgstr ""
 
@@ -250,7 +250,7 @@ msgstr ""
 msgid "Active system: {path}"
 msgstr ""
 
-#: hyperv/reset.ps1:66
+#: hyperv/reset.ps1:83
 msgid "Actual VM ID or owner does not match."
 msgstr ""
 
@@ -329,7 +329,7 @@ msgstr ""
 msgid "Another VM or its snapshot uses a file belonging to this VM; refusing reset."
 msgstr ""
 
-#: deployment/host_backends/virtualbox.py:503 deployment/host_backends/vmware.py:397 hyperv/reset.ps1:87
+#: deployment/host_backends/virtualbox.py:503 deployment/host_backends/vmware.py:397 hyperv/reset.ps1:108 hyperv/reset.ps1:69 hyperv/reset.ps1:73
 msgid "Another VM uses a file belonging to this VM; refusing reset."
 msgstr ""
 
@@ -543,7 +543,7 @@ msgstr ""
 msgid "COMMAND"
 msgstr ""
 
-#: hyperv/host.ps1:78 hyperv/reset.ps1:69
+#: hyperv/host.ps1:94 hyperv/reset.ps1:86
 msgid "CPU or RAM does not match."
 msgstr ""
 
@@ -594,7 +594,7 @@ msgstr ""
 msgid "Cannot safely verify another VM's snapshot; refusing reset."
 msgstr ""
 
-#: hyperv/host.ps1:98
+#: hyperv/host.ps1:125
 msgid "Cannot unambiguously determine the VM BIOS UUID."
 msgstr ""
 
@@ -602,7 +602,11 @@ msgstr ""
 msgid "Cannot unambiguously determine the VM address."
 msgstr ""
 
-#: libvirt/storage.py:25
+#: hyperv/host.ps1:110 hyperv/host.ps1:73 hyperv/host.ps1:75 hyperv/host.ps1:78 hyperv/reset.ps1:103 hyperv/reset.ps1:66 hyperv/reset.ps1:68 hyperv/reset.ps1:71
+msgid "Cannot verify another VM disk backing chain; refusing writes or removal."
+msgstr ""
+
+#: libvirt/storage.py:27
 msgid "Cannot verify another VM's volume path; refusing writes or removal."
 msgstr ""
 
@@ -764,11 +768,11 @@ msgstr ""
 msgid "Configuration"
 msgstr ""
 
-#: hyperv/host.ps1:77
+#: hyperv/host.ps1:93
 msgid "Configuration directory does not match."
 msgstr ""
 
-#: hyperv/reset.ps1:68
+#: hyperv/reset.ps1:85
 msgid "Configuration directory or VM generation does not match."
 msgstr ""
 
@@ -836,7 +840,7 @@ msgstr ""
 msgid "Could not confirm Hyper-V VM removal; check status and storage state."
 msgstr ""
 
-#: hyperv/reset.ps1:113
+#: hyperv/reset.ps1:134
 msgid "Could not confirm VM removal."
 msgstr ""
 
@@ -1062,7 +1066,7 @@ msgstr ""
 msgid "Disallowed libvirt VM MAC address."
 msgstr ""
 
-#: deployment/host_agent.py:223 hyperv/host.ps1:184
+#: deployment/host_agent.py:223 hyperv/host.ps1:211
 msgid "Disallowed operation."
 msgstr ""
 
@@ -1434,7 +1438,7 @@ msgstr ""
 msgid "Install only into the dedicated VM; without --apply, only check the plan."
 msgstr ""
 
-#: hyperv/host.ps1:178
+#: hyperv/host.ps1:205
 msgid "Installation DVD does not match."
 msgstr ""
 
@@ -1732,7 +1736,7 @@ msgstr ""
 msgid "Invalid test host name."
 msgstr ""
 
-#: hyperv/host.ps1:120 hyperv/host.ps1:132
+#: hyperv/host.ps1:147 hyperv/host.ps1:159
 msgid "Invalid upload identifier."
 msgstr ""
 
@@ -1859,7 +1863,7 @@ msgstr ""
 msgid "Maximum capture age for an independent Restic backup freshness check"
 msgstr ""
 
-#: hyperv/host.ps1:138
+#: hyperv/host.ps1:165
 msgid "Media hash does not match."
 msgstr ""
 
@@ -2081,7 +2085,7 @@ msgstr ""
 msgid "Outputs transferred and verified. Partitions, the active system and RPi boot state were not changed."
 msgstr ""
 
-#: hyperv/host.ps1:74
+#: hyperv/host.ps1:90
 msgid "Ownership or media does not match."
 msgstr ""
 
@@ -2288,7 +2292,7 @@ msgstr ""
 msgid "Proxmox: node VMs and snapshots, images in the selected storage. Block/thin storage may not report physical allocation; null is not zero. Storage shared with other nodes prevents proof that orphaned volumes are unused."
 msgstr ""
 
-#: hyperv/host.ps1:79
+#: hyperv/host.ps1:95
 msgid "RAM mode does not match."
 msgstr ""
 
@@ -2807,11 +2811,11 @@ msgstr ""
 msgid "Scope: all VMs and snapshots in local libvirt, images in the declared pool. External consumers outside libvirt may be undetectable; review does not prove disuse."
 msgstr ""
 
-#: hyperv/reset.ps1:70
+#: hyperv/reset.ps1:87
 msgid "Secure Boot does not match."
 msgstr ""
 
-#: hyperv/host.ps1:80
+#: hyperv/host.ps1:96
 msgid "Secure Boot is not disabled."
 msgstr ""
 
@@ -3056,7 +3060,7 @@ msgstr ""
 msgid "Store the bundle outside the NixBerry recipe root."
 msgstr ""
 
-#: hyperv/host.ps1:125
+#: hyperv/host.ps1:152
 msgid "Stored media hash does not match."
 msgstr ""
 
@@ -3072,7 +3076,7 @@ msgstr ""
 msgid "System activation requires root on the declared target."
 msgstr ""
 
-#: hyperv/host.ps1:144
+#: hyperv/host.ps1:171
 msgid "System disk copy hash does not match."
 msgstr ""
 
@@ -3115,7 +3119,7 @@ msgstr ""
 msgid "Target"
 msgstr ""
 
-#: hyperv/host.ps1:82
+#: hyperv/host.ps1:98
 msgid "Target VHDX does not match."
 msgstr ""
 
@@ -3293,7 +3297,7 @@ msgstr ""
 msgid "The VM already exists; it will not be overwritten."
 msgstr ""
 
-#: hyperv/reset.ps1:111
+#: hyperv/reset.ps1:132
 msgid "The VM changed during reset; nothing will be deleted."
 msgstr ""
 
@@ -3313,7 +3317,7 @@ msgstr ""
 msgid "The VM did not shut down gracefully."
 msgstr ""
 
-#: hyperv/reset.ps1:106
+#: hyperv/reset.ps1:127
 msgid "The VM did not shut down gracefully; nothing will be deleted."
 msgstr ""
 
@@ -3353,7 +3357,7 @@ msgstr ""
 msgid "The VM directory is missing or is a link."
 msgstr ""
 
-#: hyperv/reset.ps1:117
+#: hyperv/reset.ps1:138
 msgid "The VM directory remains after removal."
 msgstr ""
 
@@ -3389,7 +3393,7 @@ msgstr ""
 msgid "The VM has additional or foreign media; refusing reset."
 msgstr ""
 
-#: hyperv/reset.ps1:76
+#: hyperv/reset.ps1:93
 msgid "The VM has checkpoints; refusing reset."
 msgstr ""
 
@@ -3405,7 +3409,7 @@ msgstr ""
 msgid "The VM has no IP address yet."
 msgstr ""
 
-#: hyperv/host.ps1:88
+#: hyperv/host.ps1:115
 msgid "The VM has snapshots."
 msgstr ""
 
@@ -3417,7 +3421,7 @@ msgstr ""
 msgid "The VM has snapshots; refusing reset."
 msgstr ""
 
-#: hyperv/reset.ps1:67
+#: hyperv/reset.ps1:84
 msgid "The VM is in an unsupported state; refusing reset."
 msgstr ""
 
@@ -3437,7 +3441,7 @@ msgstr ""
 msgid "The VM is not powered off; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:169 libvirt/install.py:101
+#: hyperv/host.ps1:196 libvirt/install.py:101
 msgid "The VM is not ready to boot from disk."
 msgstr ""
 
@@ -3449,7 +3453,7 @@ msgstr ""
 msgid "The VM is not using the expected ISO."
 msgstr ""
 
-#: hyperv/host.ps1:176
+#: hyperv/host.ps1:203
 msgid "The VM must be shut down gracefully."
 msgstr ""
 
@@ -3469,7 +3473,7 @@ msgstr ""
 msgid "The VM or its resources changed during reset; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:69
+#: hyperv/host.ps1:85
 msgid "The VM ownership record is missing."
 msgstr ""
 
@@ -3767,7 +3771,7 @@ msgstr ""
 msgid "The disk is mounted."
 msgstr ""
 
-#: hyperv/host.ps1:86
+#: hyperv/host.ps1:102 hyperv/host.ps1:76 hyperv/host.ps1:80
 msgid "The disk is shared with another VM."
 msgstr ""
 
@@ -3787,7 +3791,7 @@ msgstr ""
 msgid "The disk name does not match the test VM."
 msgstr ""
 
-#: libvirt/storage.py:31
+#: libvirt/storage.py:34
 msgid "The disk or NVRAM is shared with another VM; refusing writes or removal."
 msgstr ""
 
@@ -3944,7 +3948,7 @@ msgstr ""
 msgid "The image SHA256 is missing."
 msgstr ""
 
-#: hyperv/host.ps1:170 libvirt/install.py:50
+#: hyperv/host.ps1:197 libvirt/install.py:50
 msgid "The image method must not have an installation ISO attached."
 msgstr ""
 
@@ -4100,7 +4104,7 @@ msgstr ""
 msgid "The matching VMware VM is already running."
 msgstr ""
 
-#: hyperv/host.ps1:119
+#: hyperv/host.ps1:146
 msgid "The media directory is a reparse point."
 msgstr ""
 
@@ -4112,7 +4116,7 @@ msgstr ""
 msgid "The media path for the selected deployment method is missing."
 msgstr ""
 
-#: deployment/host_agent.py:299 hyperv/host.ps1:72
+#: deployment/host_agent.py:299 hyperv/host.ps1:88
 msgid "The method differs from the created VM; use the original --method."
 msgstr ""
 
@@ -4400,7 +4404,7 @@ msgstr ""
 msgid "The system disk does not have the expected serial."
 msgstr ""
 
-#: hyperv/reset.ps1:72
+#: hyperv/reset.ps1:89
 msgid "The system disk does not match or an additional disk is attached."
 msgstr ""
 
@@ -4571,7 +4575,7 @@ msgstr ""
 msgid "The update preview changed the running system."
 msgstr ""
 
-#: hyperv/host.ps1:122
+#: hyperv/host.ps1:149
 msgid "The upload already exists."
 msgstr ""
 
@@ -4639,7 +4643,7 @@ msgstr ""
 msgid "This operation does not support independent Restic backup access."
 msgstr ""
 
-#: hyperv/host.ps1:168
+#: hyperv/host.ps1:195
 msgid "This operation requires the image method."
 msgstr ""
 
@@ -4810,11 +4814,11 @@ msgstr ""
 msgid "Updates are not implemented for this platform."
 msgstr ""
 
-#: hyperv/host.ps1:135
+#: hyperv/host.ps1:162
 msgid "Upload hash does not match."
 msgstr ""
 
-#: hyperv/host.ps1:134
+#: hyperv/host.ps1:161
 msgid "Upload length does not match."
 msgstr ""
 
@@ -4843,11 +4847,11 @@ msgstr ""
 msgid "Use an IPv4 or unscoped IPv6 guest address."
 msgstr ""
 
-#: hyperv/reset.ps1:74
+#: hyperv/reset.ps1:91
 msgid "VHDX size or origin does not match."
 msgstr ""
 
-#: hyperv/host.ps1:84
+#: hyperv/host.ps1:100
 msgid "VHDX type or size does not match."
 msgstr ""
 
@@ -4855,7 +4859,7 @@ msgstr ""
 msgid "VM"
 msgstr ""
 
-#: hyperv/host.ps1:76
+#: hyperv/host.ps1:92
 msgid "VM ID does not match."
 msgstr ""
 
@@ -4896,7 +4900,7 @@ msgstr ""
 msgid "VM network does not match."
 msgstr ""
 
-#: hyperv/reset.ps1:64
+#: hyperv/reset.ps1:81
 msgid "VM ownership record does not match."
 msgstr ""
 

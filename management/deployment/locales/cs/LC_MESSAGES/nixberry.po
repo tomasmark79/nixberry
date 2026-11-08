@@ -275,6 +275,9 @@ msgstr "Nelze jednoznačně zjistit adresu VM."
 msgid "Cannot unambiguously determine the VM BIOS UUID."
 msgstr "Nelze jednoznačně určit BIOS UUID VM."
 
+msgid "Cannot verify another VM disk backing chain; refusing writes or removal."
+msgstr "Nelze ověřit řetězec podkladových disků jiné VM; odmítám zápis nebo odstranění."
+
 msgid "Cannot verify another VM's volume path; refusing writes or removal."
 msgstr "Nelze ověřit cestu svazku jiné VM; odmítám zápis nebo odstranění."
 

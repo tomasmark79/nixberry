@@ -65,6 +65,22 @@ function FreshTarget {
     $drive = Get-PSDrive -Name $base.Substring(0,1)
     Require ($drive.Free -ge ([int64]$s.diskGiB * 1GB + [int64]$Request.mediaBytes + 2GB)) 'Not enough free space.'
 }
+function CheckDiskChain([string]$path) {
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    while ($path) {
+        # Get-VHD normally returns absolute paths. Reject an ambiguous relative
+        # parent rather than resolving it against the process working directory.
+        Require ($path -match '^(?:[A-Za-z]:\\|\\\\)') 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+        $current = Canonical $path
+        Require ($seen.Add($current)) 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+        Require (-not $current.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -and $current -ne $root) 'The disk is shared with another VM.'
+        $image = Get-VHD -Path $current -ErrorAction Stop
+        Require ($null -ne $image -and $image.Path) 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+        $actual = Canonical $image.Path
+        Require (-not $actual.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -and $actual -ne $root) 'The disk is shared with another VM.'
+        $path = $image.ParentPath
+    }
+}
 function OwnedVm {
     Require (Test-Path -LiteralPath $ownerPath) 'The VM ownership record is missing.'
     $owner = Get-Content -LiteralPath $ownerPath -Raw | ConvertFrom-Json
@@ -84,6 +100,17 @@ function OwnedVm {
     Require ($vhd.Size -eq ([int64]$s.diskGiB * 1GB) -and -not $vhd.ParentPath -and $vhd.VhdType.ToString() -eq 'Dynamic') 'VHDX type or size does not match.'
     $users = @(Get-VM | Get-VMHardDiskDrive | Where-Object { $_.Path -and (Canonical $_.Path) -eq $diskPath })
     Require ($users.Count -eq 1) 'The disk is shared with another VM.'
+    foreach ($peer in Get-VM) {
+        if ($peer.Id -eq $vm.Id) { continue }
+        $peerDisks = @(Get-VMHardDiskDrive -VM $peer)
+        foreach ($checkpoint in Get-VMSnapshot -VM $peer) {
+            $peerDisks += @(Get-VMHardDiskDrive -VMSnapshot $checkpoint)
+        }
+        foreach ($disk in $peerDisks) {
+            Require ($disk.Path) 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+            CheckDiskChain $disk.Path
+        }
+    }
     CheckAdapters $vm
     Require (@(Get-VMSnapshot -VM $vm).Count -eq 0) 'The VM has snapshots.'
     return $vm

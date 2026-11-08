@@ -58,6 +58,23 @@ function CheckTree {
     }
 }
 
+function CheckDiskChain([string]$path) {
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    while ($path) {
+        # Get-VHD normally returns absolute paths. Reject an ambiguous relative
+        # parent rather than resolving it against the process working directory.
+        Require ($path -match '^(?:[A-Za-z]:\\|\\\\)') 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+        $current = Canonical $path
+        Require ($seen.Add($current)) 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+        Require (-not $current.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -and $current -ne $root) 'Another VM uses a file belonging to this VM; refusing reset.'
+        $image = Get-VHD -Path $current -ErrorAction Stop
+        Require ($null -ne $image -and $image.Path) 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+        $actual = Canonical $image.Path
+        Require (-not $actual.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -and $actual -ne $root) 'Another VM uses a file belonging to this VM; refusing reset.'
+        $path = $image.ParentPath
+    }
+}
+
 function OwnedVm {
     CheckTree
     $owner = Get-Content -LiteralPath $ownerPath -Raw -ErrorAction Stop | ConvertFrom-Json
@@ -77,10 +94,14 @@ function OwnedVm {
     foreach ($peer in Get-VM) {
         if ($peer.Id -eq $vm.Id) { continue }
         $references = @($peer.Path, $peer.ConfigurationLocation, $peer.SnapshotFileLocation, $peer.SmartPagingFilePath)
-        $references += @(Get-VMHardDiskDrive -VM $peer | ForEach-Object { $_.Path })
+        $peerDisks = @(Get-VMHardDiskDrive -VM $peer)
         $references += @(Get-VMDvdDrive -VM $peer | ForEach-Object { $_.Path })
         foreach ($checkpoint in Get-VMSnapshot -VM $peer) {
-            $references += @(Get-VMHardDiskDrive -VMSnapshot $checkpoint | ForEach-Object { $_.Path })
+            $peerDisks += @(Get-VMHardDiskDrive -VMSnapshot $checkpoint)
+        }
+        foreach ($disk in $peerDisks) {
+            Require ($disk.Path) 'Cannot verify another VM disk backing chain; refusing writes or removal.'
+            CheckDiskChain $disk.Path
         }
         foreach ($reference in $references) {
             if ($reference) {
