@@ -63,7 +63,7 @@ class InstallChecks(unittest.TestCase):
         assert_services(self, MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system"}),
                         ["sshd", "systemd-networkd", "qemu-guest-agent"])
 
-    def run_shared_install(self, *, apply, attach_during_guest_check=False):
+    def run_shared_install(self, *, apply, attach_during_guest_check=False, snapshot_only=False):
         manifest = {**MANIFEST, "uri": "qemu:///system", "diskGiB": 32,
                     "systemPath": "/nix/store/system", "diskoPath": "/nix/store/disko"}
         shared = not attach_during_guest_check
@@ -74,13 +74,20 @@ class InstallChecks(unittest.TestCase):
             commands.append(args)
             if args[0] == "domstate":
                 return "running"
+            if args == ("list", "--all", "--with-managed-save", "--name"):
+                return ""
             if args[0] == "list":
                 return manifest["name"] + "\nstopped-peer"
             if args[:2] == ("dumpxml", manifest["name"]):
                 return DOMAIN
             if args[:2] == ("dumpxml", "stopped-peer"):
-                path = manifest["diskPath"] if shared else "/other.qcow2"
+                path = manifest["diskPath"] if shared and not snapshot_only else "/other.qcow2"
                 return '<domain><devices><disk><source file="' + path + '"/></disk></devices></domain>'
+            if args[0] == "snapshot-list":
+                return "saved-peer" if shared and snapshot_only else ""
+            if args[0] == "snapshot-dumpxml":
+                return ('<domainsnapshot><domain><devices><disk><source file="'
+                        + manifest["diskPath"] + '"/></disk></devices></domain></domainsnapshot>')
             if args[0] == "domifaddr":
                 return "vnet0 52:54:00:79:81:01 ipv4 192.168.77.97/24"
             if args[0] == "net-dumpxml":
@@ -118,6 +125,19 @@ class InstallChecks(unittest.TestCase):
         self.assertEqual(len(ssh_calls), 1)
         self.assertIn("dry-run", ssh_calls[0].args[0][-1])
         self.assertGreaterEqual(commands.count(("dumpxml", "stopped-peer")), 2)
+
+    def test_peer_snapshot_prevents_installation_before_ssh(self):
+        for apply in (False, True):
+            with self.subTest(apply=apply):
+                commands, ssh_calls = self.run_shared_install(apply=apply, snapshot_only=True)
+                self.assertEqual(ssh_calls, [])
+                self.assertIn(("snapshot-dumpxml", "stopped-peer", "--snapshotname", "saved-peer"), commands)
+
+    def test_peer_snapshot_created_after_guest_plan_prevents_write(self):
+        commands, ssh_calls = self.run_shared_install(
+            apply=True, attach_during_guest_check=True, snapshot_only=True)
+        self.assertEqual(len(ssh_calls), 1)
+        self.assertIn("dry-run", ssh_calls[0].args[0][-1])
 
     def test_expected_domain(self):
         validate_domain(DOMAIN, MANIFEST)

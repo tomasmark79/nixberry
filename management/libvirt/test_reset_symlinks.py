@@ -60,6 +60,8 @@ class SymlinkResetChecks(unittest.TestCase):
         self.on_shutdown = None
         self.on_undefine = None
         self.peer = False
+        self.peer_snapshot = False
+        self.peer_saved = False
         self.image_error = False
         self.foreign_volume = False
         self.output, self.diagnostics = io.StringIO(), io.StringIO()
@@ -78,14 +80,21 @@ class SymlinkResetChecks(unittest.TestCase):
                     + "</path><format type='qcow2'/></target></volume>")
         if action == "dumpxml":
             if command[4] == "peer":
-                return '<domain><devices><disk><source file="' + str(self.disk.resolve()) + '"/></disk></devices></domain>'
+                path = str(self.disk.resolve()) if self.peer else "/unrelated.qcow2"
+                return '<domain><devices><disk><source file="' + path + '"/></disk></devices></domain>'
             return "<fixture/>"
         if action == "domstate":
             return self.state
         if action == "snapshot-list":
-            return ""
+            return "saved-peer" if command[4] == "peer" and self.peer_snapshot else ""
+        if action in ("snapshot-dumpxml", "managedsave-dumpxml"):
+            xml = ('<domain><devices><disk><source file="'
+                   + str(self.disk.resolve()) + '"/></disk></devices></domain>')
+            return '<domainsnapshot>' + xml + '</domainsnapshot>' if action == "snapshot-dumpxml" else xml
         if action == "list":
-            return "peer" if self.peer else ""
+            if "--with-managed-save" in command:
+                return "peer" if self.peer_saved else ""
+            return "peer" if self.peer or self.peer_snapshot or self.peer_saved else ""
         self.assertIn(action, ("shutdown", "undefine", "vol-delete"))
         self.writes.append(action)
         if action == "shutdown":
@@ -197,6 +206,27 @@ class SymlinkResetChecks(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "shared with another VM"):
             self.run_reset(["--apply"], Terminal("y\n"))
         self.assertEqual(self.writes, [])
+
+    def test_peer_snapshot_reference_prevents_shutdown_and_removal(self):
+        self.peer_snapshot = True
+        with self.assertRaisesRegex(RuntimeError, "shared with another VM"):
+            self.run_reset(["--apply"], Terminal("y\n"))
+        self.assertEqual(self.writes, [])
+        self.assertEqual(self.disk.read_bytes(), b"owned disk")
+
+    def test_peer_snapshot_created_during_shutdown_prevents_removal(self):
+        self.on_shutdown = lambda: setattr(self, "peer_snapshot", True)
+        with self.assertRaisesRegex(RuntimeError, "shared with another VM"):
+            self.run_reset(["--apply"], Terminal("y\n"))
+        self.assertEqual(self.writes, ["shutdown"])
+        self.assertEqual(self.disk.read_bytes(), b"owned disk")
+
+    def test_peer_managed_save_prevents_shutdown_and_removal(self):
+        self.peer_saved = True
+        with self.assertRaisesRegex(RuntimeError, "shared with another VM"):
+            self.run_reset(["--apply"], Terminal("y\n"))
+        self.assertEqual(self.writes, [])
+        self.assertEqual(self.disk.read_bytes(), b"owned disk")
 
     def test_changed_volume_after_undefine_prevents_volume_deletion(self):
         self.on_undefine = lambda: setattr(self, "foreign_volume", True)
