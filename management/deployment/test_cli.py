@@ -584,6 +584,26 @@ class DispatchChecks(unittest.TestCase):
             self.assertNotIn("Enter, then ~.", output.getvalue())
             self.assertNotIn("-e", run.call_args.args[0])
 
+    def test_ssh_port_change_confirms_key_during_identity_probe_only_with_terminal(self):
+        import runtime
+        fixture = {"test": {"backend": "virtualbox", "offline": True,
+                            "spec": {"name": "vm-demo-guest"}, "commands": {},
+                            "access": {"host": "203.0.113.20", "port": 2060}}}
+        for terminal in (True, False):
+            for remote in ([], ["--", "hostname"]):
+                with self.subTest(terminal=terminal, remote=remote), \
+                        patch("pathlib.Path.read_text", return_value=json.dumps(fixture)), \
+                        patch("sys.stdin.isatty", return_value=terminal), \
+                        patch.object(runtime, "read", return_value="x86_64\nvm-demo-guest\n/dev/sda2") as read, \
+                        patch("subprocess.run", return_value=Mock(returncode=0)) as run, \
+                        contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(MAIN(["ssh", "test", *remote]), 0)
+                    for command in (read.call_args.args[0], run.call_args.args[0]):
+                        self.assertIn("StrictHostKeyChecking=" + ("ask" if terminal else "yes"), command)
+                        self.assertIn("BatchMode=" + ("no" if terminal else "yes"), command)
+                        self.assertEqual(command[command.index("-p") + 1], "2060")
+                        self.assertIn("root@203.0.113.20", command)
+
     def test_ssh_interrupted_before_remote_terminal_returns_130(self):
         with patch.dict(MAIN.__globals__, {"status": lambda _: {"state": "running"},
                                           "ssh_command": lambda *_: ["ssh", "--", "root@10.0.0.2"]}), \

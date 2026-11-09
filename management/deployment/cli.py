@@ -540,6 +540,8 @@ def main(argv=None):
     if args.action == "ssh":
         if args.dry_run:
             parser.error(_("ssh does not accept --dry-run; use status to check the state."))
+        # Identity probes must allow the same explicit key confirmation as login.
+        target = {**target, "_interactiveSsh": sys.stdin.isatty()}
         command = ssh_command(target, status(target))
         if not remote_command and sys.stdin.isatty():
             command[1:1] = ["-e", "~"]

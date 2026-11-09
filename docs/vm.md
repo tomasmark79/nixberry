@@ -180,6 +180,11 @@ For a custom port, store its verified key as `[HOST]:PORT`.
 `hostKeyAlias` supplies a stable identity when endpoints change.
 An address change never accepts a new key automatically, and one-time SSH
 preserves declared key verification.
+When `nixberry ssh` has terminal input, OpenSSH asks you to confirm an unknown
+host key, including during the initial identity check. This also applies after
+changing the address or port. Verify the fingerprint before answering `yes`.
+Noninteractive connections and other management commands require a known key.
+An existing key mismatch is refused; saved keys are never removed automatically.
 
 Without SSH configuration, offline targets offer `show` and `export`;
 `status` and `doctor` explain missing access. Direct SSH cannot create or reset VMs.

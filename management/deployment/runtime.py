@@ -215,7 +215,10 @@ def status(target):
             "tr -d '\\000' < /proc/device-tree/serial-number; printf '\\n'; "
             "hostname; " + link_probe + "; findmnt -n --nofsroot -o SOURCE /"
         )
-        output = read(["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=5",
+        interactive = target.get("_interactiveSsh", False)
+        output = read(["ssh", "-o", "BatchMode=no" if interactive else "BatchMode=yes",
+                       "-o", "StrictHostKeyChecking=ask" if interactive else "StrictHostKeyChecking=yes",
+                       "-o", "ConnectTimeout=5",
                        "-p", "22", "--", "root@" + candidates[0], script]).splitlines()
         if len(output) != 5 or output[0] != "aarch64" or output[1] != spec["hardwareSerial"]:
             raise RuntimeError(_("The RPi hardware does not match the declared machine."))
@@ -252,11 +255,15 @@ def ssh_command(target, snapshot):
     if snapshot["state"] != "running":
         raise RuntimeError(_("The target is not running; login is unavailable."))
     direct = direct_connection(target)
+    interactive = target.get("_interactiveSsh", False)
+    key_policy = "ask" if interactive else "yes"
     # Bound connection and unresponsive server waits, not healthy session duration.
     command = ["ssh", "-o", "ConnectTimeout=10", "-o", "ConnectionAttempts=1",
                "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=3"]
+    if interactive or direct:
+        command += ["-o", "BatchMode=no" if interactive else "BatchMode=yes"]
     if direct:
-        command += ["-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
+        command += ["-o", "StrictHostKeyChecking=" + key_policy,
                     "-p", str(direct["port"])]
         if direct.get("knownHostsFile"):
             command += ["-o", known_hosts_option(direct["knownHostsFile"])]
@@ -269,7 +276,7 @@ def ssh_command(target, snapshot):
     if target["backend"] in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
         from portable import known_hosts
         command += ["-o", known_hosts_option(known_hosts(target["spec"])),
-                    "-o", "StrictHostKeyChecking=" + ("accept-new" if target.get("_acceptNewGuestKey") else "yes")]
+                    "-o", "StrictHostKeyChecking=" + ("accept-new" if target.get("_acceptNewGuestKey") else key_policy)]
         if target["backend"] == "hyperv":
             identity = target["spec"].get("uuid", target["spec"]["ownerId"])
             command += ["-o", "HostKeyAlias=nixberry-" + identity]
@@ -283,7 +290,7 @@ def ssh_command(target, snapshot):
         if candidates[0] == spec["sshHost"]:
             raise RuntimeError(_("The guest address must differ from the Windows host address."))
     if target["backend"] == "rpi":
-        command += ["-o", "StrictHostKeyChecking=yes", "-p", "22"]
+        command += ["-o", "StrictHostKeyChecking=" + key_policy, "-p", "22"]
     return command + ["--", "root@" + candidates[0]]
 
 

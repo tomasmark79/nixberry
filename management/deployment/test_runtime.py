@@ -37,6 +37,38 @@ RPI_OUTPUT = ('aarch64\n0000000000000000\nnixberry\n'
 
 
 class RuntimeChecks(unittest.TestCase):
+    def test_interactive_ssh_can_confirm_unknown_keys_for_every_backend(self):
+        snapshot = {"state": "running", "addresses": ["192.168.50.20"]}
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"XDG_STATE_HOME": directory}):
+            config = Path(directory) / "ssh_config"
+            config.write_text("Host *\n  StrictHostKeyChecking no\n  BatchMode yes\n")
+            targets = [RPI]
+            for backend in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
+                targets += [{"backend": backend, "spec": {
+                    "uuid": "test-id", "ownerId": "test-owner", "sshHost": "192.168.50.10", "sshUser": "operator"}},
+                    {"backend": backend, "offline": True, "spec": {}, "access": {
+                        "host": "203.0.113.20", "port": 2060, "knownHostsFile": directory + "/known_hosts",
+                        "hostKeyAlias": "vm-demo-guest"}}]
+            for target in targets:
+                with self.subTest(backend=target["backend"], direct=bool(target.get("access"))):
+                    interactive = {**target, "_interactiveSsh": True}
+                    command = runtime.ssh_command(interactive, snapshot)
+                    result = subprocess.run([command[0], "-F", str(config), "-G", *command[1:]],
+                                            capture_output=True, text=True, check=True)
+                    options = dict(line.split(" ", 1) for line in result.stdout.splitlines())
+                    self.assertEqual(options["stricthostkeychecking"], "ask")
+                    self.assertEqual(options["batchmode"], "no")
+                    if target.get("access"):
+                        self.assertEqual(options["port"], "2060")
+                        self.assertEqual(options["hostkeyalias"], "vm-demo-guest")
+                        self.assertEqual(options["userknownhostsfile"], directory + "/known_hosts")
+
+    def test_interactive_rpi_identity_probe_allows_key_confirmation(self):
+        with patch.object(runtime, "read", return_value=RPI_OUTPUT) as read:
+            runtime.status({**RPI, "_interactiveSsh": True})
+        self.assertIn("StrictHostKeyChecking=ask", read.call_args.args[0])
+        self.assertNotIn("StrictHostKeyChecking=yes", read.call_args.args[0])
+
     def test_ssh_key_policy_overrides_permissive_client_defaults(self):
         snapshot = {"state": "running", "addresses": ["192.168.50.20"]}
         with patch.object(runtime, "read", return_value=RPI_OUTPUT) as read:
