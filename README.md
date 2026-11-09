@@ -17,10 +17,30 @@ NixBerry builds and manages NixOS systems on **Raspberry Pi 5**, **QEMU/KVM
 machine declaration selects its configuration, hardware, network and resources.
 The same locked recipe supplies updates and installation media.
 
+## Management computer
+
+Run NixBerry independently from an **x86_64 Linux** computer, including Debian
+with Nix installed. The management computer does not need NixOS or Nixon;
+the managed systems run NixOS. The main CLI is currently exported only for
+`x86_64-linux`, so having Nix on another operating system or architecture is
+not sufficient.
+
+Prepare Bash, Git, SSH and a working Nix installation with `nix-command` and
+`flakes` enabled. Keep a local checkout with your machine declarations and
+the required SSH keys and network access. The launcher obtains its packaged
+tools through Nix; no desktop or permanently running NixBerry service is needed.
+
+Managing remote machines does not require a local hypervisor. Local VM
+deployment additionally needs the selected hypervisor, existing resources and
+permissions described in the [VM guide](docs/vm.md#hosts). ARM builds that are
+not available from a binary cache need an ARM builder or emulation; direct RPi
+SSD preparation on x86 requires local ARM binfmt emulation and disk access,
+as described in the [RPi guide](docs/rpi-recovery.md).
+
 ## Start with a Raspberry Pi 5
 
-The management computer needs x86_64 Linux, Nix with flakes, and SSH. From a
-checkout, add the launcher to your shell and prepare your public administrator key:
+On the management computer, open your checkout, add the launcher to your shell
+and prepare your public administrator key:
 
 ```sh
 export PATH="$PWD:$PATH"
