@@ -159,7 +159,6 @@ in
     pkgs.git
     pkgs.systemd
     pkgs.libnotify
-    pkgs.openssh
   ];
   text = ''
     export NIXBERRY_VERSION=${pkgs.lib.escapeShellArg version}

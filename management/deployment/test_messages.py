@@ -144,6 +144,7 @@ class MessageChecks(unittest.TestCase):
             path = Path(directory) / 'guest.sh'
             path.write_text("nb_info 'The disk is mounted.'\n")
             with patch.dict(os.environ, {'NIXBERRY_LANG': 'cs'}, clear=True), \
+                    patch.object(sys, 'stderr', Stream()), \
                     patch.object(messages, '_catalog', return_value=catalog):
                 script = messages.shell_script(path)
             result = subprocess.run([BASH, '-u', '-s'], input=script, cwd=directory,
