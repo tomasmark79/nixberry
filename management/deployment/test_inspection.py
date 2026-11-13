@@ -11,20 +11,24 @@ import cleanup
 
 class InspectionTests(unittest.TestCase):
     def test_direct_guest_agent_is_optional_but_network_is_required(self):
-        def fixture(command, probes):
-            result = {key: {"code": 0, "output": ""} for key in probes}
-            for key, value in {"hostname": "guest", "architecture": "x86_64", "routes": "[]",
-                               "interfaces": "[]", "services": "active\ninactive\ninactive"}.items():
-                result[key]["output"] = value
-            return result
-        target = {"backend": "proxmox", "offline": True, "guestHostName": "guest", "spec": {},
-                  "_guestConnection": {"host": "203.0.113.19", "user": "root", "port": 2030}}
-        with patch.object(inspection, "status", return_value={"state": "running", "addresses": ["203.0.113.19"]}), \
-                patch.object(inspection, "shell_probe", side_effect=fixture):
-            report = inspection.doctor(target)
-        checks = {check["name"]: check for check in report["checks"]}
-        self.assertEqual(checks["service:qemu-guest-agent"]["level"], "warning")
-        self.assertEqual(checks["service:systemd-networkd"]["level"], "error")
+        for backend, agent in (("libvirt", "qemu-guest-agent"), ("proxmox", "qemu-guest-agent"),
+                               ("hyperv", "hv-kvp"), ("virtualbox", "virtualbox"), ("vmware", "vmware")):
+            def fixture(command, probes):
+                result = {key: {"code": 0, "output": ""} for key in probes}
+                for key, value in {"hostname": "guest", "architecture": "x86_64", "routes": "[]",
+                                   "interfaces": "[]", "services": "active\ninactive\ninactive\ninactive"}.items():
+                    result[key]["output"] = value
+                return result
+            target = {"backend": backend, "offline": True, "guestHostName": "guest", "spec": {},
+                      "_guestConnection": {"host": "203.0.113.19", "user": "root", "port": 2030}}
+            with self.subTest(backend=backend), \
+                    patch.object(inspection, "status", return_value={"state": "running", "addresses": ["203.0.113.19"]}), \
+                    patch.object(inspection, "shell_probe", side_effect=fixture):
+                report = inspection.doctor(target)
+            checks = {check["name"]: check for check in report["checks"]}
+            self.assertEqual(checks["service:sshd"]["level"], "ok")
+            self.assertEqual(checks["service:" + agent]["level"], "warning")
+            self.assertEqual(checks["service:systemd-networkd"]["level"], "error")
 
     def test_probe_runs_real_shell_and_retains_independent_failures(self):
         def local(command):

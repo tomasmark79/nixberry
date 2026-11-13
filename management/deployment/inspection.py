@@ -107,7 +107,7 @@ def doctor(target):
     active = data["services"]["output"].splitlines()
     for index, service in enumerate(services):
         state = active[index] if index < len(active) else "unknown"
-        optional_agent = (service == "qemu-guest-agent" and target.get("offline")
+        optional_agent = (service not in ("sshd", "systemd-networkd") and target.get("offline")
                           and direct_connection(target))
         level = "ok" if state == "active" else "warning" if optional_agent else "error"
         check("service:" + service, level, state)
