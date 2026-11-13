@@ -68,6 +68,8 @@ class InstallChecks(unittest.TestCase):
             script = MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system",
                                                 "rootFilesystem": filesystem})
             self.assertIn(f'test "$(findmnt -n -o FSTYPE /)" = {filesystem}', script)
+            self.assertIn('test "$(findmnt -n -o FSTYPE /boot)" = vfat', script)
+            self.assertIn('test -z "$(systemctl --failed --no-legend --plain)"', script)
             self.assertIn("findmnt -n --nofsroot -o SOURCE,FSTYPE /", script)
         with self.assertRaisesRegex(RuntimeError, "ext4 or btrfs"):
             MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system", "rootFilesystem": "xfs"})

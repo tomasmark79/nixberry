@@ -32,16 +32,20 @@ class StorageTests(unittest.TestCase):
             (recipe / 'flake.nix').touch()
             (recipe / 'configurations').mkdir()
             (recipe / 'configurations/default.nix').write_text('{}')
+            paths = []
             for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware'):
                 for filesystem in ('ext4', 'btrfs'):
                     for method in ('image', 'iso'):
                         name = 'vm-demo-' + backend + '-' + filesystem + '-' + method
                         path, _ = new_vm(recipe, {}, {}, name, backend, offline=True,
                                          filesystem=filesystem, method=method)
-                        declared = json.loads(subprocess.check_output(
-                            ['nix', 'eval', '--json', '--impure', '--expr', 'import ' + str(path)], text=True))
-                        self.assertEqual(declared['rootFilesystem'], filesystem)
-                        self.assertEqual(declared['deploymentMethod'], method)
+                        paths.append((path, filesystem, method))
+            expression = '[' + ' '.join(f'(import {path})' for path, _, _ in paths) + ']'
+            declared_all = json.loads(subprocess.check_output(
+                ['nix', 'eval', '--json', '--impure', '--expr', expression], text=True))
+            for (_, filesystem, method), declared in zip(paths, declared_all, strict=True):
+                self.assertEqual(declared['rootFilesystem'], filesystem)
+                self.assertEqual(declared['deploymentMethod'], method)
 
     def test_update_checks_actual_root_format_before_build_or_activation(self):
         for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware', 'rpi'):

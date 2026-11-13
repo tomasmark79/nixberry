@@ -53,5 +53,7 @@ class ServiceChecks(unittest.TestCase):
             script = installed_check({"biosGuid": "uuid"}, {"guestHostName": "guest", "rootFilesystem": filesystem})
             self.assertIn('test "$(findmnt -n --nofsroot -o SOURCE /)" = /dev/sda2', script)
             self.assertIn(f'test "$(findmnt -n -o FSTYPE /)" = {filesystem}', script)
+            self.assertIn('test "$(findmnt -n -o FSTYPE /boot)" = vfat', script)
+            self.assertIn('test -z "$(systemctl --failed --no-legend)"', script)
         with self.assertRaisesRegex(RuntimeError, "ext4 or btrfs"):
             installed_check({"biosGuid": "uuid"}, {"guestHostName": "guest", "rootFilesystem": "xfs"})

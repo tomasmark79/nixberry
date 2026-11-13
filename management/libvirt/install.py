@@ -97,10 +97,12 @@ def installed_check(manifest):
         "test \"$(hostname)\" = " + shlex.quote(manifest.get("guestHostName", "nixberry-vm")) + "; "
         "test \"$(readlink -f /run/current-system)\" = " + shlex.quote(manifest["systemPath"]) + "; "
         "test \"$(findmnt -n -o FSTYPE /)\" = " + shlex.quote(filesystem) + "; "
+        "test \"$(findmnt -n -o FSTYPE /boot)\" = vfat; "
         "test -d /sys/firmware/efi; "
         "! mountpoint -q /iso; "
         "for service in sshd systemd-networkd qemu-guest-agent; do "
         'systemctl is-active --quiet "$service" || exit 1; done; '
+        'test -z "$(systemctl --failed --no-legend --plain)"; '
         + encrypted + "hostname; findmnt -n --nofsroot -o SOURCE,FSTYPE /; readlink -f /run/current-system"
     )
 

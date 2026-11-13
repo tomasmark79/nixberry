@@ -501,11 +501,11 @@ msgstr ""
 msgid "Before building, check network: DHCP, or mode = \"static\" with address, gateway and dns."
 msgstr ""
 
-#: hyperv/manage.py:202 libvirt/install.py:135
+#: hyperv/manage.py:203 libvirt/install.py:137
 msgid "Boot of the prebuilt system from disk verified."
 msgstr ""
 
-#: hyperv/manage.py:200 hyperv/manage.py:227
+#: hyperv/manage.py:201 hyperv/manage.py:228
 msgid "Boot verification from VHDX failed."
 msgstr ""
 
@@ -943,7 +943,7 @@ msgstr ""
 msgid "Deploy a prebuilt disk or installation ISO through a unified adapter."
 msgstr ""
 
-#: deployment/dispatch.py:22 deployment/host_agent.py:257 deployment/runtime.py:250 hyperv/host.ps1:44 hyperv/manage.py:100
+#: deployment/dispatch.py:22 deployment/host_agent.py:257 deployment/runtime.py:250 hyperv/host.ps1:44 hyperv/manage.py:101
 msgid "Deployment method must be iso or image."
 msgstr ""
 
@@ -1112,7 +1112,7 @@ msgstr ""
 msgid "Disk: {value1}; serial: {value2}; root: {value3}"
 msgstr ""
 
-#: libvirt/install.py:173
+#: libvirt/install.py:175
 #, python-brace-format
 msgid "Disk: {value1}; system: {value2}"
 msgstr ""
@@ -1269,19 +1269,19 @@ msgstr ""
 msgid "Guest UUID does not match."
 msgstr ""
 
-#: hyperv/manage.py:212
+#: hyperv/manage.py:213
 msgid "Guest check or installation failed."
 msgstr ""
 
-#: libvirt/install.py:193
+#: libvirt/install.py:195
 msgid "Guest check or installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: libvirt/install.py:203
+#: libvirt/install.py:205
 msgid "Guest installation failed; leaving the VM boot configuration unchanged."
 msgstr ""
 
-#: hyperv/manage.py:216
+#: hyperv/manage.py:217
 msgid "Guest shutdown failed."
 msgstr ""
 
@@ -1319,7 +1319,7 @@ msgstr ""
 msgid "Hypervisor: {value1}"
 msgstr ""
 
-#: libvirt/install.py:213
+#: libvirt/install.py:215
 msgid "ISO detached; waiting for SSH on the installed system."
 msgstr ""
 
@@ -1352,7 +1352,7 @@ msgstr ""
 msgid "Image export is not implemented for this platform."
 msgstr ""
 
-#: hyperv/manage.py:195 libvirt/install.py:116
+#: hyperv/manage.py:196 libvirt/install.py:118
 msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
 msgstr ""
 
@@ -1434,7 +1434,7 @@ msgstr ""
 msgid "Install an RPi SSD attached to this Linux workstation; use a whole-disk /dev/disk/by-id/ path"
 msgstr ""
 
-#: libvirt/install.py:149
+#: libvirt/install.py:151
 msgid "Install only into the dedicated VM; without --apply, only check the plan."
 msgstr ""
 
@@ -1454,7 +1454,7 @@ msgstr ""
 msgid "Installation VM shutdown failed; the ISO remains attached."
 msgstr ""
 
-#: hyperv/manage.py:229
+#: hyperv/manage.py:230
 msgid "Installation and boot from VHDX verified. The VM remains running."
 msgstr ""
 
@@ -1475,7 +1475,7 @@ msgstr ""
 msgid "Installation completed. The VM can be shut down gracefully and the ISO detached."
 msgstr ""
 
-#: libvirt/install.py:205
+#: libvirt/install.py:207
 msgid "Installation completed; gracefully shutting down the test VM."
 msgstr ""
 
@@ -1499,7 +1499,7 @@ msgstr ""
 msgid "Installed profile does not match."
 msgstr ""
 
-#: libvirt/install.py:222
+#: libvirt/install.py:224
 #, python-brace-format
 msgid "Installed system check failed: {value1}"
 msgstr ""
@@ -1867,7 +1867,7 @@ msgstr ""
 msgid "Media hash does not match."
 msgstr ""
 
-#: hyperv/manage.py:154
+#: hyperv/manage.py:155
 msgid "Media transfer failed."
 msgstr ""
 
@@ -2109,7 +2109,7 @@ msgstr ""
 msgid "Pinned installation manifest does not match."
 msgstr ""
 
-#: hyperv/manage.py:145
+#: hyperv/manage.py:146
 #, python-brace-format
 msgid "Plan verified. Method {method}; no media transfer, disk creation or VM creation."
 msgstr ""
@@ -2123,7 +2123,7 @@ msgstr ""
 msgid "Plan verified. Nothing changed. Erase SSD: {value1}"
 msgstr ""
 
-#: libvirt/install.py:195
+#: libvirt/install.py:197
 msgid "Plan verified. The disk was not changed and the VM was not shut down."
 msgstr ""
 
@@ -2783,7 +2783,7 @@ msgstr ""
 msgid "SSD installation is incomplete. Do not boot it; fix the error and repeat the reviewed plan with --erase-existing."
 msgstr ""
 
-#: hyperv/manage.py:183
+#: hyperv/manage.py:184
 msgid "SSH is not available yet."
 msgstr ""
 
@@ -2799,7 +2799,7 @@ msgstr ""
 msgid "SSH user's VirtualBox registry, including media and snapshot references. review requires checking usage outside this registry. Do not add shared disk sizes across VMs."
 msgstr ""
 
-#: hyperv/manage.py:233
+#: hyperv/manage.py:234
 msgid "Safely create and install a dedicated Hyper-V VM over Windows SSH."
 msgstr ""
 
@@ -3171,7 +3171,7 @@ msgstr ""
 msgid "The Hyper-V VM does not match the declared adapter and generation."
 msgstr ""
 
-#: hyperv/manage.py:255
+#: hyperv/manage.py:256
 msgid "The Hyper-V operation timed out. Check the target's status and probe before retrying."
 msgstr ""
 
@@ -3183,7 +3183,7 @@ msgstr ""
 msgid "The ISO is not attached."
 msgstr ""
 
-#: hyperv/manage.py:224
+#: hyperv/manage.py:225
 msgid "The ISO is still attached."
 msgstr ""
 
@@ -3313,7 +3313,7 @@ msgstr ""
 msgid "The VM definition and NVRAM were removed; verifying the disk before removal."
 msgstr ""
 
-#: hyperv/manage.py:219
+#: hyperv/manage.py:220
 msgid "The VM did not shut down gracefully."
 msgstr ""
 
@@ -3333,7 +3333,7 @@ msgstr ""
 msgid "The VM did not shut down; nothing will be deleted."
 msgstr ""
 
-#: deployment/portable.py:165 libvirt/install.py:209
+#: deployment/portable.py:165 libvirt/install.py:211
 msgid "The VM did not shut down; the ISO will not be detached."
 msgstr ""
 
@@ -3405,7 +3405,7 @@ msgstr ""
 msgid "The VM has multiple possible IPv4 addresses."
 msgstr ""
 
-#: hyperv/manage.py:165
+#: hyperv/manage.py:166
 msgid "The VM has no IP address yet."
 msgstr ""
 
@@ -3441,15 +3441,15 @@ msgstr ""
 msgid "The VM is not powered off; nothing will be deleted."
 msgstr ""
 
-#: hyperv/host.ps1:196 libvirt/install.py:114
+#: hyperv/host.ps1:196 libvirt/install.py:116
 msgid "The VM is not ready to boot from disk."
 msgstr ""
 
-#: libvirt/install.py:165
+#: libvirt/install.py:167
 msgid "The VM is not running."
 msgstr ""
 
-#: deployment/host_backends/proxmox.py:476 deployment/host_backends/virtualbox.py:383 deployment/host_backends/vmware.py:317 hyperv/manage.py:205 libvirt/install.py:54
+#: deployment/host_backends/proxmox.py:476 deployment/host_backends/virtualbox.py:383 deployment/host_backends/vmware.py:317 hyperv/manage.py:206 libvirt/install.py:54
 msgid "The VM is not using the expected ISO."
 msgstr ""
 
@@ -3498,7 +3498,7 @@ msgstr ""
 msgid "The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}"
 msgstr ""
 
-#: libvirt/install.py:145
+#: libvirt/install.py:147
 #, python-brace-format
 msgid "The VM was started, but system verification failed: {error}"
 msgstr ""
@@ -3539,7 +3539,7 @@ msgstr ""
 msgid "The Windows host does not match the declaration."
 msgstr ""
 
-#: hyperv/manage.py:121
+#: hyperv/manage.py:122
 msgid "The Windows operation failed."
 msgstr ""
 
@@ -4112,7 +4112,7 @@ msgstr ""
 msgid "The media hash is missing."
 msgstr ""
 
-#: hyperv/manage.py:102
+#: hyperv/manage.py:103
 msgid "The media path for the selected deployment method is missing."
 msgstr ""
 
@@ -4655,7 +4655,7 @@ msgstr ""
 msgid "This target is not included on the installation SD."
 msgstr ""
 
-#: hyperv/manage.py:189
+#: hyperv/manage.py:190
 #, python-brace-format
 msgid "Timed out waiting for the guest: {last_message}"
 msgstr ""
@@ -4675,7 +4675,7 @@ msgstr ""
 msgid "Transferring the system to {host}…"
 msgstr ""
 
-#: hyperv/manage.py:151
+#: hyperv/manage.py:152
 #, python-brace-format
 msgid "Transferring {bytes} media bytes to Windows; SHA256={sha256}"
 msgstr ""
@@ -4867,7 +4867,7 @@ msgstr ""
 msgid "VM UUID does not match."
 msgstr ""
 
-#: hyperv/manage.py:158
+#: hyperv/manage.py:159
 #, python-brace-format
 msgid "VM created and booted from ISO: {value1}"
 msgstr ""
@@ -4880,7 +4880,7 @@ msgstr ""
 msgid "VM created with a prebuilt disk; install will start and verify it."
 msgstr ""
 
-#: hyperv/manage.py:160
+#: hyperv/manage.py:161
 msgid "VM created with a prebuilt disk; it is not running yet."
 msgstr ""
 
@@ -4904,7 +4904,7 @@ msgstr ""
 msgid "VM ownership record does not match."
 msgstr ""
 
-#: hyperv/manage.py:221
+#: hyperv/manage.py:222
 msgid "VM powered off. Detaching the ISO and configuring boot from VHDX."
 msgstr ""
 
@@ -4920,7 +4920,7 @@ msgstr ""
 msgid "VM system network: DHCP.\n"
 msgstr ""
 
-#: hyperv/manage.py:181
+#: hyperv/manage.py:182
 #, python-brace-format
 msgid "VM {value1}; IP {address}; SSH available."
 msgstr ""
@@ -4930,7 +4930,7 @@ msgstr ""
 msgid "VM: {value1}"
 msgstr ""
 
-#: libvirt/install.py:172
+#: libvirt/install.py:174
 #, python-brace-format
 msgid "VM: {value1}; UUID: {value2}; IP: {address}"
 msgstr ""
@@ -4960,7 +4960,7 @@ msgstr ""
 msgid "Verified: Hyper-V UUID, UEFI, manifest and blank disk."
 msgstr ""
 
-#: libvirt/install.py:224
+#: libvirt/install.py:226
 msgid "Verified: boot from disk without ISO, UEFI, exact system and SSH."
 msgstr ""
 

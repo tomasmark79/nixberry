@@ -55,6 +55,7 @@ test "$(cat /sys/class/dmi/id/product_uuid | tr '[:upper:]' '[:lower:]')" = EXPE
 test "$(hostname)" = EXPECTED_HOST
 test "$(findmnt -n --nofsroot -o SOURCE /)" = EXPECTED_ROOT
 test "$(findmnt -n -o FSTYPE /)" = EXPECTED_FSTYPE
+test "$(findmnt -n -o FSTYPE /boot)" = vfat
 test -d /sys/firmware/efi
 if mountpoint -q /iso; then exit 1; fi
 hostname
