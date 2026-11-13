@@ -9,6 +9,8 @@
   guestHostName ? "nixberry-vm",
   image ? null,
   deploymentMethod ? "image",
+  rootFilesystem ? "ext4",
+  network ? { },
   allowReset ? spec.allowReset or false,
   security ? { mode = "none"; },
   securityTarget ? null,
@@ -24,8 +26,9 @@ let
     builtins.toJSON (
       spec
       // lib.optionalAttrs (security.mode != "none") { inherit security securityTarget; }
+      // lib.optionalAttrs (network != { }) { guestNetwork = network; }
       // {
-        inherit diskPath deploymentMethod;
+        inherit diskPath deploymentMethod rootFilesystem;
         isoPath = if deploymentMethod == "iso" then isoPath else null;
         imagePath = if deploymentMethod == "image" then "${image}/system.qcow2" else null;
         inherit guestHostName;

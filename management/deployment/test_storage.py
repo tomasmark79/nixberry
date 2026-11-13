@@ -149,3 +149,33 @@ class StorageTests(unittest.TestCase):
                 result = evaluate({'filesystem': value})
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('Root filesystem must be ext4 or btrfs.', result.stderr)
+
+    def test_backend_manifests_preserve_declared_root_filesystem_and_network(self):
+        cases = [{"backend": backend, "filesystem": filesystem, "spec": {
+            "name": "vm-demo-test", "uuid": "12345678-1234-4321-8123-123456789abc",
+            "ownerId": "nixberry-12345678-1234-4321-8123-123456789abc", "mac": "52:54:00:12:34:01",
+            "memoryMiB": 4096, "vcpus": 2, "diskGiB": 32, "storageDirectory": "/var/lib/vm-demo",
+            "volume": "vm-demo-test.qcow2", "machine": "q35", "uri": "qemu:///system",
+            "storagePool": "default", "network": "default", "generation": 2, "secureBoot": False, "vmid": 1000,
+        }} for backend in ('libvirt', 'hyperv', 'proxmox', 'virtualbox', 'vmware') for filesystem in ('ext4', 'btrfs')]
+        expression = '''let f = builtins.getFlake ''' + nix('path:' + str(ROOT)) + ''';
+          pkgs = f.inputs.nixos-raspberrypi.inputs.nixpkgs.legacyPackages.x86_64-linux;
+          describe = case: let p = import (''' + str(ROOT) + ''' + "/management/${case.backend}/package.nix") {
+            inherit pkgs; inherit (case) spec; rootFilesystem = case.filesystem;
+            network = { mode = "static"; address = "192.168.77.50/24"; gateway = "192.168.77.1"; dns = [ "192.168.77.1" ]; };
+            installerIso = "/nix/store/fixture-iso"; isoName = "installer.iso";
+            targetSystem = "/nix/store/fixture-system"; diskoScript = "/nix/store/fixture-disko";
+            guestHostName = "vm-demo-test"; image = "/nix/store/fixture-image";
+          }; in builtins.fromJSON p.manifest.text;
+        in map describe ''' + nix(cases)
+        result = subprocess.run(['nix', 'eval', '--impure', '--json', '--expr', expression],
+                                capture_output=True, text=True, timeout=60)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for case, manifest in zip(cases, json.loads(result.stdout), strict=True):
+            with self.subTest(backend=case['backend'], filesystem=case['filesystem']):
+                self.assertEqual(manifest['rootFilesystem'], case['filesystem'])
+                if case['backend'] in ('proxmox', 'virtualbox', 'vmware'):
+                    self.assertEqual(manifest['target']['rootFilesystem'], case['filesystem'])
+                    self.assertEqual(manifest['target']['network']['mode'], 'static')
+                else:
+                    self.assertEqual(manifest['guestNetwork']['mode'], 'static')

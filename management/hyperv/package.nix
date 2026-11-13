@@ -8,6 +8,8 @@
   guestHostName,
   image ? null,
   deploymentMethod ? "image",
+  rootFilesystem ? "ext4",
+  network ? { },
   allowReset ? false,
   security ? { mode = "none"; },
   securityTarget ? null,
@@ -19,8 +21,9 @@ let
     builtins.toJSON (
       spec
       // pkgs.lib.optionalAttrs (security.mode != "none") { inherit security securityTarget; }
+      // pkgs.lib.optionalAttrs (network != { }) { guestNetwork = network; }
       // {
-        inherit deploymentMethod;
+        inherit deploymentMethod rootFilesystem;
         isoPath = if deploymentMethod == "iso" then "${installerIso}/iso/${isoName}" else null;
         imagePath = if deploymentMethod == "image" then "${image}/system.vhdx" else null;
         systemPath = toString targetSystem;

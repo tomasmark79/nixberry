@@ -178,7 +178,8 @@ let
       import (../. + "/${target.backend}/package.nix") {
         pkgs = vmPkgs;
         spec = target.spec;
-        inherit (target) guestHostName allowReset;
+        inherit (target) guestHostName allowReset rootFilesystem;
+        network = target.network or { };
         installerIso = vmInstallers.${name}.config.system.build.isoImage;
         isoName = vmInstallers.${name}.config.image.fileName;
         targetSystem = vmSystems.${name}.config.system.build.toplevel;

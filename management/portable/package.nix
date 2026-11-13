@@ -9,6 +9,8 @@
   installerIso,
   isoName,
   deploymentMethod ? "image",
+  rootFilesystem ? "ext4",
+  network ? { },
   allowReset ? false,
   security ? { mode = "none"; },
   securityTarget ? null,
@@ -39,7 +41,7 @@ let
       spec
       // pkgs.lib.optionalAttrs (security.mode != "none") { inherit security securityTarget; }
       // {
-        inherit backend guestHostName deploymentMethod;
+        inherit backend guestHostName deploymentMethod rootFilesystem network;
         systemPath = toString targetSystem;
         diskoPath = toString diskoScript;
         imagePath = if deploymentMethod == "image" then toString image else null;
@@ -50,6 +52,8 @@ let
             spec
             guestHostName
             deploymentMethod
+            rootFilesystem
+            network
             ;
         } // pkgs.lib.optionalAttrs (security.mode != "none") { inherit security; };
       }

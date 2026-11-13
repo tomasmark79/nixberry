@@ -44,6 +44,8 @@ def choose_address(addresses, host):
 
 def installed_check(snapshot, spec):
     encrypted = ""
+    filesystem = spec.get("rootFilesystem") or (spec.get("securityTarget") or {}).get("rootFilesystem") or "ext4"
+    require(filesystem in ("ext4", "btrfs"), _("Root filesystem must be ext4 or btrfs."))
     if spec.get("security", {}).get("mode", "none") != "none":
         from security import encryption_checks
         encrypted = "; ".join(encryption_checks(spec)) + "\n"
@@ -51,7 +53,8 @@ def installed_check(snapshot, spec):
 test "$(uname -m)" = x86_64
 test "$(cat /sys/class/dmi/id/product_uuid | tr '[:upper:]' '[:lower:]')" = EXPECTED_UUID
 test "$(hostname)" = EXPECTED_HOST
-test "$(findmnt -n -o SOURCE /)" = EXPECTED_ROOT
+test "$(findmnt -n --nofsroot -o SOURCE /)" = EXPECTED_ROOT
+test "$(findmnt -n -o FSTYPE /)" = EXPECTED_FSTYPE
 test -d /sys/firmware/efi
 if mountpoint -q /iso; then exit 1; fi
 hostname
@@ -64,7 +67,8 @@ systemctl --failed --no-legend
 test -z "$(systemctl --failed --no-legend)"
 """.replace("EXPECTED_UUID", shlex.quote(snapshot["biosGuid"].lower())).replace(
         "EXPECTED_HOST", shlex.quote(spec["guestHostName"])).replace(
-        "EXPECTED_ROOT", "/dev/mapper/nixberry-root" if spec.get("security", {}).get("mode", "none") != "none" else "/dev/sda2")
+        "EXPECTED_ROOT", "/dev/mapper/nixberry-root" if spec.get("security", {}).get("mode", "none") != "none" else "/dev/sda2").replace(
+        "EXPECTED_FSTYPE", shlex.quote(filesystem))
 
 
 class Manager:

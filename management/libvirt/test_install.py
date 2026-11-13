@@ -63,6 +63,17 @@ class InstallChecks(unittest.TestCase):
         assert_services(self, MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system"}),
                         ["sshd", "systemd-networkd", "qemu-guest-agent"])
 
+    def test_installed_check_verifies_declared_root_filesystem_and_static_ip(self):
+        for filesystem in ("ext4", "btrfs"):
+            script = MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system",
+                                                "rootFilesystem": filesystem})
+            self.assertIn(f'test "$(findmnt -n -o FSTYPE /)" = {filesystem}', script)
+            self.assertIn("findmnt -n --nofsroot -o SOURCE,FSTYPE /", script)
+        with self.assertRaisesRegex(RuntimeError, "ext4 or btrfs"):
+            MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system", "rootFilesystem": "xfs"})
+        self.assertEqual(MODULE["guest_address"](lambda *args: (_ for _ in ()).throw(AssertionError(args)),
+            {**MANIFEST, "guestNetwork": {"mode": "static", "address": "192.168.77.50/24"}}), "192.168.77.50")
+
     def run_shared_install(self, *, apply, attach_during_guest_check=False, snapshot_only=False):
         manifest = {**MANIFEST, "uri": "qemu:///system", "diskGiB": 32,
                     "systemPath": "/nix/store/system", "diskoPath": "/nix/store/disko"}

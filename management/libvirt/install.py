@@ -72,9 +72,22 @@ def choose_address(output, network_xml, mac):
     return candidates[0]
 
 
+def guest_address(virsh, manifest):
+    early_network = manifest.get("guestNetwork") or (manifest.get("securityTarget") or {}).get("network", {})
+    if early_network.get("mode") == "static":
+        return str(ipaddress.ip_interface(early_network["address"]).ip)
+    return choose_address(
+        virsh("domifaddr", manifest["name"], "--source", "lease"),
+        virsh("net-dumpxml", manifest["network"]),
+        manifest["mac"],
+    )
+
+
 def installed_check(manifest):
     encrypted = ""
     network = "".join(check + "; " for check in guest_checks(manifest, "libvirt"))
+    filesystem = manifest.get("rootFilesystem") or (manifest.get("securityTarget") or {}).get("rootFilesystem") or "ext4"
+    require(filesystem in ("ext4", "btrfs"), _("Root filesystem must be ext4 or btrfs."))
     if manifest.get("security", {}).get("mode", "none") != "none":
         from security import encryption_checks
         encrypted = "; ".join(encryption_checks(manifest)) + "; "
@@ -83,12 +96,12 @@ def installed_check(manifest):
         "test \"$(cat /sys/class/dmi/id/product_uuid)\" = " + shlex.quote(manifest["uuid"]) + "; "
         "test \"$(hostname)\" = " + shlex.quote(manifest.get("guestHostName", "nixberry-vm")) + "; "
         "test \"$(readlink -f /run/current-system)\" = " + shlex.quote(manifest["systemPath"]) + "; "
-        "test \"$(findmnt -n -o FSTYPE /)\" = ext4; "
+        "test \"$(findmnt -n -o FSTYPE /)\" = " + shlex.quote(filesystem) + "; "
         "test -d /sys/firmware/efi; "
         "! mountpoint -q /iso; "
         "for service in sshd systemd-networkd qemu-guest-agent; do "
         'systemctl is-active --quiet "$service" || exit 1; done; '
-        + encrypted + "hostname; findmnt -n -o SOURCE,FSTYPE /; readlink -f /run/current-system"
+        + encrypted + "hostname; findmnt -n --nofsroot -o SOURCE,FSTYPE /; readlink -f /run/current-system"
     )
 
 
@@ -110,12 +123,7 @@ def image_install(manifest, apply):
         while time.monotonic() < deadline:
             try:
                 validate_domain(virsh("dumpxml", manifest["name"]), manifest)
-                early_network = (manifest.get("securityTarget") or {}).get("network", {})
-                if early_network.get("mode") == "static":
-                    address = str(ipaddress.ip_interface(early_network["address"]).ip)
-                else:
-                    address = choose_address(virsh("domifaddr", manifest["name"], "--source", "lease"),
-                                             virsh("net-dumpxml", manifest["network"]), manifest["mac"])
+                address = guest_address(virsh, manifest)
                 result = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                     "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=3",
                     "-o", "StrictHostKeyChecking=accept-new", "-o", known_hosts_option(Path(directory) / "known_hosts"),
@@ -160,10 +168,7 @@ def main():
         reject_shared_domains(virsh, manifest["name"], manifest["diskPath"])
 
     validate()
-    address = choose_address(
-        virsh("domifaddr", manifest["name"], "--source", "lease"),
-        virsh("net-dumpxml", manifest["network"]), manifest["mac"]
-    )
+    address = guest_address(virsh, manifest)
     info(_('VM: {value1}; UUID: {value2}; IP: {address}'), value1=manifest['name'], value2=manifest['uuid'], address=address)
     info(_("Disk: {value1}; system: {value2}"), value1=manifest['diskPath'], value2=manifest['systemPath'])
 
@@ -216,7 +221,7 @@ def main():
                 break
             require(time.monotonic() < deadline, _("Installed system check failed: {value1}").format(value1=result.stderr))
             time.sleep(2)
-        success(_("Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."))
+        success(_("Verified: boot from disk without ISO, UEFI, exact system and SSH."))
 
 
 if __name__ == "__main__":

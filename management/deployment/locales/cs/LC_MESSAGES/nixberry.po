@@ -2503,8 +2503,8 @@ msgstr "Odstranění ověřené VM dokončeno. Instanční deklarace zůstala za
 msgid "Verified: {name}, {hostname}, system on {root}."
 msgstr "Ověřeno: {name}, {hostname}, systém z {root}."
 
-msgid "Verified: boot from ext4 disk without ISO, UEFI, exact system and SSH."
-msgstr "Ověřeno: start z ext4 disku bez ISO, UEFI, přesný systém a SSH."
+msgid "Verified: boot from disk without ISO, UEFI, exact system and SSH."
+msgstr "Ověřeno: start z disku bez ISO, UEFI, přesný systém a SSH."
 
 msgid "Verified: Hyper-V UUID, UEFI, manifest and blank disk."
 msgstr "Ověřeno: Hyper-V UUID, UEFI, manifest a prázdný disk."

@@ -47,3 +47,11 @@ class ServiceChecks(unittest.TestCase):
     def test_actual_installed_shell_requires_every_service_active(self):
         script = installed_check({"biosGuid": "uuid"}, {"guestHostName": "guest"})
         assert_services(self, script, ["sshd", "systemd-networkd", "hv-kvp", "hv-vss"])
+
+    def test_installed_check_verifies_declared_root_filesystem_with_nofsroot(self):
+        for filesystem in ("ext4", "btrfs"):
+            script = installed_check({"biosGuid": "uuid"}, {"guestHostName": "guest", "rootFilesystem": filesystem})
+            self.assertIn('test "$(findmnt -n --nofsroot -o SOURCE /)" = /dev/sda2', script)
+            self.assertIn(f'test "$(findmnt -n -o FSTYPE /)" = {filesystem}', script)
+        with self.assertRaisesRegex(RuntimeError, "ext4 or btrfs"):
+            installed_check({"biosGuid": "uuid"}, {"guestHostName": "guest", "rootFilesystem": "xfs"})
