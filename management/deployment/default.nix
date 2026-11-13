@@ -46,6 +46,10 @@ let
       ]
       || throw "Instance ${name}: deploymentMethod must be iso or image.";
     assert
+      ((instance.security or { }).mode or "none") == "none"
+      || (instance.deploymentMethod or "image") == "image"
+      || throw "Instance ${name}: encrypted VMs require deploymentMethod = \"image\".";
+    assert
       (instance.access or null) == null
       || offline
       || throw "Instance ${name}: access supports offline VMs without hypervisor management.";
@@ -119,36 +123,6 @@ let
       ) (target.spec.networkAdapters or (if target.spec ? mac then [ target.spec ] else [ ]))
     ) (builtins.attrValues instances)
   );
-  explicitAdapterMacs = builtins.concatLists (
-    map (
-      target:
-      map (
-        adapter:
-        builtins.replaceStrings
-          [
-            ":"
-            "-"
-            "A"
-            "B"
-            "C"
-            "D"
-            "E"
-            "F"
-          ]
-          [
-            ""
-            ""
-            "a"
-            "b"
-            "c"
-            "d"
-            "e"
-            "f"
-          ]
-          adapter.mac
-      ) (target.spec.networkAdapters or [ ])
-    ) (builtins.attrValues instances)
-  );
   rpiTargets = builtins.mapAttrs (
     name: target:
     {
@@ -183,7 +157,7 @@ assert builtins.intersectAttrs instances rpiTargets == { };
 assert
   builtins.all (
     value: builtins.length (builtins.filter (other: other == value) adapterMacs) == 1
-  ) explicitAdapterMacs
+  ) adapterMacs
   || throw "VM adapter MAC addresses must be unique across the local inventory.";
 {
   inherit hosts instances;

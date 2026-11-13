@@ -210,6 +210,8 @@ class AdapterNixTests(unittest.TestCase):
             (recipe / 'machines/vm/vm-demo-other.nix').write_text(nix(duplicate))
             expression = '(builtins.tryEval (import ' + str(recipe / 'management/deployment') + ')).success'
             self.assertFalse(evaluate(expression))
+            (recipe / 'machines/vm/vm-demo-gateway.nix').write_text(nix({"backend": "libvirt", "spec": {"name": "vm-demo-gateway", "mac": duplicate['spec']['mac']}}))
+            self.assertFalse(evaluate(expression))
 
     def test_backend_manifests_and_libvirt_xml_preserve_both_methods(self):
         with tempfile.TemporaryDirectory() as directory:

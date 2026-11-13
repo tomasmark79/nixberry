@@ -277,6 +277,15 @@ class SecurityTests(unittest.TestCase):
             result = subprocess.run(["nix", "eval", "--impure", "--json", "--expr",
                 f"import {source} {{ security = {expression}; }}"], text=True, capture_output=True)
             self.assertEqual(result.returncode == 0, valid, result.stderr)
+        with tempfile.TemporaryDirectory() as directory:
+            recipe = Path(directory) / "recipe"
+            copy_test_recipe(Path(__file__).parents[2], recipe)
+            (recipe / "machines/vm/vm-demo-encrypted-iso.nix").write_text(
+                '{ backend = "libvirt"; deploymentMethod = "iso"; security.mode = "luks"; spec = { name = "vm-demo-encrypted-iso"; mac = "52:54:00:12:34:56"; }; }')
+            result = subprocess.run(["nix", "eval", "--impure", "--json", "--expr",
+                f"import {recipe / 'management/deployment'}"], text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('encrypted VMs require deploymentMethod = "image"', result.stderr)
 
     def test_all_guest_profiles_have_encrypted_root_and_restricted_network_unlock(self):
         recipe = self.root / "recipe"

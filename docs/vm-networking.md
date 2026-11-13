@@ -54,7 +54,7 @@ interface to a physical network can expose services; choose attachments delibera
 
 - There may be 1–8 adapters. Each needs a distinct nonzero unicast MAC and a unique
   name of 1–15 lowercase letters, digits or hyphens, starting with a letter. `lo`
-  is reserved. Explicit adapter MACs must not reuse MACs elsewhere in the local VM inventory.
+  is reserved. Declared VM MACs must be unique across the local VM inventory.
 - Secondary `network.interfaces.NAME` entries support `disabled`, `dhcp` and
   `static`. The default is `disabled`: no DHCP, IPv6 router advertisements or
   link-local addressing. An omitted interface does not acquire an address.
