@@ -15,6 +15,20 @@ from campaign import Blocked, Campaign, matrix, nix_attrs, validate_static_netwo
 
 
 class CampaignTests(unittest.TestCase):
+    def test_nixon_libvirt_is_aliased_as_local_libvirt_in_isolated_copy(self):
+        with tempfile.TemporaryDirectory() as root:
+            task = Campaign("/recipe", "/run-test")
+            task.work = Path(root)
+            hosts = task.work / "hosts.local.nix"
+            hosts.write_text('{\n  nixon-libvirt = {\n    backend = "libvirt";\n    connection = {\n      uri = "qemu:///system";\n    };\n  };\n}\n')
+            task.ensure_libvirt_host_alias()
+            text = hosts.read_text()
+            self.assertIn("nixon-libvirt =", text)
+            self.assertIn("local-libvirt =", text)
+            evaluated = json.loads(subprocess.check_output(
+                ["nix", "eval", "--impure", "--json", "--expr", "import " + str(hosts)], text=True))
+            self.assertEqual(evaluated["local-libvirt"], evaluated["nixon-libvirt"])
+
     def test_verification_timeout_preserves_the_translation_function(self):
         task = Campaign("/recipe", "/run-test")
         task.case = {"target": "vm-demo-test-network"}
@@ -250,6 +264,45 @@ class CampaignTests(unittest.TestCase):
         self.assertEqual(cli.call_args.args[0:3], ("ssh", "example", "--"))
         self.assertEqual(len(cli.call_args.args), 4)
         self.assertIn('"$(hostname)"', cli.call_args.args[3])
+
+    def test_check_images_recognizes_ext4_btrfs_and_luks_root_superblocks(self):
+        import struct
+        import uuid
+        import check_images
+        esp_guid = uuid.UUID("c12a7328-f81f-11d2-ba4b-00a0c93ec93b").bytes_le
+        linux_guid = uuid.UUID("0fc63daf-8483-4772-8e79-3d69d8477de4").bytes_le
+        gpt = bytearray(34 * 512)
+        gpt[512:520] = b"EFI PART"
+        struct.pack_into("<QII", gpt, 512 + 72, 2, 2, 128)
+        gpt[1024:1024 + 16] = esp_guid
+        struct.pack_into("<QQ", gpt, 1024 + 32, 34, 100)
+        gpt[1024 + 128:1024 + 128 + 16] = linux_guid
+        struct.pack_into("<QQ", gpt, 1024 + 128 + 32, 101, 500)
+        for fs_type, offset, magic in (("ext4", 1080, b"\x53\xef"),
+                                       ("btrfs", 65536 + 64, b"_BHRfS_M"),
+                                       ("luks", 0, b"LUKS\xba\xbe")):
+            root_header = bytearray(130 * 512)
+            root_header[offset:offset + len(magic)] = magic
+            with self.subTest(fs_type=fs_type), tempfile.TemporaryDirectory() as root:
+                image = Path(root) / "system.qcow2"
+                image.touch()
+                def fake_run(cmd):
+                    if cmd[:2] == ["qemu-img", "info"]:
+                        return json.dumps({"format": "qcow2", "virtual-size": 8 * 1024 ** 3})
+                    if cmd[:2] == ["qemu-img", "dd"]:
+                        out = Path(next(arg.split("=", 1)[1] for arg in cmd if arg.startswith("of=")))
+                        count = int(next(arg.split("=", 1)[1] for arg in cmd if arg.startswith("count=")))
+                        skip = int(next(arg.split("=", 1)[1] for arg in cmd if arg.startswith("skip=")))
+                        length = (count - skip) * 512
+                        out.write_bytes(bytes(gpt) if out.name == "gpt" else bytes(root_header) if out.name == "root-header" else b"\x00" * length)
+                        return ""
+                    if cmd[0] == "mtype":
+                        return "linux /kernels/bzImage\ninitrd /kernels/initrd\noptions init=/nix/store/test\n"
+                    return ""
+                with patch.object(check_images, "run", side_effect=fake_run):
+                    result = check_images.check(image)
+                self.assertEqual(result["rootFilesystem"], fs_type)
+                self.assertEqual(result["ext4"], fs_type == "ext4")
 
     def test_network_values_cannot_inject_nix_interpolation(self):
         self.assertIn('"\\${danger}"', nix_attrs({"address": "${danger}", "dns": ["1.2.3.4"]}))

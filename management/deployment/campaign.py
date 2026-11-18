@@ -143,6 +143,7 @@ class Campaign:
         self.work = self.folder / "recipe"
         shutil.copytree(self.recipe, self.work, symlinks=True,
                         ignore=shutil.ignore_patterns("__pycache__", "result*", ".git", ".direnv"))
+        self.ensure_libvirt_host_alias()
         overrides = self.settings.get("hostOverrides", {})
         if overrides:
             host_file = self.work / "hosts.local.nix"
@@ -176,6 +177,18 @@ class Campaign:
         self.case["targetSpec"] = self.evaluate("nixberryDeployment.instances." + name)
         self.save()
         return self.case["targetSpec"]
+
+    def ensure_libvirt_host_alias(self):
+        host_file = self.work / "hosts.local.nix"
+        if not host_file.is_file():
+            return
+        text = host_file.read_text()
+        if re.search(r"(?m)^\s*local-libvirt\s*=", text):
+            return
+        match = re.search(r"(?ms)^\s*nixon-libvirt\s*=\s*\{.*?\n\s*\};\n\s*\};", text)
+        if match:
+            alias = re.sub(r"^\s*nixon-libvirt(?=\s*=)", "  local-libvirt", match.group(0), count=1)
+            host_file.write_text(text.rstrip().removesuffix("}").rstrip() + "\n" + alias + "\n}\n")
 
     def set_revision(self, revision):
         path = self.work / "platforms/vm/configuration.nix"
@@ -554,10 +567,12 @@ Remove-Item -LiteralPath $root -Recurse -Force
         # Exported Nix store sources are read-only. Only change access and the
         # test revision in a separate working copy.
         for path in (self.work / "machines/vm" / (manifest["target"] + ".nix"),
-                     self.work / "platforms/vm/configuration.nix"):
+                     self.work / "platforms/vm/configuration.nix",
+                     *([self.work / "hosts.local.nix"] if (self.work / "hosts.local.nix").is_file() else [])):
             if path.is_symlink():
                 raise RuntimeError(_("The handoff bundle's working declaration must not be a symbolic link."))
             path.chmod(path.stat().st_mode | 0o200)
+        self.ensure_libvirt_host_alias()
         self.case["target"] = manifest["target"]
         hosts = self.evaluate("nixberryDeployment.hosts")
         spec = {**manifest["spec"], **hosts[self.case["host"]]["connection"]}

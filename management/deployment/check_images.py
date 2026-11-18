@@ -66,11 +66,18 @@ def check(path):
         entries = run(["mtype", "-i", str(boot), "::/loader/entries/*.conf"])
         if "linux" not in entries or "initrd" not in entries or "init=/nix/store/" not in entries:
             raise RuntimeError(_("The boot entry does not reference the kernel, initrd and system."))
-        superblock = extract("root-header", linux[0][1], 3).read_bytes()
-        if superblock[1080:1082] != b"\x53\xef":
+        superblock = extract("root-header", linux[0][1], 130).read_bytes()
+        if superblock[1080:1082] == b"\x53\xef":
+            filesystem = "ext4"
+        elif superblock[65536 + 64:65536 + 72] == b"_BHRfS_M":
+            filesystem = "btrfs"
+        elif superblock[:6] == b"LUKS\xba\xbe":
+            filesystem = "luks"
+        else:
             raise RuntimeError(_("The root partition is not ext4."))
     return {"path": str(path), "format": expected, "capacityBytes": info["virtual-size"],
-            "gpt": True, "ext4": True, "efiFallback": True, "bootEntry": True,
+            "gpt": True, "rootFilesystem": filesystem, "ext4": filesystem == "ext4",
+            "efiFallback": True, "bootEntry": True,
             "note": _("Content checks do not prove boot on a hypervisor.")}
 
 

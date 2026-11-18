@@ -103,8 +103,9 @@ With `qemu-img` and mtools:
 python3 management/deployment/check_images.py /path/system.qcow2 /path/system.vdi /path/system.vmdk
 ```
 
-This reads format, capacity, GPT, ext4, UEFI fallback and kernel/initrd/system
-boot entries without mounting or modifying images. It does not replace boot.
+This reads format, capacity, GPT, root superblock (`ext4`, `btrfs` or `luks`),
+UEFI fallback and kernel/initrd/system boot entries without mounting or
+modifying images. It does not replace boot.
 For shared shell applications, use `nix run path:.#emcx-tests` and the HSTR
 package tests; emcx TUI checks need `unshare -Ur` and tmux.
 
@@ -174,9 +175,11 @@ python3 management/deployment/campaign.py --apply \
 ```
 
 `--case ID` selects a case; `--resume` continues a report. Settings may include
-`hostOverrides` and dedicated `networks`. The [nested Proxmox lab](proxmox-lab.md)
-is optional. The runner pins a private recipe and uses unique `vm-demo-test-*`
-identities; logs/results stay outside Git.
+`hostOverrides` and dedicated `networks`. When `hosts.local.nix` defines
+`nixon-libvirt` without `local-libvirt`, the isolated campaign copy aliases it
+automatically. The [nested Proxmox lab](proxmox-lab.md) is optional. The runner
+pins a private recipe and uses unique `vm-demo-test-*` identities; logs/results
+stay outside Git.
 
 Online cleanup uses public `reset` with private declaration permission and a
 reviewed plan. Manual-import cleanup requires its recorded identity evidence;
