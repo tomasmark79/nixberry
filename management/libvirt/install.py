@@ -2,7 +2,8 @@
 "Install only into the dedicated VM; without --apply, only check the plan."
 
 from messages import _, ArgumentParser, info, success, shell_script, forward_stderr, error as report_error
-from ssh_options import known_hosts_option
+from guest_verify import NO_FAILED_UNITS, NO_ISO, partition_checks
+from ssh_options import installed_key_options, known_hosts, known_hosts_option, remember_installed_key
 
 import argparse
 import ipaddress
@@ -20,14 +21,7 @@ from vm_network import libvirt_matches, guest_checks
 
 
 def remember_host_key(source, manifest):
-    """Retain the key only after verifying VM identity and the installed system."""
-    root = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
-    destination = root / "nixberry/portable" / manifest["uuid"] / "known_hosts"
-    destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    temporary = destination.with_suffix(".tmp")
-    temporary.write_bytes(Path(source).read_bytes())
-    temporary.chmod(0o600)
-    temporary.replace(destination)
+    remember_installed_key(known_hosts(manifest), source)
 
 
 def require(condition, message):
@@ -84,13 +78,16 @@ def guest_address(virsh, manifest):
 
 
 def installed_check(manifest):
-    encrypted = ""
-    network = "".join(check + "; " for check in guest_checks(manifest, "libvirt"))
+    network = "".join(check + "; " for check in guest_checks(
+        manifest, "libvirt", network=manifest.get("guestNetwork") or (manifest.get("securityTarget") or {}).get("network")))
     filesystem = manifest.get("rootFilesystem") or (manifest.get("securityTarget") or {}).get("rootFilesystem") or "ext4"
     require(filesystem in ("ext4", "btrfs"), _("Root filesystem must be ext4 or btrfs."))
     if manifest.get("security", {}).get("mode", "none") != "none":
         from security import encryption_checks
-        encrypted = "; ".join(encryption_checks(manifest)) + "; "
+        storage = encryption_checks(manifest["securityTarget"])
+    else:
+        storage = ['test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE /)")" = /dev/vda2',
+                   *partition_checks()]
     return (
         "set -eu; " + network +
         "test \"$(cat /sys/class/dmi/id/product_uuid)\" = " + shlex.quote(manifest["uuid"]) + "; "
@@ -99,11 +96,11 @@ def installed_check(manifest):
         "test \"$(findmnt -n -o FSTYPE /)\" = " + shlex.quote(filesystem) + "; "
         "test \"$(findmnt -n -o FSTYPE /boot)\" = vfat; "
         "test -d /sys/firmware/efi; "
-        "! mountpoint -q /iso; "
+        + NO_ISO + "; " + "; ".join(storage) + "; "
         "for service in sshd systemd-networkd qemu-guest-agent; do "
         'systemctl is-active --quiet "$service" || exit 1; done; '
-        'test -z "$(systemctl --failed --no-legend --plain)"; '
-        + encrypted + "hostname; findmnt -n --nofsroot -o SOURCE,FSTYPE /; readlink -f /run/current-system"
+        + NO_FAILED_UNITS + " || exit 1; "
+        "hostname; findmnt -n --nofsroot -o SOURCE,FSTYPE /; readlink -f /run/current-system"
     )
 
 
@@ -120,6 +117,7 @@ def image_install(manifest, apply):
     if state == "shut off":
         virsh("start", manifest["name"])
     with tempfile.TemporaryDirectory(prefix="nixberry-image-ssh-") as directory:
+        staged = Path(directory) / "known_hosts"
         deadline, failure = time.monotonic() + 240, None
         unlock_attempted = False
         while time.monotonic() < deadline:
@@ -128,11 +126,11 @@ def image_install(manifest, apply):
                 address = guest_address(virsh, manifest)
                 result = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                     "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=3",
-                    "-o", "StrictHostKeyChecking=accept-new", "-o", known_hosts_option(Path(directory) / "known_hosts"),
+                    *installed_key_options(known_hosts(manifest), staged),
                     "root@" + address, installed_check(manifest)], text=True, capture_output=True, timeout=30)
                 if result.returncode == 0:
                     forward_stderr(result.stderr)
-                    remember_host_key(Path(directory) / "known_hosts", manifest)
+                    remember_host_key(staged, manifest)
                     print(result.stdout, end="", flush=True)
                     success(_("Boot of the prebuilt system from disk verified."))
                     return
@@ -176,13 +174,15 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="nixberry-install-ssh-") as state:
         def ssh(command, phase, *, input_text=None, capture=False):
-            checks = guest_checks(manifest, "libvirt")
+            staged = Path(state) / (phase + ".known_hosts")
+            options = (installed_key_options(known_hosts(manifest), staged) if phase == "installed"
+                       else ["-o", "StrictHostKeyChecking=accept-new", "-o", known_hosts_option(staged)])
+            checks = guest_checks(manifest, "libvirt") if phase == "installer" else []
             if checks:
                 command = "set -eu; " + "; ".join(checks) + "; " + command
             return subprocess.run(
                 ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                 "-o", "StrictHostKeyChecking=accept-new",
-                 "-o", known_hosts_option(Path(state) / (phase + ".known_hosts")),
+                 *options,
                  f"root@{address}", command],
                 input=input_text, text=True, capture_output=capture, check=False
             )
@@ -218,6 +218,7 @@ def main():
         while True:
             result = ssh(verify, "installed", capture=True)
             if result.returncode == 0:
+                forward_stderr(result.stderr)
                 remember_host_key(Path(state) / "installed.known_hosts", manifest)
                 print(result.stdout, end="", flush=True)
                 break

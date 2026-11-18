@@ -29,6 +29,7 @@ let
       ../deployment/runtime.py
       ../deployment/ssh_options.py
       ../deployment/vm_network.py
+      ../deployment/guest_verify.py
       ../deployment/messages.py
       ../deployment/security.py
       ../deployment/messages.sh

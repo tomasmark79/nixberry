@@ -23,7 +23,8 @@ mountpoint -q /iso || fail 'The installation ISO is not attached.'
 [[ "$(jq -er .disko /etc/nixberry-installation.json)" == "$expected_disko" ]] || fail 'Disko does not match.'
 [[ "$(blockdev --getsize64 /dev/vda)" == "$expected_bytes" ]] || fail 'Disk size does not match.'
 [[ "$(lsblk -n -o NAME /dev/vda | wc -l)" -eq 1 ]] || fail 'The disk already contains partitions.'
-[[ -z "$(wipefs --no-act --noheadings /dev/vda)" ]] || fail 'The disk already contains signatures.'
+signatures=$(wipefs --no-act --noheadings /dev/vda) || fail 'Cannot verify disk signatures.'
+[[ -z "$signatures" ]] || fail 'The disk already contains signatures.'
 if findmnt --mountpoint /mnt >/dev/null; then fail '/mnt is already mounted.'; fi
 nix --extra-experimental-features nix-command path-info --offline "$expected_system" "$expected_disko"
 nb_info 'Verified: installation VM, UUID, UEFI, pinned outputs and blank /dev/vda.'

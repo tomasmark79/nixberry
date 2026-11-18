@@ -19,16 +19,10 @@ import time
 
 from host_agent import validate, image_name
 from vm_network import guest_checks
-from ssh_options import known_hosts_option
+from ssh_options import known_hosts, known_hosts_option
 
 
 BACKENDS = ("proxmox", "virtualbox", "vmware")
-
-
-def known_hosts(spec):
-    root = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
-    identity = spec["uuid"] if "uuid" in spec else spec["ownerId"]
-    return root / "nixberry/portable" / identity / "known_hosts"
 
 
 def transport(spec):

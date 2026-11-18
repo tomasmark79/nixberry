@@ -11,6 +11,7 @@ import ./with-locales.nix {
       ./deployment/shell_runner.py
       ./deployment/security.py
       ./deployment/vm_network.py
+      ./deployment/guest_verify.py
       ./deployment/rpi_secrets.py
       ./deployment/locales/cs.sh
     ];

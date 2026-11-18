@@ -9,6 +9,7 @@ _nb_translate() {
     'Address: virsh --connect %s domifaddr %s --source lease') REPLY='Adresa: virsh --connect %s domifaddr %s --source lease' ;;
     'Another disk already uses the partition label.') REPLY='Označení oddílu už používá jiný disk.' ;;
     'Another disk uses the partition label.') REPLY='Označení oddílu používá jiný disk.' ;;
+    'Cannot verify disk signatures.') REPLY='Signatury disku nelze ověřit.' ;;
     'Checks passed. No disk or VM was created.') REPLY='Kontroly prošly. Nebyl vytvořen disk ani VM.' ;;
     'Configuring the serial console to capture potential kernel panics…') REPLY='Nastavuji sériovou konzoli pro záznam případného kernel panicu…' ;;
     'Console: virsh --connect %s console %s') REPLY='Konzole: virsh --connect %s console %s' ;;

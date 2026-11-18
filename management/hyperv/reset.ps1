@@ -38,7 +38,7 @@ $root = Join-Path $base $s.name
 $diskPath = Join-Path $root 'system.vhdx'
 $ownerPath = Join-Path $root 'owner.json'
 
-function CheckTree {
+function CheckTree([switch]$VmRemoved) {
     $ancestor = $root
     while ($ancestor) {
         $item = Get-Item -LiteralPath $ancestor -Force -ErrorAction Stop
@@ -48,13 +48,27 @@ function CheckTree {
         $ancestor = $parent
     }
     $pending = [Collections.Generic.Stack[string]]::new()
+    $directories = [Collections.Generic.Stack[string]]::new()
     $pending.Push($root)
     while ($pending.Count) {
-        foreach ($item in Get-ChildItem -LiteralPath ($pending.Pop()) -Force -ErrorAction Stop) {
+        $directory = $pending.Pop()
+        $directories.Push($directory)
+        foreach ($item in Get-ChildItem -LiteralPath $directory -Force -ErrorAction Stop) {
             Require (-not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -and -not $item.LinkType) 'The VM directory contains a link; refusing reset.'
-            Require ($item.Extension -ne '.avhdx') 'The VM contains a differencing disk; refusing reset.'
-            if ($item.PSIsContainer) { $pending.Push($item.FullName) }
+            if ($item.PSIsContainer) {
+                Require ($directory -ne $root -or $item.Name -eq 'config') 'The VM directory contains an unverified entry; preserving the directory and its files.'
+                $pending.Push($item.FullName)
+                continue
+            }
+            if ($item.FullName -in @($diskPath, $ownerPath)) { continue }
+            Require (-not $VmRemoved) 'The VM was removed, but unverified files remain; preserving the directory and its files.'
+            Require ($item.Extension -notin @('.avhd', '.avhdx')) 'The VM contains a differencing disk; refusing reset.'
+            Require ($directory -ne $root -and $item.Extension -notin @('.vhd', '.vhdx', '.vhds')) 'The VM directory contains an unverified entry; preserving the directory and its files.'
         }
+    }
+    if ($VmRemoved) {
+        # Stack enumeration yields children before parents.
+        return $directories
     }
 }
 
@@ -133,8 +147,12 @@ Require ($vm.State.ToString() -eq 'Off' -and $vm.Id.ToString() -eq $expectedId) 
 $null = Remove-VM -VM $vm -Force -ErrorAction Stop
 Require (-not (Get-VM -Id $expectedId -ErrorAction SilentlyContinue)) 'Could not confirm VM removal.'
 Require (-not (Get-VM -Name $s.name -ErrorAction SilentlyContinue)) 'A VM with the same name is present again after removal; keeping the directory.'
-CheckTree
-Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction Stop
+$directories = @(CheckTree -VmRemoved)
+foreach ($directory in $directories) {
+    if ($directory -ne $root) { [IO.Directory]::Delete($directory) }
+}
+Remove-Item -LiteralPath $diskPath, $ownerPath -Force -ErrorAction Stop
+[IO.Directory]::Delete($root)
 Require (-not (Test-Path -LiteralPath $root)) 'The VM directory remains after removal.'
 # Shared media storage is outside a single VM reset.
 [ordered]@{ removed = $s.uuid; vmId = $expectedId; directory = $root; sharedMediaRetained = $true } | ConvertTo-Json -Compress

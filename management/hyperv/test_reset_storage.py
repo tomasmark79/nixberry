@@ -1,14 +1,62 @@
 """Run reset and installation ownership gates with fake Hyper-V cmdlets."""
 
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
+import tempfile
 import unittest
 
 
 @unittest.skipUnless(shutil.which("pwsh"), "PowerShell is unavailable")
 class ResetStorageChecks(unittest.TestCase):
+    def test_reset_tree_preserves_unverified_files(self):
+        source = str(Path(__file__).with_name("reset.ps1")).replace("'", "''")
+        script = r'''
+$ErrorActionPreference = 'Stop'
+$tokens = $null; $errors = $null
+$ast = [Management.Automation.Language.Parser]::ParseFile('SOURCE', [ref]$tokens, [ref]$errors)
+if ($errors.Count) { throw $errors[0] }
+foreach ($function in $ast.FindAll({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst]}, $false)) {
+    Invoke-Expression $function.Extent.Text
+}
+$root = $env:RESET_TEST_ROOT
+$diskPath = Join-Path $root 'system.vhdx'
+$ownerPath = Join-Path $root 'owner.json'
+if ($env:RESET_TEST_PHASE -eq 'removed') {
+    @(CheckTree -VmRemoved) | ConvertTo-Json -AsArray -Compress
+} else {
+    CheckTree
+}
+'''.replace("SOURCE", source)
+        for entry, phase, allowed in (
+            (None, "owned", True),
+            (None, "removed", True),
+            ("backup.vhdx", "owned", False),
+            ("config/Virtual Machines/backup.vhdx", "owned", False),
+            ("config/Virtual Machines/data.backup", "removed", False),
+        ):
+            with self.subTest(entry=entry, phase=phase), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                config = root / "config" / "Virtual Machines"
+                config.mkdir(parents=True)
+                (root / "system.vhdx").touch()
+                (root / "owner.json").touch()
+                if entry:
+                    (root / entry).write_text("backup")
+                result = subprocess.run(
+                    ["pwsh", "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script],
+                    env={**os.environ, "RESET_TEST_ROOT": directory, "RESET_TEST_PHASE": phase},
+                    capture_output=True, text=True, timeout=20,
+                )
+                self.assertEqual(result.returncode == 0, allowed, result.stderr)
+                if entry:
+                    self.assertIn("unverified", result.stderr)
+                    self.assertEqual((root / entry).read_text(), "backup")
+                elif phase == "removed":
+                    self.assertEqual(json.loads(result.stdout), [str(config), str(config.parent), str(root)])
+
     def check_case(self, case, *, allowed=False, source_name="reset.ps1", method="iso"):
         source = str(Path(__file__).with_name(source_name)).replace("'", "''")
         script = r'''

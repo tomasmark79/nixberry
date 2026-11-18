@@ -58,6 +58,9 @@ hypervisor management. `status` and `doctor` may explain missing access settings
 - Installation checks require the declared root and `/boot` partition labels
   on the same disk; LUKS checks use the root mapping's backing partition.
   A `/boot` mounted from recovery media does not count as the installed layout.
+- An ISO installer requires a successful signature scan of the target disk.
+  The VM boot check verifies the declared primary static IPv4 address and prefix
+  in the guest when static networking is configured.
 - Direct tool packages provide the same operations. Reset builds separately
   without systems/media, without bypassing permissions or verification.
 - Media manifests distinguish `imagePath` and `isoPath`; the unused field is `null`.
@@ -84,6 +87,14 @@ Disk formats, controllers, agents and storage match each hypervisor.
 Hyper-V retains owner field `isoSha256` for prebuilt disks as well.
 It identifies stored media and does not change manifest `imagePath`,
 `isoPath` or transport `mediaBytes` semantics.
+Hyper-V reset refuses additional virtual disks in the VM directory. After
+Hyper-V removes the VM registration and configuration, reset removes the
+verified system disk, ownership record and empty directories. If unexpected
+files remain, reset reports the partial outcome and preserves the files.
+
+Libvirt and Hyper-V verify an existing installed-system SSH pin on subsequent
+install attempts. Libvirt stores pins by SSH address, so a changed DHCP address
+requires a verified entry for the new address. Hyper-V uses a stable VM alias.
 
 Manual imports do not carry automatic-management markers and public reset
 does not adopt them. The HAND VMware runner verifies its own import evidence

@@ -21,7 +21,8 @@ mountpoint -q /iso || fail 'The installation ISO is not attached.'
 [[ "$(jq -er .disko /etc/nixberry-installation.json)" == "$expected_disko" ]] || fail 'Installer disko does not match.'
 [[ "$(blockdev --getsize64 "$disk")" == "$expected_bytes" ]] || fail 'Target disk size does not match.'
 [[ "$(lsblk -n -o NAME "$disk" | wc -l)" -eq 1 ]] || fail 'The disk already contains partitions.'
-[[ -z "$(wipefs --no-act --noheadings "$disk")" ]] || fail 'The disk already contains signatures.'
+signatures=$(wipefs --no-act --noheadings "$disk") || fail 'Cannot verify disk signatures.'
+[[ -z "$signatures" ]] || fail 'The disk already contains signatures.'
 if findmnt --mountpoint /mnt >/dev/null; then fail '/mnt is already mounted.'; fi
 nix --extra-experimental-features nix-command path-info --offline "$expected_system" "$expected_disko"
 nb_info 'Verified installation ISO, UUID, profile, UEFI, target system and blank disk.'

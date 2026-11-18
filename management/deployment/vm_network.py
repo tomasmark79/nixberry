@@ -1,6 +1,8 @@
 """The ordered VM NIC contract; the first adapter is the management interface."""
 
+from ipaddress import IPv4Interface
 import re
+import shlex
 import uuid
 
 from messages import _
@@ -67,17 +69,24 @@ def libvirt_matches(domain, spec):
     return len(actual) == len(expected) and set(actual) == expected
 
 
-def guest_checks(spec, backend):
-    """Check declared names/MACs and the SSH server address in the same guest session."""
-    if "networkAdapters" not in spec:
-        return []
-    import shlex
-    values = adapters(spec, backend)
+def guest_checks(spec, backend, *, network=None):
+    """Check adapter identity, the SSH endpoint and declared primary static IPv4."""
+    values = adapters(spec, backend) if "networkAdapters" in spec else []
     result = []
     for item in values:
         address = ":".join(mac(item["mac"])[i:i + 2] for i in range(0, 12, 2))
         result.append('test "$(cat /sys/class/net/' + item["name"] + '/address)" = ' + shlex.quote(address))
-    result.append('ip -o -4 address show dev ' + shlex.quote(values[0]["name"])
-                  + ' | awk \'{split($4,a,"/"); print a[1]}\' | grep -F -x -q -- '
-                  + '"$(printf \'%s\\n\' "$SSH_CONNECTION" | cut -d \' \' -f 3)"')
+    server = '"$(printf \'%s\\n\' "$SSH_CONNECTION" | cut -d \' \' -f 3)"'
+    addresses = "ip -o -4 address show"
+    if values:
+        addresses += " dev " + shlex.quote(values[0]["name"])
+    if network and network.get("mode") == "static":
+        expected = IPv4Interface(network["address"])
+        result.append("test " + server + " = " + shlex.quote(str(expected.ip)))
+        # Legacy profiles let networkd manage en* and eth* without a fixed MAC.
+        selector = "" if values else "$2 ~ /^(en|eth)/ "
+        result.append(addresses + " | awk '" + selector + "{print $4}' | grep -F -x -- "
+                      + shlex.quote(str(expected)) + " >/dev/null")
+    elif values:
+        result.append(addresses + ' | awk \'{split($4,a,"/"); print a[1]}\' | grep -F -x -q -- ' + server)
     return result

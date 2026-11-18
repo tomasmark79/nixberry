@@ -4007,3 +4007,12 @@ msgstr "Zahrnout počet dokončených bodů obnovy a logickou velikost poslední
 
 msgid "--statistics only applies to Restic backup freshness checks."
 msgstr "--statistics lze použít pouze pro kontrolu stáří záloh Restic."
+
+msgid "Cannot verify disk signatures."
+msgstr "Signatury disku nelze ověřit."
+
+msgid "The VM directory contains an unverified entry; preserving the directory and its files."
+msgstr "Adresář VM obsahuje neověřenou položku. Adresář i jeho soubory zůstanou zachovány."
+
+msgid "The VM was removed, but unverified files remain; preserving the directory and its files."
+msgstr "VM byla odstraněna. V adresáři zůstaly neověřené soubory, adresář i jeho soubory zůstanou zachovány."

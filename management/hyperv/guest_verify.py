@@ -1,0 +1,1 @@
+../deployment/guest_verify.py

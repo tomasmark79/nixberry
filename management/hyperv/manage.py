@@ -3,7 +3,8 @@
 
 from messages import _, ArgumentParser, info, success, localized_script, shell_script, forward_stderr, error as report_error
 from vm_network import guest_checks
-from ssh_options import known_hosts_option
+from guest_verify import NO_FAILED_UNITS, NO_ISO, partition_checks
+from ssh_options import installed_key_options, known_hosts, known_hosts_option, remember_installed_key
 
 import argparse
 import base64
@@ -43,13 +44,16 @@ def choose_address(addresses, host):
 
 
 def installed_check(snapshot, spec):
-    encrypted = ""
+    network = spec.get("guestNetwork") or (spec.get("securityTarget") or {}).get("network")
+    checks = guest_checks(spec, "hyperv", network=network)
     filesystem = spec.get("rootFilesystem") or (spec.get("securityTarget") or {}).get("rootFilesystem") or "ext4"
     require(filesystem in ("ext4", "btrfs"), _("Root filesystem must be ext4 or btrfs."))
     if spec.get("security", {}).get("mode", "none") != "none":
         from security import encryption_checks
-        encrypted = "; ".join(encryption_checks(spec)) + "\n"
-    return "set -eu\n" + encrypted + """
+        checks += encryption_checks(spec["securityTarget"])
+    else:
+        checks += partition_checks()
+    return "set -eu\n" + "\n".join([*checks, NO_ISO]) + "\n" + """
 test "$(uname -m)" = x86_64
 test "$(cat /sys/class/dmi/id/product_uuid | tr '[:upper:]' '[:lower:]')" = EXPECTED_UUID
 test "$(hostname)" = EXPECTED_HOST
@@ -57,19 +61,16 @@ test "$(findmnt -n --nofsroot -o SOURCE /)" = EXPECTED_ROOT
 test "$(findmnt -n -o FSTYPE /)" = EXPECTED_FSTYPE
 test "$(findmnt -n -o FSTYPE /boot)" = vfat
 test -d /sys/firmware/efi
-if mountpoint -q /iso; then exit 1; fi
 hostname
 readlink -f /run/current-system
 lsblk -o PATH,FSTYPE,UUID,MOUNTPOINTS
 for service in sshd systemd-networkd hv-kvp hv-vss; do
     systemctl is-active --quiet "$service" || exit 1
 done
-systemctl --failed --no-legend
-test -z "$(systemctl --failed --no-legend)"
 """.replace("EXPECTED_UUID", shlex.quote(snapshot["biosGuid"].lower())).replace(
         "EXPECTED_HOST", shlex.quote(spec["guestHostName"])).replace(
         "EXPECTED_ROOT", "/dev/mapper/nixberry-root" if spec.get("security", {}).get("mode", "none") != "none" else "/dev/sda2").replace(
-        "EXPECTED_FSTYPE", shlex.quote(filesystem))
+        "EXPECTED_FSTYPE", shlex.quote(filesystem)) + NO_FAILED_UNITS + "\n"
 
 
 class Manager:
@@ -81,14 +82,7 @@ class Manager:
         return self.spec["uuid"] if "uuid" in self.spec else self.spec["ownerId"]
 
     def remember_host_key(self):
-        # Never retain the installer key; store only the verified target system key.
-        root = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
-        destination = root / "nixberry/portable" / self.key_identity() / "known_hosts"
-        destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        temporary = destination.with_suffix(".tmp")
-        temporary.write_bytes((self.state / "installed-hosts").read_bytes())
-        temporary.chmod(0o600)
-        temporary.replace(destination)
+        remember_installed_key(known_hosts(self.spec), self.state / "installed-hosts")
 
     def __init__(self, manifest, state):
         validate(manifest)
@@ -124,15 +118,16 @@ class Manager:
         return json.loads(result.stdout.lstrip("\ufeff"))
 
     def guest(self, address, command, *, installed=False, input_text=None, capture=True, timeout=30):
-        checks = guest_checks(self.spec, "hyperv")
+        checks = guest_checks(self.spec, "hyperv") if not installed else []
         if checks:
             command = "set -eu; " + "; ".join(checks) + "; " + command
-        known_hosts = self.state / ("installed-hosts" if installed else "installer-hosts")
-        options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                   "-o", "StrictHostKeyChecking=accept-new", "-o", known_hosts_option(known_hosts),
-                   "-J", self.host]
+        options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", "-J", self.host]
         if installed:
+            options += installed_key_options(known_hosts(self.spec), self.state / "installed-hosts")
             options += ["-o", "HostKeyAlias=nixberry-" + self.key_identity()]
+        else:
+            options += ["-o", "StrictHostKeyChecking=accept-new",
+                        "-o", known_hosts_option(self.state / "installer-hosts")]
         result = subprocess.run(["ssh", *options, "root@" + address, command],
                                 input=input_text, text=True, capture_output=capture, timeout=timeout)
         if capture and result.returncode == 0:
@@ -177,6 +172,10 @@ class Manager:
                                + " && test \"$(hostname)\" = " + shlex.quote(self.spec["guestHostName"]))
                 else:
                     command = "test \"$(hostname)\" = nixberry-installer"
+                if installed:
+                    checks = guest_checks(self.spec, "hyperv", network=self.spec.get("guestNetwork")
+                                          or (self.spec.get("securityTarget") or {}).get("network"))
+                    command = "set -eu; " + "; ".join([*checks, command])
                 result = self.guest(address, command, installed=installed)
                 if result.returncode == 0:
                     info(_("VM {value1}; IP {address}; SSH available."), value1=snapshot['id'], address=address)

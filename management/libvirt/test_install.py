@@ -15,7 +15,8 @@ import unittest
 from unittest.mock import patch
 import xml.etree.ElementTree as ET
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from service_test import assert_services
+sys.path.append(str(Path(__file__).resolve().parents[1] / "deployment"))
+from service_test import assert_boot_partitions, assert_services
 
 MODULE = runpy.run_path(str(Path(__file__).with_name("install.py")))
 validate_domain = MODULE["validate_domain"]
@@ -50,6 +51,25 @@ class InstallChecks(unittest.TestCase):
             self.assertEqual(destination.read_text(), "192.168.77.97 ssh-ed25519 verified-key\n")
             self.assertEqual(destination.stat().st_mode & 0o777, 0o600)
 
+    def test_repeated_image_install_uses_existing_pin(self):
+        manifest = {**MANIFEST, "uri": "qemu:///system", "deploymentMethod": "image",
+                    "systemPath": "/nix/store/system", "guestNetwork": {"mode": "static", "address": "10.0.0.2/24"}}
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"XDG_STATE_HOME": directory}):
+            pin = Path(directory) / "nixberry/portable" / MANIFEST["uuid"] / "known_hosts"
+            pin.parent.mkdir(parents=True)
+            pin.write_text("10.0.0.2 ssh-ed25519 original-key\n")
+            domain = DOMAIN.replace(f'<source file="{MANIFEST["isoPath"]}"/>', '')
+            with patch.object(subprocess, "check_output", side_effect=[
+                    domain, "", "", "", "running", domain]), \
+                    patch.object(subprocess, "run", return_value=SimpleNamespace(
+                        returncode=255, stderr="host identification has changed")) as ssh, \
+                    patch("time.monotonic", side_effect=[0, 0, 241]), patch("time.sleep"), \
+                    self.assertRaisesRegex(RuntimeError, "host identification has changed"):
+                MODULE["image_install"](manifest, apply=True)
+            self.assertIn("UserKnownHostsFile=" + str(pin), ssh.call_args.args[0])
+            self.assertIn("StrictHostKeyChecking=yes", ssh.call_args.args[0])
+            self.assertEqual(pin.read_text(), "10.0.0.2 ssh-ed25519 original-key\n")
+
     def test_image_allows_empty_optical_drive_but_rejects_attached_installer(self):
         manifest = {**MANIFEST, "deploymentMethod": "image"}
         with self.assertRaisesRegex(RuntimeError, "installation ISO attached"):
@@ -63,18 +83,26 @@ class InstallChecks(unittest.TestCase):
         assert_services(self, MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system"}),
                         ["sshd", "systemd-networkd", "qemu-guest-agent"])
 
+    def test_actual_installed_shell_rejects_foreign_boot_or_mounted_iso(self):
+        script = MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system", "guestHostName": "guest"})
+        assert_boot_partitions(self, script, "vda", uuid=MANIFEST["uuid"])
+
     def test_installed_check_verifies_declared_root_filesystem_and_static_ip(self):
         for filesystem in ("ext4", "btrfs"):
             script = MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system",
                                                 "rootFilesystem": filesystem})
             self.assertIn(f'test "$(findmnt -n -o FSTYPE /)" = {filesystem}', script)
             self.assertIn('test "$(findmnt -n -o FSTYPE /boot)" = vfat', script)
-            self.assertIn('test -z "$(systemctl --failed --no-legend --plain)"', script)
             self.assertIn("findmnt -n --nofsroot -o SOURCE,FSTYPE /", script)
         with self.assertRaisesRegex(RuntimeError, "ext4 or btrfs"):
             MODULE["installed_check"]({**MANIFEST, "systemPath": "/nix/store/system", "rootFilesystem": "xfs"})
         self.assertEqual(MODULE["guest_address"](lambda *args: (_ for _ in ()).throw(AssertionError(args)),
             {**MANIFEST, "guestNetwork": {"mode": "static", "address": "192.168.77.50/24"}}), "192.168.77.50")
+
+    def test_installed_luks_check_uses_nested_manifest_backend(self):
+        manifest = {**MANIFEST, "systemPath": "/nix/store/system", "security": {"mode": "luks"},
+                    "securityTarget": {"backend": "libvirt", "spec": MANIFEST, "security": {"mode": "luks"}}}
+        self.assertIn("cryptsetup status nixberry-root", MODULE["installed_check"](manifest))
 
     def run_shared_install(self, *, apply, attach_during_guest_check=False, snapshot_only=False):
         manifest = {**MANIFEST, "uri": "qemu:///system", "diskGiB": 32,

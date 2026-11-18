@@ -1,5 +1,6 @@
 """Live state and access for RPi and VMs; verified SSH target selection."""
 
+from guest_verify import NO_FAILED_UNITS, NO_ISO, partition_checks
 from messages import _, forward_stderr
 
 import ipaddress
@@ -294,7 +295,7 @@ def ssh_command(target, snapshot):
     return command + ["--", "root@" + candidates[0]]
 
 
-def installation_checks(target):
+def installation_checks(target, *, expected_network=None):
     """Distinguish an installed disk system from installation or recovery environments."""
     from security import policy
 
@@ -305,7 +306,7 @@ def installation_checks(target):
     checks = [
         'test "$(findmnt -n -o FSTYPE /)" = ' + shlex.quote(filesystem),
         'test "$(findmnt -n -o FSTYPE /boot)" = vfat',
-        '! mountpoint -q /iso',
+        NO_ISO,
     ]
     if backend == "rpi":
         from security import encryption_checks
@@ -339,17 +340,9 @@ def installation_checks(target):
         if backend == "rpi":
             labels = (spec.get("rootLabel", spec["hostName"] + "-root"),
                       spec.get("bootLabel", spec["hostName"] + "-boot"))
-        for mount, label in zip(("/", "/boot"), labels):
-            partition = shlex.quote("/dev/disk/by-partlabel/" + label)
-            checks.append('test "$(readlink -f "$(findmnt -n --nofsroot -o SOURCE ' + mount + ')")" = '
-                          '"$(readlink -e ' + partition + ')"')
-        checks += [
-            'test -n "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")"',
-            'test "$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /)")" = '
-            '"$(lsblk -ndo PKNAME "$(findmnt -n --nofsroot -o SOURCE /boot)")"',
-        ]
+        checks += partition_checks(*labels)
     if backend != "rpi":
-        checks += guest_checks(spec, backend)
+        checks += guest_checks(spec, backend, network=expected_network)
     return checks
 
 
@@ -361,15 +354,15 @@ def verify(target, expected_system):
     checks = [
         'test "$(readlink -f /run/current-system)" = ' + shlex.quote(expected_system),
         'test "$(hostname)" = ' + shlex.quote(hostname),
-        *installation_checks(target),
-        'test -z "$(systemctl --failed --no-legend --plain)"',
+        *installation_checks(target, expected_network=target.get("network")),
     ]
     services = ["sshd", "systemd-networkd"]
     if backend != "rpi" and not (target.get("offline") and direct_connection(target)):
         services += {"libvirt": ["qemu-guest-agent"], "proxmox": ["qemu-guest-agent"],
                      "hyperv": ["hv-kvp", "hv-vss"], "virtualbox": ["virtualbox"], "vmware": ["vmware"]}[backend]
     checks.extend("systemctl is-active --quiet " + service for service in services)
-    checks = [check + " || { printf '%s\\n' " + shlex.quote(_("Check failed: {check}").format(check=check))
+    checks.append(NO_FAILED_UNITS)
+    checks = ["{ " + check + "; } || { printf '%s\\n' " + shlex.quote(_("Check failed: {check}").format(check=check))
               + "; exit 1; }" for check in checks]
     # Generation differences are normal before an update, not an opaque shell test failure.
     checks[0] = (

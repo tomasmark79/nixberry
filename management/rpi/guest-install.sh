@@ -32,7 +32,8 @@ if [[ "$mode" == erase-existing ]]; then
   done < <(lsblk -n -o TYPE "$device" | tail -n +2)
 else
   [[ "$(lsblk -n -o PATH "$device" | wc -l)" -eq 1 ]] || fail 'The disk already contains child devices.'
-  [[ -z "$(wipefs --no-act --noheadings "$device")" ]] || fail 'The disk already contains signatures.'
+  signatures=$(wipefs --no-act --noheadings "$device") || fail 'Cannot verify disk signatures.'
+  [[ -z "$signatures" ]] || fail 'The disk already contains signatures.'
 fi
 for label in "$boot_label" "$root_label"; do
   if [[ -e "/dev/disk/by-partlabel/$label" ]]; then

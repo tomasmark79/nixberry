@@ -190,6 +190,48 @@ ip() { printf '2: wan0 inet 10.0.0.2/24 scope global wan0\n'; }
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(len(json.loads(result.stdout)), 2)
 
+    def test_installed_static_address_matches_primary_ipv4_and_prefix(self):
+        def colon_mac(adapter):
+            compact = adapter["mac"].replace(":", "").lower()
+            return ":".join(compact[i:i + 2] for i in range(0, 12, 2))
+
+        setup = r'''
+cat() {
+    case "$1" in
+        */wan0/address) printf '%s\n' "$PRIMARY_MAC" ;;
+        */lan0/address) printf '%s\n' "$SECONDARY_MAC" ;;
+        *) return 1 ;;
+    esac
+}
+ip() { printf '2: %s inet %s scope global\n' "$GUEST_INTERFACE" "$GUEST_CIDR"; }
+'''
+        for backend in BACKENDS:
+            for named in (False, True):
+                value = spec(backend)
+                declared = value["networkAdapters"]
+                if not named:
+                    del value["networkAdapters"]
+                target = {"backend": backend, "spec": value, "network": {"mode": "static", "address": "10.0.0.2/24"}}
+                preflight = runtime.installation_checks(target)
+                checks = runtime.installation_checks(target, expected_network=target["network"])[-len(guest_checks(
+                    value, backend, network=target["network"])):]
+                self.assertFalse(any("10.0.0.2" in check for check in preflight))
+                self.assertTrue(any("10.0.0.2/24" in check for check in checks))
+                interface = "wan0" if named else "ens3"
+                for cidr, server, allowed in (("10.0.0.2/24", "10.0.0.2", True),
+                                              ("10.0.0.2/25", "10.0.0.2", False),
+                                              ("10.0.0.3/24", "10.0.0.3", False),
+                                              ("10.0.0.2/24", "10.0.1.2", False)):
+                    with self.subTest(backend=backend, named=named, cidr=cidr, server=server):
+                        result = subprocess.run(
+                            ["bash", "-c", setup + "set -eu; " + "; ".join(checks)],
+                            env={**os.environ, "PRIMARY_MAC": colon_mac(declared[0]),
+                                 "SECONDARY_MAC": colon_mac(declared[1]), "GUEST_INTERFACE": interface,
+                                 "GUEST_CIDR": cidr, "SSH_CONNECTION": f"10.0.0.1 55000 {server} 22"},
+                            capture_output=True, text=True, timeout=5,
+                        )
+                        self.assertEqual(result.returncode == 0, allowed, result.stderr)
+
 
 class AdapterNixTests(unittest.TestCase):
     def test_registry_binds_target_guest_and_evaluates_installer_and_rejects_inventory_reuse(self):

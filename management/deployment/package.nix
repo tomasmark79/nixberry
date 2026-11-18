@@ -28,6 +28,7 @@ let
         ./runtime.py
         ./ssh_options.py
         ./vm_network.py
+        ./guest_verify.py
         ./scaffold.py
         ./security.py
         ./rpi_secrets.py
