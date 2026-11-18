@@ -1,5 +1,26 @@
 let
-  hosts = import ../../hosts.nix;
+  rawHosts = import ../../hosts.nix;
+  assertHost =
+    name: host:
+    assert
+      builtins.isAttrs host
+      && builtins.elem (host.backend or "") [
+        "libvirt"
+        "hyperv"
+        "proxmox"
+        "virtualbox"
+        "vmware"
+      ]
+      && builtins.isAttrs (host.connection or null)
+      || throw "Host ${name}: declare a supported VM backend and a connection attribute set.";
+    host;
+  hosts =
+    assert
+      builtins.isAttrs rawHosts || throw "hosts.nix must evaluate to an attribute set.";
+    assert builtins.all (name: assertHost name rawHosts.${name} == rawHosts.${name}) (
+      builtins.attrNames rawHosts
+    );
+    rawHosts;
   configurations = import ./configurations.nix;
   vmInstances = import ../../machines/vm;
   instances = builtins.mapAttrs (
@@ -153,6 +174,7 @@ let
     )
   ) (import ../../machines/rpi);
 in
+assert hosts == hosts;
 assert builtins.intersectAttrs instances rpiTargets == { };
 assert
   builtins.all (

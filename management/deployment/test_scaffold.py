@@ -83,6 +83,16 @@ class ScaffoldChecks(unittest.TestCase):
                 self.assertEqual(attached["spec"]["uuid"], target["spec"]["uuid"])
                 # Ostatní deklarace musí zůstat vyhodnotitelné i po změně hostitele.
                 path.write_text(text)
+                for invalid_hosts in ('{ bad = { backend = "unknown"; connection = {}; }; }',
+                                      '{ bad = { backend = "' + backend + '"; }; }'):
+                    (self.root / "hosts.nix").write_text(invalid_hosts)
+                    with self.assertRaises(subprocess.CalledProcessError) as failure:
+                        subprocess.check_output([
+                            "nix", "eval", "--impure", "--json", "--expr",
+                            "(import " + str(self.root / "management/deployment") + ").hosts"],
+                            text=True, stderr=subprocess.PIPE)
+                    self.assertIn("Host bad:", failure.exception.stderr)
+                (self.root / "hosts.nix").write_text("{}")
                 with self.assertRaises(RuntimeError):
                     new_vm(self.root, {}, {}, "invalid", backend, "host", offline=True)
 

@@ -37,7 +37,7 @@ declaration and MAC.
 | `SHA256SUMS` | Checksums of all files. |
 | `recipe/` | The same recipe and lock used to build the medium, including local declarations. |
 | `INSTALL-ISO.sh` | Guest-side check and installation, only in ISO bundles. |
-| `PROXMOX.txt`, `VIRTUALBOX.txt` | Platform-specific prebuilt disk handoff. |
+| `PROXMOX.txt`, `VIRTUALBOX.txt`, `HYPERV.txt`, `VMWARE.txt` | Platform-specific prebuilt disk handoff. |
 
 Review included local configuration before sharing. Before and after transfer,
 run **from the bundle root**:

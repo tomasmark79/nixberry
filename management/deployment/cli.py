@@ -2,6 +2,7 @@
 "Unified management of declared RPi and VMs: operations, deployment and offline export."
 
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import re
@@ -305,12 +306,14 @@ def main(argv=None):
             parser.error(_("Unknown target. Available targets: {value1}").format(value1=", ".join(sorted(registry))))
         names = [args.target] if args.target else sorted(registry)
         if args.action == "doctor":
-            report = {}
-            for name in names:
+            def inspect_target(name):
                 try:
-                    report[name] = doctor(registry[name])
+                    return doctor(registry[name])
                 except (OSError, RuntimeError, ValueError, KeyError, ET.ParseError, subprocess.SubprocessError) as error:
-                    report[name] = {"checks": [{"name": "inspection", "level": "error", "message": str(error)}]}
+                    return {"checks": [{"name": "inspection", "level": "error", "message": str(error)}]}
+            with ThreadPoolExecutor(max_workers=min(4, len(names)) or 1) as executor:
+                futures = {name: executor.submit(inspect_target, name) for name in names}
+                report = {name: futures[name].result() for name in names}
             if args.json:
                 print(json.dumps(report, ensure_ascii=False, indent=2))
             else:

@@ -121,8 +121,10 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
         (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
         (root / "README.txt").write_text(_(
             "NixBerry: offline bundle\n\n1. Verify checksums: sha256sum -c SHA256SUMS\n2. Transfer and boot instructions: recipe/README.md\n3. Target and parameters: manifest.json\n\nThe image contains the system and its dependencies. VM disks boot directly;\nthe RPi SD card is a recovery environment with the prebuilt target system.\nInstalled services and applications may have their own network requirements.\n"
-        ) + (_("\nProxmox handoff: see PROXMOX.txt.\n") if backend == "proxmox" else "")
-          + (_("\nVirtualBox handoff: see VIRTUALBOX.txt.\n") if backend == "virtualbox" else ""))
+        ) + (_("\nProxmox handoff: see PROXMOX.txt.\n") if backend == "proxmox" and extension != "iso" else "")
+          + (_("\nVirtualBox handoff: see VIRTUALBOX.txt.\n") if backend == "virtualbox" and extension != "iso" else "")
+          + (_("\nHyper-V handoff: see HYPERV.txt.\n") if backend == "hyperv" and extension != "iso" else "")
+          + (_("\nVMware handoff: see VMWARE.txt.\n") if backend == "vmware" and extension != "iso" else ""))
         if extension == "iso":
             disko = subprocess.check_output(["nix", "eval", "--raw", "--no-write-lock-file",
                 flake + "#nixberrySystems." + target_name + ".config.system.build.diskoScript.outPath"], text=True).strip()
@@ -158,6 +160,24 @@ def export(recipe, target_name, target, destination, *, dry_run=False, method=No
             ).format(vmid=target["spec"]["vmid"], filename=filename, hostname=manifest["guestHostName"],
                      network=network_text, adapters=adapter_text, identity=identity_text, vcpus=target["spec"]["vcpus"], memory=target["spec"]["memoryMiB"],
                      disk=target["spec"]["diskGiB"]))
+        if backend == "hyperv" and extension != "iso":
+            network = manifest["network"]
+            network_text = (_("Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n").format(
+                address=network["address"], gateway=network["gateway"], dns=", ".join(network["dns"]))
+                if network.get("mode", "dhcp") == "static" else _("VM system network: DHCP.\n"))
+            (root / "HYPERV.txt").write_text(_(
+                "System disk handoff for Hyper-V\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Generation 2 VM with Secure Boot disabled and do not attach an installation ISO.\n   Resources: {vcpus} CPUs, {memory} MiB fixed RAM.\n3. Copy the VHDX outside the bundle and attach it to the SCSI controller as the first boot device.\n   The image has {disk} GiB capacity and contains the installed system.\n4. {adapters}\n   For a static IP, the connected virtual switch must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route, systemctl status hv-kvp and systemctl status hv-vss in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\n{identity}\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
+            ).format(filename=filename, hostname=manifest["guestHostName"], network=network_text, adapters=adapter_text, identity=identity_text,
+                     vcpus=target["spec"]["vcpus"], memory=target["spec"]["memoryMiB"], disk=target["spec"]["diskGiB"]))
+        if backend == "vmware" and extension != "iso":
+            network = manifest["network"]
+            network_text = (_("Static IP: {address}\nGateway: {gateway}\nDNS: {dns}\n").format(
+                address=network["address"], gateway=network["gateway"], dns=", ".join(network["dns"]))
+                if network.get("mode", "dhcp") == "static" else _("VM system network: DHCP.\n"))
+            (root / "VMWARE.txt").write_text(_(
+                "System disk handoff for VMware Workstation on Linux and Windows\n\nImage: {filename}\nHostname: {hostname}\n{network}\n1. Verify SHA256SUMS before import. On Linux: sha256sum -c SHA256SUMS.\n   On Windows, compare Get-FileHash -Algorithm SHA256 '{filename}' with its SHA256SUMS entry.\n2. Create a new Linux 64-bit VM with UEFI and Secure Boot disabled; do not attach an installation ISO.\n   Resources: {vcpus} CPUs, {memory} MiB RAM.\n3. Copy the VMDK outside the bundle and attach this existing disk to the SATA controller.\n   The image has {disk} GiB capacity and contains the installed system.\n4. {adapters}\n   Static VMware MAC addresses must be in the range 00:50:56:00:00:00–00:50:56:3f:ff:ff.\n   For a static IP, the connected network must match the listed subnet and gateway.\n5. Boot the VM from disk and verify ip -4 address, ip route and systemctl status vmware in its console.\n   The expected system (readlink -f /run/current-system) is in manifest.json.\n\n{identity}\nManual import does not adopt ownership markers for automatic hypervisor management.\nManage the server through access in the offline declaration or --ssh root@HOST:PORT.\nSSH accepts recipe keys; password login is disabled.\n"
+            ).format(filename=filename, hostname=manifest["guestHostName"], network=network_text, adapters=adapter_text, identity=identity_text,
+                     vcpus=target["spec"]["vcpus"], memory=target["spec"]["memoryMiB"], disk=target["spec"]["diskGiB"]))
         if named_adapters:
             (root / "NETWORKS.txt").write_text(_(
                 "Named VM network adapters\n\nCreate all adapters in the listed order and preserve their MAC addresses.\nThe first adapter provides management access and uses the top-level network settings.\nSecondary adapters use network.interfaces; omitted entries have no address or DHCP.\nPrepare attachments in the destination environment; manual import does not adopt hypervisor ownership.\nVMware address discovery is not MAC-specific; SSH verification rejects a secondary-interface endpoint.\n\n"

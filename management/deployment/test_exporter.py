@@ -116,7 +116,7 @@ class ExportChecks(unittest.TestCase):
                 self.assertIn('lan0', (destination / 'NETWORKS.txt').read_text())
                 self.assertIn('10.123.0.1/24', (destination / 'NETWORKS.txt').read_text())
                 self.assertIn('NETWORKS.txt', (destination / 'SHA256SUMS').read_text())
-                for name in ['PROXMOX.txt', 'VIRTUALBOX.txt']:
+                for name in ['PROXMOX.txt', 'VIRTUALBOX.txt', 'HYPERV.txt', 'VMWARE.txt']:
                     if (destination / name).exists():
                         self.assertNotIn('not tied to the MAC', (destination / name).read_text())
 
@@ -203,6 +203,36 @@ class ExportChecks(unittest.TestCase):
             for line in (destination / "SHA256SUMS").read_text().splitlines():
                 digest, name = line.split("  ", 1)
                 self.assertEqual(hashlib.sha256((destination / name).read_bytes()).hexdigest(), digest)
+
+    def test_hyperv_and_vmware_handoff_guides_include_platform_details_and_hashes(self):
+        cases = (
+            ("hyperv", "vhdx", "HYPERV.txt", ("Generation 2", "SCSI", "hv-kvp", "hv-vss", "Get-FileHash")),
+            ("vmware", "vmdk", "VMWARE.txt", ("UEFI", "SATA", "00:50:56:00:00:00", "systemctl status vmware", "Get-FileHash")),
+        )
+        for backend, extension, guide, expected_terms in cases:
+            for old in self.image.iterdir():
+                old.unlink()
+            (self.image / ("system." + extension)).write_bytes(b"prepared-disk")
+            self.target = {"backend": backend, "profile": "nixberry-" + backend, "guestHostName": "offline-" + backend,
+                           "network": {"mode": "static", "address": "10.0.1.19/24",
+                                       "gateway": "10.0.1.1", "dns": ["10.0.1.1"]},
+                           "spec": {"vcpus": 4, "memoryMiB": 4096, "diskGiB": 32}}
+            for mode in ("static", "dhcp"):
+                self.target["network"]["mode"] = mode
+                destination = self.root / f"{backend}-{mode}"
+                with self.subTest(backend=backend, mode=mode), \
+                        patch("exporter.subprocess.run", return_value=SimpleNamespace(stdout=str(self.image))), \
+                        patch("exporter.subprocess.check_output", side_effect=self.nix_output):
+                    result = export(self.recipe, backend, self.target, destination)
+                text = (destination / guide).read_text()
+                for value in expected_terms:
+                    self.assertIn(value, text)
+                self.assertIn("10.0.1.19/24" if mode == "static" else "DHCP", text)
+                self.assertEqual(result["artifact"], f"nixberry-{backend}.{extension}")
+                self.assertIn(guide, (destination / "README.txt").read_text())
+                for line in (destination / "SHA256SUMS").read_text().splitlines():
+                    digest, name = line.split("  ", 1)
+                    self.assertEqual(hashlib.sha256((destination / name).read_bytes()).hexdigest(), digest)
 
     def test_working_recipe_changes_do_not_change_exported_image_metadata_or_recipe(self):
         destination = self.root / "bundle"

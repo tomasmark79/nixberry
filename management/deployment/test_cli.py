@@ -482,10 +482,29 @@ class DispatchChecks(unittest.TestCase):
             run.assert_not_called()
 
     def test_doctor_dispatch_and_exit_status(self):
+        import threading
         fixture = {"checks": [{"name": "disk", "level": "warning", "message": "90 %"}]}
         with patch.dict(MAIN.__globals__, {"doctor": lambda _: fixture}), contextlib.redirect_stdout(io.StringIO()) as output:
             self.assertEqual(MAIN(["doctor", "test", "--json"]), 2)
         self.assertEqual(json.loads(output.getvalue()), {"test": fixture})
+        # Unqualified doctor runs concurrently across targets while keeping sorted output order.
+        started = threading.Event()
+        registry = {
+            "alpha": {"host": "a", "backend": "rpi"},
+            "beta": {"host": "b", "backend": "rpi"},
+        }
+        def concurrent_doctor(target):
+            if target["host"] == "a" and not started.wait(2):
+                raise AssertionError("Concurrent doctor did not start second target while waiting for first")
+            if target["host"] == "b":
+                started.set()
+            return {"checks": [{"name": "identity", "level": "ok", "message": target["host"]}]}
+        with patch("pathlib.Path.read_text", return_value=json.dumps(registry)), \
+                patch.dict(MAIN.__globals__, {"doctor": concurrent_doctor}), \
+                contextlib.redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(MAIN(["doctor", "--json"]), 0)
+        parsed = json.loads(output.getvalue())
+        self.assertEqual(list(parsed), ["alpha", "beta"])
 
     def test_cleanup_empty_inventory_and_explicit_root(self):
         fixture = {"readOnly": True, "targets": {}, "hosts": {}, "artifacts": {"images": [], "errors": []}}
