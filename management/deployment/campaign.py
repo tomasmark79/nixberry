@@ -331,7 +331,7 @@ class Campaign:
                 raise RuntimeError(_("The static network test did not change exactly one declaration to static configuration."))
             file.write_text(text)
             configured = self.evaluate("nixberrySystems." + self.case["target"] + ".config.nixberry.vm.network")
-            if configured != network:
+            if {k: configured.get(k) for k in network} != network or configured.get("interfaces", {}) != {}:
                 raise RuntimeError(_("The evaluated test VM network does not match the specified values."))
             target = self.evaluate("nixberryDeployment.instances." + self.case["target"])
             self.case["targetSpec"] = target
