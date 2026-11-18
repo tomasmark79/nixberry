@@ -95,6 +95,22 @@ class ResetChecks(unittest.TestCase):
                 self.assertEqual([call.args[0][1] for call in run.call_args_list],
                                  ["showvminfo", "showmediuminfo", "list"])
 
+    def test_virtualbox_remove_closes_retained_owned_medium_in_registry(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "vm-demo-reset"
+            directory.mkdir()
+            disk = directory / "system.vdi"
+            spec = {"name": directory.name, "uuid": "12345678-1234-4321-8123-123456789abc",
+                    "toolPath": "VBoxManage"}
+            hdds = f"UUID: {spec['uuid']}\nParent UUID: base\nLocation: {disk}\n"
+            with patch.object(host_common, "run", side_effect=["", hdds, ""]) as run:
+                host_virtualbox.remove(spec, directory, {})
+            self.assertEqual([call.args[0] for call in run.call_args_list], [
+                ["VBoxManage", "unregistervm", spec["uuid"], "--delete"],
+                ["VBoxManage", "list", "hdds"],
+                ["VBoxManage", "closemedium", "disk", spec["uuid"]],
+            ])
+
     def test_virtualbox_reset_refuses_foreign_configuration(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary) / "vm-demo-reset"
