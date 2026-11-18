@@ -418,7 +418,14 @@ class Campaign:
     def native(self):
         self.work = self.recipe
         name = self.case["target"]
-        target = self.evaluate("nixberryDeployment.targets." + name)
+        targets = self.evaluate("nixberryDeployment.targets")
+        if name == "nixberry" and name not in targets:
+            for candidate in ("broucek", "rpilab"):
+                if targets.get(candidate, {}).get("backend") == "rpi":
+                    name = candidate
+                    self.case["target"] = name
+                    break
+        target = targets[name]
         self.cli("probe", name, expected=2 if target.get("offline") and target["backend"] != "rpi" else 0)
         findings = []
         for args in (("show", name, "--json"), ("status", name, "--json"),

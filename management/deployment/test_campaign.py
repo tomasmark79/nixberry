@@ -70,18 +70,27 @@ class CampaignTests(unittest.TestCase):
         for target, code in ((dict(offline=True, backend="proxmox"), 2), (dict(backend="rpi"), 0)):
             task = Campaign("/recipe", "/run-test")
             task.case = dict(target="native")
-            with patch.object(task, "evaluate", return_value=target), \
+            with patch.object(task, "evaluate", return_value={"native": target}), \
                     patch.object(task, "save"), patch.object(task, "cli", return_value=(0, "{}")) as cli:
                 task.native()
             self.assertIn(call("probe", "native", expected=code), cli.call_args_list)
             self.assertTrue(all("--apply" not in call.args for call in cli.call_args_list))
+
+    def test_native_rpi_aliases_declared_rpi_when_legacy_name_is_absent(self):
+        task = Campaign("/recipe", "/run-test")
+        task.case = dict(target="nixberry")
+        with patch.object(task, "evaluate", return_value={"broucek": dict(backend="rpi")}), \
+                patch.object(task, "save"), patch.object(task, "cli", return_value=(0, "{}")) as cli:
+            task.native()
+        self.assertEqual(task.case["target"], "broucek")
+        self.assertIn(call("probe", "broucek", expected=0), cli.call_args_list)
 
     def test_native_findings_do_not_skip_remaining_readonly_checks(self):
         task = Campaign("/recipe", "/run-test")
         task.case = dict(target="native")
         def cli(command, *args, **kwargs):
             return (2 if command == "doctor" else 0), "{}"
-        with patch.object(task, "evaluate", return_value=dict(backend="rpi")), \
+        with patch.object(task, "evaluate", return_value={"native": dict(backend="rpi")}), \
                 patch.object(task, "save"), patch.object(task, "cli", side_effect=cli) as run, \
                 self.assertRaisesRegex(RuntimeError, "doctor=2"):
             task.native()

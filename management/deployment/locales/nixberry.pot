@@ -365,7 +365,7 @@ msgstr ""
 msgid "Another kernel is already loaded; it will not be overwritten."
 msgstr ""
 
-#: deployment/campaign.py:496
+#: deployment/campaign.py:503
 msgid "Another process is already running this campaign."
 msgstr ""
 
@@ -555,7 +555,7 @@ msgstr ""
 msgid "CPU or RAM does not match."
 msgstr ""
 
-#: deployment/campaign.py:535
+#: deployment/campaign.py:542
 #, python-brace-format
 msgid "Campaign case: {name}"
 msgstr ""
@@ -729,7 +729,7 @@ msgstr ""
 msgid "Choose a recovery output directory outside the recipe."
 msgstr ""
 
-#: deployment/campaign.py:440
+#: deployment/campaign.py:447
 #, python-brace-format
 msgid "Cleaning up the dedicated test target: {name}"
 msgstr ""
@@ -885,11 +885,11 @@ msgstr ""
 msgid "Could not persist the failed backup attempt; inspect controller state."
 msgstr ""
 
-#: deployment/campaign.py:727
+#: deployment/campaign.py:734
 msgid "Could not prepare the SSH forward."
 msgstr ""
 
-#: deployment/campaign.py:236 deployment/campaign.py:680
+#: deployment/campaign.py:236 deployment/campaign.py:687
 msgid "Could not request VM shutdown."
 msgstr ""
 
@@ -1368,11 +1368,11 @@ msgstr ""
 msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
 msgstr ""
 
-#: deployment/campaign.py:627
+#: deployment/campaign.py:634
 msgid "Import created a volume at a different path."
 msgstr ""
 
-#: deployment/campaign.py:624
+#: deployment/campaign.py:631
 msgid "Import would overwrite an existing volume."
 msgstr ""
 
@@ -2870,7 +2870,7 @@ msgstr ""
 msgid "Select regression checks, inventory checks, or both."
 msgstr ""
 
-#: deployment/campaign.py:783
+#: deployment/campaign.py:790
 msgid "Sequential NixBerry integration campaign following docs/test-plan.md."
 msgstr ""
 
@@ -2897,7 +2897,7 @@ msgstr ""
 msgid "Server configuration: {configuration}"
 msgstr ""
 
-#: deployment/campaign.py:795
+#: deployment/campaign.py:802
 msgid "Set --run-root outside the recipe to run the campaign."
 msgstr ""
 
@@ -3311,7 +3311,7 @@ msgstr ""
 msgid "The Restic repository identity does not match its configured pin."
 msgstr ""
 
-#: deployment/campaign.py:734
+#: deployment/campaign.py:741
 msgid "The SSH forward did not start listening."
 msgstr ""
 
@@ -3668,7 +3668,7 @@ msgstr ""
 msgid "The captured subvolume is not read-only."
 msgstr ""
 
-#: deployment/campaign.py:511
+#: deployment/campaign.py:518
 msgid "The case has retained resources; inspect its state first."
 msgstr ""
 
@@ -3689,7 +3689,7 @@ msgstr ""
 msgid "The configuration has both a file and a directory; keep only one definition."
 msgstr ""
 
-#: deployment/campaign.py:561
+#: deployment/campaign.py:568
 msgid "The corresponding offline export must pass first."
 msgstr ""
 
@@ -3929,19 +3929,19 @@ msgstr ""
 msgid "The guest is not x86_64."
 msgstr ""
 
-#: deployment/campaign.py:758
+#: deployment/campaign.py:765
 msgid "The handed-off VM did not start verified SSH within the timeout."
 msgstr ""
 
-#: deployment/campaign.py:712
+#: deployment/campaign.py:719
 msgid "The handed-off VM has no verified address."
 msgstr ""
 
-#: deployment/campaign.py:573
+#: deployment/campaign.py:580
 msgid "The handoff bundle's working declaration must not be a symbolic link."
 msgstr ""
 
-#: deployment/campaign.py:587
+#: deployment/campaign.py:594
 msgid "The handoff target already exists; import is not allowed."
 msgstr ""
 
@@ -4126,7 +4126,7 @@ msgstr ""
 msgid "The managed installation ISO is missing."
 msgstr ""
 
-#: deployment/campaign.py:661
+#: deployment/campaign.py:668
 msgid "The manually created VM did not obtain an address."
 msgstr ""
 
@@ -4178,7 +4178,7 @@ msgstr ""
 msgid "The offline target has no connected host; use show or export."
 msgstr ""
 
-#: deployment/campaign.py:433
+#: deployment/campaign.py:440
 #, python-brace-format
 msgid "The operational target has findings: {checks}. All checks were read-only."
 msgstr ""
@@ -4304,11 +4304,11 @@ msgstr ""
 msgid "The root partition is not ext4."
 msgstr ""
 
-#: deployment/campaign.py:766
+#: deployment/campaign.py:773
 msgid "The running VM does not have the expected static address, prefix or default gateway."
 msgstr ""
 
-#: deployment/campaign.py:769
+#: deployment/campaign.py:776
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
@@ -4520,7 +4520,7 @@ msgstr ""
 msgid "The target is not a block device."
 msgstr ""
 
-#: deployment/campaign.py:484
+#: deployment/campaign.py:491
 msgid "The target is not absent after cleanup."
 msgstr ""
 
@@ -4565,7 +4565,7 @@ msgstr ""
 msgid "The test VM already exists. It will not be overwritten or rebooted."
 msgstr ""
 
-#: deployment/campaign.py:445
+#: deployment/campaign.py:452
 msgid "The test declaration does not have the expected default permission; stopping cleanup."
 msgstr ""
 
@@ -4832,7 +4832,7 @@ msgstr ""
 msgid "Unsupported special file in application restoration."
 msgstr ""
 
-#: deployment/campaign.py:779
+#: deployment/campaign.py:786
 msgid "Unsupported test configuration value."
 msgstr ""
 
