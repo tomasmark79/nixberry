@@ -1,4 +1,4 @@
-# Only modify a new VM in its dedicated directory. The request is JSON,
+﻿# Only modify a new VM in its dedicated directory. The request is JSON,
 # never a command assembled from host-provided names.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -16,9 +16,9 @@ Import-Module Hyper-V -ErrorAction Stop
 $null = Get-VMHost -ErrorAction Stop
 
 # The first declared adapter is the management path; all NICs retain switch identity checks.
-$adapters = if ($null -ne $s.networkAdapters) { @($s.networkAdapters) } else {
-    @([pscustomobject]@{ name='management'; mac=$s.mac; switchName=$s.switchName; switchId=$s.switchId })
-}
+$adapters = @(if ($null -ne $s.networkAdapters) { @($s.networkAdapters) } else {
+    [pscustomobject]@{ name='management'; mac=$s.mac; switchName=$s.switchName; switchId=$s.switchId }
+})
 Require ($adapters.Count -ge 1 -and $adapters.Count -le 8) 'networkAdapters must contain 1–8 ordered adapters.'
 Require ($adapters[0].mac -eq $s.mac -and $adapters[0].switchName -eq $s.switchName -and $adapters[0].switchId -eq $s.switchId) 'The first adapter must match the primary MAC and host attachment; it provides management access.'
 Require (@($adapters | Select-Object -ExpandProperty mac -Unique).Count -eq $adapters.Count -and @($adapters | Select-Object -ExpandProperty name -Unique).Count -eq $adapters.Count) 'Network adapter names and MAC addresses must be unique within a VM.'

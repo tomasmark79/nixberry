@@ -57,6 +57,28 @@ class PolicyChecks(unittest.TestCase):
                 with self.subTest(script=filename, fields=fields):
                     self.assertEqual(result.returncode == 0, allowed, result.stderr)
 
+    @unittest.skipUnless(shutil.which("pwsh"), "PowerShell není k dispozici")
+    def test_windows_adapter_guards_preserve_array_wrapper_for_single_and_explicit_adapters(self):
+        for filename in ("host.ps1", "reset.ps1"):
+            source = Path(__file__).with_name(filename).read_text()
+            guard = source.split("function CheckAdapters")[0].replace("Import-Module Hyper-V -ErrorAction Stop", "")
+            guard = guard.replace("$null = Get-VMHost -ErrorAction Stop", "")
+            for extra in ({}, {"networkAdapters": [{"name": "wan0", "mac": SPEC["mac"],
+                                                    "switchName": "Default Switch", "switchId": SPEC["switchId"]}]}):
+                spec = {**SPEC, "uuid": "85a5abbf-ac9f-44ad-9f34-34dd14b77123",
+                        "switchName": "Default Switch", **extra}
+                encoded = base64.b64encode(json.dumps({"spec": spec, "allowReset": True, "apply": False}).encode()).decode()
+                script = (
+                    "$env:COMPUTERNAME='OTHER'; "
+                    "function Get-VMSwitch { param($Name) @([pscustomobject]@{ Name=$Name; Id=[guid]'" + SPEC["switchId"] + "' }) }; "
+                    "$Request=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + encoded + "')) | ConvertFrom-Json;\n"
+                    + guard + "\nif ($adapters -isnot [array]) { throw 'adapters is not an array' }"
+                )
+                result = subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script],
+                                        capture_output=True, text=True, timeout=15)
+                with self.subTest(script=filename, extra=bool(extra)):
+                    self.assertEqual(result.returncode, 0, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
