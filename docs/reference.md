@@ -140,7 +140,7 @@ checkout-relative path:
 }
 ```
 
-The common base adds only Git to the standard NixOS tools. Each configuration
+The common base adds only Git and `nvd` to the standard NixOS tools. Each configuration
 owns its additional host packages through `environment.systemPackages`.
 For a larger configuration, put this list in its own `packages.nix` and import
 it from `default.nix`. Container packages remain in the container's setup.

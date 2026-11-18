@@ -2,6 +2,7 @@
 
 import contextlib
 import io
+import json
 import os
 from pathlib import Path
 import shlex
@@ -179,6 +180,15 @@ class GenerationScriptChecks(unittest.TestCase):
                     self.assertNotIn("[nixberry]", result.stdout)
                     self.assertEqual(result.stdout.splitlines()[-3:],
                                      ["diff", str(root / "system-9-link"), str(root / "system-10-link")])
+
+    def test_common_base_includes_nvd_for_remote_generation_diff(self):
+        recipe = Path(__file__).resolve().parents[2]
+        names = json.loads(subprocess.check_output([
+            "nix", "eval", "--json", "--no-write-lock-file",
+            "path:" + str(recipe) + "#nixosConfigurations.nixberry-vm.config.environment.systemPackages",
+            "--apply", "pkgs: map (p: p.pname or p.name or \"\") pkgs",
+        ], text=True))
+        self.assertIn("nvd", names)
 
 
 if __name__ == "__main__":

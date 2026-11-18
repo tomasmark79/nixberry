@@ -1,7 +1,8 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
-    # Recipe management; other tools are selected by each configuration.
+    # Recipe management and generation comparisons; other tools are selected by each configuration.
     git
+    nvd
   ];
 }
