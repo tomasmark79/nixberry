@@ -1,4 +1,4 @@
-﻿# Only modify a new VM in its dedicated directory. The request is JSON,
+# Only modify a new VM in its dedicated directory. The request is JSON,
 # never a command assembled from host-provided names.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'

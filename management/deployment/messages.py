@@ -91,7 +91,7 @@ def script_messages(source, *, powershell=False):
 def localized_script(path):
     """Translate message literals before transfer; the remote host does not need gettext."""
     path = Path(path)
-    source = path.read_text()
+    source = path.read_text(encoding="utf-8-sig")
     powershell = path.suffix == ".ps1"
     for start, end, message in sorted(script_messages(source, powershell=powershell), reverse=True):
         translated = _(message)

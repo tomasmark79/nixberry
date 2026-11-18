@@ -1,4 +1,4 @@
-﻿# Standalone reset needs neither the original ISO nor target system builds.
+# Standalone reset needs neither the original ISO nor target system builds.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $s = $Request.spec
