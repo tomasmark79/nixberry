@@ -676,7 +676,7 @@ Remove-Item -LiteralPath $root -Recurse -Force
         boot = "uefi,firmware.feature0.name=secure-boot,firmware.feature0.enabled=no"
         args = ["virt-install", "--connect", spec["uri"], "--name", spec["name"], "--uuid", spec["uuid"],
                 "--memory", str(spec["memoryMiB"]), "--vcpus", str(spec["vcpus"]), "--osinfo", "generic",
-                "--machine", spec["machine"], "--boot", boot, "--graphics", "spice",
+                "--machine", spec["machine"], "--boot", boot, "--graphics", "spice", "--tpm", "none",
                 "--network", "network=" + spec["network"] + ",model=virtio,mac=" + spec["mac"],
                 "--channel", "unix,target.type=virtio,target.name=org.qemu.guest_agent.0",
                 "--disk", "path=" + disk + ",format=qcow2,bus=virtio", "--noautoconsole", "--print-xml=1"]
