@@ -36,31 +36,6 @@ def campaign_action(request):
         if disks != [str(directory / image_name(backend))]:
             raise RuntimeError(_("The VM contains unexpected disks; cleanup was stopped."))
         run([spec["toolPath"], "unregistervm", spec["uuid"], "--delete"])
-        disk = os.path.normcase(os.path.abspath(directory / image_name(backend)))
-        for attempt in range(5):
-            retained = None
-            for block in re.split(r"\n\s*\n", run([spec["toolPath"], "list", "hdds"])):
-                info = dict(
-                    (k.strip(), v.strip())
-                    for line in block.splitlines()
-                    for k, sep, v in [line.partition(":")]
-                    if sep
-                )
-                if (
-                    info.get("UUID", "").lower() == spec["uuid"]
-                    and os.path.normcase(os.path.abspath(info.get("Location", ""))) == disk
-                ):
-                    retained = info["UUID"]
-                    break
-            if not retained:
-                break
-            try:
-                run([spec["toolPath"], "closemedium", "disk", retained])
-                break
-            except RuntimeError:
-                if attempt == 4:
-                    raise
-                time.sleep(1)
     elif backend == "proxmox":
         snapshots = json.loads(run(["pvesh", "get", "/nodes/" + spec["node"] + "/qemu/"
                                     + str(spec["vmid"]) + "/snapshot", "--output-format", "json"]))
