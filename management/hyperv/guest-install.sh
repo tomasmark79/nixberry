@@ -11,6 +11,7 @@ expected_system=$3
 expected_disko=$4
 expected_bytes=$5
 fail() { nb_error "$@"; exit 1; }
+[[ "$mode" == apply || "$mode" == dry-run ]] || fail 'Invalid installation mode.'
 [[ "$(uname -m)" == x86_64 ]] || fail 'The guest is not x86_64.'
 [[ "$(cat /sys/class/dmi/id/product_uuid | tr '[:upper:]' '[:lower:]')" == "$expected_uuid" ]] || fail 'VM UUID does not match.'
 [[ "$(hostname)" == nixberry-installer ]] || fail 'The guest is not an installation environment.'

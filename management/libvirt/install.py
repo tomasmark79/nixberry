@@ -134,6 +134,8 @@ def image_install(manifest, apply):
                     print(result.stdout, end="", flush=True)
                     success(_("Boot of the prebuilt system from disk verified."))
                     return
+                if staged.exists():
+                    staged.unlink()
                 failure = result.stderr
                 if result.returncode == 255 and not unlock_attempted:
                     from security import unlock_for_install
@@ -180,12 +182,15 @@ def main():
             checks = guest_checks(manifest, "libvirt") if phase == "installer" else []
             if checks:
                 command = "set -eu; " + "; ".join(checks) + "; " + command
-            return subprocess.run(
+            result = subprocess.run(
                 ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
                  *options,
                  f"root@{address}", command],
                 input=input_text, text=True, capture_output=capture, check=False
             )
+            if phase == "installed" and result.returncode != 0 and staged.exists():
+                staged.unlink()
+            return result
 
         guest_args = ["bash", "-s", "--", "dry-run",
                       manifest["uuid"], manifest["systemPath"], manifest["diskoPath"],

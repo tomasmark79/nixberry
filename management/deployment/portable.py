@@ -19,7 +19,7 @@ import time
 
 from host_agent import validate, image_name
 from vm_network import guest_checks
-from ssh_options import known_hosts, known_hosts_option
+from ssh_options import known_hosts, known_hosts_option, remember_installed_key
 
 
 BACKENDS = ("proxmox", "virtualbox", "vmware")
@@ -221,26 +221,32 @@ def start_and_verify(target, manifest, *, timeout=300):
     hosts = known_hosts(target["spec"])
     hosts.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     # First access to a new VM verified through its hypervisor uses TOFU,
-    # as on other adapters. Never accept a changed existing key.
-    target = {**target, "_acceptNewGuestKey": True}
+    # as on other adapters. Never accept a changed existing key or publish
+    # an unverified key before guest identity and partition checks pass.
     info(_("Waiting for the guest agent, SSH and verified boot from disk…"))
     deadline = time.monotonic() + timeout
     error = None
     unlock_attempted = False
-    while time.monotonic() < deadline:
-        try:
-            result = verify(target, manifest["systemPath"])
-            print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
-            return result
-        except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as failure:
-            error = failure
-            if not unlock_attempted and manifest.get("security", {}).get("mode", "none") != "none":
-                state = snapshot(target)
-                if state["state"] == "running" and (not state["addresses"] or getattr(failure, "returncode", None) == 255):
-                    from security import unlock_for_install
-                    unlock_for_install(manifest, state["addresses"][0] if len(state["addresses"]) == 1 else None)
-                    unlock_attempted = True
-            time.sleep(3)
+    with tempfile.TemporaryDirectory(prefix="nixberry-portable-ssh-") as directory:
+        staged = Path(directory) / "known_hosts"
+        staged_target = {**target, "_stagedKnownHosts": staged}
+        while time.monotonic() < deadline:
+            try:
+                if staged.exists():
+                    staged.unlink()
+                result = verify(staged_target, manifest["systemPath"])
+                remember_installed_key(hosts, staged)
+                print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
+                return result
+            except (OSError, RuntimeError, ValueError, KeyError, subprocess.SubprocessError) as failure:
+                error = failure
+                if not unlock_attempted and manifest.get("security", {}).get("mode", "none") != "none":
+                    state = snapshot(target)
+                    if state["state"] == "running" and (not state["addresses"] or getattr(failure, "returncode", None) == 255):
+                        from security import unlock_for_install
+                        unlock_for_install(manifest, state["addresses"][0] if len(state["addresses"]) == 1 else None)
+                        unlock_attempted = True
+                time.sleep(3)
     raise RuntimeError(_("The VM was started, but installation could not be verified; nothing will be stopped or recreated: {value1}").format(value1=str(error)))
 
 

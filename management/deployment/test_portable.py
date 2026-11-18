@@ -1,5 +1,6 @@
 """Kontrakty adaptérů, ochrany vlastníka a skutečný přenos protokolu stdin."""
 
+import contextlib
 import hashlib
 import io
 import json
@@ -26,6 +27,47 @@ def spec(root, **extra):
 
 
 class PortableTests(unittest.TestCase):
+    def test_start_and_verify_stages_host_key_until_verification_succeeds_and_enforces_existing_pin(self):
+        for backend in ("proxmox", "virtualbox", "vmware"):
+            with self.subTest(backend=backend), tempfile.TemporaryDirectory() as root, \
+                    patch.dict("os.environ", {"XDG_STATE_HOME": root}):
+                target = {"backend": backend, "spec": spec(self.root)}
+                manifest = {"systemPath": "/nix/store/expected-system"}
+                pin = Path(root) / "nixberry/portable" / target["spec"]["uuid"] / "known_hosts"
+                snapshot = {"state": "running", "addresses": ["192.168.50.20"]}
+                calls = []
+                def fake_read(command):
+                    calls.append(command)
+                    staged = next(Path(opt.split("=", 1)[1]) for opt in command if opt.startswith("UserKnownHostsFile="))
+                    if len(calls) == 1:
+                        staged.write_text("192.168.50.20 ssh-ed25519 unverified-key\n")
+                        raise RuntimeError("identity mismatch")
+                    staged.write_text("192.168.50.20 ssh-ed25519 verified-key\n")
+                    return "nixberry-test\n/nix/store/expected-system\n/dev/sda2"
+                with patch.object(portable, "snapshot", return_value=snapshot), \
+                        patch.object(runtime, "status", return_value=snapshot), \
+                        patch.object(runtime, "read", side_effect=fake_read), \
+                        patch.object(portable.time, "sleep"), \
+                        io.StringIO() as output, contextlib.redirect_stdout(output):
+                    result = portable.start_and_verify(target, manifest)
+                self.assertTrue(result["verified"])
+                self.assertEqual(pin.read_text(), "192.168.50.20 ssh-ed25519 verified-key\n")
+                self.assertIn("StrictHostKeyChecking=accept-new", calls[0])
+                self.assertNotEqual(next(opt for opt in calls[0] if opt.startswith("UserKnownHostsFile=")),
+                                    "UserKnownHostsFile=" + str(pin))
+                # Repeat install with existing pin must enforce StrictHostKeyChecking=yes on the pin.
+                repeat_calls = []
+                def repeat_read(command):
+                    repeat_calls.append(command)
+                    return "nixberry-test\n/nix/store/expected-system\n/dev/sda2"
+                with patch.object(portable, "snapshot", return_value=snapshot), \
+                        patch.object(runtime, "status", return_value=snapshot), \
+                        patch.object(runtime, "read", side_effect=repeat_read), \
+                        io.StringIO() as output, contextlib.redirect_stdout(output):
+                    portable.start_and_verify(target, manifest)
+                self.assertIn("StrictHostKeyChecking=yes", repeat_calls[0])
+                self.assertIn("UserKnownHostsFile=" + str(pin), repeat_calls[0])
+
     def test_verification_failure_does_not_request_another_disk_passphrase(self):
         for backend in ("proxmox", "virtualbox", "vmware"):
             target = {"backend": backend, "spec": spec(self.root), "security": {"mode": "luks"}}

@@ -11,16 +11,16 @@ MANAGEMENT = Path(__file__).resolve().parents[1]
 SETUP = r'''
 nb_error() { printf '%s\n' "$1" >&2; }
 nb_info() { :; }
-cat() { echo test-uuid; }
+cat() { echo "$TEST_UUID"; }
 uname() { echo "$TEST_ARCH"; }
 hostname() { echo nixberry-installer; }
 mountpoint() { return 0; }
 test() { return 0; }
 blockdev() { echo 1024; }
-findmnt() { if [[ "$1" == --mountpoint ]]; then return 1; fi; echo tmpfs; }
+findmnt() { if [[ "$1" == --mountpoint ]]; then return 1; fi; echo "${TEST_ROOT_FS:-tmpfs}"; }
 lsblk() {
     case "$*" in
-        *MOUNTPOINTS*) ;;
+        *MOUNTPOINTS*) echo "${TEST_MOUNTPOINT:-}" ;;
         *SERIAL*) echo disk-serial ;;
         *) echo "$TEST_DISK" ;;
     esac
@@ -83,7 +83,8 @@ class BlankDiskInstallerTests(unittest.TestCase):
                         result = subprocess.run(
                             ["bash", "-c", SETUP + script, "installer", *arguments],
                             env={**os.environ, "TEST_SCAN": scan, "TEST_PROFILE": profile, "TEST_DISK": disk,
-                                 "TEST_ARCH": architecture, "TEST_DISKO": str(disko), "TEST_SERIAL": str(serial)},
+                                 "TEST_ARCH": architecture, "TEST_DISKO": str(disko), "TEST_SERIAL": str(serial),
+                                 "TEST_UUID": "TEST-UUID"},
                             capture_output=True, text=True, timeout=5,
                         )
                         self.assertEqual(result.returncode, status, result.stderr)
@@ -91,3 +92,15 @@ class BlankDiskInstallerTests(unittest.TestCase):
                         if scan == "error":
                             self.assertIn("probe failed", result.stderr)
                             self.assertIn("Cannot verify disk signatures.", result.stderr)
+                if source != "rpi":
+                    for check_env in ({"TEST_ARCH": "aarch64"}, {"TEST_ROOT_FS": "ext4"}, {"TEST_MOUNTPOINT": "/mnt"}):
+                        with self.subTest(backend=backend, check_env=check_env):
+                            result = subprocess.run(
+                                ["bash", "-c", SETUP + script, "installer", *arguments],
+                                env={**os.environ, "TEST_SCAN": "blank", "TEST_PROFILE": profile, "TEST_DISK": disk,
+                                     "TEST_ARCH": architecture, "TEST_DISKO": str(disko), "TEST_UUID": "test-uuid",
+                                     **check_env},
+                                capture_output=True, text=True, timeout=5,
+                            )
+                            self.assertEqual(result.returncode, 1)
+                            self.assertNotIn("disko reached", result.stdout)

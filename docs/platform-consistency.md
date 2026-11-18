@@ -73,6 +73,11 @@ hypervisor management. `status` and `doctor` may explain missing access settings
 - Concrete declarations are local, ignored data. Launchers and exports use
   `path:` and include them without `git add`.
 
+- All VM backends stage the first installed-system SSH key during `install`
+  and publish it to `~/.local/state/nixberry/portable/UUID/known_hosts` only
+  after guest identity, disk and system checks pass. Subsequent `install`
+  attempts enforce an existing pin in strict mode.
+
 ## Intentional differences
 
 RPi recovers from SD/USB media or prepares an attached SSD directly on Linux
@@ -92,9 +97,9 @@ Hyper-V removes the VM registration and configuration, reset removes the
 verified system disk, ownership record and empty directories. If unexpected
 files remain, reset reports the partial outcome and preserves the files.
 
-Libvirt and Hyper-V verify an existing installed-system SSH pin on subsequent
-install attempts. Libvirt stores pins by SSH address, so a changed DHCP address
-requires a verified entry for the new address. Hyper-V uses a stable VM alias.
+Libvirt, Proxmox, VirtualBox and VMware store installed-system SSH pins by
+SSH address, so a changed DHCP address requires a verified entry for the new
+address. Hyper-V uses a stable VM alias.
 
 Manual imports do not carry automatic-management markers and public reset
 does not adopt them. The HAND VMware runner verifies its own import evidence

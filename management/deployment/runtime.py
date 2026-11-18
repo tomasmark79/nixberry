@@ -276,8 +276,14 @@ def ssh_command(target, snapshot):
         raise RuntimeError(_("The target does not have exactly one usable IPv4 address. Details: probe TARGET."))
     if target["backend"] in ("libvirt", "hyperv", "proxmox", "virtualbox", "vmware"):
         from portable import known_hosts
-        command += ["-o", known_hosts_option(known_hosts(target["spec"])),
-                    "-o", "StrictHostKeyChecking=" + ("accept-new" if target.get("_acceptNewGuestKey") else key_policy)]
+        pin = known_hosts(target["spec"])
+        staged = target.get("_stagedKnownHosts")
+        if staged is not None:
+            from ssh_options import installed_key_options
+            command += installed_key_options(pin, staged)
+        else:
+            command += ["-o", known_hosts_option(pin),
+                        "-o", "StrictHostKeyChecking=" + ("accept-new" if target.get("_acceptNewGuestKey") else key_policy)]
         if target["backend"] == "hyperv":
             identity = target["spec"].get("uuid", target["spec"]["ownerId"])
             command += ["-o", "HostKeyAlias=nixberry-" + identity]

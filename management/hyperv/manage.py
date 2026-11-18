@@ -53,24 +53,24 @@ def installed_check(snapshot, spec):
         checks += encryption_checks(spec["securityTarget"])
     else:
         checks += partition_checks()
+    system = spec.get("systemPath", "/nix/store/system")
     return "set -eu\n" + "\n".join([*checks, NO_ISO]) + "\n" + """
 test "$(uname -m)" = x86_64
 test "$(cat /sys/class/dmi/id/product_uuid | tr '[:upper:]' '[:lower:]')" = EXPECTED_UUID
 test "$(hostname)" = EXPECTED_HOST
+test "$(readlink -f /run/current-system)" = EXPECTED_SYSTEM
 test "$(findmnt -n --nofsroot -o SOURCE /)" = EXPECTED_ROOT
 test "$(findmnt -n -o FSTYPE /)" = EXPECTED_FSTYPE
 test "$(findmnt -n -o FSTYPE /boot)" = vfat
 test -d /sys/firmware/efi
-hostname
-readlink -f /run/current-system
-lsblk -o PATH,FSTYPE,UUID,MOUNTPOINTS
 for service in sshd systemd-networkd hv-kvp hv-vss; do
     systemctl is-active --quiet "$service" || exit 1
 done
 """.replace("EXPECTED_UUID", shlex.quote(snapshot["biosGuid"].lower())).replace(
         "EXPECTED_HOST", shlex.quote(spec["guestHostName"])).replace(
+        "EXPECTED_SYSTEM", shlex.quote(system)).replace(
         "EXPECTED_ROOT", "/dev/mapper/nixberry-root" if spec.get("security", {}).get("mode", "none") != "none" else "/dev/sda2").replace(
-        "EXPECTED_FSTYPE", shlex.quote(filesystem)) + NO_FAILED_UNITS + "\n"
+        "EXPECTED_FSTYPE", shlex.quote(filesystem)) + NO_FAILED_UNITS + " || exit 1\nhostname\nreadlink -f /run/current-system\nlsblk -o PATH,FSTYPE,UUID,MOUNTPOINTS\n"
 
 
 class Manager:
@@ -123,13 +123,16 @@ class Manager:
             command = "set -eu; " + "; ".join(checks) + "; " + command
         options = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", "-J", self.host]
         if installed:
-            options += installed_key_options(known_hosts(self.spec), self.state / "installed-hosts")
+            staged = self.state / "installed-hosts"
+            options += installed_key_options(known_hosts(self.spec), staged)
             options += ["-o", "HostKeyAlias=nixberry-" + self.key_identity()]
         else:
             options += ["-o", "StrictHostKeyChecking=accept-new",
                         "-o", known_hosts_option(self.state / "installer-hosts")]
         result = subprocess.run(["ssh", *options, "root@" + address, command],
                                 input=input_text, text=True, capture_output=capture, timeout=timeout)
+        if installed and result.returncode != 0 and staged.exists():
+            staged.unlink()
         if capture and result.returncode == 0:
             forward_stderr(result.stderr)
         return result
