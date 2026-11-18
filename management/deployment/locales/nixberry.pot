@@ -3407,7 +3407,7 @@ msgstr ""
 msgid "The VM has a snapshot, saved state or lock; refusing reset."
 msgstr ""
 
-#: deployment/campaign_host.py:29 deployment/campaign_host.py:33 deployment/campaign_host.py:56
+#: deployment/campaign_host.py:29 deployment/campaign_host.py:33 deployment/campaign_host.py:68
 msgid "The VM has a snapshot; cleanup was stopped."
 msgstr ""
 
@@ -3656,7 +3656,7 @@ msgstr ""
 msgid "The built installation ISO is missing: {path}"
 msgstr ""
 
-#: deployment/campaign_host.py:59
+#: deployment/campaign_host.py:71
 msgid "The campaign does not support cleanup for this backend."
 msgstr ""
 

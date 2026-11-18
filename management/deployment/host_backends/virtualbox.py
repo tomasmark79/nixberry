@@ -529,17 +529,30 @@ def shutdown(spec, directory):
 def remove(spec, directory, final):
     common.run([spec["toolPath"], "unregistervm", spec["uuid"], "--delete"])
     disk = os.path.normcase(os.path.abspath(directory / common.image_name(BACKEND)))
-    for block in re.split(r"\n\s*\n", common.run([spec["toolPath"], "list", "hdds"])):
-        info = {}
-        for line in block.splitlines():
-            key, sep, value = line.partition(":")
-            if sep:
-                info[key.strip()] = value.strip()
-        if (
-            info.get("UUID", "").lower() == spec["uuid"]
-            and os.path.normcase(os.path.abspath(info.get("Location", ""))) == disk
-        ):
-            common.run([spec["toolPath"], "closemedium", "disk", spec["uuid"]])
+    for attempt in range(5):
+        retained = None
+        for block in re.split(r"\n\s*\n", common.run([spec["toolPath"], "list", "hdds"])):
+            info = {}
+            for line in block.splitlines():
+                key, sep, value = line.partition(":")
+                if sep:
+                    info[key.strip()] = value.strip()
+            if (
+                info.get("UUID", "").lower() == spec["uuid"]
+                and os.path.normcase(os.path.abspath(info.get("Location", ""))) == disk
+            ):
+                retained = info["UUID"]
+                break
+        if not retained:
+            break
+        try:
+            common.run([spec["toolPath"], "closemedium", "disk", retained])
+            break
+        except RuntimeError:
+            if attempt == 4:
+                raise
+            import time
+            time.sleep(1)
 
 
 def start(spec, directory):
