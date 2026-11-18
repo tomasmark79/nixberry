@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import pty
 import re
 import shlex
 import shutil
@@ -88,7 +89,7 @@ class Campaign:
             rows.append(f'| {item["id"]} | {item["result"]} | {detail} |')
         (self.root / "report.md").write_text("\n".join(rows) + "\n")
 
-    def command(self, argv, *, cwd=None, expected=0, timeout=3600, input_text=None, env=None):
+    def command(self, argv, *, cwd=None, expected=0, timeout=3600, input_text=None, env=None, pty_input=None):
         self.counter += 1
         stem = self.folder / f"{self.counter:03d}"
         started = time.time()
@@ -97,22 +98,34 @@ class Campaign:
                  "stderr": str(stem.with_suffix(".stderr").relative_to(self.root))}
         self.case.setdefault("steps", []).append(entry)
         self.save()
-        with stem.with_suffix(".stdout").open("w") as stdout, stem.with_suffix(".stderr").open("w") as stderr:
-            process = subprocess.Popen(argv, cwd=cwd or self.work or self.recipe,
-                                       stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
-                                       stdout=stdout, stderr=stderr, text=True, start_new_session=True, env=env)
-            try:
-                process.communicate(input_text, timeout=timeout)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGTERM)
+        master, slave = pty.openpty() if pty_input is not None else (None, None)
+        try:
+            with stem.with_suffix(".stdout").open("w") as stdout, stem.with_suffix(".stderr").open("w") as stderr:
+                stdin = slave if slave is not None else (subprocess.PIPE if input_text is not None else subprocess.DEVNULL)
+                process = subprocess.Popen(argv, cwd=cwd or self.work or self.recipe,
+                                           stdin=stdin, stdout=stdout, stderr=stderr,
+                                           text=True, start_new_session=True, env=env)
+                if slave is not None:
+                    os.close(slave)
+                    slave = None
+                    os.write(master, pty_input.encode("utf-8"))
                 try:
-                    process.wait(timeout=8)
+                    process.communicate(input_text if master is None else None, timeout=timeout)
                 except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGKILL)
-                    process.wait()
-                entry.update(returncode=process.returncode, timeout=True, finished=time.time())
-                self.save()
-                raise RuntimeError(_("The step timed out; resource state requires inspection."))
+                    os.killpg(process.pid, signal.SIGTERM)
+                    try:
+                        process.wait(timeout=8)
+                    except subprocess.TimeoutExpired:
+                        os.killpg(process.pid, signal.SIGKILL)
+                        process.wait()
+                    entry.update(returncode=process.returncode, timeout=True, finished=time.time())
+                    self.save()
+                    raise RuntimeError(_("The step timed out; resource state requires inspection."))
+        finally:
+            if slave is not None:
+                os.close(slave)
+            if master is not None:
+                os.close(master)
         entry.update(returncode=process.returncode, finished=time.time())
         self.save()
         if expected is not None and process.returncode != expected:
@@ -455,8 +468,11 @@ class Campaign:
                 text = re.sub(r'\n  access = \{[^\n]*\};', "", text)
                 text = text.replace("{\n", '{\n  host = "local-libvirt";\n', 1)
             file.write_text(text)
+            if target["backend"] == "libvirt":
+                self.ensure_libvirt_disk_readable()
             self.cli("reset", self.case["target"])
-            self.cli("reset", self.case["target"], "--apply")
+            linked = target["backend"] == "libvirt" and self.libvirt_disk_has_parent_symlink()
+            self.cli("reset", self.case["target"], "--apply", **({"pty_input": "y\n"} if linked else {}))
             for media in self.case.get("operatorMedia", []) if target["backend"] == "libvirt" else []:
                 self.command(["virsh", "-c", target["spec"]["uri"], "vol-delete", media,
                               "--pool", target["spec"]["storagePool"]])
@@ -491,6 +507,31 @@ Remove-Item -LiteralPath $root -Recurse -Force
             raise RuntimeError(_("The target is not absent after cleanup."))
         self.case["cleaned"] = True
         self.save()
+
+    def libvirt_disk_path(self):
+        spec = self.case["targetSpec"].get("spec", {})
+        directory = spec.get("storageDirectory")
+        volume = spec.get("volume") or (spec.get("name", "") + ".qcow2" if spec.get("name") else "")
+        return Path(directory) / volume if directory and volume else None
+
+    def libvirt_disk_has_parent_symlink(self):
+        disk = self.libvirt_disk_path()
+        return bool(disk and any(parent.is_symlink() for parent in disk.parents))
+
+    def ensure_libvirt_disk_readable(self):
+        disk = self.libvirt_disk_path()
+        if not disk or disk.is_symlink() or not disk.is_file() or os.access(disk, os.R_OK):
+            return
+        spec = self.case["targetSpec"].get("spec", {})
+        name = spec.get("name", "")
+        if not (name.startswith("vm-demo-test-") or name.startswith("nixberry-vm-demo-test-")):
+            return
+        domain = ET.fromstring(self.command(["virsh", "-c", spec["uri"], "dumpxml", name, "--inactive"])[1])
+        owner = domain.find("./metadata/{urn:nixberry:deployment}owner")
+        if (domain.findtext("name") != name or domain.findtext("uuid") != spec.get("uuid")
+                or owner is None or owner.get("id") != spec.get("ownerId")):
+            return
+        self.command(["sudo", "-n", "chown", f"{os.getuid()}:{os.getgid()}", str(disk.resolve(strict=True))])
 
     def run(self, selected, *, resume=False):
         self.root.parent.mkdir(parents=True, exist_ok=True)

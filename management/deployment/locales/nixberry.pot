@@ -365,7 +365,7 @@ msgstr ""
 msgid "Another kernel is already loaded; it will not be overwritten."
 msgstr ""
 
-#: deployment/campaign.py:503
+#: deployment/campaign.py:544
 msgid "Another process is already running this campaign."
 msgstr ""
 
@@ -555,7 +555,7 @@ msgstr ""
 msgid "CPU or RAM does not match."
 msgstr ""
 
-#: deployment/campaign.py:542
+#: deployment/campaign.py:583
 #, python-brace-format
 msgid "Campaign case: {name}"
 msgstr ""
@@ -729,7 +729,7 @@ msgstr ""
 msgid "Choose a recovery output directory outside the recipe."
 msgstr ""
 
-#: deployment/campaign.py:447
+#: deployment/campaign.py:460
 #, python-brace-format
 msgid "Cleaning up the dedicated test target: {name}"
 msgstr ""
@@ -885,11 +885,11 @@ msgstr ""
 msgid "Could not persist the failed backup attempt; inspect controller state."
 msgstr ""
 
-#: deployment/campaign.py:734
+#: deployment/campaign.py:775
 msgid "Could not prepare the SSH forward."
 msgstr ""
 
-#: deployment/campaign.py:236 deployment/campaign.py:687
+#: deployment/campaign.py:249 deployment/campaign.py:728
 msgid "Could not request VM shutdown."
 msgstr ""
 
@@ -1368,11 +1368,11 @@ msgstr ""
 msgid "Image method: install starts and verifies the prebuilt system; the disk is not formatted."
 msgstr ""
 
-#: deployment/campaign.py:634
+#: deployment/campaign.py:675
 msgid "Import created a volume at a different path."
 msgstr ""
 
-#: deployment/campaign.py:631
+#: deployment/campaign.py:672
 msgid "Import would overwrite an existing volume."
 msgstr ""
 
@@ -1744,7 +1744,7 @@ msgstr ""
 msgid "Invalid target name for update."
 msgstr ""
 
-#: deployment/campaign.py:156
+#: deployment/campaign.py:169
 msgid "Invalid test host name."
 msgstr ""
 
@@ -2480,7 +2480,7 @@ msgstr ""
 msgid "Repeat LUKS passphrase: "
 msgstr ""
 
-#: deployment/campaign.py:354
+#: deployment/campaign.py:367
 msgid "Repeated creation was incorrectly allowed."
 msgstr ""
 
@@ -2870,7 +2870,7 @@ msgstr ""
 msgid "Select regression checks, inventory checks, or both."
 msgstr ""
 
-#: deployment/campaign.py:790
+#: deployment/campaign.py:831
 msgid "Sequential NixBerry integration campaign following docs/test-plan.md."
 msgstr ""
 
@@ -2897,7 +2897,7 @@ msgstr ""
 msgid "Server configuration: {configuration}"
 msgstr ""
 
-#: deployment/campaign.py:802
+#: deployment/campaign.py:843
 msgid "Set --run-root outside the recipe to run the campaign."
 msgstr ""
 
@@ -3060,7 +3060,7 @@ msgstr ""
 msgid "Storage must have an absolute path without parent directory components."
 msgstr ""
 
-#: deployment/campaign.py:71
+#: deployment/campaign.py:72
 msgid "Store campaign results outside the recipe."
 msgstr ""
 
@@ -3129,7 +3129,7 @@ msgstr ""
 msgid "System update: {name} ({backend})"
 msgstr ""
 
-#: deployment/campaign.py:366
+#: deployment/campaign.py:379
 msgid "System verification failed after the new boot."
 msgstr ""
 
@@ -3197,7 +3197,7 @@ msgstr ""
 msgid "The Hyper-V operation timed out. Check the target's status and probe before retrying."
 msgstr ""
 
-#: deployment/campaign.py:398
+#: deployment/campaign.py:411
 msgid "The ISO bundle does not include installation instructions."
 msgstr ""
 
@@ -3311,7 +3311,7 @@ msgstr ""
 msgid "The Restic repository identity does not match its configured pin."
 msgstr ""
 
-#: deployment/campaign.py:741
+#: deployment/campaign.py:782
 msgid "The SSH forward did not start listening."
 msgstr ""
 
@@ -3347,7 +3347,7 @@ msgstr ""
 msgid "The VM did not shut down gracefully; reset will delete nothing."
 msgstr ""
 
-#: deployment/campaign.py:231
+#: deployment/campaign.py:244
 msgid "The VM did not shut down gracefully; the next step was stopped."
 msgstr ""
 
@@ -3395,7 +3395,7 @@ msgstr ""
 msgid "The VM does not have exactly one disk."
 msgstr ""
 
-#: deployment/campaign.py:229
+#: deployment/campaign.py:242
 msgid "The VM entered an unexpected state during shutdown."
 msgstr ""
 
@@ -3668,7 +3668,7 @@ msgstr ""
 msgid "The captured subvolume is not read-only."
 msgstr ""
 
-#: deployment/campaign.py:518
+#: deployment/campaign.py:559
 msgid "The case has retained resources; inspect its state first."
 msgstr ""
 
@@ -3677,7 +3677,7 @@ msgstr ""
 msgid "The check failed: {value1}"
 msgstr ""
 
-#: deployment/campaign.py:411
+#: deployment/campaign.py:424
 msgid "The checksum did not detect the corrupted copy."
 msgstr ""
 
@@ -3689,7 +3689,7 @@ msgstr ""
 msgid "The configuration has both a file and a directory; keep only one definition."
 msgstr ""
 
-#: deployment/campaign.py:568
+#: deployment/campaign.py:609
 msgid "The corresponding offline export must pass first."
 msgstr ""
 
@@ -3725,7 +3725,7 @@ msgstr ""
 msgid "The declared VirtualBox bridge adapter does not exist."
 msgstr ""
 
-#: deployment/campaign.py:211
+#: deployment/campaign.py:224
 msgid "The declared host is unavailable over verified SSH."
 msgstr ""
 
@@ -3861,27 +3861,27 @@ msgstr ""
 msgid "The encrypted mapping does not belong to the verified RPi disk."
 msgstr ""
 
-#: deployment/campaign.py:322
+#: deployment/campaign.py:335
 msgid "The evaluated test VM network does not match the specified values."
 msgstr ""
 
-#: deployment/campaign.py:386
+#: deployment/campaign.py:399
 msgid "The export does not match the selected platform and method."
 msgstr ""
 
-#: deployment/campaign.py:414
+#: deployment/campaign.py:427
 msgid "The export overwrote an existing bundle."
 msgstr ""
 
-#: deployment/campaign.py:379
+#: deployment/campaign.py:392
 msgid "The export preview wrote a bundle."
 msgstr ""
 
-#: deployment/campaign.py:395
+#: deployment/campaign.py:408
 msgid "The exported disk has an incorrect format or capacity."
 msgstr ""
 
-#: deployment/campaign.py:389
+#: deployment/campaign.py:402
 msgid "The exported lock does not match the manifest."
 msgstr ""
 
@@ -3929,19 +3929,19 @@ msgstr ""
 msgid "The guest is not x86_64."
 msgstr ""
 
-#: deployment/campaign.py:765
+#: deployment/campaign.py:806
 msgid "The handed-off VM did not start verified SSH within the timeout."
 msgstr ""
 
-#: deployment/campaign.py:719
+#: deployment/campaign.py:760
 msgid "The handed-off VM has no verified address."
 msgstr ""
 
-#: deployment/campaign.py:580
+#: deployment/campaign.py:621
 msgid "The handoff bundle's working declaration must not be a symbolic link."
 msgstr ""
 
-#: deployment/campaign.py:594
+#: deployment/campaign.py:635
 msgid "The handoff target already exists; import is not allowed."
 msgstr ""
 
@@ -4126,7 +4126,7 @@ msgstr ""
 msgid "The managed installation ISO is missing."
 msgstr ""
 
-#: deployment/campaign.py:668
+#: deployment/campaign.py:709
 msgid "The manually created VM did not obtain an address."
 msgstr ""
 
@@ -4166,7 +4166,7 @@ msgstr ""
 msgid "The network is inactive."
 msgstr ""
 
-#: deployment/campaign.py:327
+#: deployment/campaign.py:340
 msgid "The new test target already exists; it will not be taken over."
 msgstr ""
 
@@ -4178,7 +4178,7 @@ msgstr ""
 msgid "The offline target has no connected host; use show or export."
 msgstr ""
 
-#: deployment/campaign.py:440
+#: deployment/campaign.py:453
 #, python-brace-format
 msgid "The operational target has findings: {checks}. All checks were read-only."
 msgstr ""
@@ -4227,7 +4227,7 @@ msgstr ""
 msgid "The pinned Restic repository identity is invalid."
 msgstr ""
 
-#: deployment/campaign.py:331
+#: deployment/campaign.py:344
 msgid "The plan changed hypervisor state."
 msgstr ""
 
@@ -4288,7 +4288,7 @@ msgstr ""
 msgid "The recovery recipe does not match the system prepared for update."
 msgstr ""
 
-#: deployment/campaign.py:314
+#: deployment/campaign.py:327
 msgid "The reserved static address for the test NAT network is missing."
 msgstr ""
 
@@ -4304,11 +4304,11 @@ msgstr ""
 msgid "The root partition is not ext4."
 msgstr ""
 
-#: deployment/campaign.py:773
+#: deployment/campaign.py:814
 msgid "The running VM does not have the expected static address, prefix or default gateway."
 msgstr ""
 
-#: deployment/campaign.py:776
+#: deployment/campaign.py:817
 msgid "The running VM is not using the expected DNS servers."
 msgstr ""
 
@@ -4393,20 +4393,20 @@ msgstr ""
 msgid "The staged recovery configuration is stale or does not match this backup policy."
 msgstr ""
 
-#: deployment/campaign.py:338
+#: deployment/campaign.py:351
 msgid "The state after create does not match the method."
 msgstr ""
 
-#: deployment/campaign.py:318
+#: deployment/campaign.py:331
 msgid "The static network test did not change exactly one declaration to static configuration."
 msgstr ""
 
-#: deployment/campaign.py:120
+#: deployment/campaign.py:133
 #, python-brace-format
 msgid "The step exited with code {code}: {detail}"
 msgstr ""
 
-#: deployment/campaign.py:115
+#: deployment/campaign.py:123
 msgid "The step timed out; resource state requires inspection."
 msgstr ""
 
@@ -4520,7 +4520,7 @@ msgstr ""
 msgid "The target is not a block device."
 msgstr ""
 
-#: deployment/campaign.py:491
+#: deployment/campaign.py:507
 msgid "The target is not absent after cleanup."
 msgstr ""
 
@@ -4565,11 +4565,11 @@ msgstr ""
 msgid "The test VM already exists. It will not be overwritten or rebooted."
 msgstr ""
 
-#: deployment/campaign.py:452
+#: deployment/campaign.py:465
 msgid "The test declaration does not have the expected default permission; stopping cleanup."
 msgstr ""
 
-#: deployment/campaign.py:162
+#: deployment/campaign.py:175
 msgid "The test name exceeds the CLI limit."
 msgstr ""
 
@@ -4593,7 +4593,7 @@ msgstr ""
 msgid "The unlock policy does not match the VM security mode."
 msgstr ""
 
-#: deployment/campaign.py:297
+#: deployment/campaign.py:310
 msgid "The update did not change the system generation."
 msgstr ""
 
@@ -4601,7 +4601,7 @@ msgstr ""
 msgid "The update helper did not return a valid store path."
 msgstr ""
 
-#: deployment/campaign.py:293
+#: deployment/campaign.py:306
 msgid "The update preview changed the running system."
 msgstr ""
 
@@ -4832,7 +4832,7 @@ msgstr ""
 msgid "Unsupported special file in application restoration."
 msgstr ""
 
-#: deployment/campaign.py:786
+#: deployment/campaign.py:827
 msgid "Unsupported test configuration value."
 msgstr ""
 

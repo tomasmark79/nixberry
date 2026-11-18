@@ -125,6 +125,38 @@ class CampaignTests(unittest.TestCase):
                 self.assertIn('allowReset = true;', declaration.read_text())
                 self.assertEqual(cli.call_args_list, [call('reset', 'owned'), call('reset', 'owned', '--apply')])
 
+    def test_libvirt_cleanup_confirms_parent_symlink_and_restores_disk_read_access(self):
+        with tempfile.TemporaryDirectory() as root:
+            base = Path(root)
+            real_storage = base / "real-images"
+            real_storage.mkdir()
+            linked_storage = base / "images"
+            linked_storage.symlink_to(real_storage, target_is_directory=True)
+            disk = linked_storage / "vm-demo-test-owned.qcow2"
+            disk.write_bytes(b"qcow2")
+            task = Campaign("/recipe", "/run-test")
+            task.work = base
+            (task.work / "machines/vm").mkdir(parents=True)
+            (task.work / "machines/vm/owned.nix").write_text("{\n  allowReset = false;\n}")
+            spec = dict(uri="qemu:///system", storageDirectory=str(linked_storage),
+                        name="vm-demo-test-owned", volume="vm-demo-test-owned.qcow2",
+                        uuid="u1", ownerId="nixberry-u1")
+            task.case = dict(target="owned", targetSpec=dict(backend="libvirt", spec=spec))
+            xml = ('<domain><name>vm-demo-test-owned</name><uuid>u1</uuid><metadata>'
+                   '<nixberry:owner xmlns:nixberry="urn:nixberry:deployment" id="nixberry-u1"/>'
+                   '</metadata></domain>')
+            with patch.object(task, "snapshot", side_effect=[{"state": "shut off"}, {"state": "absent"}]), \
+                    patch("campaign.os.access", return_value=False), \
+                    patch.object(task, "command", side_effect=[(0, xml), (0, "")]) as cmd, \
+                    patch.object(task, "cli") as cli, patch.object(task, "save"):
+                task.cleanup()
+            self.assertEqual(cmd.call_args_list[0].args[0],
+                             ["virsh", "-c", "qemu:///system", "dumpxml", "vm-demo-test-owned", "--inactive"])
+            self.assertEqual(cmd.call_args_list[1].args[0][:3], ["sudo", "-n", "chown"])
+            self.assertEqual(cmd.call_args_list[1].args[0][4], str(disk.resolve()))
+            self.assertEqual(cli.call_args_list,
+                             [call("reset", "owned"), call("reset", "owned", "--apply", pty_input="y\n")])
+
     def test_proxmox_cleanup_uses_json_api_and_refuses_snapshots(self):
         for snapshots in ([{"name": "current"}], [{"name": "current"}, {"name": "keep"}]):
             with self.subTest(snapshots=snapshots), tempfile.TemporaryDirectory() as root:
