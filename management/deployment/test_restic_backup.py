@@ -536,6 +536,36 @@ class ResticPolicySystemTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr[-5000:])
             for name, ssh in json.loads(result.stdout).items():
                 self.assertEqual(ssh, {**values[name]['ssh'], 'warnNoPqKex': False}, name)
+            tzdir = (
+                'let f=builtins.getFlake ' + nix('path:' + str(root)) + '; in {'
+                + ' systems = builtins.mapAttrs (_: s: {'
+                + ' tzdir = s.config.systemd.managerEnvironment.TZDIR;'
+                + ' managerEnvironment = s.config.systemd.settings.Manager.ManagerEnvironment;'
+                + ' localtime = s.config.environment.etc.localtime.source;'
+                + ' systemConf = s.config.environment.etc."systemd/system.conf".text;'
+                + ' }) f.nixberrySystems;'
+                + ' overlay = builtins.listToAttrs (map (name: {'
+                + ' inherit name;'
+                + ' value = (f.nixberrySystems.${name}.extendModules {'
+                + ' modules = [ { system.etc.overlay.enable = true; } ];'
+                + ' }).config.systemd.managerEnvironment.TZDIR;'
+                + ' }) [ "vm-demo-libvirt-btrfs" "rpi-demo-btrfs" ]);'
+                + ' }'
+            )
+            result = subprocess.run(['nix', 'eval', '--json', '--impure', '--no-write-lock-file', '--expr', tzdir],
+                                    capture_output=True, text=True, timeout=240)
+            self.assertEqual(result.returncode, 0, result.stderr[-5000:])
+            systemd_tz = json.loads(result.stdout)
+            self.assertEqual(set(systemd_tz['systems']), set(expected))
+            for name, actual in systemd_tz['systems'].items():
+                self.assertEqual(actual['tzdir'], '/etc/static/zoneinfo', name)
+                self.assertIn('TZDIR=/etc/static/zoneinfo', actual['managerEnvironment'], name)
+                self.assertEqual(actual['localtime'], '/etc/zoneinfo/Europe/Prague', name)
+                self.assertIn('TZDIR=/etc/static/zoneinfo', actual['systemConf'], name)
+            self.assertEqual(systemd_tz['overlay'], {
+                'vm-demo-libvirt-btrfs': '/etc/zoneinfo',
+                'rpi-demo-btrfs': '/etc/zoneinfo',
+            })
             from capture_controller import projection
             for name in ('vm-demo-libvirt-btrfs', 'rpi-demo-ext4'):
                 selected = projection(str(root), name)
