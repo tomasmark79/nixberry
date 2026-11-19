@@ -92,6 +92,23 @@
         "type": "github"
       }
     },
+    "hstr-source": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795099369,
+        "narHash": "sha256-qTlQRBtj+12N8rPPP0+MTgY5M1ojjuBostq/WQjpLoY=",
+        "owner": "tomasmark79",
+        "repo": "hstr",
+        "rev": "d8e562bd18b6ac883279f55eafe1b9d61417a039",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tomasmark79",
+        "ref": "fix/history-scrolling",
+        "repo": "hstr",
+        "type": "github"
+      }
+    },
     "mc-upstream": {
       "flake": false,
       "locked": {
@@ -311,6 +328,7 @@
       "inputs": {
         "disko": "disko",
         "emcx": "emcx",
+        "hstr-source": "hstr-source",
         "mc-upstream": "mc-upstream",
         "nixoncpp": "nixoncpp",
         "nixos-anywhere": "nixos-anywhere",

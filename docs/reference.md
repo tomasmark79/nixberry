@@ -309,6 +309,9 @@ Wayland clipboard access requires a graphical session, not SSH alone.
 [HSTR](../modules/applications/hstr/package.nix) opens history with `Ctrl+R` in
 interactive Bash. Selecting inserts a command; Enter executes it.
 History is synchronized before opening.
+Refresh HSTR from the fork's `fix/history-scrolling` branch with
+`nix flake update hstr-source --flake .`. The selected revision is recorded in
+`flake.lock`.
 
 The pinned `nixos-raspberrypi` and [boot module](../platforms/rpi/boot.nix)
 select RPi kernel/firmware, independently of application input `unstable`.

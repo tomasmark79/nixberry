@@ -5,6 +5,7 @@
   configurations,
   unstable,
   emcx,
+  hstrSource,
   nixoncpp,
   disko,
   nixos-raspberrypi,
@@ -18,6 +19,7 @@ let
         system = "aarch64-linux";
         specialArgs.unstable = unstable.legacyPackages.aarch64-linux;
         specialArgs.emcx = emcx;
+        specialArgs.hstrSource = hstrSource;
         specialArgs.nixoncpp = nixoncpp;
         specialArgs.nixberryTargetIdentity = "rpi:${target.hardwareSerial}";
         specialArgs.nixberryModules = {

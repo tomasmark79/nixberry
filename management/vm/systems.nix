@@ -5,6 +5,7 @@
   configurations,
   unstable,
   emcx,
+  hstrSource,
   nixoncpp,
   disko,
   deployment,
@@ -16,6 +17,7 @@ let
       system = "x86_64-linux";
       specialArgs.unstable = unstable.legacyPackages.x86_64-linux;
       specialArgs.emcx = emcx;
+      specialArgs.hstrSource = hstrSource;
       specialArgs.nixoncpp = nixoncpp;
       specialArgs.nixberryModules = {
         common = ../../modules/common.nix;

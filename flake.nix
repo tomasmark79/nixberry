@@ -21,6 +21,10 @@
       url = "github:MidnightCommander/mc/master";
       flake = false;
     };
+    hstr-source = {
+      url = "github:tomasmark79/hstr?ref=fix/history-scrolling";
+      flake = false;
+    };
     # Updates follow main; flake.lock pins the exact revision in use.
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
     disko = {
@@ -40,6 +44,7 @@
       unstable,
       nixoncpp,
       emcx,
+      hstr-source,
       disko,
       nixos-anywhere,
       nixos-raspberrypi,
@@ -48,6 +53,7 @@
     let
       lib = nixos-raspberrypi.inputs.nixpkgs.lib;
       vmPkgs = nixos-raspberrypi.inputs.nixpkgs.legacyPackages.x86_64-linux;
+      hstrSource = hstr-source;
       deployment = import ./management/deployment;
       configurations = import ./management/deployment/configurations.nix;
       rpiTargets = import ./machines/rpi;
@@ -58,6 +64,7 @@
           configurations
           unstable
           emcx
+          hstrSource
           nixoncpp
           disko
           nixos-raspberrypi
@@ -71,6 +78,7 @@
           configurations
           unstable
           emcx
+          hstrSource
           nixoncpp
           disko
           deployment
@@ -205,7 +213,7 @@
       nixberryRpiDiskTools = rpiDiskTools;
       packages.x86_64-linux = {
         inherit (emcx.packages.x86_64-linux) emcx emcx-tests;
-        hstr = vmPkgs.callPackage ./modules/applications/hstr/package.nix { };
+        hstr = vmPkgs.callPackage ./modules/applications/hstr/package.nix { inherit hstrSource; };
         nixberry = deploymentTools;
         nixberry-source = deploymentSource;
         nixberry-qemu-image = mkVmImage defaultVmSystems.libvirt 32;
@@ -235,7 +243,7 @@
       packages.aarch64-linux.hstr =
         nixos-raspberrypi.inputs.nixpkgs.legacyPackages.aarch64-linux.callPackage
           ./modules/applications/hstr/package.nix
-          { };
+          { inherit hstrSource; };
       packages.aarch64-linux.emcx = emcx.packages.aarch64-linux.emcx;
       packages.aarch64-linux.emcx-tests = emcx.packages.aarch64-linux.emcx-tests;
       packages.aarch64-linux.nixberry-rpi-local-tools = builtins.head (

@@ -1,19 +1,20 @@
-# The same pinned fork as Nixon; defined here for independent NixBerry export.
 {
   hstr,
-  fetchFromGitHub,
+  hstrSource,
+  lib,
   runCommand,
   python3,
 }:
 let
+  inherit (hstrSource) lastModifiedDate;
+  date = lib.concatStringsSep "-" [
+    (builtins.substring 0 4 lastModifiedDate)
+    (builtins.substring 4 2 lastModifiedDate)
+    (builtins.substring 6 2 lastModifiedDate)
+  ];
   patched = hstr.overrideAttrs (old: {
-    version = "3.2.0-unstable-2026-10-11";
-    src = fetchFromGitHub {
-      owner = "tomasmark79";
-      repo = "hstr";
-      rev = "9d726581716060ae6dba2214549b58b1d6dab188";
-      hash = "sha256-HUd/d6OFlsTQzSqSB+YkqZYGLOGyk0B5urjYlVIVHgg=";
-    };
+    version = "unstable-${date}";
+    src = hstrSource.outPath;
     passthru = (old.passthru or { }) // {
       tests.scroll =
         runCommand "hstr-scroll-test"

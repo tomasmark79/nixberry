@@ -1,7 +1,7 @@
 # History search and editing with scrolling support from the pinned fork.
-{ pkgs, ... }:
+{ pkgs, hstrSource, ... }:
 {
-  environment.systemPackages = [ (pkgs.callPackage ./package.nix { }) ];
+  environment.systemPackages = [ (pkgs.callPackage ./package.nix { inherit hstrSource; }) ];
   programs.bash.interactiveShellInit = ''
     export HSTR_CONFIG=raw-history-view,no-confirm
     export HSTR_TIOCSTI=n
